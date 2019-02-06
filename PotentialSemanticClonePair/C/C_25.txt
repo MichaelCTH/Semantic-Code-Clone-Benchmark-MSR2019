@@ -1,0 +1,4566 @@
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+29554992_29555229_6_30
+29554992_29555429_6_29
+Title: "Using pointers to navigate an array instead of using an int" 
+----------------------------------------
+
+int main (void) {
+    int c;
+    char characterArray [MAX] = {0};
+    char *ptr = NULL;
+    ptr = characterArray;
+    printf ("Enter a message: ");
+    for (c = getchar (); c != EOF && c != '\n'; c = getchar ()) {
+        *ptr = c;
+        ptr++;
+    }
+    *ptr = '\0';
+    printf ("The reverse order is: ");
+    while (ptr != characterArray) {
+        printf ("%c", * ptr);
+        --ptr;
+    }
+    printf ("%c", * ptr);
+    printf ("\n\n");
+    return 0;
+}
+----------------------------------------
+
+int main (void) {
+    char characterArray [MAX] = {0};
+    char *p = characterArray;
+    char c;
+    printf ("Enter a message: ");
+    for (c = getchar (); c != EOF && c != '\n'; c = getchar ()) {
+        *p++ = c;
+    }
+    printf ("The reverse order is: ");
+    while (p != characterArray) {
+        printf ("%c", * -- p);
+    }
+    printf ("\n\n");
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+29562307_29562586_13_50
+29562307_29568419_23_63
+Title: file handling plus tokenization in c 
+----------------------------------------
+
+int main (void) {
+    struct student std [16];
+    size_t i;
+    size_t count;
+    char line [100];
+    i = 0;
+    std[i].sid = 0;
+    count = sizeof (std) / sizeof (std[0]);
+    while (((fgets (line, sizeof (line), stdin)) != NULL) && (i < count)) {
+        char *token;
+        char *endptr;
+        token = strtok (line, "|");
+        if (token == NULL)
+            continue;
+        std[i].sid = strtol (token, &endptr, 10);
+        if (*endptr != '\0')
+            continue;
+        token = strtok (NULL, "|");
+        if (token == NULL)
+            continue;
+        strcpy (std [i].sub, token);
+        token = strtok (NULL, "|");
+        if (token == NULL)
+            continue;
+        std[i].marks = strtol (token, &endptr, 10);
+        if (*endptr != '\0')
+            continue;
+        ++i;
+    }
+}
+----------------------------------------
+
+void main () {
+    struct student std [16];
+    int i, ch, j;
+    char temp [50];
+    FILE *fp;
+    clrscr ();
+    i = 0;
+    std[i].sid = 0;
+    while ((ch = getchar ()) != EOF && i < 6) {
+        std[i].sid = 10 * std[i].sid + (int) (ch - '0');
+        while ((ch = getchar ()) != '|') {
+            std[i].sid = 10 * std[i].sid + (int) (ch - '0');
+        }
+        while ((ch = getchar ()) != '|') {
+            std[i].sub[j++] = ch;
+        }
+        std[i].sub[j] = '\0';
+        std[i].marks = 0;
+        j = 0;
+        while ((ch = getchar ()) != '\n') {
+            std[i].marks = 10 * std[i].marks + (int) (ch - '0');
+        }
+        i++;
+        if (i < 6)
+            std[i].sid = 0;
+    }
+    for (i = 0; i < 6; ++i)
+        printf ("%d %s %d\n", std[i].sid, &(std[i].sub[0]), std[i].marks);
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+29565116_29567794_22_48
+29565116_32772092_14_71
+Title: How to watch the directory with multiple files changes using inotify in c 
+----------------------------------------
+
+void main () {
+    WIN32_FIND_DATA FindFileData;
+    HANDLE hf;
+    struct stat st;
+    hf = FindFirstFile (DISK "*", &FindFileData);
+    if (hf != INVALID_HANDLE_VALUE) {
+        do {
+            char s [MAX_PATH] = DISK;
+            int a;
+            strcat (s, FindFileData.cFileName);
+            stat (s, & st);
+            a = access (s, 04);
+            printf ("%s\t\t%s\n", FindFileData.cFileName, st.st_mode & S_IFDIR ? "Directory" : (st.st_mode & S_IFREG ? "File" : "Other"));
+        }
+        while (FindNextFile (hf, &FindFileData) != 0);
+        FindClose (hf);
+    }
+    getchar ();
+}
+----------------------------------------
+
+int main (int argc, char **argv) {
+    int length, i = 0;
+    int fd;
+    int wd;
+    char buffer [EVENT_BUF_LEN];
+    char *path = argc > 1 ? argv[1] : "./tmp";
+    if (!dir_exists (path)) {
+        fprintf (stderr, "error: directory does not exist '%s'.\n", path);
+        return 1;
+    }
+    if ((fd = inotify_init ()) < 0) {
+        perror ("inotify_init");
+    }
+    wd = inotify_add_watch (fd, path, IN_CREATE | IN_DELETE);
+    if ((length = read (fd, buffer, EVENT_BUF_LEN)) < 0) {
+        perror ("read");
+    }
+    while (i < length) {
+        struct inotify_event *event = (struct inotify_event *) &buffer[i];
+        if (event->len) {
+            if (event->mask & IN_CREATE) {
+                if (event->mask & IN_ISDIR) {
+                    printf ("New directory %s created.\n", event -> name);
+                }
+                else {
+                    printf ("New file %s created.\n", event -> name);
+                }
+            }
+            else if (event->mask & IN_DELETE) {
+                if (event->mask & IN_ISDIR) {
+                    printf ("Directory %s deleted.\n", event -> name);
+                }
+                else {
+                    printf ("File %s deleted.\n", event -> name);
+                }
+            }
+        }
+        i += EVENT_SIZE + event->len;
+    }
+    inotify_rm_watch (fd, wd);
+    close (fd);
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+29568297_29568438_7_19
+29568297_29568502_3_15
+Title: C - how to store multiple strings in an array 
+----------------------------------------
+
+int main () {
+    char variable [NUM_STRINGS] [MAX_LENGTH_OFSTRING + 1];
+    int i = 0;
+    printf ("enter a variable\n");
+    while (scanf ("%s", variable[i]) > 0) {
+        printf ("The variable entered was: %s\n", variable [i]);
+        i++;
+        if (i >= NUM_STRINGS)
+            break;
+    }
+    return 0;
+}
+----------------------------------------
+
+int main (int ac, char *av []) {
+    memset (strings, 0, 10 * sizeof (char *));
+    for (int i = 0; i < 10; i += 1) {
+        char ins [100];
+        scanf ("%100s", ins);
+        strings[i] = malloc (strlen (ins) +1);
+        if (strings[i]) {
+            strcpy (strings [i], ins);
+        }
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+29569102_29569361_4_35
+29569102_29569507_3_38
+Title: Look for a specific character in a sentence and print each word that has that charcter 
+----------------------------------------
+
+int main (void) {
+    char character;
+    char sentence [] = "this is my first sentence";
+    char word [sizeof sentence];
+    char *strPtr, *wordPtr = word;
+    int contain = 0;
+    printf ("Enter a character\n");
+    scanf ("%c", & character);
+    printf ("Words containing %c are: \n", character);
+    for (strPtr = sentence; *strPtr != '\0'; strPtr++) {
+        if (isspace (*strPtr)) {
+            *wordPtr = '\0';
+            if (contain)
+                printf ("%s\n", word);
+            contain = 0;
+            wordPtr = word;
+        }
+        else {
+            if (*strPtr == character)
+                contain = 1;
+            *wordPtr++ = *strPtr;
+        }
+    }
+    *wordPtr = '\0';
+    if (contain)
+        printf ("%s\n", word);
+    return 0;
+}
+----------------------------------------
+
+int main () {
+    char character;
+    char sentence [] = "this is my first sentence";
+    char *strPtr = sentence;
+    char *sp = sentence;
+    printf ("\nCurrent string: %s\n\n", sentence);
+    printf ("Enter a character: ");
+    scanf ("%c", & character);
+    printf ("\nWords containing %c are:\n\n", character);
+    while (*strPtr) {
+        if (*strPtr == character) {
+            while (*strPtr && *strPtr != ' ')
+                strPtr++;
+            *strPtr = 0;
+            printf ("    %s\n", sp);
+            *strPtr = ' ';
+            while (*strPtr && *strPtr == ' ')
+                strPtr++;
+            sp = strPtr;
+        }
+        else if (*strPtr == ' ') {
+            while (*strPtr && *strPtr == ' ')
+                strPtr++;
+            if (*strPtr)
+                sp = strPtr;
+        }
+        else
+            strPtr++;
+    }
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+29573123_29573181_1_13
+29573123_29573196_1_19
+Title: How do I alter my C code to use pointers? 
+----------------------------------------
+
+char *find_any_index (char string [], char stop []) {
+    char *cp1 = string;
+    char *cp2 = NULL;
+    for (; *cp1 != '\0'; ++cp1) {
+        for (cp2 = stop; *cp2 != '\0'; ++cp2) {
+        }
+    }
+    return NULL;
+}
+----------------------------------------
+
+char *find_any_index (char string [], char stop []) {
+    char *p = string;
+    char *sp = NULL;
+    while (*p) {
+        sp = stop;
+        while (*sp) {
+            if (*sp == *p)
+                return p;
+            sp++;
+        }
+        p++;
+    }
+    return NULL;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+29580544_29580699_3_13
+29580544_29581408_7_34
+Title: Explain Fibonacci code 
+----------------------------------------
+
+int main () {
+    int term = 20, last2 = 0, last1 = 1, fib, i;
+    for (i = 0; i < term; i++) {
+        fib = last2 + last1;
+        last2 = last1;
+        last1 = fib;
+    }
+    printf ("Term %d = %d\n", i, fib);
+    return 0;
+}
+----------------------------------------
+
+int main () {
+    unsigned char a0 [max], a1 [max];
+    size_t i;
+    int n;
+    printf ("Enter the term  : ");
+    scanf ("%d", & n);
+    for (i = 0; i < max; i++)
+        a0[i] = a1[i] = 0;
+    a0[max - 1] = n & 1;
+    a1[max - 1] = 1 - a0[max - 1];
+    switch (n & 1) {
+        do {
+            fib (a0, a1);
+        case 1 :
+            fib (a1, a0);
+        case 0 :
+            continue;
+        }
+        while (0 <= (n -= 2));
+    }
+    for (i = 0; i < max - 1; i++)
+        if (a0[i])
+            break;
+    for (; i < max; i++)
+        printf ("%d", a0[i]);
+    getch ();
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+29580863_29581950_5_56
+29580863_29582025_5_45
+Title: How to count the number of times a character symbol appears in a text file? 
+----------------------------------------
+
+int main (int argc, char *argv []) {
+    FILE *finp = NULL;
+    FILE *output = NULL;
+    int letter;
+    int ex = 0;
+    if (4 != argc) {
+        printf ("usage: %s <inFileName> <outFileName> <searchChar>", argv [0]);
+        exit (EXIT_FAILURE);
+    }
+    if (NULL == (finp = fopen (argv[1], "r"))) {
+        perror ("fopen for the input file failed");
+        exit (EXIT_FAILURE);
+    }
+    if (NULL == (output = fopen (argv[2], "w"))) {
+        perror ("fopen for the output file failed");
+        fclose (finp);
+        exit (EXIT_FAILURE);
+    }
+    while (EOF != (letter = fgetc (finp))) {
+        if (letter == argv[3][0]) {
+            ex++;
+        }
+    }
+    fprintf (output, "The search character is '%c' and it occurred %d times\n", argv [3] [0], ex);
+    fclose (finp);
+    fclose (output);
+    return 0;
+}
+----------------------------------------
+
+int main (int argc, char *argv []) {
+    FILE *finp;
+    FILE *output;
+    int symbol;
+    int letter;
+    int count = 0;
+    if (argc != 4) {
+        fprintf (stderr, "Usage: %s input output symbol\n", argv [0]);
+        exit (1);
+    }
+    if ((finp = fopen (argv[1], "r")) == NULL) {
+        fprintf (stderr, "Error opening file %s for input\n", argv [1]);
+        exit (1);
+    }
+    if ((output = fopen (argv[2], "w")) == NULL) {
+        fprintf (stderr, "Error opening file %s for output\n", argv [2]);
+        exit (1);
+    }
+    symbol = argv[3][0];
+    while ((letter = fgetc (finp)) != EOF) {
+        if (letter == symbol)
+            count++;
+    }
+    fprintf (output, "The character being written was '%c' and it occurred %d times\n", symbol, count);
+    fclose (finp);
+    fclose (output);
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+29581497_29581691_3_14
+29581497_29582193_3_25
+Title: How to Print Star pyramid using for loops In this C language 
+----------------------------------------
+
+int main (void) {
+    int i, j, k;
+    for (i = 1; i <= 5; i += 2) {
+        for (j = 4; j >= i; j -= 2)
+            printf (" ");
+        for (k = 1; k <= i; k++)
+            printf ("*");
+        printf ("\n");
+    }
+    return 0;
+}
+----------------------------------------
+
+int main (void) {
+    while (1) {
+        printf ("Enter the height of the pyramid (0-exit): ");
+        size_t n = 0;
+        scanf ("%zu", & n);
+        if (!n)
+            break;
+        printf ("\n");
+        for (size_t i = 0; i < n; i++) {
+            printf ("%*c", n - i, '*');
+            for (size_t j = 0; j < i; j++)
+                printf (" %c", '*');
+            printf ("\n");
+        }
+    }
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+29581497_29581691_3_14
+29581497_39168650_1_23
+Title: How to Print Star pyramid using for loops In this C language 
+----------------------------------------
+
+int main (void) {
+    int i, j, k;
+    for (i = 1; i <= 5; i += 2) {
+        for (j = 4; j >= i; j -= 2)
+            printf (" ");
+        for (k = 1; k <= i; k++)
+            printf ("*");
+        printf ("\n");
+    }
+    return 0;
+}
+----------------------------------------
+
+int main (int argc, const char *argv []) {
+    int a;
+    printf ("Enter a number\n");
+    scanf ("%d", & a);
+    for (int i = 1; i <= a; i++) {
+        for (int l = 0; l < (a - i); l++) {
+            printf (" ");
+        }
+        for (int m = 0; m < (i + (i - 1)); m++) {
+            printf ("*");
+        }
+        for (int l = 0; l < (a - i); l++) {
+            printf (" ");
+        }
+        printf ("\n");
+    }
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+29581497_29581691_3_14
+29581497_41489526_3_24
+Title: How to Print Star pyramid using for loops In this C language 
+----------------------------------------
+
+int main (void) {
+    int i, j, k;
+    for (i = 1; i <= 5; i += 2) {
+        for (j = 4; j >= i; j -= 2)
+            printf (" ");
+        for (k = 1; k <= i; k++)
+            printf ("*");
+        printf ("\n");
+    }
+    return 0;
+}
+----------------------------------------
+
+int main (int argc, const char *argv []) {
+    int n;
+    printf ("Enter number of lines you want the pattern %d", n);
+    scanf ("%d", & n);
+    for (int i = 1; i <= n; i++) {
+        for (int j = 0; j < n - i; j++) {
+            printf (" ");
+        }
+        for (int k = 0; k < i + (i - 1); k++) {
+            printf ("*");
+        }
+        printf ("\n");
+    }
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+29581497_29582193_3_25
+29581497_39168650_1_23
+Title: How to Print Star pyramid using for loops In this C language 
+----------------------------------------
+
+int main (void) {
+    while (1) {
+        printf ("Enter the height of the pyramid (0-exit): ");
+        size_t n = 0;
+        scanf ("%zu", & n);
+        if (!n)
+            break;
+        printf ("\n");
+        for (size_t i = 0; i < n; i++) {
+            printf ("%*c", n - i, '*');
+            for (size_t j = 0; j < i; j++)
+                printf (" %c", '*');
+            printf ("\n");
+        }
+    }
+    return 0;
+}
+----------------------------------------
+
+int main (int argc, const char *argv []) {
+    int a;
+    printf ("Enter a number\n");
+    scanf ("%d", & a);
+    for (int i = 1; i <= a; i++) {
+        for (int l = 0; l < (a - i); l++) {
+            printf (" ");
+        }
+        for (int m = 0; m < (i + (i - 1)); m++) {
+            printf ("*");
+        }
+        for (int l = 0; l < (a - i); l++) {
+            printf (" ");
+        }
+        printf ("\n");
+    }
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+29581497_29582193_3_25
+29581497_41489526_3_24
+Title: How to Print Star pyramid using for loops In this C language 
+----------------------------------------
+
+int main (void) {
+    while (1) {
+        printf ("Enter the height of the pyramid (0-exit): ");
+        size_t n = 0;
+        scanf ("%zu", & n);
+        if (!n)
+            break;
+        printf ("\n");
+        for (size_t i = 0; i < n; i++) {
+            printf ("%*c", n - i, '*');
+            for (size_t j = 0; j < i; j++)
+                printf (" %c", '*');
+            printf ("\n");
+        }
+    }
+    return 0;
+}
+----------------------------------------
+
+int main (int argc, const char *argv []) {
+    int n;
+    printf ("Enter number of lines you want the pattern %d", n);
+    scanf ("%d", & n);
+    for (int i = 1; i <= n; i++) {
+        for (int j = 0; j < n - i; j++) {
+            printf (" ");
+        }
+        for (int k = 0; k < i + (i - 1); k++) {
+            printf ("*");
+        }
+        printf ("\n");
+    }
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+29581497_39168650_1_23
+29581497_41489526_3_24
+Title: How to Print Star pyramid using for loops In this C language 
+----------------------------------------
+
+int main (int argc, const char *argv []) {
+    int a;
+    printf ("Enter a number\n");
+    scanf ("%d", & a);
+    for (int i = 1; i <= a; i++) {
+        for (int l = 0; l < (a - i); l++) {
+            printf (" ");
+        }
+        for (int m = 0; m < (i + (i - 1)); m++) {
+            printf ("*");
+        }
+        for (int l = 0; l < (a - i); l++) {
+            printf (" ");
+        }
+        printf ("\n");
+    }
+    return 0;
+}
+----------------------------------------
+
+int main (int argc, const char *argv []) {
+    int n;
+    printf ("Enter number of lines you want the pattern %d", n);
+    scanf ("%d", & n);
+    for (int i = 1; i <= n; i++) {
+        for (int j = 0; j < n - i; j++) {
+            printf (" ");
+        }
+        for (int k = 0; k < i + (i - 1); k++) {
+            printf ("*");
+        }
+        printf ("\n");
+    }
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+29583743_29583759_131_145
+29583743_29584111_37_51
+Title: read comma separated values from brackets with scanf() 
+----------------------------------------
+
+int main (void) {
+    char input [] = "((1828,299),((2729,2553),(2797,2929),(2200,1383),(2894,876))";
+    size_t count = 0;
+    struct point *points = NULL;
+    size_t index = 0;
+    parse (input, & points, & count);
+    for (index = 0; index < count; ++index)
+        fprintf (stdout, "%zu: %d, %d\n", index, points[index].x, points[index].y);
+    free (points);
+    return 0;
+}
+----------------------------------------
+
+int main (void) {
+    char *input = "((1828,299),(2729,2553),(2797,2929),(2200,1383),(2894,876))";
+    int i, n = count (input);
+    if (n == 0) {
+        printf ("invalid format!\n");
+        exit (EXIT_FAILURE);
+    }
+    struct x arr [n];
+    set (arr, input);
+    for (i = 0; i < n; ++i) {
+        printf ("(%4d, %4d)\n", arr [i].a, arr [i].b);
+    }
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+29584886_29584929_1_10
+29584886_29584960_1_11
+Title: Assigning pointer member of a struct to null 
+----------------------------------------
+
+void init_wordrec (wordrec **rec) {
+    if ((*rec = (wordrec *) malloc (sizeof (wordrec))) == NULL) {
+        perror ("Malloc failed");
+        exit (1);
+    }
+    (*rec)->word = NULL;
+    (*rec)->hits = 0;
+    (*rec)->nxt_wd = NULL;
+}
+----------------------------------------
+
+void init_wordrec (wordrec **rec) {
+    if ((*rec = (wordrec *) malloc (sizeof (wordrec))) == NULL) {
+        perror ("Malloc failed");
+        exit (1);
+    }
+    (*rec)->word = NULL;
+    (*rec)->hits = 0;
+    (*rec)->nxt_wd = NULL;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+29586074_29586153_4_14
+29586074_29586295_1_17
+Title: What happens to the data in memory deallocated by free()? 
+----------------------------------------
+
+int main (void) {
+    int *ptr = NULL;
+    ptr = malloc (sizeof (int));
+    *ptr = 5;
+    printf ("\n value of *ptr = %d", * ptr);
+    free (ptr);
+    printf ("\n value of *ptr = %d", * ptr);
+    return (0);
+}
+----------------------------------------
+
+int main (void) {
+    int *i, j;
+    i = malloc (100 * sizeof (int));
+    for (j = 0; j < 100; j++)
+        i[j] = j + 1;
+    printf ("%p %d\n", i, i [0]);
+    free (i);
+    printf ("%p %d\n", i, i [0]);
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+29595783_29595940_4_30
+29595783_29596178_6_25
+Title: scanf in while loop not evaluating first block of information 
+----------------------------------------
+
+int main (void) {
+    int icount;
+    int index;
+    char string [256];
+    printf ("Enter a string:\n\n");
+    icount = 0;
+    while (scanf ("%255s", string) == 1) {
+        int isNumber;
+        isNumber = 1;
+        for (index = 0; ((string[index] != '\0') && (isNumber != 0)); ++index) {
+            printf ("index is on its string[%d] iteration\n", index);
+            if (isdigit (string[index]) == 0)
+                isNumber = 0;
+        }
+        if (isNumber != 0)
+            icount += 1;
+    }
+    printf ("\nicount is %d\n", icount);
+    return 0;
+}
+----------------------------------------
+
+int main (void) {
+    int icount = 0;
+    int c = 0;
+    int compare = 0;
+    char s [256] = "";
+    printf ("Enter a string:\n\n");
+    while (scanf ("%255s", s) == 1) {
+        compare = 0;
+        for (c = 0; s[c] != '\0'; c++) {
+            if (isdigit (s[c])) {
+                compare = compare + 1;
+            }
+        }
+        if (compare == strlen (s)) {
+            icount = icount + 1;
+        }
+    }
+    printf ("%d integers\n", icount);
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+29606575_29607158_1_12
+29606575_29619707_1_24
+Title: Structure not returned to client using thrift c_glib client 
+----------------------------------------
+
+int main (void) {
+    pPacket = &packet;
+    pPacket = malloc (sizeof (PACKET));
+    someFunc1 (packet);
+    someFunc2 (pPacket);
+    someFunc2 (& packet);
+    ...free (pPacket);
+    return 0;
+}
+----------------------------------------
+
+int main (void) {
+    gint head;
+    gint dat;
+    packet *trans_packet;
+    packet *ret_packet;
+    trans_packet = g_object_new (TYPE_PACKET, NULL);
+    ret_packet = g_object_new (TYPE_PACKET, NULL);
+    if (!error && calculator_if_set_packet (client, &ret_packet, trans_packet, &error)) {
+        g_object_get ((packet *) ret_packet, "header", & head, "data", & dat, NULL);
+        printf ("struct->header : %d\n", head);
+        printf ("struct->data : %d\n", dat);
+    }
+    g_object_unref (trans_packet);
+    g_object_unref (ret_packet);
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+29613916_29614629_1_13
+29613916_29615897_1_18
+Title: Finding missing number in an unsorted array with repeated values 
+----------------------------------------
+
+int find_missing_number (int array [], int n) {
+    char checker [100] = {0};
+    int xor = XOR_OF_1_TO_100;
+    int i;
+    for (i = 0; i < n; i++) {
+        xor ^= (checker[array[i]] ? 0 : array[i] + 1);
+        checker[array[i]] = 1;
+    }
+    return xor - 1;
+}
+----------------------------------------
+
+int find_missing_number (int array [], int n) {
+    char checker [100];
+    register int sum = 0, counter = 0, i, temp;
+    memset (checker, 0, sizeof (checker));
+    for (i = 0; i < n; i++) {
+        if (checker[temp = array[i]] == 0) {
+            checker[temp] = 1;
+            sum += temp;
+            if (++counter == 99)
+                break;
+        }
+    }
+    return 4950 - sum;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+29615285_29615992_11_24
+29615285_29632121_23_80
+Title: A sample openmp program with speedup 
+----------------------------------------
+
+int main () {
+    double integralSum = 0;
+    int i;
+    for (i = 1; i < (parts + 1); ++i) {
+        integralSum = integralSum + (step * fabs (pow ((x + (step * i)), 2) + 4));
+    }
+    printf ("%f\n", integralSum);
+    return 0;
+}
+----------------------------------------
+
+int main () {
+    unsigned int N;
+    struct timespec t_start, t_end;
+    clock_t start, end;
+    srand (time (NULL));
+    FILE *f = fopen ("out.txt", "w");
+    if (f == NULL) {
+        printf ("Could not open output\n");
+        return -1;
+    }
+    for (N = 1000000; N < 100000000; N += 1000000) {
+        fprintf (f, "%d\t", N);
+        int *array = (int *) malloc (sizeof (int) * N);
+        if (array == NULL) {
+            printf ("Not enough space\n");
+            return -1;
+        }
+        for (unsigned int i = 0; i < N; i++)
+            array[i] = rand ();
+        int max_val = 0.0;
+        clock_gettime (CLOCK_MONOTONIC, & t_start);
+        for (unsigned int i = 0; i < N; i++) {
+            if (array[i] > max_val)
+                max_val = array[i];
+        }
+        clock_gettime (CLOCK_MONOTONIC, & t_end);
+        fprintf (f, "%lf\t", (double) (diff (t_start, t_end).tv_nsec / 1000000000.0));
+        max_val = 0.0;
+        clock_gettime (CLOCK_MONOTONIC, & t_start);
+        for (unsigned int i = 0; i < N; i++) {
+            if (array[i] > max_val)
+                max_val = array[i];
+        }
+        clock_gettime (CLOCK_MONOTONIC, & t_end);
+        fprintf (f, "%lf\n", (double) (diff (t_start, t_end).tv_nsec / 1000000000.0));
+        free (array);
+    }
+    fclose (f);
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+29616543_29616722_1_14
+29616543_29616809_10_20
+Title: C function to return concatenated string 
+----------------------------------------
+
+int main (void) {
+    char *s1 = "Good ";
+    char *s2 = "luck";
+    char ns [12];
+    strcpy (ns, s1);
+    strcat (ns, s2);
+    printf ("%s\n", ns);
+    return 0;
+}
+----------------------------------------
+
+int main (int argc, char const *argv []) {
+    char *s1 = "hola";
+    char *s2 = " mundo";
+    char s3 [strlen (s1) + strlen (s2) + 1];
+    concat (s1, s2, s3);
+    printf ("\n%s", s3);
+    printf ("\n");
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+29618037_29618088_5_29
+29618037_29618759_6_25
+Title: C program to use Unix System call for I/O 
+----------------------------------------
+
+int main (void) {
+    int num, ch, inFd;
+    inFd = open ("testprog.c", O_RDONLY, 0);
+    if (inFd == -1)
+        printf ("\n**Error %d opening file\n", errno);
+    while ((num = read (inFd, &ch, 1) != 0) == 1)
+        putchar (ch);
+    if (num != 0)
+        printf ("\n**Error %d reading file\n", errno);
+    close (inFd);
+    return 0;
+}
+----------------------------------------
+
+int main (int argc, char *argv []) {
+    void filecopy (int ifp, int ofp);
+    int fd;
+    char *prog = argv[0];
+    if (argc == 1)
+        filecopy (0, 1);
+    else
+        while (--argc > 0)
+            fd = open (*++argv, O_RDONLY, 0);
+    if (fd == -1) {
+        fprintf (stderr, "%s: can't open %s\n", prog, * argv);
+        return (-1);
+    }
+    else {
+        filecopy (fd, 1);
+        close (fd);
+    }
+    return (0);
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+29618611_29618858_4_19
+29618611_31753322_4_18
+Title: Write a C program to find whether the given string is Lucky or not 
+----------------------------------------
+
+int main () {
+    int c;
+    char a [100];
+    printf ("Input string: ");
+    scanf ("%s", a);
+    c = checklucky (a);
+    if (c == 1)
+        printf ("%s is lucky\n", a);
+    else
+        printf ("%s is not lucky\n", a);
+    return 0;
+}
+----------------------------------------
+
+int main () {
+    char b [100];
+    int d;
+    printf ("Enter the input string\n");
+    gets (b);
+    d = checkLucky (b);
+    if (d == 1) {
+        printf ("%s is lucky\n", b);
+    }
+    else
+        printf ("%s is not lucky\n", b);
+    return (0);
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+29627195_29631613_4_49
+29627195_29651521_9_81
+Title: Pipe doesn't work with semaphores 
+----------------------------------------
+
+int main (void) {
+    int pipe1 [2];
+    DO_OR_DIE (pipe (pipe1));
+    switch (fork ()) {
+    case -1 :
+        DIE;
+    case 0 :
+        DO_OR_DIE (dup2 (pipe1[1], STDOUT_FILENO));
+        DO_OR_DIE (close (pipe1 [1]));
+        execlp ("ls", "ls", NULL);
+        DIE;
+    }
+    DO_OR_DIE (close (pipe1 [1]));
+    switch (fork ()) {
+    case -1 :
+        DIE;
+    case 0 :
+        DO_OR_DIE (dup2 (pipe1[0], STDIN_FILENO));
+        DO_OR_DIE (close (pipe1 [0]));
+        execlp ("wc", "wc", "-l", NULL);
+        DIE;
+    }
+    DO_OR_DIE (close (pipe1 [0]));
+    DO_OR_DIE (wait (NULL));
+    DO_OR_DIE (wait (NULL));
+    return 0;
+}
+----------------------------------------
+
+int main (void) {
+    int pipe1 [2];
+    int pipe2 [2];
+    DO_OR_DIE (pipe (pipe1));
+    DO_OR_DIE (pipe (pipe2));
+    switch (fork ()) {
+    case -1 :
+        DIE;
+    case 0 :
+        DO_OR_DIE (dup2 (pipe1[1], STDOUT_FILENO));
+        DO_OR_DIE (close (pipe1 [1]));
+        execlp ("ls", "ls", NULL);
+        DIE;
+    }
+    DO_OR_DIE (close (pipe1 [1]));
+    switch (fork ()) {
+    case -1 :
+        DIE;
+    case 0 :
+        DO_OR_DIE (dup2 (pipe1[0], STDIN_FILENO));
+        DO_OR_DIE (close (pipe1 [0]));
+        DO_OR_DIE (dup2 (pipe2 [1], STDOUT_FILENO));
+        DO_OR_DIE (close (pipe2 [1]));
+        execlp ("sort", "sort", NULL);
+        DIE;
+    }
+    DO_OR_DIE (close (pipe1 [0]));
+    DO_OR_DIE (close (pipe2 [1]));
+    switch (fork ()) {
+    case -1 :
+        DIE;
+    case 0 :
+        DO_OR_DIE (dup2 (pipe2[0], STDIN_FILENO));
+        DO_OR_DIE (close (pipe2 [0]));
+        execlp ("less", "less", NULL);
+        DIE;
+    }
+    DO_OR_DIE (close (pipe2 [0]));
+    DO_OR_DIE (wait (NULL));
+    DO_OR_DIE (wait (NULL));
+    DO_OR_DIE (wait (NULL));
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+29634641_29634723_1_14
+29634641_29639058_1_16
+Title: "C program read input file and output with ""\n"" new line every 50 characters" 
+----------------------------------------
+
+void filecopy (FILE *ifp, FILE *ofp) {
+    int c;
+    int count = 0;
+    while ((c = getc (ifp)) != EOF) {
+        if (count == 50) {
+            putc ('\n', ofp);
+            count = 0;
+        }
+        putc (c, ofp);
+        count++;
+    }
+}
+----------------------------------------
+
+void filecopy (FILE *ifp, FILE *ofp) {
+    int c;
+    int count = 0;
+    while ((c = getc (ifp)) != EOF)
+        if (count == 50) {
+            printf ("\n");
+            putc (c, ofp);
+            count = 0;
+        }
+        else
+            putc (c, ofp);
+    count++;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+29640751_29640823_12_38
+29640751_29645181_10_20
+Title: How do I scan in an N number of strings (using structs) and then output that list of strings in reverse? 
+----------------------------------------
+
+int main () {
+    int N, i;
+    scanf ("%d", & N);
+    struct Student NAME [10];
+    for (i = 0; i < N; i++) {
+        scanf ("%s %s %s", NAME [i].first, NAME [i].last, NAME [i].id);
+    }
+    printf ("\n");
+    for (i = N - 1; i >= 0; i--) {
+        printf ("%s %s %s\n", NAME [i].first, NAME [i].last, NAME [i].id);
+    }
+    return 0;
+}
+----------------------------------------
+
+int main () {
+    int N, i;
+    scanf ("%d", & N);
+    struct Student NAME [N];
+    for (i = 0; i < N; ++i)
+        scanf ("%s %s %s", NAME[i].first, NAME[i].last, NAME[i].id);
+    printf ("\n");
+    for (i = N - 1; i >= 0; --i)
+        printf ("%s %s %s\n", NAME[i].first, NAME[i].last, NAME[i].id);
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+29640751_29640950_11_28
+29640751_29645181_10_20
+Title: How do I scan in an N number of strings (using structs) and then output that list of strings in reverse? 
+----------------------------------------
+
+int main () {
+    int N, i;
+    scanf ("%d", & N);
+    struct Student students [100];
+    for (i = 0; i < N; i++) {
+        scanf ("%s %s %s", students [i].first, students [i].last, students [i].id);
+    }
+    printf ("\n");
+    for (i = N - 1; i >= 0; i--) {
+        printf ("%s %s %s\n", students [i].first, students [i].last, students [i].id);
+    }
+    return 0;
+}
+----------------------------------------
+
+int main () {
+    int N, i;
+    scanf ("%d", & N);
+    struct Student NAME [N];
+    for (i = 0; i < N; ++i)
+        scanf ("%s %s %s", NAME[i].first, NAME[i].last, NAME[i].id);
+    printf ("\n");
+    for (i = N - 1; i >= 0; --i)
+        printf ("%s %s %s\n", NAME[i].first, NAME[i].last, NAME[i].id);
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+29641055_29642688_4_24
+29641055_29642793_3_47
+Title: Parsing house number from street address represented as a char[] 
+----------------------------------------
+
+int main () {
+    const char str1 [80] = "1600 Pennsylvania Ave";
+    int houseNumber = 0;
+    const char s [2] = " ";
+    char *token;
+    token = strtok (str, s);
+    while (token != NULL) {
+        printf (" %s\n", token);
+        if (isdigit (str1[0])) {
+            houseNumber = atoi (token);
+        }
+        token = strtok (NULL, s);
+    }
+    return (0);
+}
+----------------------------------------
+
+int main (void) {
+    char address [255];
+    char *ptr;
+    int number;
+    char strnumber [100];
+    char strstreet [255];
+    printf ("Please, enter the addres: ");
+    fgets (address, 255, stdin);
+    ptr = strchr (address, '\n');
+    if (ptr) {
+        *ptr = '\0';
+    }
+    else {
+        address[254] = '\0';
+    }
+    if (1 == sscanf (address, "%d", &number)) {
+        sprintf (strnumber, "%d", number);
+        ptr = strchr (address +strlen (strnumber), ' ');
+        if (ptr) {
+            strcpy (strstreet, ptr + 1);
+        }
+    }
+    else {
+        number = 0;
+        strnumber[0] = '\0';
+        strstreet[0] = '\0';
+    }
+    printf ("You have entered a string:\n%s\n", address);
+    printf ("The found number is:\n%d\n", number);
+    printf ("The found number as a string:\n%s\n", strnumber);
+    printf ("The address without number is:\n%s\n", strstreet);
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+29641055_29642688_4_24
+29641055_29643892_5_26
+Title: Parsing house number from street address represented as a char[] 
+----------------------------------------
+
+int main () {
+    const char str1 [80] = "1600 Pennsylvania Ave";
+    int houseNumber = 0;
+    const char s [2] = " ";
+    char *token;
+    token = strtok (str, s);
+    while (token != NULL) {
+        printf (" %s\n", token);
+        if (isdigit (str1[0])) {
+            houseNumber = atoi (token);
+        }
+        token = strtok (NULL, s);
+    }
+    return (0);
+}
+----------------------------------------
+
+int main (void) {
+    char address [ADDL] = {0};
+    char street [16] = {0};
+    while (fgets (address, ADDL -1, stdin) != NULL) {
+        char *ap = address;
+        char *sp = street;
+        while (*ap >= '0' && *ap <= '9') {
+            *sp = *ap++;
+            sp++;
+        }
+        *sp = 0;
+        printf (" Address: %s Number : %s\n\n", address, street);
+    }
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+29641055_29642793_3_47
+29641055_29643892_5_26
+Title: Parsing house number from street address represented as a char[] 
+----------------------------------------
+
+int main (void) {
+    char address [255];
+    char *ptr;
+    int number;
+    char strnumber [100];
+    char strstreet [255];
+    printf ("Please, enter the addres: ");
+    fgets (address, 255, stdin);
+    ptr = strchr (address, '\n');
+    if (ptr) {
+        *ptr = '\0';
+    }
+    else {
+        address[254] = '\0';
+    }
+    if (1 == sscanf (address, "%d", &number)) {
+        sprintf (strnumber, "%d", number);
+        ptr = strchr (address +strlen (strnumber), ' ');
+        if (ptr) {
+            strcpy (strstreet, ptr + 1);
+        }
+    }
+    else {
+        number = 0;
+        strnumber[0] = '\0';
+        strstreet[0] = '\0';
+    }
+    printf ("You have entered a string:\n%s\n", address);
+    printf ("The found number is:\n%d\n", number);
+    printf ("The found number as a string:\n%s\n", strnumber);
+    printf ("The address without number is:\n%s\n", strstreet);
+}
+----------------------------------------
+
+int main (void) {
+    char address [ADDL] = {0};
+    char street [16] = {0};
+    while (fgets (address, ADDL -1, stdin) != NULL) {
+        char *ap = address;
+        char *sp = street;
+        while (*ap >= '0' && *ap <= '9') {
+            *sp = *ap++;
+            sp++;
+        }
+        *sp = 0;
+        printf (" Address: %s Number : %s\n\n", address, street);
+    }
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+29664598_29665951_20_49
+29664598_29666381_3_40
+Title: How do I cast a string so that I can read the string as hex values? 
+----------------------------------------
+
+int main () {
+    unsigned char a [] = "192f3c";
+    unsigned char *hex_arr;
+    int i, j;
+    char c;
+    int sum;
+    unsigned char c1, c2;
+    hex_arr = malloc (sizeof (a) / 2);
+    j = 0;
+    for (i = 0; i < sizeof (a); i = i + 2) {
+        c1 = ascii_to_hex (a[i]);
+        c2 = ascii_to_hex (a[i + 1]);
+        sum = c1 << 4 | c2;
+        hex_arr[j] = sum;
+        j++;
+    }
+    printf ("Array in hex\n");
+    for (i = 0; i < sizeof (a) / 2; i++)
+        printf ("%.2X ", hex_arr[i]);
+    printf ("\n");
+}
+----------------------------------------
+
+int main (int argc, char **argv) {
+    if (argc < 2) {
+        fprintf (stderr, "error: insufficient input, usage: %s <string of hex vals>\n", argv [0]);
+        return 1;
+    }
+    char *p = argv[1];
+    unsigned val = 0;
+    size_t n = 1;
+    printf ("\n Original string: %s\n\n", argv [1]);
+    while (*p) {
+        if (n % 2 == 0)
+            printf ("   %c%c\n", *(p - 1), *p);
+        n++;
+        p++;
+    }
+    printf ("\n As unsigned values:\n\n");
+    p = argv[1];
+    n = 1;
+    while (*p) {
+        if (n % 2 == 0) {
+            sscanf (p - 1, "%2x", & val);
+            printf ("   0x%2x\n", val);
+        }
+        n++;
+        p++;
+    }
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+29682063_29683035_13_31
+29682063_29683694_22_30
+Title: Reading in char from file into struct 
+----------------------------------------
+
+int main (void) {
+    char filename [] = "input1.txt";
+    FILE *input = fopen (filename, "r");
+    struct dna first = {""};
+    fscanf (input, "%24s", first.code);
+    printf ("1st : %s\n", first.code);
+    int i, size;
+    struct dna *data = makeArray (input, &size);
+    for (i = 0; i < size; ++i) {
+        printf ("%3d : %s\n", i + 1, data [i].code);
+    }
+    free (data);
+    system ("pause");
+    return 0;
+}
+----------------------------------------
+
+int main () {
+    struct dna first;
+    char filename [] = "input1.txt";
+    FILE *input = fopen (filename, "r");
+    makeArray (input, & first);
+    fclose (input);
+    printf ("%s", first.code);
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+29684445_29684459_1_12
+29684445_29684660_4_14
+Title: C returning structs via pointer 
+----------------------------------------
+
+void init (ALLEGRO_DISPLAY **display_ptr, ALLEGRO_EVENT_QUEUE **queue_ptr) {
+    al_init ();
+    al_install_keyboard ();
+    *display_ptr = al_create_display (640, 480);
+    *queue_ptr = al_create_event_queue ();
+    al_register_event_source (* queue_ptr, al_get_display_event_source (* display_ptr));
+    al_clear_to_color (al_map_rgb (0, 0, 0));
+    al_flip_display ();
+}
+----------------------------------------
+
+void init (ALLEGRO_DISPLAY **display_ptr, ALLEGRO_EVENT_QUEUE **queue_ptr) {
+    al_init ();
+    al_install_keyboard ();
+    *display_ptr = al_create_display (640, 480);
+    *queue_ptr = al_create_event_queue ();
+    al_register_event_source (* queue_ptr, al_get_display_event_source (* display_ptr));
+    al_clear_to_color (al_map_rgb (0, 0, 0));
+    al_flip_display ();
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+29686433_29686510_1_11
+29686433_29686862_1_14
+Title: Search for a word in file line by line in C programming 
+----------------------------------------
+
+void FindWord (char *word, char *file) {
+    char line [1024];
+    FILE *fp = fopen (file, "r");
+    while (fgets (line, sizeof (line), fp) != NULL) {
+        if (strstr (line, word) != NULL) {
+            printf ("%s", line);
+        }
+    }
+}
+----------------------------------------
+
+void FindWord (char *word, char *file) {
+    char *line = NULL;
+    size_t n = 0;
+    FILE *f = fopen (file, "r");
+    while (getline (&line_buffer, &n, f) != -1) {
+        if (strstr (line, word) != NULL) {
+            printf ("%s", line);
+        }
+    }
+    fclose (f);
+    free (line);
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+29693455_29693501_15_36
+29693455_29711202_19_45
+Title: How to pass a 2D array as a parameter in C? 
+----------------------------------------
+
+int main (void) {
+    int i, j, rows, cols;
+    int *arr;
+    printf ("Num of rows:");
+    scanf ("%d", & rows);
+    printf ("Num of cols:");
+    scanf ("%d", & cols);
+    arr = malloc (rows *cols);
+    if (arr == NULL) {
+        perror ("malloc");
+        exit (EXIT_FAILURE);
+    }
+    for (i = 0; i < rows; i++) {
+        for (j = 0; j < cols; j++)
+            arr[i * cols + j] = i * cols + j;
+    }
+    foo (arr, rows, cols);
+    free (arr);
+    return 0;
+}
+----------------------------------------
+
+int main (void) {
+    int m, n, a [MATRIX_SIZE] [MATRIX_SIZE], i, j, k = 0;
+    printf ("Enter the number of rows(<=50) in the matrix\n");
+    scanf ("%d", & m);
+    printf ("Enter the number of columns(<=50) in the matrix\n");
+    scanf ("%d", & n);
+    if (m < 1 || n < 1 || m > 50 || n > 50) {
+        printf ("invalid input!\n");
+        return -1;
+    }
+    printf ("Enter the elements in the matrix\n");
+    for (i = 0; i < m; i++)
+        for (j = 0; j < n; j++)
+            scanf ("%d", &a[i][j]);
+    printf ("The matrix is");
+    for (i = 0; i < m; i++) {
+        printf ("\n");
+        for (j = 0; j < n; j++)
+            printf ("%d ", a[i][j]);
+    }
+    k = findMax (a, m, n);
+    printf ("\nThe maximum element in the matrix is %d\n", k);
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+29713261_29713435_3_17
+29713261_29713659_3_16
+Title: How to get the latest value in getchar()? 
+----------------------------------------
+
+int main (int argc, char *argv []) {
+    int c = '0', lastchar = 0;
+    while (isdigit (c)) {
+        if (!lastchar) {
+            printf ("c is : %c\n", c);
+        }
+        lastchar = c;
+        c = getchar ();
+    }
+    printf ("latest value of c(ASCII) is : %d\n", lastchar);
+    return 0;
+}
+----------------------------------------
+
+int main () {
+    int c = 0, last = 0;
+    while (isdigit (c = getchar ())) {
+        printf ("c is : %c\n", c);
+        last = c;
+    }
+    if (!last)
+        printf ("latest value of c(ASCII) is : %d\n", last);
+    else
+        printf ("No digits were entered\n");
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+29721980_29724007_71_83
+29721980_29724368_1_18
+Title: Bubble Sort in linked lists C 
+----------------------------------------
+
+void ex213 (void) {
+    int numero;
+    List lista = create_list ();
+    while ((scanf ("%d", &numero)) == 1) {
+        insertwithoutorder (lista, numero);
+    }
+    ordenalista (lista);
+    printlist (lista);
+}
+----------------------------------------
+
+void ex213 (void) {
+    int numero;
+    List lista = create_list ();
+    printf ("\nEnter a number to add to the list [CTRL+D] when done:\n\n");
+    while (printf (" data: ") && (scanf ("%d", &numero)) == 1) {
+        insertwithoutorder (lista, numero);
+    }
+    ordenalista (lista);
+    printf ("\n\nThe ordered linked-list is:\n\n");
+    printlist (lista);
+    printf ("\n");
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+29736258_29738761_1_27
+29736258_29765291_1_27
+Title: Removing punctuation and capitalizing in C 
+----------------------------------------
+
+void processFile () {
+    FILE *fp = NULL;
+    if (!(fp = fopen ("congress.txt", "r"))) {
+        printf ("File could not be opened for input.\n");
+        exit (1);
+    }
+    unsigned int c;
+    while (EOF != (c = (unsigned) fgetc (fp))) {
+        if ((isalpha (c) || isblank (c)) && !ispunct (c)) {
+            printf ("%c", toupper (c));
+            fprintf (csis, "%c", toupper (c));
+        }
+    }
+    printf ("\n");
+    fclose (fp);
+}
+----------------------------------------
+
+void processFile (char line [], char newline []) {
+    FILE *fp;
+    int i = 0;
+    int j = 0;
+    if (!(fp = fopen ("congress.txt", "r"))) {
+        printf ("File could not be opened for input.\n");
+        exit (1);
+    }
+    line[i] = '\0';
+    fseek (fp, 0, SEEK_END);
+    fseek (fp, 0, SEEK_SET);
+    for (i = 0; i < MAX; ++i) {
+        fscanf (fp, "%c", & line [i]);
+    }
+    for (i = 0; i < MAX; ++i) {
+        if (isalpha (line[i])) {
+            newline[j] = line[i];
+            newline[j] = toupper (newline[j]);
+            j++;
+        }
+    }
+    fclose (fp);
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+29737033_29737449_11_67
+29737033_29738185_9_28
+Title: How to ignore white space when reading from a text file? 
+----------------------------------------
+
+int main () {
+    Student s;
+    FILE *fp;
+    char buf [BUFSIZ];
+    char *p;
+    int i = 0;
+    fp = fopen ("student.txt", "a+");
+    printf ("Give id name and grade\n");
+    fgets (buf, sizeof (buf), stdin);
+    p = buf;
+    s.id = strtol (p, &p, 10);
+    if (!s.id) {
+        fprintf (stderr, "Bad id");
+        return -1;
+    }
+    while (!isalpha (*p)) {
+        p++;
+    }
+    while (!isdigit (*p)) {
+        s.name[i++] = *p++;
+    }
+    if (i == 0) {
+        fprintf (stderr, "Bad name");
+        return -1;
+    }
+    s.name[i] = '\0';
+    i--;
+    while (!isalpha (s.name[i])) {
+        s.name[i--] = '\0';
+    }
+    s.grade = strtof (p, &p);
+    fprintf (fp, "%d,%s,%.2f\n", s.id, s.name, s.grade);
+    fclose (fp);
+    fp = fopen ("student.txt", "r");
+    if (fp != NULL) {
+        while ((fscanf (fp, "%d,%299[^,],%f", &s.id, s.name, &s.grade)) == 3) {
+            printf ("ID:%d\n", s.id);
+            printf ("NAME:%s\n", s.name);
+            printf ("GRADE:%.2f\n", s.grade);
+        }
+        fclose (fp);
+    }
+    else {
+        perror ("student.txt");
+    }
+    return 0;
+}
+----------------------------------------
+
+int main (void) {
+    Student s;
+    FILE *fp;
+    fp = fopen ("student.txt", "a+");
+    char buf [sizeof s * 2];
+    fgets (buf, sizeof buf, stdin);
+    int cnt = sscanf (buf, "%d , %299[A-Za-z ] ,%f", &s.id, s.name, &s.grade);
+    if (cnt != 3) {
+        fprintf (stderr, "Unexpected input, cnt = %d\n", cnt);
+        fclose (fp);
+        return 1;
+    }
+    fprintf (fp, "%d,%s,%.2f\n", s.id, s.name, s.grade);
+    fclose (fp);
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+29752148_29752255_4_25
+29752148_35089092_4_31
+Title: Repeatedly removing and replacing the occurence of a substring from the input string 
+----------------------------------------
+
+void manipulate (char *a) {
+    int i = 0;
+    char *pch;
+    size_t len = strlen (a);
+    while (a[i]) {
+        if (i + 2 == len)
+            break;
+        if (a[i] == 'f' && a[i + 1] == 'o' && a[i + 2]) {
+            a[i] = 'o';
+            a[i + 1] = 'o';
+            a[i + 2] = 'f';
+            i = i + 2;
+        }
+        i = i + 1;
+    }
+    printf ("\nThe output string is %s\n", a);
+}
+----------------------------------------
+
+void manipulate (char *a) {
+    int i = 0;
+    char *pch;
+    size_t len = strlen (a);
+    while (a[i]) {
+        if (a[i] == 'f' && a[i + 1] == 'o' && a[i + 2] == 'o') {
+            a[i] = 'o';
+            a[i + 1] = 'o';
+            a[i + 2] = 'f';
+            if (i + 3 == len) {
+                break;
+            }
+            else {
+                i = i + 2;
+                continue;
+            }
+        }
+        else {
+            i = i + 1;
+        }
+    }
+    printf ("\n\n\nThe output string is %s \n", a);
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+29764244_29764345_1_17
+29764244_29764392_4_18
+Title: Delimiter for end of file string 
+----------------------------------------
+
+int main () {
+    char string [] = "cat,dog,mouse";
+    const char s [2] = ",";
+    char *token;
+    token = strtok (string, s);
+    while (token != NULL) {
+        printf (" %s\n", token);
+        token = strtok (NULL, s);
+    }
+    return (0);
+}
+----------------------------------------
+
+int main (void) {
+    char s [] = "cat, dog, mouse";
+    char *p = strtok (s, ", ");
+    while (p != NULL) {
+        puts (p);
+        p = strtok (NULL, ", ");
+    }
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+29771550_29771654_1_17
+29771550_29772422_1_16
+Title: Infinite recursion: binary search & asserts 
+----------------------------------------
+
+void binary_search (int key, int array [], int first_index, int last_index) {
+    int middle;
+    middle = (first_index + last_index) / 2;
+    if (array[middle] == key) {
+        printf ("%d has been found at position %d\n", key, middle + 1);
+    }
+    else if (first_index == last_index) {
+        printf ("item not found");
+    }
+    else if (key > array[middle]) {
+        binary_search (key, array, middle + 1, last_index);
+    }
+    else {
+        binary_search (key, array, first_index, middle - 1);
+    }
+}
+----------------------------------------
+
+void binary_search (int key, int array [], int first_index, int last_index) {
+    if (first_index > last_index) {
+        printf ("Not found\n");
+    }
+    else {
+        int middle = (first_index + last_index) / 2;
+        if (array[middle] == key)
+            printf ("%d at index %d\n", key, middle);
+        if (key > array[middle]) {
+            binary_search (key, array, middle + 1, last_index);
+        }
+        else {
+            binary_search (key, array, first_index, middle - 1);
+        }
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+29773779_29774710_12_44
+29773779_29818956_60_75
+Title: Can someone help me with a C programming task? 
+----------------------------------------
+
+int main (void) {
+    uint64_t x, y, z;
+    uint64_t div [20];
+    int cntdiv, i;
+    scanf ("%lu", & x);
+    z = x;
+    y = 0;
+    cntdiv = 0;
+    while (z) {
+        div[cntdiv] = (z % 10);
+        y *= 10;
+        y += div[cntdiv];
+        z /= 10;
+        cntdiv++;
+    }
+    Dprintf ("Inverted %lu\n", y);
+    for (i = 0; i < cntdiv; i++) {
+        if (!div[i])
+            continue;
+        Dprintf ("%lu mod %lu = %lu\n", x, div [i], x % div [i]);
+        if ((x % div[i]))
+            break;
+        Dprintf ("%lu mod %lu = %lu\n", y, div [i], y % div [i]);
+        if ((y % div[i]))
+            break;
+    }
+    if (i == cntdiv)
+        printf ("%lu %lu", x, y);
+    return 0;
+}
+----------------------------------------
+
+int main (void) {
+    uint64_t f, t;
+    int cnt = 0;
+    printf ("From...: ");
+    scanf ("%lu", & f);
+    printf ("To.....: ");
+    scanf ("%lu", & t);
+    for (; f <= t; f++)
+        cnt += compute (f, 1);
+    printf ("%d\n", cnt);
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+29775858_29777288_22_32
+29775858_29781270_4_33
+Title: Substrings in the middle of a String in C 
+----------------------------------------
+
+int main (void) {
+    const char *string = "abcdefg";
+    char *substr = between (string, 'c', 'f');
+    if (substr != NULL) {
+        puts (substr);
+        free (substr);
+    }
+    return 0;
+}
+----------------------------------------
+
+int main (void) {
+    char string [] = "abcdefg";
+    char from [] = "c";
+    char to [] = "f";
+    char *first = strstr (string, from);
+    if (first == NULL) {
+        first = &string[0];
+    }
+    else {
+        first += strlen (from);
+    }
+    char *last = strstr (first, to);
+    if (last == NULL) {
+        last = &string[strlen (string)];
+    }
+    char *sub = calloc (strlen (string) +1, sizeof (char));
+    strncpy (sub, first, last - first);
+    printf ("%s\n", sub);
+    free (sub);
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+29778960_29779214_6_20
+29778960_29779495_4_29
+Title: Create method to iterate through array and format phone number in C 
+----------------------------------------
+
+int main () {
+    char phone [50];
+    printf ("Enter your phone number: ");
+    if (scanf ("%49s%*c", phone) == 1) {
+        printf ("Your input            : %s\n", phone);
+        printf ("Formatted phone number : ");
+        printFormatted (phone);
+        printf ("\n");
+    }
+    return 0;
+}
+----------------------------------------
+
+int main (void) {
+    char s [50], f [50];
+    char *part [3] = {NULL};
+    char *p;
+    int i;
+    printf ("Enter your phone number:\n");
+    scanf ("%49s", s);
+    printf ("Your phone number: %s\n", s);
+    p = strtok (s, "-().");
+    for (i = 0; p != NULL && i < 3; ++i) {
+        part[i] = p;
+        p = strtok (NULL, "-().");
+    }
+    if (i == 3) {
+        sprintf (f, "(%s) %s-%s", part [0], part [1], part [2]);
+        printf ("Formatted phone number: %s\n", f);
+    }
+    else {
+        printf ("invalid format\n");
+    }
+    getchar ();
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+29778960_29779214_6_20
+29778960_29780353_26_34
+Title: Create method to iterate through array and format phone number in C 
+----------------------------------------
+
+int main () {
+    char phone [50];
+    printf ("Enter your phone number: ");
+    if (scanf ("%49s%*c", phone) == 1) {
+        printf ("Your input            : %s\n", phone);
+        printf ("Formatted phone number : ");
+        printFormatted (phone);
+        printf ("\n");
+    }
+    return 0;
+}
+----------------------------------------
+
+int main (void) {
+    const char format [] = "(xxx) xxx-xxxx";
+    char buf [sizeof format];
+    int result = FormatPhoneNumber (format, buf, " (678)-653.7539),");
+    printf ("%d '%s'\n", result, buf);
+    result = FormatPhoneNumber (format, buf, "Jenny: 111-867-5309");
+    printf ("%d '%s'\n", result, buf);
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+29778960_29779495_4_29
+29778960_29780353_26_34
+Title: Create method to iterate through array and format phone number in C 
+----------------------------------------
+
+int main (void) {
+    char s [50], f [50];
+    char *part [3] = {NULL};
+    char *p;
+    int i;
+    printf ("Enter your phone number:\n");
+    scanf ("%49s", s);
+    printf ("Your phone number: %s\n", s);
+    p = strtok (s, "-().");
+    for (i = 0; p != NULL && i < 3; ++i) {
+        part[i] = p;
+        p = strtok (NULL, "-().");
+    }
+    if (i == 3) {
+        sprintf (f, "(%s) %s-%s", part [0], part [1], part [2]);
+        printf ("Formatted phone number: %s\n", f);
+    }
+    else {
+        printf ("invalid format\n");
+    }
+    getchar ();
+    return 0;
+}
+----------------------------------------
+
+int main (void) {
+    const char format [] = "(xxx) xxx-xxxx";
+    char buf [sizeof format];
+    int result = FormatPhoneNumber (format, buf, " (678)-653.7539),");
+    printf ("%d '%s'\n", result, buf);
+    result = FormatPhoneNumber (format, buf, "Jenny: 111-867-5309");
+    printf ("%d '%s'\n", result, buf);
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+29783152_29783283_1_16
+29783152_29783422_2_15
+Title: C function to remove string 
+----------------------------------------
+
+void removeString (char *source, int offset, int length) {
+    int i;
+    size_t source_length;
+    if (source == NULL)
+        return;
+    source_length = strlen (source);
+    if ((offset >= source_length) || (source_length - offset < length))
+        return;
+    printf ("source = %s, offset = %d, length = %d\n", source, offset, length);
+    for (i = 0; i < offset; ++i)
+        result[i] = source[i];
+    for (j = 0; source[j + offset] != '\0'; ++i)
+        result[j] = source[j + offset];
+    printf ("s2 = %s\n", result);
+}
+----------------------------------------
+
+void removeString (char *s1, int s, int l) {
+    int len = strlen (s1);
+    if (s >= len || l < 1)
+        return;
+    s1[s] = 0;
+    if (s + l >= len)
+        return;
+    strcat (s1, s1 + s + l);
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+29786158_29786243_1_12
+29786158_29786292_1_25
+Title: What is wrong with my character comparison conditional? 
+----------------------------------------
+
+int is_valid_dna (char *sequence, int numChars) {
+    int i;
+    for (i = 0; i < numChars; i++) {
+        int check_char = tolower (sequence[i]);
+        if (check_char != 'a' && check_char != 'c' && check_char != 'g' && check_char != 't') {
+            return 0;
+        }
+    }
+    return 1;
+}
+----------------------------------------
+
+int is_valid_dna (char *sequence) {
+    for (;; sequence++) {
+        switch (*sequence) {
+        case 'a' :
+        case 'A' :
+        case 'c' :
+        case 'C' :
+        case 'g' :
+        case 'G' :
+        case 't' :
+        case 'T' :
+            continue;
+        case '\0' :
+            return 1;
+        default :
+            return 0;
+        }
+    }
+    return 1;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+29791160_29791509_4_27
+29791160_29797914_29_46
+Title: Issues calculating the area of a polygon in C 
+----------------------------------------
+
+int main (int argc, char *argv []) {
+    int i;
+    int npoints = atoi (argv[1]);
+    int poly_id = atoi (argv[2]);
+    double *x;
+    double *y;
+    x = malloc (sizeof (double) * npoints);
+    y = malloc (sizeof (double) * npoints);
+    for (i = 0; i < npoints; i++) {
+        x[i] = atof (argv[i * 2 + 3]);
+        y[i] = atof (argv[i * 2 + 4]);
+    }
+    for (i = 0; i < npoints; i++) {
+        printf ("%f %f\n", x [i], y [i]);
+    }
+}
+----------------------------------------
+
+int main (int argc, char *argv []) {
+    int npoints, poly_id;
+    double x [MAX_PTS], y [MAX_PTS];
+    int iteration = 0;
+    double area = 0;
+    scanf ("%d %d", & npoints, & poly_id);
+    for (iteration = 0; iteration < npoints; ++iteration) {
+        scanf ("%lf %lf", & (x [iteration]), & (y [iteration]));
+    }
+    area = polygon_area (npoints, x, y);
+    printf ("First polygon is %d\n", poly_id);
+    printf ("area = %2.2lf m^2\n", area);
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+29795637_29798328_11_30
+29795637_29799272_4_69
+Title: Bit shift through an array 
+----------------------------------------
+
+int main () {
+    my_type t = {0};
+    t.array[0] = 0x01;
+    for (int i = 0; i < 8; i++) {
+        printf ("%.2X", t.array [i]);
+    }
+    printf ("\n");
+    printf ("%.16llX\n", t.u64);
+    t.u64 <<= 63;
+    printf ("%.16llX\n", t.u64);
+    return 0;
+}
+----------------------------------------
+
+int main () {
+    uint8_t buffer [8];
+    char *pChar = buffer;
+    uint8_t carry = 0x01;
+    int i = 0;
+    short lock [8];
+    for (i = 0; i < 8; i++) {
+        buffer[i] = 0x00;
+        lock[i] = 0x00;
+    }
+    pChar = buffer;
+    for (i = 0; i < 64; i++) {
+        *pChar = carry;
+        printf (" 0x%2x   0x%2x   0x%2x  0x%2x  0x%2x 0x%2x 0x%2x  0x%2x \n", buffer [0], buffer [1], buffer [2], buffer [3], buffer [4], buffer [5], buffer [6], buffer [7]);
+        carry <<= 1;
+        if (i >= 7 && lock[0] == 0) {
+            *pChar = 0;
+            pChar++;
+            carry = 0x01;
+            lock[0] = 1;
+        }
+        else if (i >= 15 && lock[1] == 0) {
+            *pChar = 0;
+            pChar++;
+            carry = 0x01;
+            lock[1] = 1;
+        }
+        else if (i >= 23 && lock[2] == 0) {
+            *pChar = 0;
+            pChar++;
+            carry = 0x01;
+            lock[2] = 1;
+        }
+        else if (i >= 31 && lock[3] == 0) {
+            *pChar = 0;
+            pChar++;
+            carry = 0x01;
+            lock[3] = 1;
+        }
+        else if (i >= 39 && lock[4] == 0) {
+            *pChar = 0;
+            pChar++;
+            carry = 0x01;
+            lock[4] = 1;
+        }
+        else if (i >= 47 && lock[5] == 0) {
+            *pChar = 0;
+            pChar++;
+            carry = 0x01;
+            lock[5] = 1;
+        }
+        else if (i >= 55 && lock [6] == 0) {* pChar = 0;
+        pChar++;
+        carry = 0x01;
+        lock[6] = 1;
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+29812778_29812928_4_19
+29812778_29813010_1_16
+Title: Scanf two numbers at a time from stdout 
+----------------------------------------
+
+int main () {
+    int previous = 0;
+    int num;
+    scanf ("%hd", & previous);
+    while (scanf ("%hd", &num) != EOF) {
+        for (int i = previous; i < num; i++) {
+            printf ("%d\n", i);
+        }
+        previous = num;
+    }
+    printf ("%d\n", previous);
+    return 0;
+}
+----------------------------------------
+
+int main (void) {
+    int start;
+    if (scanf ("%d", &start) != 1)
+        exit (1);
+    int end = start;
+    while (scanf ("%d", &end) == 1)
+        ;
+    for (int i = start; i <= end; i++)
+        printf ("%d\n", i);
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+29812778_29812928_4_19
+29812778_29813224_3_20
+Title: Scanf two numbers at a time from stdout 
+----------------------------------------
+
+int main () {
+    int previous = 0;
+    int num;
+    scanf ("%hd", & previous);
+    while (scanf ("%hd", &num) != EOF) {
+        for (int i = previous; i < num; i++) {
+            printf ("%d\n", i);
+        }
+        previous = num;
+    }
+    printf ("%d\n", previous);
+    return 0;
+}
+----------------------------------------
+
+int main (void) {
+    int num = 0;
+    int first = (1U << 31) - 1;
+    int last = (-first - 1);
+    while (scanf (" %d", &num) != EOF) {
+        first = num < first ? num : first;
+        last = num > last ? num : last;
+    }
+    for (num = first; num <= last; num++)
+        printf ("%d\n", num);
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+29812778_29813010_1_16
+29812778_29813224_3_20
+Title: Scanf two numbers at a time from stdout 
+----------------------------------------
+
+int main (void) {
+    int start;
+    if (scanf ("%d", &start) != 1)
+        exit (1);
+    int end = start;
+    while (scanf ("%d", &end) == 1)
+        ;
+    for (int i = start; i <= end; i++)
+        printf ("%d\n", i);
+}
+----------------------------------------
+
+int main (void) {
+    int num = 0;
+    int first = (1U << 31) - 1;
+    int last = (-first - 1);
+    while (scanf (" %d", &num) != EOF) {
+        first = num < first ? num : first;
+        last = num > last ? num : last;
+    }
+    for (num = first; num <= last; num++)
+        printf ("%d\n", num);
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+29822358_29822508_2_18
+29822358_29822661_4_16
+Title: Half pyramid of numbers 
+----------------------------------------
+
+int main () {
+    int num, r, c, m = 0;
+    printf ("Enter structure number : \n");
+    scanf ("%d", & num);
+    for (r = 1; r <= num; r++) {
+        if (r % 2 != 0) {
+            m++;
+            for (c = 1; c <= m; c++)
+                printf ("%d ", r);
+            printf ("\n");
+        }
+    }
+    return 0;
+}
+----------------------------------------
+
+int main () {
+    int num, r, c;
+    printf ("Enter structure number : ");
+    scanf ("%d", & num);
+    for (r = 1; r <= num; r++) {
+        for (c = 1; c <= r; c++)
+            printf ("%d", 2 * r - 1);
+        printf ("\n");
+    }
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+29822358_29822548_2_18
+29822358_29822661_4_16
+Title: Half pyramid of numbers 
+----------------------------------------
+
+int main () {
+    int num, r, c, m;
+    printf ("Enter structure number : ");
+    scanf ("%d", & num);
+    for (r = 1; r <= num; r++) {
+        if (r % 2 != 0) {
+            m = r;
+            for (c = 1; c <= m; c++)
+                printf ("%d", r);
+            printf ("\n");
+        }
+    }
+    return 0;
+}
+----------------------------------------
+
+int main () {
+    int num, r, c;
+    printf ("Enter structure number : ");
+    scanf ("%d", & num);
+    for (r = 1; r <= num; r++) {
+        for (c = 1; c <= r; c++)
+            printf ("%d", 2 * r - 1);
+        printf ("\n");
+    }
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+29827822_29828257_35_64
+29827822_29828422_1_23
+Title: C programming why wont my code print the correct output with nested struct arrays? 
+----------------------------------------
+
+int main () {
+    FILE *ptr, *wPtr;
+    int numCustomers, i;
+    ptr = fopen ("input.txt", "r");
+    if (ptr == NULL)
+        return -1;
+    wPtr = fopen ("invoices.txt", "w");
+    if (wPtr == NULL) {
+        fclose (ptr);
+        return -1;
+    }
+    numCustomers = numCust (ptr);
+    customer customerList [numCustomers];
+    for (i = 0; i < numCustomers; i++)
+        createCustomer (ptr, &customerList[i]);
+    for (i = 0; i < numCustomers; i++)
+        printInvoice (wPtr, customerList[i]);
+    fclose (ptr);
+    fclose (wPtr);
+    return 0;
+}
+----------------------------------------
+
+int main () {
+    FILE *ptr, *wPtr;
+    int numCustomers, i;
+    ptr = fopen ("input.txt", "r");
+    wPtr = fopen ("invoices.txt", "w");
+    numCustomers = numCust (ptr);
+    customer customerList [numCustomers];
+    memset (customerList, 0, numCustomers * sizeof (customer));
+    for (i = 0; i < numCustomers; i++) {
+        createCustomer (ptr, & (customerList [i]));
+    }
+    for (i = 0; i < numCustomers; i++) {
+        printInvoice (wPtr, customerList [i]);
+    }
+    fclose (ptr);
+    fclose (wPtr);
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+29827822_29828257_81_95
+29827822_29828422_25_36
+Title: C programming why wont my code print the correct output with nested struct arrays? 
+----------------------------------------
+
+void createCustomer (FILE *ptr, customer *cx) {
+    char tempF [15], tempL [15];
+    int k;
+    cx[0].fName[0] = '\0';
+    cx[0].lName[0] = '\0';
+    if (fscanf (ptr, "%s%s", cx[0].fName, cx[0].lName) != 2)
+        fprintf (stderr, "Warning: failed to read first and last name.\n");
+    if (fscanf (ptr, "%d", &(cx[0].numGroceries)) != 1)
+        cx[0].numGroceries = 0;
+    for (k = 0; k < cx[0].numGroceries; k++)
+        createGroceryList (ptr, &cx[0].groceries[k]);
+}
+----------------------------------------
+
+void createCustomer (FILE *ptr, customer *cx) {
+    char tempF [15], tempL [15], k;
+    fscanf (ptr, "%s%s", tempF, tempL);
+    strcpy (cx -> fName, tempF);
+    strcpy (cx -> lName, tempL);
+    fscanf (ptr, "%d", & (cx -> numGroceries));
+    for (k = 0; k < cx->numGroceries; k++) {
+        createGroceryList (ptr, & (cx -> groceries [k]));
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+29833191_29834355_7_33
+29833191_29834740_3_14
+Title: strings scanf on pointer 
+----------------------------------------
+
+int main () {
+    int i;
+    char *aer [MAX_TOKENS_PER_LINE];
+    char s [MAX_LINE_LENGTH];
+    do {
+        if (!fgets (s, MAX_LINE_LENGTH, stdin))
+            return -1;
+        i = 0;
+        while (i != MAX_TOKENS_PER_LINE && (aer[i] = strtok (i ? 0 : s, " \n")))
+            i++;
+        i = 0;
+        while (i != sizeof (aer) / sizeof (aer[0]) && aer[i]) {
+            fprintf (stdout, "%s\n", aer [i]);
+            i++;
+        }
+    }
+    while (aer[0]);
+    return 0;
+}
+----------------------------------------
+
+int main () {
+    char s [4] [20 + 1];
+    int i = 0, j = 0;
+    while (i != 4 && scanf ("%20s", s[i])) {
+        i++;
+    }
+    while (j != i) {
+        printf ("%s\n", s [j]);
+        j++;
+    }
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+29842588_29843670_5_30
+29842588_29844133_8_19
+Title: Sentence reverse function 
+----------------------------------------
+
+int main (void) {
+    char *s = "This is a dog";
+    size_t n = strlen (s);
+    char t [n + 1];
+    char *p = t;
+    char *q = s + n;
+    while (q != s) {
+        while (q != s && isblank (*(q - 1)))
+            *p++ = *--q;
+        char *tmp = q;
+        while (tmp != s && !isblank (*(tmp - 1)))
+            --tmp;
+        memcpy (p, tmp, q - tmp);
+        p += q - tmp;
+        q = tmp;
+    }
+    *p = '\0';
+    puts (s);
+    puts (t);
+    return 0;
+}
+----------------------------------------
+
+int main (void) {
+    char sentence [SIZE] = "This is a dog";
+    char *token1;
+    char *token2;
+    token1 = strtok (sentence, " ");
+    reverse (sentence, token2);
+    printf ("%s", token1);
+    getche ();
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+29868426_29868692_5_34
+29868426_31885816_4_30
+Title: counting the number of times a character appears in a file in a case insensitive manner using C language 
+----------------------------------------
+
+int main (void) {
+    FILE *fp;
+    char filename [20];
+    char character;
+    int compare;
+    int to_upper1;
+    int to_upper2;
+    int count = 0;
+    printf ("Enter the file name: ");
+    scanf ("%19s", filename);
+    fp = fopen (filename, "r");
+    if (fp == NULL) {
+        printf ("Cannot open file '%s'\n", filename);
+        exit (- 1);
+    }
+    printf ("\nEnter the character to be counted: ");
+    scanf (" %c", & character);
+    to_upper1 = toupper ((int) character);
+    while ((compare = fgetc (fp)) != EOF) {
+        to_upper2 = toupper (compare);
+        if (to_upper1 == to_upper2)
+            count++;
+    }
+    fclose (fp);
+    printf ("File '%s' has %d instances of letter '%c'", filename, count, character);
+    return 0;
+}
+----------------------------------------
+
+int main () {
+    FILE *fptr;
+    int d = 0;
+    char c;
+    char ch, ck;
+    char b [100];
+    printf ("Enter the file name\n");
+    scanf ("%19s", b);
+    fptr = fopen (b, "r");
+    printf ("Enter the character to be counted\n");
+    scanf (" %c", & c);
+    c = toupper (c);
+    if (fptr == NULL) {
+        exit (- 1);
+    }
+    while ((ck = fgetc (fptr)) != EOF) {
+        ch = toupper (ck);
+        if (c == ch || c == ck)
+            ++d;
+    }
+    fclose (fptr);
+    printf ("File '%s' has %d instances of letter '%c'.", b, d, c);
+    return (0);
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+29869160_29869361_11_26
+29869160_29869424_1_13
+Title: "fast way to get integers 0 1 and 2 when given a random one from the set" 
+----------------------------------------
+
+int main () {
+    unsigned ary [3] = {0};
+    f (0, ary);
+    printf ("f(0) = %d %d %d\n", ary [0], ary [1], ary [2]);
+    f (1, ary);
+    printf ("f(1) = %d %d %d\n", ary [0], ary [1], ary [2]);
+    f (2, ary);
+    printf ("f(2) = %d %d %d\n", ary [0], ary [1], ary [2]);
+    return 0;
+}
+----------------------------------------
+
+int main () {
+std :
+    : srand (std : : time (0));
+    int num = std : : rand () % 3;
+    int otherNum = (0b001001 >> (num << 1)) & 0b11;
+    int otherOtherNum = (0b010010 >> (num << 1)) & 0b11;
+std :
+    : cout << num << '\n';
+std :
+    : cout << otherNum << '\n';
+std :
+    : cout << otherOtherNum << '\n';
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+29873777_29874115_13_45
+29873777_29874168_13_66
+Title: Improvements to dynamically allocate memory for a double pointer to struct inside a pointer to struct 
+----------------------------------------
+
+int main () {
+    int i, j, k, count = 0;
+    int n1 = 525, n2 = 33, n3 = 141;
+    Inventory *inventory = (Inventory *) malloc (n1 * sizeof *inventory);
+    for (i = 0; i < n1; i++) {
+        inventory[i].product = (Product **) malloc (n2 * sizeof *inventory[i].product);
+        for (j = 0; j < n2; j++) {
+            inventory[i].product[j] = (Product *) malloc (n3 * sizeof *inventory[i].product[j]);
+            for (k = 0; k < n3; k++) {
+                inventory[i].product[j][k].price = k * i * j;
+            }
+        }
+    }
+    for (i = 0; i < n1; i++) {
+        for (j = 0; j < n2; j++) {
+            for (k = 0; k < n3; k++) {
+                printf ("%d\n", inventory [i].product [j] [k].price);
+            }
+        }
+    }
+    for (i = 0; i < n1; i++) {
+        for (j = 0; j < n2; j++) {
+            free (inventory [i].product [j]);
+        }
+        free (inventory [i].product);
+    }
+    free (inventory);
+    return 0;
+}
+----------------------------------------
+
+int main () {
+    int i, j, k;
+    int n1 = 2, n2 = 3, n3 = 2;
+    Inventory *inventory = malloc (n1 * sizeof *inventory);
+    if (!inventory) {
+        fprintf (stderr, "error: virtual memory exhausted.\n");
+        exit (EXIT_FAILURE);
+    }
+    for (i = 0; i < n1; i++) {
+        inventory[i].id = i;
+        if (!(inventory[i].product = malloc (n2 * sizeof *inventory[i].product))) {
+            fprintf (stderr, "error: virtual memory exhausted.\n");
+            exit (EXIT_FAILURE);
+        }
+        for (j = 0; j < n2; j++) {
+            if (!(inventory[i].product[j] = malloc (n3 * sizeof *inventory[i].product[j]))) {
+                fprintf (stderr, "error: virtual memory exhausted.\n");
+                exit (EXIT_FAILURE);
+            }
+            for (k = 0; k < n3; k++)
+                inventory[i].product[j][k].price = (j + 1) * 2 * (k + 1);
+        }
+    }
+    for (i = 0; i < n1; i++) {
+        printf ("\n  Inventory id : %d\n", inventory [i].id);
+        for (j = 0; j < n2; j++) {
+            printf ("\n    Product[%d]\n", j);
+            for (k = 0; k < n3; k++)
+                printf ("      subproduct[%d][%d] price : %d\n", j, k, inventory[i].product[j][k].price);
+        }
+    }
+    for (i = 0; i < n1; i++) {
+        for (j = 0; j < n2; j++)
+            free (inventory[i].product[j]);
+        free (inventory [i].product);
+    }
+    free (inventory);
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+29877131_29877295_1_14
+29877131_29877397_26_36
+Title: Writing struct + saving only pointer? 
+----------------------------------------
+
+int main () {
+    const int count = 2;
+    FILE *file_ptr = fopen ("file1", "w+");
+    node n0;
+    node_init (& n0, count);
+    fwrite (& count, sizeof (count), 1, file_ptr);
+    fwrite (n0.ustr, count, 1, file_ptr);
+    fwrite (& n0.height, sizeof (n0.height), 1, file_ptr);
+    fclose (file_ptr);
+    node_destroy (& n0);
+    return 0;
+}
+----------------------------------------
+
+int main () {
+    FILE *file_ptr = fopen ("file1", "w+");
+    node n0;
+    node_init (& n0, 2);
+    fwrite (& n0.height, 2 * sizeof (int), 1, file_ptr);
+    fwrite (n0.ustr, n0.ustr_length, 1, file_ptr);
+    fclose (file_ptr);
+    node_destroy (& n0);
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+29878044_29878129_4_18
+29878044_29878176_4_14
+Title: Error how to print array of char in C 
+----------------------------------------
+
+int main (int argc, char *argv []) {
+    char buffer [256];
+    strcpy (buffer, "see");
+    int size = strlen (buffer);
+    int l = size - 1;
+    for (int i = 0; i < size / 2; i++, l--) {
+        char temp = buffer[i];
+        buffer[i] = buffer[l];
+        buffer[l] = temp;
+    }
+    printf ("Inversa %s\n", buffer);
+}
+----------------------------------------
+
+int main (int argc, char *argv []) {
+    char buffer [256];
+    strcpy (buffer, "see");
+    int size = strlen (buffer);
+    for (int i = 0; i < size / 2; i++) {
+        char temp = buffer[i];
+        buffer[i] = buffer[size - 1 - i];
+        buffer[size - 1 - i] = temp;
+    }
+    printf ("Inversa %s\n", buffer);
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+29897398_29897527_1_12
+29897398_29898447_1_12
+Title: Ambiguity regarding passing 3 dimensional array to function in C 
+----------------------------------------
+
+void display (test_t (*pas_test) [6] [6]) {
+    int row_idx = 0, col_idx = 1;
+    printf ("\nTOP X: %04d", pas_test [0] [row_idx] [col_idx].i4_x);
+    row_idx = 0, col_idx = 5;
+    printf ("\nLEFT X: %04d", pas_test [0] [row_idx] [col_idx].i4_x);
+    row_idx = 1, col_idx = 0;
+    printf ("\nRIGHT X: %04d", pas_test [0] [row_idx] [col_idx].i4_x);
+    printf ("\n");
+}
+----------------------------------------
+
+void display (test_t pas_test [6] [6]) {
+    int row_idx = 0, col_idx = 1;
+    printf ("\nTOP   X: %04d", pas_test [row_idx] [col_idx].i4_x);
+    row_idx = 0, col_idx = 5;
+    printf ("\nLEFT  X: %04d", pas_test [row_idx] [col_idx].i4_x);
+    row_idx = 1, col_idx = 0;
+    printf ("\nRIGHT X: %04d", pas_test [row_idx] [col_idx].i4_x);
+    printf ("\n");
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+29900040_29901578_4_24
+29900040_29901999_1_38
+Title: How to get several value in once enter ?(Number of uncertainty) 
+----------------------------------------
+
+int main () {
+    int i = 0;
+    printf ("Enter Number of integer : \n");
+    if ((scanf ("%d", &n)) == 1) {
+        printf ("Enter integer : \n");
+        i = 0;
+        while (i < n && ((scanf ("%1d", &number[i])) == 1)) {
+            printf ("scanned %d into number[%d]\n", number [i], i);
+            i++;
+            if (i >= 10) {
+                printf ("stopping at ten digits\n");
+                break;
+            }
+        }
+    }
+    system ("pause");
+}
+----------------------------------------
+
+int main () {
+    char line [1024];
+    char *token = {0};
+    char delim [] = {" \r\n\t"};
+    long telPos = 0;
+    int count, i;
+    int *array = {0};
+    printf ("Enter Number of integers, <return> then line of integers : \n");
+    scanf ("%d", & count);
+    getchar ();
+    while (fgets (line, 1024, stdin) != NULL) {
+        array = malloc (sizeof (int) * count);
+        token = strtok (line, delim);
+        i = -1;
+        while (token) {
+            if ((count - 1) > i++) {
+                array[i] = atoi (token);
+                token = strtok (NULL, delim);
+            }
+            else {
+                for (i = 0; i < count; i++)
+                    printf ("value %d: %d\n", i, array[i]);
+            }
+        }
+        free (array);
+    }
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+29900040_29901578_4_24
+29900040_29929889_5_30
+Title: How to get several value in once enter ?(Number of uncertainty) 
+----------------------------------------
+
+int main () {
+    int i = 0;
+    printf ("Enter Number of integer : \n");
+    if ((scanf ("%d", &n)) == 1) {
+        printf ("Enter integer : \n");
+        i = 0;
+        while (i < n && ((scanf ("%1d", &number[i])) == 1)) {
+            printf ("scanned %d into number[%d]\n", number [i], i);
+            i++;
+            if (i >= 10) {
+                printf ("stopping at ten digits\n");
+                break;
+            }
+        }
+    }
+    system ("pause");
+}
+----------------------------------------
+
+int main (void) {
+    int i = 0;
+    int c = 0;
+    int n = 0;
+    int numbers [MAXI] = {0};
+    printf ("\n Enter a number: ");
+    while ((c = getchar ()) != EOF && c != '\n') {
+        if (c >= '0' && c <= '9') {
+            numbers[n] = c - '0';
+            n++;
+            if (n == MAXI)
+                break;
+        }
+    }
+    printf ("\n The numbers entered are: ");
+    for (i = 0; i < n; i++)
+        printf ("%d", numbers[i]);
+    printf ("\n\n");
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+29900040_29901578_4_24
+29900040_29930296_34_48
+Title: How to get several value in once enter ?(Number of uncertainty) 
+----------------------------------------
+
+int main () {
+    int i = 0;
+    printf ("Enter Number of integer : \n");
+    if ((scanf ("%d", &n)) == 1) {
+        printf ("Enter integer : \n");
+        i = 0;
+        while (i < n && ((scanf ("%1d", &number[i])) == 1)) {
+            printf ("scanned %d into number[%d]\n", number [i], i);
+            i++;
+            if (i >= 10) {
+                printf ("stopping at ten digits\n");
+                break;
+            }
+        }
+    }
+    system ("pause");
+}
+----------------------------------------
+
+int main (void) {
+    int n;
+    printf ("Enter maximum number of `int` to read: ");
+    bool eol;
+    if (Read_int (stdin, &n, 1, &eol) != 1 || !eol) {
+        return EXIT_FAILURE;
+    }
+    int *a = calloc (n, sizeof *a);
+    size_t count = Read_int (stdin, a, n, &eol);
+    printf ("Count:%zu First:%d Last:%i  Done:%s\n", count, a [0], a [count - 1], eol ? "Yes" : "No");
+    free (a);
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+29900040_29901999_1_38
+29900040_29929889_5_30
+Title: How to get several value in once enter ?(Number of uncertainty) 
+----------------------------------------
+
+int main () {
+    char line [1024];
+    char *token = {0};
+    char delim [] = {" \r\n\t"};
+    long telPos = 0;
+    int count, i;
+    int *array = {0};
+    printf ("Enter Number of integers, <return> then line of integers : \n");
+    scanf ("%d", & count);
+    getchar ();
+    while (fgets (line, 1024, stdin) != NULL) {
+        array = malloc (sizeof (int) * count);
+        token = strtok (line, delim);
+        i = -1;
+        while (token) {
+            if ((count - 1) > i++) {
+                array[i] = atoi (token);
+                token = strtok (NULL, delim);
+            }
+            else {
+                for (i = 0; i < count; i++)
+                    printf ("value %d: %d\n", i, array[i]);
+            }
+        }
+        free (array);
+    }
+    return 0;
+}
+----------------------------------------
+
+int main (void) {
+    int i = 0;
+    int c = 0;
+    int n = 0;
+    int numbers [MAXI] = {0};
+    printf ("\n Enter a number: ");
+    while ((c = getchar ()) != EOF && c != '\n') {
+        if (c >= '0' && c <= '9') {
+            numbers[n] = c - '0';
+            n++;
+            if (n == MAXI)
+                break;
+        }
+    }
+    printf ("\n The numbers entered are: ");
+    for (i = 0; i < n; i++)
+        printf ("%d", numbers[i]);
+    printf ("\n\n");
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+29900040_29901999_1_38
+29900040_29930296_34_48
+Title: How to get several value in once enter ?(Number of uncertainty) 
+----------------------------------------
+
+int main () {
+    char line [1024];
+    char *token = {0};
+    char delim [] = {" \r\n\t"};
+    long telPos = 0;
+    int count, i;
+    int *array = {0};
+    printf ("Enter Number of integers, <return> then line of integers : \n");
+    scanf ("%d", & count);
+    getchar ();
+    while (fgets (line, 1024, stdin) != NULL) {
+        array = malloc (sizeof (int) * count);
+        token = strtok (line, delim);
+        i = -1;
+        while (token) {
+            if ((count - 1) > i++) {
+                array[i] = atoi (token);
+                token = strtok (NULL, delim);
+            }
+            else {
+                for (i = 0; i < count; i++)
+                    printf ("value %d: %d\n", i, array[i]);
+            }
+        }
+        free (array);
+    }
+    return 0;
+}
+----------------------------------------
+
+int main (void) {
+    int n;
+    printf ("Enter maximum number of `int` to read: ");
+    bool eol;
+    if (Read_int (stdin, &n, 1, &eol) != 1 || !eol) {
+        return EXIT_FAILURE;
+    }
+    int *a = calloc (n, sizeof *a);
+    size_t count = Read_int (stdin, a, n, &eol);
+    printf ("Count:%zu First:%d Last:%i  Done:%s\n", count, a [0], a [count - 1], eol ? "Yes" : "No");
+    free (a);
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+29900040_29929889_5_30
+29900040_29930296_34_48
+Title: How to get several value in once enter ?(Number of uncertainty) 
+----------------------------------------
+
+int main (void) {
+    int i = 0;
+    int c = 0;
+    int n = 0;
+    int numbers [MAXI] = {0};
+    printf ("\n Enter a number: ");
+    while ((c = getchar ()) != EOF && c != '\n') {
+        if (c >= '0' && c <= '9') {
+            numbers[n] = c - '0';
+            n++;
+            if (n == MAXI)
+                break;
+        }
+    }
+    printf ("\n The numbers entered are: ");
+    for (i = 0; i < n; i++)
+        printf ("%d", numbers[i]);
+    printf ("\n\n");
+    return 0;
+}
+----------------------------------------
+
+int main (void) {
+    int n;
+    printf ("Enter maximum number of `int` to read: ");
+    bool eol;
+    if (Read_int (stdin, &n, 1, &eol) != 1 || !eol) {
+        return EXIT_FAILURE;
+    }
+    int *a = calloc (n, sizeof *a);
+    size_t count = Read_int (stdin, a, n, &eol);
+    printf ("Count:%zu First:%d Last:%i  Done:%s\n", count, a [0], a [count - 1], eol ? "Yes" : "No");
+    free (a);
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+29906116_29906485_4_31
+29906116_29906754_6_37
+Title: Obtain two cluster via bubble sort mechanism 
+----------------------------------------
+
+void main () {
+    char st [25], temp;
+    int l, i, j;
+    printf ("enter Any Sting\n");
+    gets (st);
+    int i;
+    char sorted_st [25];
+    int str_index = 0;
+    for (i = 0; i < strlen (l); ++i) {
+        if ((l[i] >= 'a' && l[i] <= 'z') || (l[i] >= 'A' && l[i] <= 'Z')) {
+            sorted_st[str_index++] = l[i];
+        }
+    }
+    for (i = 0; i < strlen (l); ++i) {
+        if (l[i] >= '0' && l[i] <= '9') {
+            sorted_st[str_index++] = l[i];
+        }
+    }
+    sorted_st[str_index++] = '\0';
+    printf ("sorted string  \n");
+    printf ("%s", st);
+    getch ();
+}
+----------------------------------------
+
+int main () {
+    char st [25] = "503692EC12FATMA", temp;
+    size_t len, i;
+    int swapped = 1;
+    puts (st);
+    len = strlen (st);
+    while (swapped && len--) {
+        swapped = 0;
+        for (i = 0; i < len; ++i) {
+            int swap = !isdigit ((unsigned char) st[i + 1]);
+            if (isdigit ((unsigned char) st[i]))
+                swap = swap || (st[i + 1] < st[i]);
+            else
+                swap = swap && (st[i + 1] < st[i]);
+            if (swap) {
+                temp = st[i];
+                st[i] = st[i + 1];
+                st[i + 1] = temp;
+                swapped = 1;
+            }
+        }
+    }
+    puts (st);
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+29906555_29919223_4_15
+29906555_29923371_12_68
+Title: Reading a stream of values from text file in C 
+----------------------------------------
+
+int main (void) {
+    struct stat st;
+    if (stat ("file", &st) == 0) {
+        printf ("fileSize: %d  No. of Items: %d\n", (st.st_size), (st.st_size / 2));
+        return st.st_size;
+    }
+    printf ("failed!\n");
+    return 0;
+}
+----------------------------------------
+
+int main (int argc, char **argv) {
+    char *ln = NULL;
+    size_t n = 0;
+    ssize_t nchr = 0;
+    size_t idx = 0;
+    long *array = NULL;
+    unsigned long nmax = NMAX;
+    FILE *fp = NULL;
+    int base = argc > 2 ? atoi (argv[2]) : 10;
+    if (!(fp = fopen (argv[1], "r"))) {
+        fprintf (stderr, "error: file open failed '%s'.", argv [1]);
+        return 1;
+    }
+    if (!(array = calloc (NMAX, sizeof *array))) {
+        fprintf (stderr, "error: memory allocation failed.");
+        return 1;
+    }
+    while ((nchr = getline (&ln, &n, fp)) != -1) {
+        char *p = ln;
+        char *ep = NULL;
+        while (errno == 0) {
+            array[idx++] = xstrtol (p, &ep, base);
+            if (idx == nmax)
+                array = realloc_long (array, &nmax);
+            while (*ep && *ep != '-' && (*ep < '0' || *ep > '9'))
+                ep++;
+            if (*ep)
+                p = ep;
+            else
+                break;
+        }
+    }
+    if (ln)
+        free (ln);
+    if (fp)
+        fclose (fp);
+    int i = 0;
+    for (i = 0; i < idx; i++)
+        printf (" array[%d] : %ld\n", i, array[i]);
+    free (array);
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+29912401_29913112_4_18
+29912401_29913138_5_25
+Title: How do I format decimals in C? 
+----------------------------------------
+
+int main (void) {
+    int i, iarr [] = {-4, -3, -2, -1, 0, 1, 2, 3, 4};
+    double darr [] = {0.0001, 0.001, 0.01, 0.1, 1., 10., 100., 1000., 10000.};
+    double intpart, fractpart;
+    for (i = 0; i < 9; i++) {
+        fractpart = modf (darr[i], &intpart);
+        if (fractpart == 0.0)
+            printf ("%10d%10d.0\n", iarr[i], (int) intpart);
+        else
+            printf ("%10d%10d\b%g\n", iarr[i], (int) intpart, fractpart);
+    }
+    return 0;
+}
+----------------------------------------
+
+int main () {
+    int kPower;
+    for (kPower = -4; kPower < 5; kPower++) {
+        enum {bufsize = 2 + 5 + 10 + 1 + 4 + 1 + 1};
+        char buf [bufsize];
+        int j, n, i;
+        double raisePower = pow (10, kPower);
+        snprintf (buf, bufsize, "%2d     %10.4f\n", kPower, raisePower);
+        j = strchr (buf, '.') - buf;
+        j += 1;
+        n = strchr (buf +j, '\n') - buf;
+        for (i = n - 1; i > j; i--)
+            if (buf[i] == '0')
+                buf[i] = ' ';
+            else
+                break;
+        printf ("%s", buf);
+    }
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+29921505_29921835_15_53
+29921505_29933583_15_102
+Title: How can I read uncertain data form file and store it in struct 
+----------------------------------------
+
+int main () {
+    char file [] = {"C:\\Play\\account.txt"};
+    char line [1024];
+    char *token = {0};
+    char delim [] = {" \r\n\t"};
+    int count, i, j;
+    char array [4] [80];
+    FILE *fp = fopen (file, "r");
+    if (fp) {
+        j = 0;
+        while (fgets (line, 1024, fp) != NULL) {
+            token = strtok (line, delim);
+            i = -1;
+            while (token) {
+                i++;
+                strcpy (array [i], token);
+                token = strtok (NULL, delim);
+            }
+            if (i == 3) {
+                account[j].account_number = atoi (array[0]);
+                strcpy (account [j].first_name, array [1]);
+                strcpy (account [j].last_name, array [2]);
+                account[j].balance = atof (array[3]);
+            }
+            j++;
+            memset (array, 0, 320);
+        }
+        fclose (fp);
+    }
+    return 0;
+}
+----------------------------------------
+
+int main (int argc, char *argv []) {
+    if (2 != argc) {
+        printf ("usage: %s <accountFileName>\n", argv [0]);
+        exit (EXIT_FAILURE);
+    }
+    printf ("processing file: %s\n", arg [1]);
+    FILE *fp = NULL;
+    if (NULL == (fp = fopen (argv[1], "r"))) {
+        perror ("fopen for input file failed");
+        exit (EXIT_FAILURE);
+    }
+    struct account *accountList = NULL;
+    char buffer [MAX_LINE_LEN] = {'\0'};
+    int numAccounts = 0;
+    while (fgets (buffer, sizeof buffer, fp)) {
+        if ('0' == buffer[0]) {
+            memset (buffer, 0x00, sizeof buffer);
+            continue;
+        }
+        struct account *temp = NULL;
+        if (NULL == (temp = realloc (accountList, sizeof (struct account) * numAccounts + 1))) {
+            perror ("realloc failed");
+            printf ("realloc failed for record number: %d\n", numAccounts + 1);
+            free (accountList);
+            fclose (fp);
+            exit (EXIT_FAILURE);
+        }
+        accountList = temp;
+        memset (& (accountList [numAccounts]), 0x00, sizeof (struct account));
+        if (4 != sscanf (buffer, "%d %19s %19s %lf", &accountList[numAccounts].account_number, accountList[numAccounts].first_name, accountList[numAccounts].last_name, &accountList[numAccounts].balance)) {
+            perror ("sscanf for record parsing failed");
+            printf ("sscanf/record parsing failed for record number: %d\n", numAccounts + 1);
+            free (accountList);
+            fclose (fp);
+            exit (EXIT_FAILURE);
+        }
+        memset (buffer, 0x00, sizeof buffer);
+    }
+    fclose (fp);
+    free (accountList);
+    return (0);
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+29925919_29926058_1_14
+29925919_29926088_1_13
+Title: Insert at the beginning of a linked list? 
+----------------------------------------
+
+int Push (TStiva *Stiva, int id, int prt) {
+    TStiva StivaNoua;
+    TProces proces;
+    StivaNoua = (TCelSt *) malloc (sizeof (TCelSt));
+    StivaNoua->info = (TProces *) malloc (sizeof (TProces));
+    proces.id = id;
+    proces.prioritate = prt;
+    memcpy (StivaNoua -> info, & proces, sizeof (TProces));
+    StivaNoua->urm = *Stiva;
+    *Stiva = StivaNoua;
+    return 1;
+}
+----------------------------------------
+
+TStiva Push (TStiva Stiva, int id, int prt) {
+    TStiva StivaNoua;
+    TProces proces;
+    StivaNoua = (TCelSt *) malloc (sizeof (TCelSt));
+    StivaNoua->info = (TProces *) malloc (sizeof (TProces));
+    proces.id = id;
+    proces.prioritate = prt;
+    memcpy (StivaNoua -> info, & proces, sizeof (TProces));
+    StivaNoua->urm = Stiva;
+    Stiva = StivaNoua;
+    return Stiva;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+29928507_29928625_3_20
+29928507_29928804_3_14
+Title: "implement ""\\ "" instead of "" "" (space)" 
+----------------------------------------
+
+char *my_strcopy (char *destination, char *source) {
+    char *p;
+    p = destination;
+    while (*source != '\0') {
+        if (*source == ' ') {
+            *p++ = '\\';
+            *p = ' ';
+        }
+        else {
+            *p = *source;
+        }
+        p++;
+        source++;
+    }
+    *p = '\0';
+    return destination;
+}
+----------------------------------------
+
+char *my_strcopy (char *destination, const char *source) {
+    char *p = destination;
+    do {
+        if (*source == ' ')
+            *p++ = '\\';
+        *p++ = *source;
+    }
+    while (*source++);
+    return destination;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+29933208_29933419_6_19
+29933208_29933440_23_39
+Title: Convert char array into int in C 
+----------------------------------------
+
+int main () {
+    char arr [] = {0x00, 0x00, 0x1B, 0x1B};
+    uint32_t val = 0;
+    for (int i = 3; i >= 0; i--) {
+        uint32_t tmp = arr[i];
+        int j = 4 - i;
+        while (--j) {
+            tmp <<= 8;
+        }
+        val |= tmp;
+    }
+    cout << val << endl;
+}
+----------------------------------------
+
+int main () {
+    char endiannessIsDifferent = 0;
+    char array [sizeof (int)] = {0x2a, 0, 0, 0};
+    u_bytes_to_int_type v;
+    memcpy (v.bytes, array, sizeof (array));
+    if (endiannessIsDifferent) {
+        reverseArray (v.bytes, sizeof (v.bytes));
+    }
+    printf ("%i\n", v.value);
+    return (0);
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+29933208_29933419_6_19
+29933208_29933686_10_22
+Title: Convert char array into int in C 
+----------------------------------------
+
+int main () {
+    char arr [] = {0x00, 0x00, 0x1B, 0x1B};
+    uint32_t val = 0;
+    for (int i = 3; i >= 0; i--) {
+        uint32_t tmp = arr[i];
+        int j = 4 - i;
+        while (--j) {
+            tmp <<= 8;
+        }
+        val |= tmp;
+    }
+    cout << val << endl;
+}
+----------------------------------------
+
+int main (void) {
+    char c [8] = {1, 2, 3, 4, 'a', 'b', 'c', 'd'};
+    unsigned long long int x = 0;
+    int char_i;
+    for (char_i = 0; char_i < 8; char_i++) {
+        x = (x << 8) | c[char_i];
+        showBinary (x);
+    }
+    printf ("Result: x = %lld\n", x);
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+29933208_29933419_6_19
+29933208_29933718_8_21
+Title: Convert char array into int in C 
+----------------------------------------
+
+int main () {
+    char arr [] = {0x00, 0x00, 0x1B, 0x1B};
+    uint32_t val = 0;
+    for (int i = 3; i >= 0; i--) {
+        uint32_t tmp = arr[i];
+        int j = 4 - i;
+        while (--j) {
+            tmp <<= 8;
+        }
+        val |= tmp;
+    }
+    cout << val << endl;
+}
+----------------------------------------
+
+int main () {
+    if (sizeof (int) != 4)
+        return 0;
+    char buf [5];
+    memset (buf, 0, 5);
+    memcpy_set (buf, 0x41424344);
+    printf ("%s\n", buf);
+    printf ("%x\n", memcpy_get (buf));
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+29933208_29933440_23_39
+29933208_29933686_10_22
+Title: Convert char array into int in C 
+----------------------------------------
+
+int main () {
+    char endiannessIsDifferent = 0;
+    char array [sizeof (int)] = {0x2a, 0, 0, 0};
+    u_bytes_to_int_type v;
+    memcpy (v.bytes, array, sizeof (array));
+    if (endiannessIsDifferent) {
+        reverseArray (v.bytes, sizeof (v.bytes));
+    }
+    printf ("%i\n", v.value);
+    return (0);
+}
+----------------------------------------
+
+int main (void) {
+    char c [8] = {1, 2, 3, 4, 'a', 'b', 'c', 'd'};
+    unsigned long long int x = 0;
+    int char_i;
+    for (char_i = 0; char_i < 8; char_i++) {
+        x = (x << 8) | c[char_i];
+        showBinary (x);
+    }
+    printf ("Result: x = %lld\n", x);
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+29933208_29933440_23_39
+29933208_29933718_8_21
+Title: Convert char array into int in C 
+----------------------------------------
+
+int main () {
+    char endiannessIsDifferent = 0;
+    char array [sizeof (int)] = {0x2a, 0, 0, 0};
+    u_bytes_to_int_type v;
+    memcpy (v.bytes, array, sizeof (array));
+    if (endiannessIsDifferent) {
+        reverseArray (v.bytes, sizeof (v.bytes));
+    }
+    printf ("%i\n", v.value);
+    return (0);
+}
+----------------------------------------
+
+int main () {
+    if (sizeof (int) != 4)
+        return 0;
+    char buf [5];
+    memset (buf, 0, 5);
+    memcpy_set (buf, 0x41424344);
+    printf ("%s\n", buf);
+    printf ("%x\n", memcpy_get (buf));
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+29933208_29933686_10_22
+29933208_29933718_8_21
+Title: Convert char array into int in C 
+----------------------------------------
+
+int main (void) {
+    char c [8] = {1, 2, 3, 4, 'a', 'b', 'c', 'd'};
+    unsigned long long int x = 0;
+    int char_i;
+    for (char_i = 0; char_i < 8; char_i++) {
+        x = (x << 8) | c[char_i];
+        showBinary (x);
+    }
+    printf ("Result: x = %lld\n", x);
+    return 0;
+}
+----------------------------------------
+
+int main () {
+    if (sizeof (int) != 4)
+        return 0;
+    char buf [5];
+    memset (buf, 0, 5);
+    memcpy_set (buf, 0x41424344);
+    printf ("%s\n", buf);
+    printf ("%x\n", memcpy_get (buf));
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+29948695_29948836_1_18
+29948695_29949235_17_29
+Title: Create a dice chart 
+----------------------------------------
+
+int main (void) {
+    srand (time (0));
+    int valuesOfRoll [DICEEYES] = {0};
+    for (int i = 0; i < COUNT; i++) {
+        int index = diceRoll (DICE) - DICE;
+        index %= DICEEYES;
+        valuesOfRoll[index]++;
+    }
+    for (int i = 0; i < DICEEYES; i++) {
+        if (valuesOfRoll[i] < 1)
+            continue;
+        printf ("The number %d was rolled %4d times", i + DICE, valuesOfRoll [i]);
+    }
+    return 0;
+}
+----------------------------------------
+
+int main (void) {
+    int i;
+    int valuesOfRoll [DICEEYS + 1] = {0};
+    srand ((unsigned) time (0));
+    for (i = 0; i < COUNT; i++)
+        valuesOfRoll[diceRoll (DICE)]++;
+    for (i = DICE; i <= DICEEYES; i++)
+        printf ("The number %2d was rolled %4d times\n", i, valuesOfRoll[i]);
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+29948695_29948836_1_18
+29948695_29949493_19_37
+Title: Create a dice chart 
+----------------------------------------
+
+int main (void) {
+    srand (time (0));
+    int valuesOfRoll [DICEEYES] = {0};
+    for (int i = 0; i < COUNT; i++) {
+        int index = diceRoll (DICE) - DICE;
+        index %= DICEEYES;
+        valuesOfRoll[index]++;
+    }
+    for (int i = 0; i < DICEEYES; i++) {
+        if (valuesOfRoll[i] < 1)
+            continue;
+        printf ("The number %d was rolled %4d times", i + DICE, valuesOfRoll [i]);
+    }
+    return 0;
+}
+----------------------------------------
+
+int main (void) {
+    srand (time (NULL));
+    int valuesOfRoll [MAX_DICEROLL_VALUE + 1] = {0};
+    for (int i = 0; i < NUM_ROLLS; i++) {
+        int index = diceRoll (NUM_DICE);
+        valuesOfRoll[index]++;
+    }
+    for (int i = MIN_DICEROLL_VALUE; i <= MAX_DICEROLL_VALUE; i++) {
+        printf ("The number %2d was rolled %5d times\n", i, valuesOfRoll [i]);
+    }
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+29948695_29949235_17_29
+29948695_29949493_19_37
+Title: Create a dice chart 
+----------------------------------------
+
+int main (void) {
+    int i;
+    int valuesOfRoll [DICEEYS + 1] = {0};
+    srand ((unsigned) time (0));
+    for (i = 0; i < COUNT; i++)
+        valuesOfRoll[diceRoll (DICE)]++;
+    for (i = DICE; i <= DICEEYES; i++)
+        printf ("The number %2d was rolled %4d times\n", i, valuesOfRoll[i]);
+    return 0;
+}
+----------------------------------------
+
+int main (void) {
+    srand (time (NULL));
+    int valuesOfRoll [MAX_DICEROLL_VALUE + 1] = {0};
+    for (int i = 0; i < NUM_ROLLS; i++) {
+        int index = diceRoll (NUM_DICE);
+        valuesOfRoll[index]++;
+    }
+    for (int i = MIN_DICEROLL_VALUE; i <= MAX_DICEROLL_VALUE; i++) {
+        printf ("The number %2d was rolled %5d times\n", i, valuesOfRoll [i]);
+    }
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+29971301_29971325_13_30
+29971301_29972085_7_36
+Title: End of integer/structure array? 
+----------------------------------------
+
+int main () {
+    int *app;
+    int i;
+    int count;
+    count = 20;
+    app = NULL;
+    printf ("Inside main\n");
+    alloco (& app, count);
+    if (app == NULL)
+        return -1;
+    for (i = 0; i < count; i++)
+        printf ("app[%d] = %d \n", i, app[i]);
+    free (app);
+    return 0;
+}
+----------------------------------------
+
+int main (void) {
+    int result = EXIT_SUCCESS;
+    int *pi = NULL;
+    if (-1 == array_allocate (&pi)) {
+        result = EXIT_FAILURE;
+        perror ("array_allocate() failed");
+    }
+    else {
+        ssize_t result_number_of_elements = array_number_of_elements (pi);
+        if (-1 == result_number_of_elements) {
+            result = EXIT_FAILURE;
+            perror ("array_number_of_elements() failed");
+        }
+        else {
+            size_t number_of_elements = result_number_of_elements;
+            printf ("The number of array's elements is %zu.\n", number_of_elements);
+        }
+    }
+    free (pi);
+    return result;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+29971301_29971325_13_30
+29971301_29972795_28_44
+Title: End of integer/structure array? 
+----------------------------------------
+
+int main () {
+    int *app;
+    int i;
+    int count;
+    count = 20;
+    app = NULL;
+    printf ("Inside main\n");
+    alloco (& app, count);
+    if (app == NULL)
+        return -1;
+    for (i = 0; i < count; i++)
+        printf ("app[%d] = %d \n", i, app[i]);
+    free (app);
+    return 0;
+}
+----------------------------------------
+
+int main () {
+    int **app = NULL;
+    int i = 0;
+    printf ("inside main\n");
+    alloco (& app);
+    while (app[i]) {
+        printf ("app[%d] = %d \n", i, * (app [i]));
+        i++;
+    }
+    return (0);
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+29971301_29971325_1_11
+29971301_29972795_6_26
+Title: End of integer/structure array? 
+----------------------------------------
+
+void alloco (int **ppa, int count) {
+    int i;
+    printf ("inside alloco %d\n", ppa);
+    *ppa = malloc (count * sizeof (int));
+    if (*ppa == NULL)
+        return;
+    for (i = 0;
+    i < count;
+    ++ i)
+}
+----------------------------------------
+
+void alloco (int ***ppa) {
+    printf ("inside %s\n", __func__);
+    int i = 0;
+    if (!(*ppa = calloc (INITSZ, sizeof **ppa))) {
+        fprintf (stderr, "%s() error: virtual memory exhausted.\n", __func__);
+        exit (EXIT_FAILURE);
+    }
+    for (i = 0; i < INITSZ - 1; i++) {
+        if (!((*ppa)[i] = calloc (1, sizeof ***ppa))) {
+            fprintf (stderr, "%s() error: virtual memory exhausted.\n", __func__);
+            exit (EXIT_FAILURE);
+        }
+        *((*ppa)[i]) = i * 2;
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+29971301_29972085_7_36
+29971301_29972795_28_44
+Title: End of integer/structure array? 
+----------------------------------------
+
+int main (void) {
+    int result = EXIT_SUCCESS;
+    int *pi = NULL;
+    if (-1 == array_allocate (&pi)) {
+        result = EXIT_FAILURE;
+        perror ("array_allocate() failed");
+    }
+    else {
+        ssize_t result_number_of_elements = array_number_of_elements (pi);
+        if (-1 == result_number_of_elements) {
+            result = EXIT_FAILURE;
+            perror ("array_number_of_elements() failed");
+        }
+        else {
+            size_t number_of_elements = result_number_of_elements;
+            printf ("The number of array's elements is %zu.\n", number_of_elements);
+        }
+    }
+    free (pi);
+    return result;
+}
+----------------------------------------
+
+int main () {
+    int **app = NULL;
+    int i = 0;
+    printf ("inside main\n");
+    alloco (& app);
+    while (app[i]) {
+        printf ("app[%d] = %d \n", i, * (app [i]));
+        i++;
+    }
+    return (0);
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+29992107_29992734_64_100
+29992107_29993997_18_54
+Title: C array of structs segmentation fault 
+----------------------------------------
+
+int main (int argc, char const *argv []) {
+    VectorPeople vp;
+    Person timn;
+    Person batman;
+    Person bond;
+    Person superman;
+    init (& vp);
+    timn.first_name = "Timn";
+    timn.last_name = "Timothy";
+    timn.age = 38;
+    add (& vp, & timn);
+    batman.first_name = "Batn";
+    batman.last_name = "Man";
+    batman.age = 42;
+    add (& vp, & batman);
+    bond.first_name = "James";
+    bond.last_name = "Bond";
+    bond.age = 45;
+    add (& vp, & bond);
+    superman.first_name = "Super";
+    superman.last_name = "Man";
+    superman.age = 45;
+    add (& vp, & superman);
+    int i = 0;
+    for (; i < vp.num; ++i) {
+        printf ("Person: %s, %s.\n", vp.people [i].last_name, vp.people [i].first_name);
+    }
+    clear (& vp);
+    return 0;
+}
+----------------------------------------
+
+int main (void) {
+    size_t population = 0;
+    size_t maxp = MAXPOP;
+    size_t i = 0;
+    Person timn, batman;
+    Person **people = calloc (MAXPOP, sizeof *people);
+    if (!people) {
+        fprintf (stderr, "error: virtual memory exhausted.\n");
+        return 1;
+    }
+    timn.first_name = strdup ("Timn");
+    timn.last_name = strdup ("Timothy");
+    timn.age = 38;
+    add_person (& people, timn, & population, & maxp);
+    free_person_names (& timn);
+    printf ("\nPerson 0\n first name: %s\n last name : %s\n age : %hhu\n", people [0] -> first_name, people [0] -> last_name, people [0] -> age);
+    batman.first_name = strdup ("Bat");
+    batman.last_name = strdup ("Man");
+    batman.age = 42;
+    add_person (& people, batman, & population, & maxp);
+    free_person_names (& batman);
+    printf ("\nPerson 1\n first name: %s\n last name : %s\n age : %hhu\n", people [1] -> first_name, people [1] -> last_name, people [1] -> age);
+    for (i = 0; i < population; i++)
+        free_person (people[i]);
+    free (people);
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+29999589_29999823_5_25
+29999589_29999851_6_23
+Title: Sscanf - parsing with different delimiters 
+----------------------------------------
+
+int main (void) {
+    char str [] = "/home/my/estf 122,323 452,323 662,343";
+    char path [100];
+    int ai [32];
+    char *ptr;
+    int n = 0;
+    ptr = strchr (str, ' ');
+    sprintf (path, "%.*s", ptr - str, str);
+    while (*ptr) {
+        ai[n++] = (int) strtol (ptr, &ptr, 10);
+        if (*ptr)
+            ptr++;
+    }
+    printf ("Path:%s", path);
+    for (int i = 0; i < n; i++) {
+        printf (" INT%d=%d", i + 1, ai [i]);
+    }
+    printf ("\n");
+    return 0;
+}
+----------------------------------------
+
+int main () {
+    char string [] = "/home/my/estf 122,323 452,323 662,343";
+    char *pch;
+    pch = strtok (string, " ,");
+    while (pch != NULL) {
+        pch = strtok (NULL, " ,");
+        if (pch) {
+            int val = atoi (pch);
+            printf ("%d\n", val);
+        }
+    }
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+29999697_29999714_3_17
+29999697_29999782_5_20
+Title: The correct way to use a for loop in an array C 
+----------------------------------------
+
+int main () {
+    int InternetHits [10];
+    int i;
+    for (int i = 0; i < 10; i++) {
+        printf ("Enter number of hits for day %i\n", i + 1);
+        scanf ("%i", & InternetHits [i]);
+    }
+    for (int i = 0; i < 10; i++) {
+        printf ("Number of hits was %d\n", InternetHits [i]);
+    }
+}
+----------------------------------------
+
+int main () {
+    const int N = 10;
+    int InternetHits [N];
+    for (int i = 0; i < N; i++) {
+        printf ("Enter number of hits for day %i: ", i + 1);
+        scanf ("%i", & InternetHits [i]);
+    }
+    for (int i = 0; i < N; i++) {
+        printf ("Number of hits in day %i was %d\n", i + 1, InternetHits [i]);
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+30003379_30003432_4_49
+30003379_30003548_4_25
+Title: Extract integers from a string in C 
+----------------------------------------
+
+int main (int argc, char *argv []) {
+    char op [4];
+    const char *buffer;
+    int count;
+    int last;
+    int length;
+    int offset;
+    const char *pointer;
+    buffer = "add 56 89 29";
+    if (sscanf (buffer, "%3s%n", op, &length) != 1) {
+        fprintf (stderr, "unexpected problem while reading the operator.\n");
+        return -1;
+    }
+    pointer = &buffer[length];
+    if (strcmp (op, "add") != 0) {
+        fprintf (stderr, "sorry, I can't understand this operator `%s'.\n", op);
+        return -1;
+    }
+    count = 0;
+    last = -999;
+    offset = length;
+    do {
+        int number;
+        int length;
+        if (sscanf (pointer, "%d%n", &number, &length) != 1) {
+            fprintf (stderr, "input format error, exiting.\n");
+            return -1;
+        }
+        pointer += length;
+        if (number == last)
+            ++count;
+        printf ("Current no: %d\tOffset: %d\n", number, offset);
+        last = number;
+        offset += length;
+    }
+    while ((count < 3) && (*pointer != '\0'));
+    return 0;
+}
+----------------------------------------
+
+int main (int argc, char *argv []) {
+    char temp [100];
+    char op [4];
+    char *buf = "add 56 89 29";
+    int offset = 0;
+    int used = 0;
+    int rcount = 0;
+    int lastno = -999;
+    int currno;
+    bzero (& temp, sizeof (temp));
+    sscanf (buf, "%3s%n", op, & used);
+    offset += used;
+    if (!strcmp (op, "add")) {
+        while ((sscanf (buf +offset, "%99s%n", temp, &used)) == 1) {
+            currno = atoi (temp);
+            offset += used;
+            printf ("Current no: %d\tOffset: %d\n", currno, offset);
+            lastno = currno;
+        }
+    }
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+30003379_30003432_4_49
+30003379_30003889_1_34
+Title: Extract integers from a string in C 
+----------------------------------------
+
+int main (int argc, char *argv []) {
+    char op [4];
+    const char *buffer;
+    int count;
+    int last;
+    int length;
+    int offset;
+    const char *pointer;
+    buffer = "add 56 89 29";
+    if (sscanf (buffer, "%3s%n", op, &length) != 1) {
+        fprintf (stderr, "unexpected problem while reading the operator.\n");
+        return -1;
+    }
+    pointer = &buffer[length];
+    if (strcmp (op, "add") != 0) {
+        fprintf (stderr, "sorry, I can't understand this operator `%s'.\n", op);
+        return -1;
+    }
+    count = 0;
+    last = -999;
+    offset = length;
+    do {
+        int number;
+        int length;
+        if (sscanf (pointer, "%d%n", &number, &length) != 1) {
+            fprintf (stderr, "input format error, exiting.\n");
+            return -1;
+        }
+        pointer += length;
+        if (number == last)
+            ++count;
+        printf ("Current no: %d\tOffset: %d\n", number, offset);
+        last = number;
+        offset += length;
+    }
+    while ((count < 3) && (*pointer != '\0'));
+    return 0;
+}
+----------------------------------------
+
+int main (int argc, const char *argv []) {
+    char *buf = "add 56 89 29";
+    int sum = 0;
+    if (!strncmp (buf, "add", 3)) {
+        buf += 3;
+        while (*buf != '\0') {
+            if (isdigit (*buf) == 0) {
+                ++buf;
+                continue;
+            }
+            int digit;
+            int num = 0;
+            while (isdigit (*buf)) {
+                digit = (int) *buf - 48;
+                num = (num * 10) + digit;
+                ++buf;
+            }
+            sum += num;
+            printf ("Current no: %d\t Sum: %d\n", num, sum);
+        }
+    }
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+30003379_30003432_4_49
+30003379_30004189_4_17
+Title: Extract integers from a string in C 
+----------------------------------------
+
+int main (int argc, char *argv []) {
+    char op [4];
+    const char *buffer;
+    int count;
+    int last;
+    int length;
+    int offset;
+    const char *pointer;
+    buffer = "add 56 89 29";
+    if (sscanf (buffer, "%3s%n", op, &length) != 1) {
+        fprintf (stderr, "unexpected problem while reading the operator.\n");
+        return -1;
+    }
+    pointer = &buffer[length];
+    if (strcmp (op, "add") != 0) {
+        fprintf (stderr, "sorry, I can't understand this operator `%s'.\n", op);
+        return -1;
+    }
+    count = 0;
+    last = -999;
+    offset = length;
+    do {
+        int number;
+        int length;
+        if (sscanf (pointer, "%d%n", &number, &length) != 1) {
+            fprintf (stderr, "input format error, exiting.\n");
+            return -1;
+        }
+        pointer += length;
+        if (number == last)
+            ++count;
+        printf ("Current no: %d\tOffset: %d\n", number, offset);
+        last = number;
+        offset += length;
+    }
+    while ((count < 3) && (*pointer != '\0'));
+    return 0;
+}
+----------------------------------------
+
+int main (int argc, char *argv []) {
+    char *buf = "add 56 89 29";
+    char *token;
+    int count = 0;
+    token = strtok (buf, " ");
+    while (token != NULL) {
+        count++;
+        if (count == 1)
+            continue;
+        printf ("%s\n", token)
+        token = strtok (NULL, " ");
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+30003379_30003548_4_25
+30003379_30003889_1_34
+Title: Extract integers from a string in C 
+----------------------------------------
+
+int main (int argc, char *argv []) {
+    char temp [100];
+    char op [4];
+    char *buf = "add 56 89 29";
+    int offset = 0;
+    int used = 0;
+    int rcount = 0;
+    int lastno = -999;
+    int currno;
+    bzero (& temp, sizeof (temp));
+    sscanf (buf, "%3s%n", op, & used);
+    offset += used;
+    if (!strcmp (op, "add")) {
+        while ((sscanf (buf +offset, "%99s%n", temp, &used)) == 1) {
+            currno = atoi (temp);
+            offset += used;
+            printf ("Current no: %d\tOffset: %d\n", currno, offset);
+            lastno = currno;
+        }
+    }
+    return 0;
+}
+----------------------------------------
+
+int main (int argc, const char *argv []) {
+    char *buf = "add 56 89 29";
+    int sum = 0;
+    if (!strncmp (buf, "add", 3)) {
+        buf += 3;
+        while (*buf != '\0') {
+            if (isdigit (*buf) == 0) {
+                ++buf;
+                continue;
+            }
+            int digit;
+            int num = 0;
+            while (isdigit (*buf)) {
+                digit = (int) *buf - 48;
+                num = (num * 10) + digit;
+                ++buf;
+            }
+            sum += num;
+            printf ("Current no: %d\t Sum: %d\n", num, sum);
+        }
+    }
+    return 0;
+}
+----------------------------------------

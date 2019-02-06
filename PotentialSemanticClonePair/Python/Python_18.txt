@@ -1,0 +1,5021 @@
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+258119_258259_11_16
+258119_258259_3_7
+Title: Python: wrapping method invocations with pre and post methods 
+----------------------------------------
+
+def decorator(f) :
+INDENT
+    def newf(* args, ** kwargs) :
+    INDENT
+        x = f(* args, ** kwargs)
+        post()
+        return x
+    DEDENT
+    return newf
+DEDENT
+----------------------------------------
+
+def decorator(f) :
+INDENT
+    def newf(* args, ** kwargs) :
+    INDENT
+        pre()
+        return f(* args, ** kwargs)
+    DEDENT
+    return newf
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+2582863_2582880_6_11
+2582863_5780262_6_15
+Title: Simple way to decrease values without making a new attribute? 
+----------------------------------------
+
+def blast(self, enemy) :
+INDENT
+    if self.ammo > 0 :
+    INDENT
+        self.ammo -= 1
+        enemy.die(5)
+    DEDENT
+    else :
+    INDENT
+        print "U are out of ammunition!"
+    DEDENT
+DEDENT
+----------------------------------------
+
+def blast(self, enemy) :
+INDENT
+    if enemy.health > 0 :
+    INDENT
+        if self.ammo > 0 :
+        INDENT
+            print "The player has blasted the alien.\n"
+            print "The player has", self.ammo, "ammunition left."
+            enemy.die()
+        DEDENT
+        elif self.ammo == 0 :
+        INDENT
+            print "The player can't blast the alien because he is out of ammunition.\n"
+        DEDENT
+        self.ammo -= 1
+    DEDENT
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+25836403_25837135_1_9
+25836403_25837151_1_8
+Title: Python: TypeError: unsupported operand type(s) for +: 'int' and 'function'. Difficulty manipulating returned variable? 
+----------------------------------------
+
+def dialogue(question, response) :
+INDENT
+    if question.lower() == response.lower() :
+    INDENT
+        print ("Correct! ")
+        return 1
+    DEDENT
+    else :
+    INDENT
+        print ("Correct answer: " + response)
+        return 0
+    DEDENT
+DEDENT
+----------------------------------------
+
+def dialogue(question, response) :
+INDENT
+    if question == response :
+    INDENT
+        print ("Correct! ")
+        score = 1
+    DEDENT
+    else :
+    INDENT
+        print ("Incorrect answer: " + response)
+        score = 0
+    DEDENT
+    return score
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+2587119_2607242_5_16
+2587119_30215745_8_45
+Title: Serialize the @property methods in a Python class 
+----------------------------------------
+
+def serialize(self, queryset, list_of_attributes, ** options) :
+INDENT
+    self.options = options
+    self.stream = options.get("stream", StringIO())
+    self.start_serialization()
+    for obj in queryset :
+    INDENT
+        self.start_object(obj)
+        for field in list_of_attributes :
+        INDENT
+            self.handle_field(obj, field)
+        DEDENT
+        self.end_object(obj)
+    DEDENT
+    self.end_serialization()
+    return self.getvalue()
+DEDENT
+----------------------------------------
+
+def serialize(self, queryset, ** options) :
+INDENT
+    self.options = options
+    self.stream = options.pop('stream', six.StringIO())
+    self.selected_fields = options.pop('fields', None)
+    self.selected_props = options.pop('props', None)
+    self.use_natural_keys = options.pop('use_natural_keys', False)
+    self.use_natural_foreign_keys = options.pop('use_natural_foreign_keys', False)
+    self.use_natural_primary_keys = options.pop('use_natural_primary_keys', False)
+    self.start_serialization()
+    self.first = True
+    for obj in queryset :
+    INDENT
+        self.start_object(obj)
+        concrete_model = obj._meta.concrete_model
+        for field in concrete_model._meta.local_fields :
+        INDENT
+            if field.serialize :
+            INDENT
+                if field.rel is None :
+                INDENT
+                    if self.selected_fields is None or field.attname in self.selected_fields :
+                    INDENT
+                        self.handle_field(obj, field)
+                    DEDENT
+                DEDENT
+                else :
+                INDENT
+                    if self.selected_fields is None or field.attname [: - 3] in self.selected_fields :
+                    INDENT
+                        self.handle_fk_field(obj, field)
+                    DEDENT
+                DEDENT
+            DEDENT
+        DEDENT
+        for field in concrete_model._meta.many_to_many :
+        INDENT
+            if field.serialize :
+            INDENT
+                if self.selected_fields is None or field.attname in self.selected_fields :
+                INDENT
+                    self.handle_m2m_field(obj, field)
+                DEDENT
+            DEDENT
+        DEDENT
+        if self.selected_props :
+        INDENT
+            for field in self.selected_props :
+            INDENT
+                self.handle_prop(obj, field)
+            DEDENT
+        DEDENT
+        self.end_object(obj)
+        if self.first :
+        INDENT
+            self.first = False
+        DEDENT
+    DEDENT
+    self.end_serialization()
+    return self.getvalue()
+
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+25891637_28398903_22_32
+25891637_49916437_3_20
+Title: Visitor pattern in python 
+----------------------------------------
+
+def visitor(arg_type) :
+INDENT
+    def decorator(fn) :
+    INDENT
+        declaring_class = _declaring_class(fn)
+        _methods [(declaring_class, arg_type)] = fn
+
+        return _visitor_impl
+    DEDENT
+    return decorator
+DEDENT
+----------------------------------------
+
+def visitor(arg_type) :
+INDENT
+    "A @visitor decorator"
+    def decorated(fn) :
+    INDENT
+        import inspect
+        stack = inspect.currentframe()
+        class_name = stack.f_back.f_code.co_name
+        full_name = fn.__module__ + '.' + class_name + '.' + fn.__name__
+        _visitors [(full_name, arg_type)] = fn
+        def _visitor_impl(self, arg, * rest, ** kwargs) :
+        INDENT
+            full_name = fn.__module__ + '.' + self.__class__.__name__ + '.' + fn.__name__
+            assert (full_name, arg.__class__) in _visitors, "Can't find visitor in {} for {}".format(full_name, arg.__class__.__name__)
+            method = _visitors [(full_name, arg.__class__)]
+            return method(self, arg, * rest, ** kwargs)
+        DEDENT
+        return _visitor_impl
+    DEDENT
+    return decorated
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+25891680_25909658_174_191
+25891680_25909658_83_126
+Title: Dissable boundaries in a python snake game 
+----------------------------------------
+
+def update(self, dt) :
+INDENT
+    self.snake.update(dt, self.next_direction)
+
+    head = self.snake.head()
+    if head in self.food :
+    INDENT
+        self.food.remove(head)
+        self.add_food()
+        self.snake.grow()
+        self.score += len(self.snake) * SEGMENT_SCORE
+
+    DEDENT
+    if self.snake.self_intersecting() or not self.world.collidepoint(self.snake.head()) :
+    INDENT
+        self.playing = False
+    DEDENT
+DEDENT
+----------------------------------------
+
+def update(self, dt, direction) :
+INDENT
+    self.timer -= dt
+    if self.timer > 0 :
+    INDENT
+        return
+    DEDENT
+    if self.direction ! = - direction :
+    INDENT
+        self.direction = direction
+    DEDENT
+    self.timer += 1 / self.speed
+    '''************************************************************************************
+        ***************************************************************************************
+        ***************************************************************************************'''
+    if not WORLD_BOUNDARIES :
+    INDENT
+        head = self.head()
+        if self.direction == DIRECTION_DOWN and head [1] == WORLD_SIZE [1] - 1 :
+        INDENT
+            self.segments.appendleft(Vector((head [0], 0)))
+        DEDENT
+        elif self.direction == DIRECTION_UP and head [1] == 0 :
+        INDENT
+            self.segments.appendleft(Vector((head [0], WORLD_SIZE [1] - 1)))
+        DEDENT
+        elif self.direction == DIRECTION_RIGHT and head [0] == WORLD_SIZE [0] - 1 :
+        INDENT
+            self.segments.appendleft(Vector((0, head [1])))
+        DEDENT
+        elif self.direction == DIRECTION_LEFT and head [0] == 0 :
+        INDENT
+            self.segments.appendleft(Vector((WORLD_SIZE [0] - 1, head [1])))
+        DEDENT
+        else : self.segments.appendleft(self.head() + self.direction)
+    DEDENT
+    else : self.segments.appendleft(self.head() + self.direction)
+    '''************************************************************************************
+        ***************************************************************************************
+        ***************************************************************************************'''
+
+    if self.growth_pending > 0 :
+    INDENT
+        self.growth_pending -= 1
+    DEDENT
+    else :
+    INDENT
+
+        self.segments.pop()
+    DEDENT
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+25926730_25928317_5_31
+25926730_25939080_4_16
+Title: how to iterate QPushButton 
+----------------------------------------
+
+def __init__(self, * args, ** kwargs) :
+INDENT
+    QtGui.QDialog.__init__(self, * args, ** kwargs)
+    myQVBoxLayout = QtGui.QVBoxLayout()
+    for text in ['PyQt', 'Stack', 'Overflow'] :
+    INDENT
+        myQPushButton = QtGui.QPushButton(text)
+        myQPushButton.setCheckable(True)
+        myQPushButton.setAutoExclusive(True)
+        myQVBoxLayout.addWidget(myQPushButton)
+    DEDENT
+    myQVBoxLayout.addStretch(1)
+    myQGroupBox = QtGui.QGroupBox()
+    myQGroupBox.setStyleSheet('''
+            QPushButton {
+                border: 0px;
+                color: rgb(255, 255, 255);
+                background-color: rgb(0, 0, 0);
+            }
+            QPushButton:checked {
+                border: 0px;
+                color: rgb(255, 255, 255);
+                background-color: rgb(255, 0, 0);
+            }
+        ''')
+    myQGroupBox.setLayout(myQVBoxLayout)
+    allQVBoxLayout = QtGui.QVBoxLayout()
+    allQVBoxLayout.addWidget(myQGroupBox)
+    self.setLayout(allQVBoxLayout)
+DEDENT
+----------------------------------------
+
+def __init__(self) :
+INDENT
+    QtGui.QDialog.__init__(self)
+    layout = QtGui.QVBoxLayout(self)
+    self.groupBox = QtGui.QGroupBox(self)
+    layout.addWidget(self.groupBox)
+    layout = QtGui.QVBoxLayout(self.groupBox)
+    for index in range(5) :
+    INDENT
+        button = QtGui.QPushButton('Button %d' % index, self.groupBox)
+        layout.addWidget(button)
+    DEDENT
+    self.buttonGroup = QtGui.QButtonGroup(self)
+    self.buttonGroup.buttonClicked.connect(self.handleButtonClicked)
+    self.updateButtonGroup()
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+25980180_25980253_1_17
+25980180_25990782_7_32
+Title: python can't return a variable but can print 
+----------------------------------------
+
+def subset_sum(itemCount, seq, goal, goalDifference, closestPartial, partial) :
+INDENT
+    s = sum(partial)
+
+    if (len(partial) == itemCount) :
+    INDENT
+        if s == goal :
+        INDENT
+            print ("FOUND YAA")
+            print (partial)
+            return partial
+        DEDENT
+        else :
+        INDENT
+            if (abs(goal - s) < goalDifference) :
+            INDENT
+
+                goalDifference = abs(goal - s)
+                closestPartial [:] = partial
+
+            DEDENT
+        DEDENT
+    DEDENT
+DEDENT
+----------------------------------------
+
+def subset_sum(itemCount, seq, goal, goalDifference, closestPartial, partial) :
+INDENT
+    s = sum(partial)
+
+    if (len(partial) == itemCount) :
+    INDENT
+        if s == goal :
+        INDENT
+            print ("FOUND YAA")
+            return partial
+
+        DEDENT
+        else :
+        INDENT
+            if (abs(goal - s) < = goalDifference) :
+            INDENT
+
+                goalDifference = abs(goal - s)
+                closestPartial [:] = partial
+                return closestPartial
+            DEDENT
+        DEDENT
+    DEDENT
+    for i in range(len(seq)) :
+    INDENT
+        n = seq [i]
+        remaining = seq [i + 1 :]
+        t = subset_sum(itemCount, remaining, goal, goalDifference, closestPartial, partial + [n])
+        print t
+        if t :
+        INDENT
+            return t
+        DEDENT
+    DEDENT
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+2598437_25859412_38_47
+2598437_42448950_20_27
+Title: How to Implement a Binary Tree? 
+----------------------------------------
+
+def printTree(tree) :
+INDENT
+    if tree ! = None :
+    INDENT
+        printTree(tree.getLeftChild())
+        print (tree.getNodeValue())
+        printTree(tree.getRightChild())
+
+    DEDENT
+DEDENT
+----------------------------------------
+
+def printTree(self, t) :
+INDENT
+    if t == None :
+    INDENT
+        return
+    DEDENT
+    self.printTree(t.left)
+    print t.data
+    self.printTree(t.right)
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+2598437_26941349_70_89
+2598437_34960584_10_27
+Title: How to Implement a Binary Tree? 
+----------------------------------------
+
+def insert(self, k) :
+INDENT
+    t = TreeNode(k)
+    parent = None
+    node = self.root
+    while node ! = None :
+    INDENT
+        parent = node
+        if node.key > t.key :
+        INDENT
+            node = node.left
+        DEDENT
+        else :
+        INDENT
+            node = node.right
+        DEDENT
+    DEDENT
+    t.p = parent
+    if parent == None :
+    INDENT
+        self.root = t
+    DEDENT
+    elif t.key < parent.key :
+    INDENT
+        parent.left = t
+    DEDENT
+    else :
+    INDENT
+        parent.right = t
+    DEDENT
+    return t
+
+DEDENT
+----------------------------------------
+
+def insert(self, val) :
+INDENT
+    if self.val is not None :
+    INDENT
+        if val < self.val :
+        INDENT
+            if self.left is not None :
+            INDENT
+                self.left.insert(val)
+            DEDENT
+            else :
+            INDENT
+                self.left = Tree(val)
+            DEDENT
+        DEDENT
+        elif val > self.val :
+        INDENT
+            if self.right is not None :
+            INDENT
+                self.right.insert(val)
+            DEDENT
+            else :
+            INDENT
+                self.right = Tree(val)
+            DEDENT
+        DEDENT
+        else :
+        INDENT
+            return
+        DEDENT
+    DEDENT
+    else :
+    INDENT
+        self.val = val
+        print ("new node added")
+    DEDENT
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+2598437_26941349_70_89
+2598437_42448950_6_19
+Title: How to Implement a Binary Tree? 
+----------------------------------------
+
+def insert(self, k) :
+INDENT
+    t = TreeNode(k)
+    parent = None
+    node = self.root
+    while node ! = None :
+    INDENT
+        parent = node
+        if node.key > t.key :
+        INDENT
+            node = node.left
+        DEDENT
+        else :
+        INDENT
+            node = node.right
+        DEDENT
+    DEDENT
+    t.p = parent
+    if parent == None :
+    INDENT
+        self.root = t
+    DEDENT
+    elif t.key < parent.key :
+    INDENT
+        parent.left = t
+    DEDENT
+    else :
+    INDENT
+        parent.right = t
+    DEDENT
+    return t
+
+DEDENT
+----------------------------------------
+
+def insert(self, x, root) :
+INDENT
+    if root == None :
+    INDENT
+        t = node(x)
+        t.data = x
+        t.right = None
+        t.left = None
+        root = t
+        return root
+    DEDENT
+    elif x < root.data :
+    INDENT
+        root.left = self.insert(x, root.left)
+    DEDENT
+    else :
+    INDENT
+        root.right = self.insert(x, root.right)
+    DEDENT
+    return root
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+2598437_26952125_1_13
+2598437_28864021_22_33
+Title: How to Implement a Binary Tree? 
+----------------------------------------
+
+def _add(node, v) :
+INDENT
+    new = [v, [], []]
+    if node :
+    INDENT
+        left, right = node [1 :]
+        if not left :
+        INDENT
+            left.extend(new)
+        DEDENT
+        elif not right :
+        INDENT
+            right.extend(new)
+        DEDENT
+        else :
+        INDENT
+            _add(left, v)
+        DEDENT
+    DEDENT
+    else :
+    INDENT
+        node.extend(new)
+    DEDENT
+DEDENT
+----------------------------------------
+
+def _add(self, val, node) :
+INDENT
+    if (val < node.v) :
+    INDENT
+        if (node.l ! = None) :
+        INDENT
+            self._add(val, node.l)
+        DEDENT
+        else :
+        INDENT
+            node.l = Node(val)
+        DEDENT
+    DEDENT
+    else :
+    INDENT
+        if (node.r ! = None) :
+        INDENT
+            self._add(val, node.r)
+        DEDENT
+        else :
+        INDENT
+            node.r = Node(val)
+        DEDENT
+    DEDENT
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+2598437_26952125_1_13
+2598437_44477908_33_46
+Title: How to Implement a Binary Tree? 
+----------------------------------------
+
+def _add(node, v) :
+INDENT
+    new = [v, [], []]
+    if node :
+    INDENT
+        left, right = node [1 :]
+        if not left :
+        INDENT
+            left.extend(new)
+        DEDENT
+        elif not right :
+        INDENT
+            right.extend(new)
+        DEDENT
+        else :
+        INDENT
+            _add(left, v)
+        DEDENT
+    DEDENT
+    else :
+    INDENT
+        node.extend(new)
+    DEDENT
+DEDENT
+----------------------------------------
+
+def _add(self, node, value) :
+INDENT
+    if value < = node.value :
+    INDENT
+        if node.left :
+        INDENT
+            self._add(node.left, value)
+        DEDENT
+        else :
+        INDENT
+            node.left = Node(value)
+        DEDENT
+    DEDENT
+    else :
+    INDENT
+        if node.right :
+        INDENT
+            self._add(node.right, value)
+        DEDENT
+        else :
+        INDENT
+            node.right = Node(value)
+
+        DEDENT
+    DEDENT
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+2598437_28864021_16_21
+2598437_51904018_28_51
+Title: How to Implement a Binary Tree? 
+----------------------------------------
+
+def add(self, val) :
+INDENT
+    if (self.root == None) :
+    INDENT
+        self.root = Node(val)
+    DEDENT
+    else :
+    INDENT
+        self._add(val, self.root)
+    DEDENT
+DEDENT
+----------------------------------------
+
+def add(self, key, left_key = None, right_key = None) :
+INDENT
+    if key not in self.nodes :
+    INDENT
+
+        self.nodes [key] = BinaryTreeNode(key)
+
+    DEDENT
+    if left_key is None :
+    INDENT
+        self.nodes [key].left = None
+    DEDENT
+    else :
+    INDENT
+        if left_key not in self.nodes :
+        INDENT
+            self.nodes [left_key] = BinaryTreeNode(left_key)
+        DEDENT
+        self.nodes [key].left = self.nodes [left_key]
+
+    DEDENT
+    if right_key == None :
+    INDENT
+        self.nodes [key].right = None
+    DEDENT
+    else :
+    INDENT
+        if right_key not in self.nodes :
+        INDENT
+            self.nodes [right_key] = BinaryTreeNode(right_key)
+        DEDENT
+        self.nodes [key].right = self.nodes [right_key]
+    DEDENT
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+2598437_34960584_10_27
+2598437_42448950_6_19
+Title: How to Implement a Binary Tree? 
+----------------------------------------
+
+def insert(self, val) :
+INDENT
+    if self.val is not None :
+    INDENT
+        if val < self.val :
+        INDENT
+            if self.left is not None :
+            INDENT
+                self.left.insert(val)
+            DEDENT
+            else :
+            INDENT
+                self.left = Tree(val)
+            DEDENT
+        DEDENT
+        elif val > self.val :
+        INDENT
+            if self.right is not None :
+            INDENT
+                self.right.insert(val)
+            DEDENT
+            else :
+            INDENT
+                self.right = Tree(val)
+            DEDENT
+        DEDENT
+        else :
+        INDENT
+            return
+        DEDENT
+    DEDENT
+    else :
+    INDENT
+        self.val = val
+        print ("new node added")
+    DEDENT
+DEDENT
+----------------------------------------
+
+def insert(self, x, root) :
+INDENT
+    if root == None :
+    INDENT
+        t = node(x)
+        t.data = x
+        t.right = None
+        t.left = None
+        root = t
+        return root
+    DEDENT
+    elif x < root.data :
+    INDENT
+        root.left = self.insert(x, root.left)
+    DEDENT
+    else :
+    INDENT
+        root.right = self.insert(x, root.right)
+    DEDENT
+    return root
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+2598437_44477908_27_32
+2598437_51904018_28_51
+Title: How to Implement a Binary Tree? 
+----------------------------------------
+
+def add(self, value) :
+INDENT
+    if not self.root :
+    INDENT
+        self.root = Node(value)
+    DEDENT
+    else :
+    INDENT
+        self._add(self.root, value)
+    DEDENT
+DEDENT
+----------------------------------------
+
+def add(self, key, left_key = None, right_key = None) :
+INDENT
+    if key not in self.nodes :
+    INDENT
+
+        self.nodes [key] = BinaryTreeNode(key)
+
+    DEDENT
+    if left_key is None :
+    INDENT
+        self.nodes [key].left = None
+    DEDENT
+    else :
+    INDENT
+        if left_key not in self.nodes :
+        INDENT
+            self.nodes [left_key] = BinaryTreeNode(left_key)
+        DEDENT
+        self.nodes [key].left = self.nodes [left_key]
+
+    DEDENT
+    if right_key == None :
+    INDENT
+        self.nodes [key].right = None
+    DEDENT
+    else :
+    INDENT
+        if right_key not in self.nodes :
+        INDENT
+            self.nodes [right_key] = BinaryTreeNode(right_key)
+        DEDENT
+        self.nodes [key].right = self.nodes [right_key]
+    DEDENT
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+26002423_26002479_3_14
+26002423_26002716_3_19
+Title: List input into dictionary 
+----------------------------------------
+
+def CreateDictionary(i) :
+INDENT
+    abbrv = i.lower()
+    abbrv = i.split(' ')
+    dictionary = {}
+    fo = open('filename.csv')
+    data = csv.reader(fo)
+    for row in data :
+    INDENT
+        if row [0] in abbrv :
+        INDENT
+            yield (row [0], row [1])
+        DEDENT
+    DEDENT
+    fo.close()
+DEDENT
+----------------------------------------
+
+def CreateDictionary(i) :
+INDENT
+    abbrv = i.lower()
+    abbrv = i.split(' ')
+    dictionary = {}
+    fo = open('filename.csv')
+    data = csv.reader(fo)
+    for row in data :
+    INDENT
+        dictionary [row [0]] = row [1]
+    DEDENT
+    fo.close()
+    ret = []
+    for i in abbrv :
+    INDENT
+        try :
+        INDENT
+            ret.append(dictionary [i])
+        DEDENT
+        except KeyError :
+        INDENT
+            ret.append(i)
+        DEDENT
+    DEDENT
+    return ret
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+26002423_26002479_3_14
+26002423_26013401_2_17
+Title: List input into dictionary 
+----------------------------------------
+
+def CreateDictionary(i) :
+INDENT
+    abbrv = i.lower()
+    abbrv = i.split(' ')
+    dictionary = {}
+    fo = open('filename.csv')
+    data = csv.reader(fo)
+    for row in data :
+    INDENT
+        if row [0] in abbrv :
+        INDENT
+            yield (row [0], row [1])
+        DEDENT
+    DEDENT
+    fo.close()
+DEDENT
+----------------------------------------
+
+def CreateDictionary(i) :
+INDENT
+    abbrv = i.lower().split(' ')
+    dictionary = {}
+    fo = open('filename.csv')
+    data = csv.reader(fo)
+    for row in data :
+    INDENT
+        dictionary [row [0]] = row [1]
+    DEDENT
+    fo.close()
+    to_return = []
+    for c in abbrv :
+    INDENT
+        to_return.append(dictionary.get(c, c))
+    DEDENT
+    return ' '.join(to_return)
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+26002423_26002716_3_19
+26002423_26013401_2_17
+Title: List input into dictionary 
+----------------------------------------
+
+def CreateDictionary(i) :
+INDENT
+    abbrv = i.lower()
+    abbrv = i.split(' ')
+    dictionary = {}
+    fo = open('filename.csv')
+    data = csv.reader(fo)
+    for row in data :
+    INDENT
+        dictionary [row [0]] = row [1]
+    DEDENT
+    fo.close()
+    ret = []
+    for i in abbrv :
+    INDENT
+        try :
+        INDENT
+            ret.append(dictionary [i])
+        DEDENT
+        except KeyError :
+        INDENT
+            ret.append(i)
+        DEDENT
+    DEDENT
+    return ret
+DEDENT
+----------------------------------------
+
+def CreateDictionary(i) :
+INDENT
+    abbrv = i.lower().split(' ')
+    dictionary = {}
+    fo = open('filename.csv')
+    data = csv.reader(fo)
+    for row in data :
+    INDENT
+        dictionary [row [0]] = row [1]
+    DEDENT
+    fo.close()
+    to_return = []
+    for c in abbrv :
+    INDENT
+        to_return.append(dictionary.get(c, c))
+    DEDENT
+    return ' '.join(to_return)
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+260056_16875839_25_30
+260056_16878309_20_25
+Title: Hashtable/dictionary/map lookup with regular expressions 
+----------------------------------------
+
+def __getitem__(self, key) :
+INDENT
+    m = self.keys_re.match(key)
+    if m :
+    INDENT
+        return self.lookup [m.lastindex]
+    DEDENT
+    raise KeyError(key)
+DEDENT
+----------------------------------------
+
+def __getitem__(self, key) :
+INDENT
+    m = self.re.match(key)
+    if m :
+    INDENT
+        return self.lookup [m.lastindex]
+    DEDENT
+    raise KeyError(key)
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+26026790_26026877_1_14
+26026790_26027040_1_13
+Title: Jump from else to the beginning of the function 
+----------------------------------------
+
+def create_backup_folder(ftp, destination_directory) :
+INDENT
+    temp = time.localtime()
+    current_datetime = "{}-{}-{}_{}-{}".format(temp.tm_year, temp.tm_mon, temp.tm_mday, temp.tm_hour, temp.tm_min)
+    if not os.path.exists(destination_directory + 'bak_' + current_datetime) :
+    INDENT
+        os.mkdir(destination_directory + 'bak_' + current_datetime, 0o777)
+        print ("Backup folder successfully created!")
+        return True
+    DEDENT
+    else :
+    INDENT
+        print ("Folder already exists with the current date_time_stamp. Wait 60 seconds...")
+        return False
+    DEDENT
+    newDir = destination_directory + 'bak_' + current_datetime
+    download_directory(ftp, newDir)
+
+DEDENT
+----------------------------------------
+
+def create_backup_folder(ftp, destination_directory) :
+INDENT
+    for i in range(2) :
+    INDENT
+        temp = time.localtime()
+        current_datetime = "{}-{}-{}_{}-{}".format(temp.tm_year, temp.tm_mon, temp.tm_mday, temp.tm_hour, temp.tm_min)
+        target_dir = destination_directory + 'bak_' + current_datetime
+        if not os.path.exists(target_dir) :
+        INDENT
+            os.mkdir(target_dir, 0777)
+            print ("Backup folder successfully created!")
+            return target_dir
+        DEDENT
+        else :
+        INDENT
+            time.sleep(60)
+        DEDENT
+    DEDENT
+    else :
+    INDENT
+        raise Exception("Could not create backup directory in two tries")
+    DEDENT
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+26028372_26055647_13_20
+26028372_26055647_33_41
+Title: Hiding Tkinter root window while showing modal window 
+----------------------------------------
+
+def __init__(self, parent, title) :
+INDENT
+    top = self.top = Toplevel(parent)
+    self.parent = parent
+    top.title(title)
+    f = Frame(top)
+    self.create_controls(f)
+    f.pack(fill = BOTH, expand = Y)
+DEDENT
+----------------------------------------
+
+def __init__(self, parent, folders) :
+INDENT
+    self.parent = parent
+    self.listvar = Variable(parent)
+    self.folderlist = None
+    super(FolderSelection, self).__init__(parent, 'Select folder')
+    self.result = ''
+    self.listvar.set(folders)
+    self.make_modal(self.cancel)
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+2606018_2606671_1_12
+2606018_5683508_1_14
+Title: Path between two nodes 
+----------------------------------------
+
+def find_all_paths(graph, start, end) :
+INDENT
+    def find_all_paths_aux(adjlist, start, end, path) :
+    INDENT
+        path = path + [start]
+        if start == end :
+        INDENT
+            return [path]
+        DEDENT
+        paths = []
+        for node in adjlist [start] - set(path) :
+        INDENT
+            paths.extend(find_all_paths_aux(adjlist, node, end, path))
+        DEDENT
+        return paths
+    DEDENT
+    adjlist = [set(graph.neighbors(node)) for node in xrange(graph.vcount())]
+    return find_all_paths_aux(adjlist, start, end, [])
+DEDENT
+----------------------------------------
+
+def find_all_paths(graph, start, end) :
+INDENT
+    path = []
+    paths = []
+    queue = [(start, end, path)]
+    while queue :
+    INDENT
+        start, end, path = queue.pop()
+        print 'PATH', path
+        path = path + [start]
+        if start == end :
+        INDENT
+            paths.append(path)
+        DEDENT
+        for node in set(graph [start]).difference(path) :
+        INDENT
+            queue.append((node, end, path))
+        DEDENT
+    DEDENT
+    return paths
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+26067144_26067157_1_10
+26067144_26067170_1_16
+Title: Returning variables from functions containing if elif else statement 
+----------------------------------------
+
+def selectDiff() :
+INDENT
+    while True :
+    INDENT
+        diff = raw_input('easy, medium or hard').lower()
+        if diff == 'easy' :
+        INDENT
+            return 20
+        DEDENT
+        if diff == 'medium' :
+        INDENT
+            return 25
+        DEDENT
+        if diff == 'hard' :
+        INDENT
+            return 30
+        DEDENT
+        print "Please select easy, medium or hard\n"
+    DEDENT
+DEDENT
+----------------------------------------
+
+def selectDiff() :
+INDENT
+    difficulty = ['easy', 'medium', 'hard']
+    diff = raw_input(' or '.join(difficulty)).lower()
+    if diff in difficulty :
+    INDENT
+        if diff == 'easy' :
+        INDENT
+            upperbound = 20
+        DEDENT
+        elif diff == 'medium' :
+        INDENT
+            upperbound = 25
+        DEDENT
+        elif diff == 'hard' :
+        INDENT
+            upperbound = 30
+        DEDENT
+    DEDENT
+    else :
+    INDENT
+        print "Please select easy, medium or hard\n"
+        upperbound = selectDiff()
+    DEDENT
+    return upperbound
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+26067144_26067157_1_10
+26067144_26067177_1_13
+Title: Returning variables from functions containing if elif else statement 
+----------------------------------------
+
+def selectDiff() :
+INDENT
+    while True :
+    INDENT
+        diff = raw_input('easy, medium or hard').lower()
+        if diff == 'easy' :
+        INDENT
+            return 20
+        DEDENT
+        if diff == 'medium' :
+        INDENT
+            return 25
+        DEDENT
+        if diff == 'hard' :
+        INDENT
+            return 30
+        DEDENT
+        print "Please select easy, medium or hard\n"
+    DEDENT
+DEDENT
+----------------------------------------
+
+def selectDiff() :
+INDENT
+    difficulty = ['easy', 'medium', 'hard']
+    while True :
+    INDENT
+        diff = raw_input('easy, medium or hard').lower()
+        if diff in difficulty :
+        INDENT
+            if diff == 'easy' :
+            INDENT
+                return 20
+            DEDENT
+            elif diff == 'medium' :
+            INDENT
+                return 25
+            DEDENT
+            elif diff == 'hard' :
+            INDENT
+                return 30
+            DEDENT
+        DEDENT
+        else :
+        INDENT
+            print "Please select easy, medium or hard\n"
+        DEDENT
+    DEDENT
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+26067144_26067157_1_10
+26067144_26067306_1_22
+Title: Returning variables from functions containing if elif else statement 
+----------------------------------------
+
+def selectDiff() :
+INDENT
+    while True :
+    INDENT
+        diff = raw_input('easy, medium or hard').lower()
+        if diff == 'easy' :
+        INDENT
+            return 20
+        DEDENT
+        if diff == 'medium' :
+        INDENT
+            return 25
+        DEDENT
+        if diff == 'hard' :
+        INDENT
+            return 30
+        DEDENT
+        print "Please select easy, medium or hard\n"
+    DEDENT
+DEDENT
+----------------------------------------
+
+def selectDiff() :
+INDENT
+    upperbound = [0]
+    def realSelectDiff() :
+    INDENT
+        difficulty = ['easy', 'medium', 'hard']
+        diff = raw_input(' or '.join(difficulty)).lower()
+        if diff in difficulty :
+        INDENT
+            if diff == 'easy' :
+            INDENT
+                upperbound [0] = 20
+            DEDENT
+            elif diff == 'medium' :
+            INDENT
+                upperbound [0] = 25
+            DEDENT
+            elif diff == 'hard' :
+            INDENT
+                upperbound [0] = 30
+            DEDENT
+        DEDENT
+        else :
+        INDENT
+            print "Please select easy, medium or hard\n"
+            realSelectDiff()
+        DEDENT
+    DEDENT
+    realSelectDiff()
+    return upperbound [0]
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+26067144_26067170_1_16
+26067144_26067306_1_22
+Title: Returning variables from functions containing if elif else statement 
+----------------------------------------
+
+def selectDiff() :
+INDENT
+    difficulty = ['easy', 'medium', 'hard']
+    diff = raw_input(' or '.join(difficulty)).lower()
+    if diff in difficulty :
+    INDENT
+        if diff == 'easy' :
+        INDENT
+            upperbound = 20
+        DEDENT
+        elif diff == 'medium' :
+        INDENT
+            upperbound = 25
+        DEDENT
+        elif diff == 'hard' :
+        INDENT
+            upperbound = 30
+        DEDENT
+    DEDENT
+    else :
+    INDENT
+        print "Please select easy, medium or hard\n"
+        upperbound = selectDiff()
+    DEDENT
+    return upperbound
+DEDENT
+----------------------------------------
+
+def selectDiff() :
+INDENT
+    upperbound = [0]
+    def realSelectDiff() :
+    INDENT
+        difficulty = ['easy', 'medium', 'hard']
+        diff = raw_input(' or '.join(difficulty)).lower()
+        if diff in difficulty :
+        INDENT
+            if diff == 'easy' :
+            INDENT
+                upperbound [0] = 20
+            DEDENT
+            elif diff == 'medium' :
+            INDENT
+                upperbound [0] = 25
+            DEDENT
+            elif diff == 'hard' :
+            INDENT
+                upperbound [0] = 30
+            DEDENT
+        DEDENT
+        else :
+        INDENT
+            print "Please select easy, medium or hard\n"
+            realSelectDiff()
+        DEDENT
+    DEDENT
+    realSelectDiff()
+    return upperbound [0]
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+26067144_26067177_1_13
+26067144_26067306_1_22
+Title: Returning variables from functions containing if elif else statement 
+----------------------------------------
+
+def selectDiff() :
+INDENT
+    difficulty = ['easy', 'medium', 'hard']
+    while True :
+    INDENT
+        diff = raw_input('easy, medium or hard').lower()
+        if diff in difficulty :
+        INDENT
+            if diff == 'easy' :
+            INDENT
+                return 20
+            DEDENT
+            elif diff == 'medium' :
+            INDENT
+                return 25
+            DEDENT
+            elif diff == 'hard' :
+            INDENT
+                return 30
+            DEDENT
+        DEDENT
+        else :
+        INDENT
+            print "Please select easy, medium or hard\n"
+        DEDENT
+    DEDENT
+DEDENT
+----------------------------------------
+
+def selectDiff() :
+INDENT
+    upperbound = [0]
+    def realSelectDiff() :
+    INDENT
+        difficulty = ['easy', 'medium', 'hard']
+        diff = raw_input(' or '.join(difficulty)).lower()
+        if diff in difficulty :
+        INDENT
+            if diff == 'easy' :
+            INDENT
+                upperbound [0] = 20
+            DEDENT
+            elif diff == 'medium' :
+            INDENT
+                upperbound [0] = 25
+            DEDENT
+            elif diff == 'hard' :
+            INDENT
+                upperbound [0] = 30
+            DEDENT
+        DEDENT
+        else :
+        INDENT
+            print "Please select easy, medium or hard\n"
+            realSelectDiff()
+        DEDENT
+    DEDENT
+    realSelectDiff()
+    return upperbound [0]
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+26088466_26088893_18_34
+26088466_26088932_1_24
+Title: How to make the user only enter one character at a time 
+----------------------------------------
+
+def add_pairing(clues) :
+INDENT
+    while True :
+    INDENT
+        try :
+        INDENT
+            letter, symbol = read_paring()
+            new_clue = letter + symbol
+            if new_clue in clues :
+            INDENT
+                raise ValueError("This pairing already exists")
+            DEDENT
+            break
+        DEDENT
+        except ValueError as err :
+        INDENT
+            print (err.message)
+            print ("Try again:")
+            continue
+        DEDENT
+    DEDENT
+    clues.append(new_clue)
+    print (new_clue)
+    return clues
+DEDENT
+----------------------------------------
+
+def add_pairing(clues) :
+INDENT
+    addClue = False
+    while True :
+    INDENT
+        inp = input("Enter a letter followed by a symbol, separated by a space?  ").upper().split()
+        if len(inp) ! = 2 :
+        INDENT
+            print ("Incorrect amount of  characters")
+            continue
+        DEDENT
+        if not inp [0].isalpha() or len(inp [0]) > 1 :
+        INDENT
+            print ("Invalid letter input")
+            continue
+        DEDENT
+        if inp [1].isalpha() or inp [1].isdigit() :
+        INDENT
+            print ("Invalid character input")
+            continue
+        DEDENT
+        userInput = inp [0] + inp [1]
+        if userInput in clues :
+        INDENT
+            print ("The letter either doesn't exist or has already been entered ")
+        DEDENT
+        else :
+        INDENT
+            newClue = userInput
+            addClue = True
+        DEDENT
+        if addClue :
+        INDENT
+            clues.append(newClue)
+            print ("The pairing has been added")
+            print (clues)
+            return clues
+        DEDENT
+    DEDENT
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+26091122_26091473_1_22
+26091122_26091602_1_11
+Title: Longest Common Sequence -Syntax error 
+----------------------------------------
+
+def lcs(x, y) :
+INDENT
+    c = len(x)
+    d = len(y)
+    plot = [[0 for j in range(d + 1)] for i in range(c + 1)]
+    temp = [['' for j in range(d + 1)] for i in range(c + 1)]
+    highestcount = 0
+    longestWord = ''
+    for i in range(c) :
+    INDENT
+        for j in range(d) :
+        INDENT
+            if x [i] == y [j] :
+            INDENT
+                plot [i + 1] [j + 1] = plot [i] [j] + 1
+                temp [i + 1] [j + 1] = ''.join([temp [i] [j], x [i]])
+            DEDENT
+            else :
+            INDENT
+                plot [i + 1] [j + 1] = 0
+                temp [i + 1] [j + 1] = ''
+                if plot [i] [j] > highestcount :
+                INDENT
+                    highestcount = plot [i] [j]
+                    longestWord = temp [i] [j]
+                DEDENT
+            DEDENT
+        DEDENT
+    DEDENT
+    return plot, temp, highestcount, longestWord
+DEDENT
+----------------------------------------
+
+def lcs(seq1, seq2) :
+INDENT
+    matches = []
+    for i in range(len(seq1)) :
+    INDENT
+        j = 1
+        while seq1 [i : j] in seq2 :
+        INDENT
+            j += 1
+            if j > len(seq1) :
+            INDENT
+                break
+            DEDENT
+        DEDENT
+        matches.append((len(seq1 [i : j - 1]), seq1 [i : j - 1]))
+    DEDENT
+    return max(matches)
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+26133844_26134311_1_26
+26133844_26135511_38_76
+Title: Python: How to end game if number_of_guesses is 0? 
+----------------------------------------
+
+def input_guess(guess) :
+INDENT
+    global number_of_guesses
+    guess = int(guess)
+    print ""
+    print "Guess was: ", guess
+    print ""
+    if guess == secret_number :
+    INDENT
+        print "Correct!"
+        new_game()
+
+    DEDENT
+    while number_of_guesses > 0 :
+    INDENT
+        if guess > secret_number :
+        INDENT
+            print "Lower!"
+        DEDENT
+        if guess < secret_number :
+        INDENT
+            print "Higher!"
+        DEDENT
+        print ""
+        number_of_guesses -= 1
+        print "Guesses Remaining: ", number_of_guesses
+        print ""
+        new_game()
+    DEDENT
+    game_over()
+DEDENT
+----------------------------------------
+
+def input_guess(guess) :
+INDENT
+    global number_of_guesses
+    guess = int(guess)
+    print ""
+    print "Guess was: ", guess
+    print ""
+    if guess > secret_number :
+    INDENT
+        print "Lower!"
+        print ""
+        number_of_guesses -= 1
+        print "Guesses Remaining: ", number_of_guesses
+        print ""
+        if number_of_guesses == 0 :
+        INDENT
+            print "Game Over! You Ran Out Of Guesses!"
+            new_game()
+        DEDENT
+    DEDENT
+    elif guess < secret_number :
+    INDENT
+        print "Higher!"
+        print ""
+        number_of_guesses -= 1
+        print "Guesses Remaining: ", number_of_guesses
+        print ""
+        if number_of_guesses == 0 :
+        INDENT
+            print "Game Over! You Ran Out Of Guesses!"
+            new_game()
+        DEDENT
+    DEDENT
+    elif number_of_guesses == secret_number :
+    INDENT
+        print "Correct!"
+        new_game()
+    DEDENT
+    else :
+    INDENT
+        print "S**t, something's broken."
+        new_game()
+
+    DEDENT
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+2617120_2617230_31_36
+2617120_2617253_35_40
+Title: How to use traceit to report function input variables in stack trace 
+----------------------------------------
+
+def main() :
+INDENT
+    print "In main"
+    for i in range(5) :
+    INDENT
+        print i, random.randrange(0, 10)
+    DEDENT
+    print "Done."
+DEDENT
+----------------------------------------
+
+def main() :
+INDENT
+    print "In main"
+    for i in range(5) :
+    INDENT
+        foo(i)
+    DEDENT
+    print "Done."
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+2617120_2617230_9_30
+2617120_2617253_15_28
+Title: How to use traceit to report function input variables in stack trace 
+----------------------------------------
+
+def traceit(self, frame, event, arg) :
+INDENT
+    if event == "line" :
+    INDENT
+        lineno = frame.f_lineno
+        filename = frame.f_globals ["__file__"]
+        if filename == "<stdin>" :
+        INDENT
+            filename = "traceit.py"
+        DEDENT
+        if (filename.endswith(".pyc") or
+            filename.endswith(".pyo")) :
+        INDENT
+            filename = filename [: - 1]
+        DEDENT
+        name = frame.f_globals ["__name__"]
+        line = linecache.getline(filename, lineno)
+        if frame.f_back is self.lastframe :
+        INDENT
+            print "%s:%s:%s: %s" % (name, lineno, frame.f_code.co_name, line.rstrip())
+        DEDENT
+        else :
+        INDENT
+            print "%s:%s:%s(%s)" % (name, lineno, frame.f_code.co_name, str.join(', ', ("%s=%r" % item for item in frame.f_locals.iteritems())))
+            print "%s:%s:%s: %s" % (name, lineno, frame.f_code.co_name, line.rstrip())
+        DEDENT
+        self.lastframe = frame.f_back
+    DEDENT
+    return self.traceit
+
+DEDENT
+----------------------------------------
+
+def traceit(frame, event, arg) :
+INDENT
+    if event == "line" :
+    INDENT
+        lineno = frame.f_lineno
+        filename = frame.f_globals ["__file__"]
+        if filename == "<stdin>" :
+        INDENT
+            filename = "traceit.py"
+        DEDENT
+        if (filename.endswith(".pyc") or
+            filename.endswith(".pyo")) :
+        INDENT
+            filename = filename [: - 1]
+        DEDENT
+        name = frame.f_globals ["__name__"]
+        line = linecache.getline(filename, lineno)
+        print "%s:%s:%s: %s" % (name, lineno, frame.f_code.co_name, line.rstrip())
+    DEDENT
+    return traceit
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+26204438_26205077_2_8
+26204438_26207918_7_18
+Title: How can I create a running average of the last N items in a time series? 
+----------------------------------------
+
+def __init__(self, maxlength) :
+INDENT
+    self.maxlength = maxlength
+    self.length = 0
+    self.values = [0 for ii in xrange(maxlength)]
+    self.index = 0
+    self.total = 0.
+    self.average = 0.
+DEDENT
+----------------------------------------
+
+def __init__(self, length) :
+INDENT
+    self.sum = 0.0
+    self.length = length
+    self.current = Link()
+
+    last = self.current
+    for i in xrange(length - 1) :
+    INDENT
+        last.next = Link()
+        last = last.next
+    DEDENT
+    last.next = self.current
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+26211821_26213565_19_28
+26211821_26213565_52_60
+Title: "Partial read from ""stdout"" on Python using Popen" 
+----------------------------------------
+
+def run(self) :
+INDENT
+    popen = subprocess.Popen(cmd, stdout = subprocess.PIPE, stderr = subprocess.STDOUT)
+    while popen.poll() is None :
+    INDENT
+        data = popen.stdout.read(4)
+        if data ! = "" :
+        INDENT
+            with self.buflock :
+            INDENT
+                self.buffer += data
+            DEDENT
+        DEDENT
+    DEDENT
+DEDENT
+----------------------------------------
+
+def run(self) :
+INDENT
+    self.om.start()
+    while self.om.is_alive() :
+    INDENT
+        sleep(self.interval)
+        data = self.om.get_current_output()
+        self._handle_data_chunk(data)
+    DEDENT
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+26211821_26213565_19_28
+26211821_26215405_14_19
+Title: "Partial read from ""stdout"" on Python using Popen" 
+----------------------------------------
+
+def run(self) :
+INDENT
+    popen = subprocess.Popen(cmd, stdout = subprocess.PIPE, stderr = subprocess.STDOUT)
+    while popen.poll() is None :
+    INDENT
+        data = popen.stdout.read(4)
+        if data ! = "" :
+        INDENT
+            with self.buflock :
+            INDENT
+                self.buffer += data
+            DEDENT
+        DEDENT
+    DEDENT
+DEDENT
+----------------------------------------
+
+def run(self) :
+INDENT
+    popen = subprocess.Popen(self.cmd, stdout = subprocess.PIPE, shell = True)
+    while popen.poll() is None :
+    INDENT
+        line = popen.stdout.readline()
+        self.queue.put(line)
+    DEDENT
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+26211821_26213565_52_60
+26211821_26215405_14_19
+Title: "Partial read from ""stdout"" on Python using Popen" 
+----------------------------------------
+
+def run(self) :
+INDENT
+    self.om.start()
+    while self.om.is_alive() :
+    INDENT
+        sleep(self.interval)
+        data = self.om.get_current_output()
+        self._handle_data_chunk(data)
+    DEDENT
+DEDENT
+----------------------------------------
+
+def run(self) :
+INDENT
+    popen = subprocess.Popen(self.cmd, stdout = subprocess.PIPE, shell = True)
+    while popen.poll() is None :
+    INDENT
+        line = popen.stdout.readline()
+        self.queue.put(line)
+    DEDENT
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+2625440_2627412_8_16
+2625440_2627659_6_13
+Title: Help calling class from a class above 
+----------------------------------------
+
+def run(self) :
+INDENT
+    print "1"
+    time.sleep(1)
+    print "2"
+    time.sleep(1)
+    print "3"
+    self.fun.wTree.get_widget("entryResult").set_text("Done with One.")
+
+DEDENT
+----------------------------------------
+
+def run(self) :
+INDENT
+    print "1"
+    time.sleep(1)
+    print "2"
+    time.sleep(1)
+    print "3"
+    fun.wTree.get_widget("entryResult").set_text("Done with One.")
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+26268705_26434776_6_48
+26268705_29942951_7_20
+Title: Haystack search for a very short character field 
+----------------------------------------
+
+def build_schema(self, fields) :
+INDENT
+    schema_fields = {
+        ID : WHOOSH_ID(stored = True, unique = True),
+        DJANGO_CT : WHOOSH_ID(stored = True),
+        DJANGO_ID : WHOOSH_ID(stored = True),
+        }
+
+    initial_key_count = len(schema_fields)
+    content_field_name = ''
+    for field_name, field_class in fields.items() :
+    INDENT
+        if field_class.is_multivalued :
+        INDENT
+            if field_class.indexed is False :
+            INDENT
+                schema_fields [field_class.index_fieldname] = IDLIST(stored = True, field_boost = field_class.boost)
+            DEDENT
+            else :
+            INDENT
+                schema_fields [field_class.index_fieldname] = KEYWORD(stored = True, commas = True, scorable = True, field_boost = field_class.boost)
+            DEDENT
+        DEDENT
+        elif field_class.field_type in ['date', 'datetime'] :
+        INDENT
+            schema_fields [field_class.index_fieldname] = DATETIME(stored = field_class.stored)
+        DEDENT
+        elif field_class.field_type == 'integer' :
+        INDENT
+            schema_fields [field_class.index_fieldname] = NUMERIC(stored = field_class.stored, type = int, field_boost = field_class.boost)
+        DEDENT
+        elif field_class.field_type == 'float' :
+        INDENT
+            schema_fields [field_class.index_fieldname] = NUMERIC(stored = field_class.stored, type = float, field_boost = field_class.boost)
+        DEDENT
+        elif field_class.field_type == 'boolean' :
+        INDENT
+
+            schema_fields [field_class.index_fieldname] = BOOLEAN(stored = field_class.stored)
+        DEDENT
+        elif field_class.field_type == 'ngram' :
+        INDENT
+            schema_fields [field_class.index_fieldname] = NGRAM(minsize = 3, maxsize = 15, stored = field_class.stored, field_boost = field_class.boost)
+        DEDENT
+        elif field_class.field_type == 'edge_ngram' :
+        INDENT
+            schema_fields [field_class.index_fieldname] = NGRAMWORDS(minsize = 2, maxsize = 15, at = 'start', stored = field_class.stored, field_boost = field_class.boost)
+        DEDENT
+        else :
+        INDENT
+            schema_fields [field_class.index_fieldname] = TEXT(stored = True, analyzer = StemmingAnalyzer(minsize = 1), field_boost = field_class.boost)
+        DEDENT
+        if field_class.document is True :
+        INDENT
+            content_field_name = field_class.index_fieldname
+
+        DEDENT
+    DEDENT
+    if len(schema_fields) < = initial_key_count :
+    INDENT
+        raise SearchBackendError("No fields were found in any search_indexes. Please correct this before attempting to search.")
+    DEDENT
+    return (content_field_name, Schema(** schema_fields))
+DEDENT
+----------------------------------------
+
+def build_schema(self, fields) :
+INDENT
+    content_field_name, schema = super(CustomSearchBackend, self).build_schema(fields)
+    for field_name, field_class in fields.items() :
+    INDENT
+        if field_class.field_type == 'string' :
+        INDENT
+            schema.remove(field_class.index_fieldname)
+            schema.add(field_class.index_fieldname,
+                TEXT(stored = True,
+                    analyzer = StemmingAnalyzer(minsize = 1),
+                    field_boost = field_class.boost))
+        DEDENT
+    DEDENT
+    return content_field_name, schema
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+26290612_26290682_8_23
+26290612_26290861_9_21
+Title: Adding list in form of tuples to a dictionary 
+----------------------------------------
+
+def name_Index(data) :
+INDENT
+    d = defaultdict(lambda : defaultdict(lambda : {'F' : 0, 'M' : 0}))
+    for year, name, sex, births in data :
+    INDENT
+        d [name] [year] [sex] += births
+
+    DEDENT
+    result = {}
+    for name, data in d.items() :
+    INDENT
+        result [name] = [(year, c ['M'], c ['F']) for year, c in data.items()]
+    DEDENT
+    return result
+    print name_Index(names)
+DEDENT
+----------------------------------------
+
+def name_Index() :
+INDENT
+    tmp = defaultdict(lambda : defaultdict(lambda : [0, 0]))
+    for year, name, sex, N in list_of_names() :
+    INDENT
+        i = 0 if sex == 'M' else 1
+        tmp [name] [year] [i] += N
+    DEDENT
+    d = {}
+    for name, entries in tmp.items() :
+    INDENT
+        d [name] = [(year, M, F) for (year, (M, F)) in entries.items()]
+    DEDENT
+    return d
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+26290612_26290682_8_23
+26290612_26292359_31_46
+Title: Adding list in form of tuples to a dictionary 
+----------------------------------------
+
+def name_Index(data) :
+INDENT
+    d = defaultdict(lambda : defaultdict(lambda : {'F' : 0, 'M' : 0}))
+    for year, name, sex, births in data :
+    INDENT
+        d [name] [year] [sex] += births
+
+    DEDENT
+    result = {}
+    for name, data in d.items() :
+    INDENT
+        result [name] = [(year, c ['M'], c ['F']) for year, c in data.items()]
+    DEDENT
+    return result
+    print name_Index(names)
+DEDENT
+----------------------------------------
+
+def name_Index(names) :
+INDENT
+    d = dict()
+    L = readNames()
+    newlist = []
+    for sublist in L :
+    INDENT
+        name = sublist [1]
+        if name not in d :
+        INDENT
+            d [name] = NameOb()
+        DEDENT
+        d [name].add_record(sublist [0], sublist [2], sublist [3])
+    DEDENT
+    for name, nameob in d.items() :
+    INDENT
+        d [name] = nameob.get_as_list()
+    DEDENT
+    return d
+
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+26290612_26290861_9_21
+26290612_26292359_31_46
+Title: Adding list in form of tuples to a dictionary 
+----------------------------------------
+
+def name_Index() :
+INDENT
+    tmp = defaultdict(lambda : defaultdict(lambda : [0, 0]))
+    for year, name, sex, N in list_of_names() :
+    INDENT
+        i = 0 if sex == 'M' else 1
+        tmp [name] [year] [i] += N
+    DEDENT
+    d = {}
+    for name, entries in tmp.items() :
+    INDENT
+        d [name] = [(year, M, F) for (year, (M, F)) in entries.items()]
+    DEDENT
+    return d
+DEDENT
+----------------------------------------
+
+def name_Index(names) :
+INDENT
+    d = dict()
+    L = readNames()
+    newlist = []
+    for sublist in L :
+    INDENT
+        name = sublist [1]
+        if name not in d :
+        INDENT
+            d [name] = NameOb()
+        DEDENT
+        d [name].add_record(sublist [0], sublist [2], sublist [3])
+    DEDENT
+    for name, nameob in d.items() :
+    INDENT
+        d [name] = nameob.get_as_list()
+    DEDENT
+    return d
+
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+26295034_26295114_1_17
+26295034_26295674_6_21
+Title: Python: if arrived to end of list 
+----------------------------------------
+
+def codes(lst, cods) :
+INDENT
+    lst1 = lst [:]
+    lst [:] = []
+    for element in lst1 :
+    INDENT
+        cccc = element [0 : 4]
+        yyyy = element [4 : 8]
+        mm = element [8 : 10]
+        dd = element [10 : 12]
+        if cccc in cods :
+        INDENT
+            lst += [cccc, int(dd), int(mm), int(yyyy)]
+        DEDENT
+        else :
+        INDENT
+            lst += [cccc + yyyy + mm + dd]
+        DEDENT
+    DEDENT
+    return lst
+DEDENT
+----------------------------------------
+
+def codes(lst, cods) :
+INDENT
+    i = 0
+    while i < len(lst) :
+    INDENT
+        cccc = lst [i] [0 : 4]
+        if cccc in cods :
+        INDENT
+            yyyy = lst [i] [4 : 8]
+            mm = lst [i] [8 : 10]
+            dd = lst [i] [10 : 12]
+            lst.pop(i)
+            lst.insert(i, cccc)
+            lst.insert(i + 1, int(dd))
+            lst.insert(i + 2, int(mm))
+            lst.insert(i + 3, int(yyyy))
+            i += 3
+        DEDENT
+        i += 1
+    DEDENT
+    return lst
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+26320638_26446366_19_32
+26320638_44859770_5_12
+Title: Converting Pandas DataFrame to Orange Table 
+----------------------------------------
+
+def series2descriptor(d, discrete = False) :
+INDENT
+    if d.dtype is np.dtype("float") :
+    INDENT
+        return Orange.feature.Continuous(str(d.name))
+    DEDENT
+    elif d.dtype is np.dtype("int") :
+    INDENT
+        return Orange.feature.Continuous(str(d.name), number_of_decimals = 0)
+    DEDENT
+    else :
+    INDENT
+        t = d.unique()
+        if discrete or len(t) < len(d) / 2 :
+        INDENT
+            t.sort()
+            return Orange.feature.Discrete(str(d.name), values = list(t.astype("str")))
+        DEDENT
+        else :
+        INDENT
+            return Orange.feature.String(str(d.name))
+
+        DEDENT
+    DEDENT
+DEDENT
+----------------------------------------
+
+def series2descriptor(d) :
+INDENT
+    if d.dtype is np.dtype("float") or d.dtype is np.dtype("int") :
+    INDENT
+        return ContinuousVariable(str(d.name))
+    DEDENT
+    else :
+    INDENT
+        t = d.unique()
+        t.sort()
+        return DiscreteVariable(str(d.name), list(t.astype("str")))
+    DEDENT
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+26320638_26446366_70_83
+26320638_44859770_23_29
+Title: Converting Pandas DataFrame to Orange Table 
+----------------------------------------
+
+def series2table(series, variable) :
+INDENT
+    if series.dtype is np.dtype("int") or series.dtype is np.dtype("float") :
+    INDENT
+        return Orange.data.Table(Orange.data.Domain(variable), series.values [:, np.newaxis])
+    DEDENT
+    else :
+    INDENT
+
+        tdomain = Orange.data.Domain(variable)
+        tinsts = [Orange.data.Instance(tdomain, [i]) for i in series]
+        return Orange.data.Table(tdomain, tinsts)
+
+    DEDENT
+DEDENT
+----------------------------------------
+
+def series2table(series, variable) :
+INDENT
+    if series.dtype is np.dtype("int") or series.dtype is np.dtype("float") :
+    INDENT
+        series = series.values [:, np.newaxis]
+        return Table(series)
+    DEDENT
+    else :
+    INDENT
+        series = series.astype('category').cat.codes.reshape((- 1, 1))
+        return Table(series)
+    DEDENT
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+26336903_26337088_3_12
+26336903_26337172_1_9
+Title: trying to build a complex calculator in python 
+----------------------------------------
+
+def calc() :
+INDENT
+    num = float(raw_input("Enter a number"))
+    func = raw_input("Enter a function")
+    math_function = getattr(math, func, None)
+    if not math_function :
+    INDENT
+        raise RuntimeError('Math func not found')
+    DEDENT
+    return math_function(num)
+DEDENT
+----------------------------------------
+
+def calc() :
+INDENT
+    import math
+    num = float(raw_input("Enter a number"))
+    func = raw_input("Enter a function")
+    if func.lower() == "sqrt" :
+    INDENT
+        result = math.sqrt(num)
+    DEDENT
+    return result
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+26382295_26382630_1_10
+26382295_26383284_1_26
+Title: Program not working when picking random Coin and Card 
+----------------------------------------
+
+def program() :
+INDENT
+    Choice = input("Pick either 'Card' or 'Coin' ")
+    if Choice == "Coin" :
+    INDENT
+        import random
+        r = random.randint(1, 2)
+        if r == (1) :
+        INDENT
+            print ("Heads!")
+        DEDENT
+        elif r == (2) :
+        INDENT
+            print ("Tails!")
+        DEDENT
+    DEDENT
+DEDENT
+----------------------------------------
+
+def program() :
+INDENT
+    Choice = input("Pick either 'Card' or 'Coin' ")
+    if Choice == "Coin" :
+    INDENT
+        import random
+
+        r = random.randint(1, 2)
+        if r == (1) :
+        INDENT
+            print ("Heads!")
+        DEDENT
+        elif r == (2) :
+        INDENT
+            print ("Tails!")
+        DEDENT
+    DEDENT
+    if Choice == "Card" :
+    INDENT
+        import random
+        card_number = random.randint(1, 13)
+        if card_number == 1 :
+        INDENT
+            print ("Ace")
+        DEDENT
+        elif card_number == 11 :
+        INDENT
+            print ("Jack")
+        DEDENT
+        elif card_number == 12 :
+        INDENT
+            print ("Queen")
+        DEDENT
+        elif card_number == 13 :
+        INDENT
+            print ("King")
+        DEDENT
+        else :
+        INDENT
+            print (card_number)
+        DEDENT
+    DEDENT
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+26447915_26448574_11_18
+26447915_29800526_4_17
+Title: How to render Mandelbrot Set faster? 
+----------------------------------------
+
+def mandel(c) :
+INDENT
+    z = 0
+    for i in range(ITERATIONS) :
+    INDENT
+        z = z * z + c
+        if abs(z) > 2 :
+        INDENT
+            return i
+        DEDENT
+    DEDENT
+    return ITERATIONS
+DEDENT
+----------------------------------------
+
+def mandel(kx, ky) :
+INDENT
+    global clr
+    maxIt = 256
+    c = complex(kx, ky)
+    z = complex(0.0, 0.0)
+    for i in range(maxIt) :
+    INDENT
+        z = z * z + c
+        if abs(z) > = 2.0 :
+        INDENT
+            return (255 - clr [i], 0, 0)
+        DEDENT
+    DEDENT
+    return (0, 0, 0)
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+26453600_26453679_1_19
+26453600_26453759_1_21
+Title: Dynamically assigning variable with locals() isn't working in recursive function 
+----------------------------------------
+
+def scraper(self, manufacturer, model = None, year = None) :
+INDENT
+    kwargs = dict(manufacturer = manufacturer, model = model, year = year)
+    if year :
+    INDENT
+        scrapeurl = '%s&manufacturer=%s&model=%s&year=%s' % (url, manufacturer, model, year)
+        return someFinalFunction()
+    DEDENT
+    elif model :
+    INDENT
+        scrapeurl = '%s&manufacturer=%s&model=%s' % (url, manufacturer, model)
+    DEDENT
+    elif manufacturer :
+    INDENT
+        scrapeurl = '%s&manufacturer=%s' % (url, manufacturer)
+    DEDENT
+    j = getJSONFromUrl(scrapeurl)
+    key, values = j.popitems()
+    for value in values :
+    INDENT
+        kwargs [key] = value
+        return self.scraper(** kwargs)
+    DEDENT
+DEDENT
+----------------------------------------
+
+def scraper(self, ** kwargs) :
+INDENT
+    if kwargs.get('year') is not None :
+    INDENT
+        scrapeurl = '{0}&manufacturer={manufacturer}&model={model}&year={year}'
+        return someFinalFunction()
+    DEDENT
+    elif kwargs.get('model') is not None :
+    INDENT
+        scrapeurl = '{0}&manufacturer={manufacturer}&model={model}'
+    DEDENT
+    elif kwargs.get('manufacturer') is not None :
+    INDENT
+        scrapeurl = '{0}&manufacturer={manufacturer}'
+    DEDENT
+    else :
+    INDENT
+        raise KeyError
+    DEDENT
+    j = getJSONFromUrl(scrapeurl.format(url, ** kwargs))
+    key, values = j.popitems()
+    for value in values :
+    INDENT
+        kwargs [key] = value
+        return self.scraper(** kwargs)
+    DEDENT
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+26477431_26499001_16_25
+26477431_26499001_4_13
+Title: Python Tkinter: How to add custom border to Pop-up window 
+----------------------------------------
+
+def __init__(self, parent) :
+INDENT
+    Frame.__init__(self, parent)
+    self.parent = parent
+    self.parent.geometry('%dx%d+%d+%d' % (300, 300, 0, 0))
+    self.parent.resizable(0, 0)
+    self.pack(expand = True)
+    self.mytop = MyTop(self.parent)
+    self.mytop.deiconify()
+DEDENT
+----------------------------------------
+
+def __init__(self, parent) :
+INDENT
+    Toplevel.__init__(self, parent)
+    self.overrideredirect(True)
+    self.withdraw()
+    self.geometry('+%d+%d' % (350, 100))
+    topLabel = Label(self, text = "Hello World",
+        borderwidth = 1, relief = 'solid')
+    topLabel.pack(padx = 10, pady = (10, 5))
+    topLabel.config(font = ('times', 14))
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+26503490_26504686_45_57
+26503490_26505451_45_63
+Title: loop through path list held in txt 
+----------------------------------------
+
+def main() :
+INDENT
+    myFolder = "C:/data/shp/recycling/"
+
+    b = zipShapefile(myFolder)
+    if b :
+    INDENT
+        print "Zipping done!"
+    DEDENT
+    else :
+    INDENT
+        print "An error occurred during zipping."
+    DEDENT
+DEDENT
+----------------------------------------
+
+def main() :
+INDENT
+    items = 'shp_folders.txt'
+    myFolder = items
+    with open(items, 'r') as f :
+    INDENT
+        for line in f :
+        INDENT
+            zipShapefile(line.rstrip())
+
+        DEDENT
+    DEDENT
+    b = zipShapefile(myFolder)
+    if b :
+    INDENT
+        print "Zipping done!"
+    DEDENT
+    else :
+    INDENT
+        print "An error occurred during zipping."
+    DEDENT
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+2654834_3113913_7_14
+2654834_37423224_7_16
+Title: Capturing stdout within the same process in Python 
+----------------------------------------
+
+def capture_stdout() :
+INDENT
+    old = sys.stdout
+    capturer = StringIO.StringIO()
+    sys.stdout = capturer
+    data = Data()
+    yield data
+    sys.stdout = old
+    data.result = capturer.getvalue()
+DEDENT
+----------------------------------------
+
+def capture_stdout() :
+INDENT
+    old = sys.stdout
+    capturer = StringIO.StringIO()
+    data = Data()
+    try :
+    INDENT
+        sys.stdout = capturer
+        yield data
+    DEDENT
+    finally :
+    INDENT
+        sys.stdout = old
+        data.result = capturer.getvalue()
+    DEDENT
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+26552884_26552969_3_9
+26552884_26552974_6_13
+Title: Values Not Adding Up 
+----------------------------------------
+
+def new_week(t) :
+INDENT
+    t ['week'] += 1
+    t ['tick'] += 1
+    if t ['tick'] == 4 :
+    INDENT
+        new_month(t)
+        t ['tick'] = 1
+    DEDENT
+DEDENT
+----------------------------------------
+
+def new_week() :
+INDENT
+    global week, tick
+    week = week + 1
+    tick = tick + 1
+    if tick == 4 :
+    INDENT
+        new_month()
+        tick = 1
+    DEDENT
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+2655643_2655752_27_32
+2655643_2830569_54_67
+Title: ungetc in Python 
+----------------------------------------
+
+def ungetc(self, ch) :
+INDENT
+    if self.buffer is None :
+    INDENT
+        self.buffer = [ch]
+    DEDENT
+    else :
+    INDENT
+        self.buffer.append(ch)
+    DEDENT
+    self.ready = True
+DEDENT
+----------------------------------------
+
+def ungetc(self) :
+INDENT
+    if self.__file == None :
+    INDENT
+        return None
+    DEDENT
+    self.__fileposition = self.__file.tell()
+    if self.__fileposition > 0 :
+    INDENT
+        self.__fileposition = self.__fileposition - 1
+        self.__file.seek(self.__fileposition, os.SEEK_SET)
+        byte = self.__file.read(1)
+        self.__file.seek(self.__fileposition, os.SEEK_SET)
+        return byte
+    DEDENT
+    else :
+    INDENT
+        return None
+
+    DEDENT
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+26571690_26574805_29_40
+26571690_26574805_42_52
+Title: PySide: Connecting QComboBox indices with QWidgets 
+----------------------------------------
+
+def __init__(self, parent = None) :
+INDENT
+    super().__init__(parent)
+    tab_widget = QtGui.QTabWidget()
+    tab_widget.addTab(QtGui.QWidget(), "1")
+    tab_widget.addTab(QtGui.QWidget(), "2")
+    main_layout = QtGui.QVBoxLayout()
+    main_layout.addWidget(tab_widget)
+    self.setLayout(main_layout)
+
+DEDENT
+----------------------------------------
+
+def __init__(self, parent = None) :
+INDENT
+    super().__init__(parent)
+    self.fig = pg.PlotWidget(name = 'PlotWidget')
+    self.plot_area = self.fig.plotItem
+    layout = QtGui.QVBoxLayout()
+    layout.addWidget(self.fig)
+    self.setLayout(layout)
+
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+26571690_26574805_29_40
+26571690_26574805_8_27
+Title: PySide: Connecting QComboBox indices with QWidgets 
+----------------------------------------
+
+def __init__(self, parent = None) :
+INDENT
+    super().__init__(parent)
+    tab_widget = QtGui.QTabWidget()
+    tab_widget.addTab(QtGui.QWidget(), "1")
+    tab_widget.addTab(QtGui.QWidget(), "2")
+    main_layout = QtGui.QVBoxLayout()
+    main_layout.addWidget(tab_widget)
+    self.setLayout(main_layout)
+
+DEDENT
+----------------------------------------
+
+def __init__(self, parent = None) :
+INDENT
+    super().__init__(parent)
+    v_global_layout = QtGui.QVBoxLayout()
+    method_selection = QtGui.QComboBox()
+    method_selection.addItem("A")
+    method_selection.addItem("B")
+    self.stackedWidget = QtGui.QStackedWidget()
+    self.stackedWidget.addWidget(TabDialog())
+    self.stackedWidget.addWidget(Graph())
+    method_selection.activated [int].connect(self.stackedWidget.setCurrentIndex)
+    v_global_layout.addWidget(method_selection)
+    v_global_layout.setAlignment(QtCore.Qt.AlignTop)
+    v_global_layout.addWidget(self.stackedWidget)
+    self.setLayout(v_global_layout)
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+26571690_26574805_42_52
+26571690_26574805_8_27
+Title: PySide: Connecting QComboBox indices with QWidgets 
+----------------------------------------
+
+def __init__(self, parent = None) :
+INDENT
+    super().__init__(parent)
+    self.fig = pg.PlotWidget(name = 'PlotWidget')
+    self.plot_area = self.fig.plotItem
+    layout = QtGui.QVBoxLayout()
+    layout.addWidget(self.fig)
+    self.setLayout(layout)
+
+DEDENT
+----------------------------------------
+
+def __init__(self, parent = None) :
+INDENT
+    super().__init__(parent)
+    v_global_layout = QtGui.QVBoxLayout()
+    method_selection = QtGui.QComboBox()
+    method_selection.addItem("A")
+    method_selection.addItem("B")
+    self.stackedWidget = QtGui.QStackedWidget()
+    self.stackedWidget.addWidget(TabDialog())
+    self.stackedWidget.addWidget(Graph())
+    method_selection.activated [int].connect(self.stackedWidget.setCurrentIndex)
+    v_global_layout.addWidget(method_selection)
+    v_global_layout.setAlignment(QtCore.Qt.AlignTop)
+    v_global_layout.addWidget(self.stackedWidget)
+    self.setLayout(v_global_layout)
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+26582811_26584045_22_47
+26582811_46292917_9_43
+Title: Gmail Python multiple attachments 
+----------------------------------------
+
+def mail(to, subject, text, attach) :
+INDENT
+    msg = MIMEMultipart()
+    msg ['From'] = gmail_user
+    msg ['To'] = ", ".join(recipients)
+    msg ['Subject'] = subject
+    msg.attach(MIMEText(text))
+
+    for file in filenames :
+    INDENT
+        part = MIMEBase('application', 'octet-stream')
+        part.set_payload(open(file, 'rb').read())
+        Encoders.encode_base64(part)
+        part.add_header('Content-Disposition', 'attachment; filename="%s"' % file)
+        msg.attach(part)
+    DEDENT
+    mailServer = smtplib.SMTP("smtp.gmail.com", 587)
+    mailServer.ehlo()
+    mailServer.starttls()
+    mailServer.ehlo()
+    mailServer.login(gmail_user, gmail_pwd)
+    mailServer.sendmail(gmail_user, to, msg.as_string())
+    mailServer.close()
+
+DEDENT
+----------------------------------------
+
+def mail(to, subject, text, attach) :
+INDENT
+    if not isinstance(to, list) :
+    INDENT
+        to = [to]
+    DEDENT
+    if not isinstance(attach, list) :
+    INDENT
+        attach = [attach]
+    DEDENT
+    gmail_user = 'username@gmail.com'
+    gmail_pwd = "password"
+    msg = MIMEMultipart()
+    msg ['From'] = gmail_user
+    msg ['To'] = ", ".join(to)
+    msg ['Subject'] = subject
+    msg.attach(MIMEText(text))
+
+    for file in attach :
+    INDENT
+        print file
+        part = MIMEBase('application', 'octet-stream')
+        part.set_payload(open(file, 'rb').read())
+        Encoders.encode_base64(part)
+        part.add_header('Content-Disposition', 'attachment; filename="%s"' % os.path.basename(file))
+        msg.attach(part)
+    DEDENT
+    mailServer = smtplib.SMTP("smtp.gmail.com", 587)
+    mailServer.ehlo()
+    mailServer.starttls()
+    mailServer.ehlo()
+    mailServer.login(gmail_user, gmail_pwd)
+    mailServer.sendmail(gmail_user, to, msg.as_string())
+    mailServer.close()
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+26594231_26594505_6_17
+26594231_26594818_3_23
+Title: Python dictionary program output issue 
+----------------------------------------
+
+def main() :
+INDENT
+    zip_dictionary = {}
+    zip_list = []
+    update_dictionary(zip_dictionary, zip_list, "CAM", "1427")
+    update_dictionary(zip_dictionary, zip_list, "UofM", "1427")
+    update_dictionary(zip_dictionary, zip_list, "ZIT", "1423-503")
+    update_dictionary(zip_dictionary, zip_list, "MCOC", "1423")
+    update_dictionary(zip_dictionary, zip_list, "NAZARETH", "1418")
+    update_dictionary(zip_dictionary, zip_list, "OCC", "1420")
+    for key in zip_list :
+    INDENT
+        print (key, zip_dictionary [key])
+    DEDENT
+DEDENT
+----------------------------------------
+
+def main() :
+INDENT
+    zip_dictionary = OrderedDict()
+    zip_dictionary ["CAM"] = "1427"
+    zip_dictionary ["UofM"] = "1427"
+    zip_dictionary ["ZIT"] = "1423-503"
+    zip_dictionary ["MCOC"] = "1423"
+    zip_dictionary ["NAZARETH"] = "1418"
+    zip_dictionary ["OCC"] = "1420"
+    print "\nContents of dict:"
+    for key in zip_dictionary :
+    INDENT
+        print (key, zip_dictionary [key])
+    DEDENT
+    print "\nPopping items:"
+    for i in range(2) :
+    INDENT
+        print (zip_dictionary.popitem())
+    DEDENT
+    print "\nRemaining items:"
+    for key in zip_dictionary :
+    INDENT
+        print (key, zip_dictionary [key])
+    DEDENT
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+26596714_26598452_11_19
+26596714_46801738_7_13
+Title: Python: Writing to a single file with queue while using multiprocessing Pool 
+----------------------------------------
+
+def mp_handler() :
+INDENT
+    p = multiprocessing.Pool(32)
+    with open('infilenamess.txt') as f :
+    INDENT
+        filenames = [line for line in (l.strip() for l in f) if line]
+    DEDENT
+    with open('results.txt', 'w') as f :
+    INDENT
+        for result in p.imap(mp_worker, filenames) :
+        INDENT
+
+            f.write('%s: %d\n' % result)
+        DEDENT
+    DEDENT
+DEDENT
+----------------------------------------
+
+def mp_handler() :
+INDENT
+    p = multiprocessing.Pool(32)
+    numbers = list(range(1000))
+    with open('results.txt', 'w') as f :
+    INDENT
+        for result in p.imap(mp_worker, numbers) :
+        INDENT
+            f.write('%d\n' % result)
+        DEDENT
+    DEDENT
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+26596762_26597374_1_15
+26596762_26605638_1_11
+Title: How to add a counter to a recursive function? [Python] 
+----------------------------------------
+
+def replaceFirstTwo(x, y, lst) :
+INDENT
+    if lst == [] :
+    INDENT
+        return []
+    DEDENT
+    else :
+    INDENT
+        if x is not None :
+        INDENT
+            if lst [0] == abs(x) :
+            INDENT
+                if x > - 1 :
+                INDENT
+                    x = - x
+                DEDENT
+                else :
+                INDENT
+                    x = None
+                DEDENT
+                return [y] + replaceFirstTwo(x, y, lst [1 :])
+            DEDENT
+            else :
+            INDENT
+                return [lst [0]] + replaceFirstTwo(x, y, lst [1 :])
+            DEDENT
+        DEDENT
+        else :
+        INDENT
+            return [lst [0]] + replaceFirstTwo(x, y, lst [1 :])
+        DEDENT
+    DEDENT
+DEDENT
+----------------------------------------
+
+def replaceFirstTwo(x, y, lst) :
+INDENT
+    def sub(lst, res, count) :
+    INDENT
+        if lst :
+        INDENT
+            e = lst [0]
+            if e == x and count < 2 :
+            INDENT
+                return sub(lst [1 :], res + [y], count + 1)
+            DEDENT
+            else :
+            INDENT
+                return sub(lst [1 :], res + [e], count)
+            DEDENT
+        DEDENT
+        else :
+        INDENT
+            return res
+        DEDENT
+    DEDENT
+    return sub(lst, [], 0)
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+26599162_26604818_1_11
+26599162_26604882_1_17
+Title: How can I create and edit a list during recursion? 
+----------------------------------------
+
+def find(code, guess, colors) :
+INDENT
+    def sub(code, guess, lst1, lst2) :
+    INDENT
+        if guess :
+        INDENT
+            if guess [0] == code [0] :
+            INDENT
+                lst2 [code [0]] += 1
+                return sub(code [1 :], guess [1 :], lst1 + ["found"], lst2)
+            DEDENT
+            else :
+            INDENT
+                return sub(code [1 :], guess [1 :], lst1 + ["dummy"], lst2)
+            DEDENT
+        DEDENT
+        else :
+        INDENT
+            return lst1, lst2
+        DEDENT
+    DEDENT
+    return sub(code, guess, [], [0] * colors)
+DEDENT
+----------------------------------------
+
+def find(code, guess, colors) :
+INDENT
+    def wrapped_find(code, guess, color_list) :
+    INDENT
+        if guess == [] :
+        INDENT
+            return []
+        DEDENT
+        else :
+        INDENT
+            if guess [0] == code [0] :
+            INDENT
+                color_list [code [0]] += 1
+                return ["found"] + wrapped_find(code [1 :], guess [1 :], color_list)
+            DEDENT
+            else :
+            INDENT
+                return ["dummy"] + wrapped_find(code [1 :], guess [1 :], color_list)
+            DEDENT
+        DEDENT
+    DEDENT
+    color_list = [0] * colors
+    match_list = wrapped_find(code, guess, color_list)
+    return match_list, color_list
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+26599245_26599939_18_23
+26599245_26599939_5_11
+Title: Yield hold until other line > 0 
+----------------------------------------
+
+def Run(self) :
+INDENT
+    while 1 :
+    INDENT
+        yield hold, self, random.expovariate(.07)
+        self.new_customer.signal()
+        self.customers += 1
+    DEDENT
+DEDENT
+----------------------------------------
+
+def Run(self) :
+INDENT
+    while 1 :
+    INDENT
+        if self.atm_line.customers is 0 :
+        INDENT
+            yield waitevent, self, self.atm_line.new_customer
+        DEDENT
+        yield hold, self, random.expovariate(.05)
+        self.atm_line.customers -= 1
+    DEDENT
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+26602008_26610229_17_50
+26602008_26610229_79_93
+Title: Wxpython show dialog on main frame startup 
+----------------------------------------
+
+def __init__(self) :
+INDENT
+    wx.Dialog.__init__(self, None, title = "Login")
+
+    user_sizer = wx.BoxSizer(wx.HORIZONTAL)
+    user_lbl = wx.StaticText(self, label = "Username:")
+    user_sizer.Add(user_lbl, 0, wx.ALL | wx.CENTER, 5)
+    self.user = wx.TextCtrl(self)
+    user_sizer.Add(self.user, 0, wx.ALL, 5)
+
+    p_sizer = wx.BoxSizer(wx.HORIZONTAL)
+    p_lbl = wx.StaticText(self, label = "Password:")
+    p_sizer.Add(p_lbl, 0, wx.ALL | wx.CENTER, 5)
+    self.password = wx.TextCtrl(self, style = wx.TE_PASSWORD)
+    p_sizer.Add(self.password, 0, wx.ALL, 5)
+    main_sizer = wx.BoxSizer(wx.VERTICAL)
+    main_sizer.Add(user_sizer, 0, wx.ALL, 5)
+    main_sizer.Add(p_sizer, 0, wx.ALL, 5)
+    btn = wx.Button(self, label = "Login")
+    btn.Bind(wx.EVT_BUTTON, self.onLogin)
+    main_sizer.Add(btn, 0, wx.ALL | wx.CENTER, 5)
+    cancel = wx.Button(self, wx.ID_CANCEL)
+    main_sizer.Add(cancel, 0, wx.ALL | wx.CENTER, 5)
+    self.SetSizer(main_sizer)
+
+DEDENT
+----------------------------------------
+
+def __init__(self) :
+INDENT
+    wx.Frame.__init__(self, None, title = "Main App")
+    panel = MyPanel(self)
+    pub.subscribe(self.myListener, "frameListener")
+
+    dlg = LoginDialog()
+    res = dlg.ShowModal()
+    if res == wx.ID_CANCEL :
+    INDENT
+        dlg.Destroy()
+        self.Close()
+
+    DEDENT
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+26602008_26610229_17_50
+26602008_26616375_17_53
+Title: Wxpython show dialog on main frame startup 
+----------------------------------------
+
+def __init__(self) :
+INDENT
+    wx.Dialog.__init__(self, None, title = "Login")
+
+    user_sizer = wx.BoxSizer(wx.HORIZONTAL)
+    user_lbl = wx.StaticText(self, label = "Username:")
+    user_sizer.Add(user_lbl, 0, wx.ALL | wx.CENTER, 5)
+    self.user = wx.TextCtrl(self)
+    user_sizer.Add(self.user, 0, wx.ALL, 5)
+
+    p_sizer = wx.BoxSizer(wx.HORIZONTAL)
+    p_lbl = wx.StaticText(self, label = "Password:")
+    p_sizer.Add(p_lbl, 0, wx.ALL | wx.CENTER, 5)
+    self.password = wx.TextCtrl(self, style = wx.TE_PASSWORD)
+    p_sizer.Add(self.password, 0, wx.ALL, 5)
+    main_sizer = wx.BoxSizer(wx.VERTICAL)
+    main_sizer.Add(user_sizer, 0, wx.ALL, 5)
+    main_sizer.Add(p_sizer, 0, wx.ALL, 5)
+    btn = wx.Button(self, label = "Login")
+    btn.Bind(wx.EVT_BUTTON, self.onLogin)
+    main_sizer.Add(btn, 0, wx.ALL | wx.CENTER, 5)
+    cancel = wx.Button(self, wx.ID_CANCEL)
+    main_sizer.Add(cancel, 0, wx.ALL | wx.CENTER, 5)
+    self.SetSizer(main_sizer)
+
+DEDENT
+----------------------------------------
+
+def __init__(self, * args, ** kwargs) :
+INDENT
+    super(LoginFrame, self).__init__(* args, ** kwargs)
+    self.parent = args [0]
+    self.logged_in = False
+    pane = self.GetContentsPane()
+    pane_form = sized_controls.SizedPanel(pane)
+    pane_form.SetSizerType('form')
+    label = wx.StaticText(pane_form, label = 'User Name')
+    label.SetSizerProps(halign = 'right', valign = 'center')
+    self.user_name_ctrl = wx.TextCtrl(pane_form, size = ((200, - 1)))
+    label = wx.StaticText(pane_form, label = 'Password')
+    label.SetSizerProps(halign = 'right', valign = 'center')
+    self.password_ctrl = wx.TextCtrl(
+        pane_form, size = ((200, - 1)), style = wx.TE_PASSWORD)
+    pane_btns = sized_controls.SizedPanel(pane)
+    pane_btns.SetSizerType('horizontal')
+    pane_btns.SetSizerProps(halign = 'right')
+    login_btn = wx.Button(pane_btns, label = 'Login')
+    login_btn.SetDefault()
+    cancel_btn = wx.Button(pane_btns, label = 'Cancel')
+    self.Fit()
+    self.SetTitle('Login')
+    self.CenterOnParent()
+    self.parent.Disable()
+    login_btn.Bind(wx.EVT_BUTTON, self.on_btn_login)
+    cancel_btn.Bind(wx.EVT_BUTTON, self.on_btn_cancel)
+    self.Bind(wx.EVT_CLOSE, self.on_close)
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+26602008_26610229_17_50
+26602008_26616375_7_14
+Title: Wxpython show dialog on main frame startup 
+----------------------------------------
+
+def __init__(self) :
+INDENT
+    wx.Dialog.__init__(self, None, title = "Login")
+
+    user_sizer = wx.BoxSizer(wx.HORIZONTAL)
+    user_lbl = wx.StaticText(self, label = "Username:")
+    user_sizer.Add(user_lbl, 0, wx.ALL | wx.CENTER, 5)
+    self.user = wx.TextCtrl(self)
+    user_sizer.Add(self.user, 0, wx.ALL, 5)
+
+    p_sizer = wx.BoxSizer(wx.HORIZONTAL)
+    p_lbl = wx.StaticText(self, label = "Password:")
+    p_sizer.Add(p_lbl, 0, wx.ALL | wx.CENTER, 5)
+    self.password = wx.TextCtrl(self, style = wx.TE_PASSWORD)
+    p_sizer.Add(self.password, 0, wx.ALL, 5)
+    main_sizer = wx.BoxSizer(wx.VERTICAL)
+    main_sizer.Add(user_sizer, 0, wx.ALL, 5)
+    main_sizer.Add(p_sizer, 0, wx.ALL, 5)
+    btn = wx.Button(self, label = "Login")
+    btn.Bind(wx.EVT_BUTTON, self.onLogin)
+    main_sizer.Add(btn, 0, wx.ALL | wx.CENTER, 5)
+    cancel = wx.Button(self, wx.ID_CANCEL)
+    main_sizer.Add(cancel, 0, wx.ALL | wx.CENTER, 5)
+    self.SetSizer(main_sizer)
+
+DEDENT
+----------------------------------------
+
+def __init__(self, * args, ** kwargs) :
+INDENT
+    super(MainFrame, self).__init__(* args, ** kwargs)
+    self.SetTitle('MainFrame')
+    pane = self.GetContentsPane()
+    wx.Button(pane, label = 'No access until logged in')
+    self.SetInitialSize((400, 400))
+
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+26602008_26610229_79_93
+26602008_26616375_17_53
+Title: Wxpython show dialog on main frame startup 
+----------------------------------------
+
+def __init__(self) :
+INDENT
+    wx.Frame.__init__(self, None, title = "Main App")
+    panel = MyPanel(self)
+    pub.subscribe(self.myListener, "frameListener")
+
+    dlg = LoginDialog()
+    res = dlg.ShowModal()
+    if res == wx.ID_CANCEL :
+    INDENT
+        dlg.Destroy()
+        self.Close()
+
+    DEDENT
+DEDENT
+----------------------------------------
+
+def __init__(self, * args, ** kwargs) :
+INDENT
+    super(LoginFrame, self).__init__(* args, ** kwargs)
+    self.parent = args [0]
+    self.logged_in = False
+    pane = self.GetContentsPane()
+    pane_form = sized_controls.SizedPanel(pane)
+    pane_form.SetSizerType('form')
+    label = wx.StaticText(pane_form, label = 'User Name')
+    label.SetSizerProps(halign = 'right', valign = 'center')
+    self.user_name_ctrl = wx.TextCtrl(pane_form, size = ((200, - 1)))
+    label = wx.StaticText(pane_form, label = 'Password')
+    label.SetSizerProps(halign = 'right', valign = 'center')
+    self.password_ctrl = wx.TextCtrl(
+        pane_form, size = ((200, - 1)), style = wx.TE_PASSWORD)
+    pane_btns = sized_controls.SizedPanel(pane)
+    pane_btns.SetSizerType('horizontal')
+    pane_btns.SetSizerProps(halign = 'right')
+    login_btn = wx.Button(pane_btns, label = 'Login')
+    login_btn.SetDefault()
+    cancel_btn = wx.Button(pane_btns, label = 'Cancel')
+    self.Fit()
+    self.SetTitle('Login')
+    self.CenterOnParent()
+    self.parent.Disable()
+    login_btn.Bind(wx.EVT_BUTTON, self.on_btn_login)
+    cancel_btn.Bind(wx.EVT_BUTTON, self.on_btn_cancel)
+    self.Bind(wx.EVT_CLOSE, self.on_close)
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+26602008_26610229_79_93
+26602008_26616375_7_14
+Title: Wxpython show dialog on main frame startup 
+----------------------------------------
+
+def __init__(self) :
+INDENT
+    wx.Frame.__init__(self, None, title = "Main App")
+    panel = MyPanel(self)
+    pub.subscribe(self.myListener, "frameListener")
+
+    dlg = LoginDialog()
+    res = dlg.ShowModal()
+    if res == wx.ID_CANCEL :
+    INDENT
+        dlg.Destroy()
+        self.Close()
+
+    DEDENT
+DEDENT
+----------------------------------------
+
+def __init__(self, * args, ** kwargs) :
+INDENT
+    super(MainFrame, self).__init__(* args, ** kwargs)
+    self.SetTitle('MainFrame')
+    pane = self.GetContentsPane()
+    wx.Button(pane, label = 'No access until logged in')
+    self.SetInitialSize((400, 400))
+
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+26602008_26616375_17_53
+26602008_26616375_7_14
+Title: Wxpython show dialog on main frame startup 
+----------------------------------------
+
+def __init__(self, * args, ** kwargs) :
+INDENT
+    super(LoginFrame, self).__init__(* args, ** kwargs)
+    self.parent = args [0]
+    self.logged_in = False
+    pane = self.GetContentsPane()
+    pane_form = sized_controls.SizedPanel(pane)
+    pane_form.SetSizerType('form')
+    label = wx.StaticText(pane_form, label = 'User Name')
+    label.SetSizerProps(halign = 'right', valign = 'center')
+    self.user_name_ctrl = wx.TextCtrl(pane_form, size = ((200, - 1)))
+    label = wx.StaticText(pane_form, label = 'Password')
+    label.SetSizerProps(halign = 'right', valign = 'center')
+    self.password_ctrl = wx.TextCtrl(
+        pane_form, size = ((200, - 1)), style = wx.TE_PASSWORD)
+    pane_btns = sized_controls.SizedPanel(pane)
+    pane_btns.SetSizerType('horizontal')
+    pane_btns.SetSizerProps(halign = 'right')
+    login_btn = wx.Button(pane_btns, label = 'Login')
+    login_btn.SetDefault()
+    cancel_btn = wx.Button(pane_btns, label = 'Cancel')
+    self.Fit()
+    self.SetTitle('Login')
+    self.CenterOnParent()
+    self.parent.Disable()
+    login_btn.Bind(wx.EVT_BUTTON, self.on_btn_login)
+    cancel_btn.Bind(wx.EVT_BUTTON, self.on_btn_cancel)
+    self.Bind(wx.EVT_CLOSE, self.on_close)
+DEDENT
+----------------------------------------
+
+def __init__(self, * args, ** kwargs) :
+INDENT
+    super(MainFrame, self).__init__(* args, ** kwargs)
+    self.SetTitle('MainFrame')
+    pane = self.GetContentsPane()
+    wx.Button(pane, label = 'No access until logged in')
+    self.SetInitialSize((400, 400))
+
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+26619451_26619567_3_16
+26619451_26620319_2_8
+Title: What is the proper way to trigger an action after value assignment in Python? 
+----------------------------------------
+
+def __init__(self, bottom, top) :
+INDENT
+    self.bounds = range(bottom, top)
+    self._value = bottom
+    @ property
+    def value() :
+    INDENT
+        return self._value
+    DEDENT
+    @ value.setter
+    def value(x) :
+    INDENT
+        if x in self.bounds :
+        INDENT
+            self._value = x
+        DEDENT
+        else :
+        INDENT
+            raise ValueError("%s is not in %r" % (x, self.bounds))
+        DEDENT
+    DEDENT
+DEDENT
+----------------------------------------
+
+def __init__(self, x, allowed = (2, 3, 4), * args, ** kwargs) :
+INDENT
+    value = int(x, * args, ** kwargs)
+    if value not in allowed :
+    INDENT
+        raise ValueError("Not in allowed values: " + repr(allowed))
+    DEDENT
+    else :
+    INDENT
+        self = value
+    DEDENT
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+26634593_26635222_1_10
+26634593_26635241_1_14
+Title: Quicksort implementation in Python 
+----------------------------------------
+
+def partition(inlist) :
+INDENT
+    i = iter(inlist)
+    pivot = i.next()
+    low, high = [], []
+    for item in i :
+    INDENT
+        if item < pivot :
+        INDENT
+            low.append(item)
+        DEDENT
+        else :
+        INDENT
+            high.append(item)
+        DEDENT
+    DEDENT
+    return low, pivot, high
+DEDENT
+----------------------------------------
+
+def partition(array) :
+INDENT
+    pivot = array [0]
+    i = 1
+    for j in range(i, len(array)) :
+    INDENT
+        if array [j] < pivot :
+        INDENT
+            temp = array [i]
+            array [i] = array [j]
+            array [j] = temp
+            i += 1
+        DEDENT
+    DEDENT
+    array [0] = array [i - 1]
+    array [i - 1] = pivot
+    return array [0 : i - 1], pivot, array [i : (len(array))]
+
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+26637734_26637835_1_16
+26637734_26638014_1_13
+Title: Am I using Python loops in the correct way? 
+----------------------------------------
+
+def copy_me(list_input) :
+INDENT
+    new_list = []
+    for item in list_input :
+    INDENT
+        if isinstance(item, str) :
+        INDENT
+            new_list.append(item.upper())
+        DEDENT
+        elif isinstance(item, int) :
+        INDENT
+            new_list.append(item + 1)
+        DEDENT
+        elif isinstance(item, float) :
+        INDENT
+            new_list.append(item + 1.0)
+        DEDENT
+        elif isinstance(item, list) :
+        INDENT
+            new_list.append("List")
+        DEDENT
+        else :
+        INDENT
+            new_list.append(item)
+        DEDENT
+    DEDENT
+    return new_list
+DEDENT
+----------------------------------------
+
+def copy_me(list_input) :
+INDENT
+    count = 0
+    new_list = []
+    for list_input in new_list :
+    INDENT
+        if (list_input.isalpha()) :
+        INDENT
+            list_input.upper()
+            count += list_input
+        DEDENT
+        elif (list_input.isdigit()) :
+        INDENT
+            list_input = list_input + 1
+            count += list_input
+        DEDENT
+        elif (list_input.islist()) :
+        INDENT
+            list_input = "List"
+            count += list_input
+        DEDENT
+    DEDENT
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+26653422_26654312_15_20
+26653422_26654312_5_10
+Title: Using decorators as class attributes instead of instance attributes 
+----------------------------------------
+
+def __call__(self, instance, ** kwargs) :
+INDENT
+    for a in kwargs :
+    INDENT
+        if not a in self.validkeys :
+        INDENT
+            raise Exception()
+        DEDENT
+    DEDENT
+    instance.__dict__.update(kwargs)
+DEDENT
+----------------------------------------
+
+def __call__(self, f) :
+INDENT
+    def wrapped_f(instance, * args, ** kwargs) :
+    INDENT
+        self.TheValidator(instance, * args, ** kwargs)
+        return f(instance, * args, ** kwargs)
+    DEDENT
+    return wrapped_f
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+26658566_26658825_2_13
+26658566_26658919_2_11
+Title: How to reset For counter in Python? 
+----------------------------------------
+
+def removeCmds(self) :
+INDENT
+    fname = input("Enter bad command list filename")
+    badCmdList = open(fname)
+    fname2 = input("Enter your script's filename")
+    myScript = open(fname2).readlines()
+    commentedCmd = ""
+    for badCmd in badCmdList :
+    INDENT
+        for myCmd in myScript :
+        INDENT
+            if badCmd in myCmd :
+            INDENT
+                commentedCmd = "#" + myCmd
+                print (commentedCmd)
+            DEDENT
+        DEDENT
+    DEDENT
+DEDENT
+----------------------------------------
+
+def removeCmds(self) :
+INDENT
+    badCmdFileName = input("Enter bad command list filename")
+    myScriptFileName = input("Enter your script's filename")
+    with open(badCmdFileName, "r") as badCmdFile :
+    INDENT
+        for badCmd in badCmdFile :
+        INDENT
+            with open(myScriptFileName, "r") as myScriptFile :
+            INDENT
+                for myCmd in myScriptFile :
+                INDENT
+                    if badCmd in myCmd :
+                    INDENT
+                        print ("#" + myCmd)
+                    DEDENT
+                DEDENT
+            DEDENT
+        DEDENT
+    DEDENT
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+26665712_26665796_1_14
+26665712_34254547_23_39
+Title: Python Nested Loop Enter Value and Confirm Answer 
+----------------------------------------
+
+def main() :
+INDENT
+    while True :
+    INDENT
+        try :
+        INDENT
+            interest_rate = int(input("Please enter an interest rate: "))
+            if interest_rate > 10 :
+            INDENT
+                confirm = input("Entered interest rate is greater than 10%. Are you sure? (y/n): ")
+                if confirm == "y" :
+                INDENT
+                    break
+                DEDENT
+            DEDENT
+            elif 0 < = interest_rate < 10 :
+            INDENT
+                break
+            DEDENT
+        DEDENT
+        except ValueError :
+        INDENT
+            print ("Entered value is not a number! ")
+        DEDENT
+    DEDENT
+    return interest_rate
+DEDENT
+----------------------------------------
+
+def main() :
+INDENT
+    initial_cond = True
+    while initial_cond :
+    INDENT
+        user_input = getting_user_input()
+        if validating_user_input(user_input) :
+        INDENT
+            if user_input > 10 :
+            INDENT
+                confirmation = confirming_choose()
+                while not confirmation :
+                INDENT
+                    getting_user_input()
+                DEDENT
+            DEDENT
+            initial_cond = False
+        DEDENT
+        else :
+        INDENT
+            print "It is not valid input."
+        DEDENT
+    DEDENT
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+26666239_26666272_1_12
+26666239_43852417_4_17
+Title: How to print statement after return in function 
+----------------------------------------
+
+def F(n) :
+INDENT
+    t = time.time()
+    if n == 0 :
+    INDENT
+        return (0)
+    DEDENT
+    elif n == 1 :
+    INDENT
+        return (1)
+    DEDENT
+    else :
+    INDENT
+        return (F(n - 1) + F(n - 2))
+    DEDENT
+    t1 == time.time()
+    F_time == t1 - t
+    print ('It took', F_time, 'seconds to sort', n, 'values using recursion')
+    return t
+DEDENT
+----------------------------------------
+
+def F(n) :
+INDENT
+    t = timer()
+    try :
+    INDENT
+        if n == 0 :
+        INDENT
+            return 0
+        DEDENT
+        elif n == 1 :
+        INDENT
+            return 1
+        DEDENT
+        else :
+        INDENT
+            return (F(n - 1) + F(n - 2))
+        DEDENT
+    DEDENT
+    finally :
+    INDENT
+        t1 = timer()
+        F_time = t1 - t
+        print (u"F(%s) took %.2fµs seconds" % (n, F_time * 1e6))
+    DEDENT
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+26669116_26675568_19_30
+26669116_26675568_34_58
+Title: Switch to another panel wxpython 
+----------------------------------------
+
+def __init__(self, parent) :
+INDENT
+    wx.Panel.__init__(self, parent = parent)
+    grid = gridlib.Grid(self)
+    grid.CreateGrid(25, 12)
+    sizer = wx.BoxSizer(wx.VERTICAL)
+    sizer.Add(grid, 0, wx.EXPAND)
+    self.SetSizer(sizer)
+
+DEDENT
+----------------------------------------
+
+def __init__(self) :
+INDENT
+    wx.Frame.__init__(self, None, wx.ID_ANY,
+        "Panel Switcher Tutorial")
+    self.panel_one = PanelOne(self)
+    self.panel_two = PanelTwo(self)
+    self.panel_two.Hide()
+    self.sizer = wx.BoxSizer(wx.VERTICAL)
+    self.sizer.Add(self.panel_one, 1, wx.EXPAND)
+    self.sizer.Add(self.panel_two, 1, wx.EXPAND)
+    self.SetSizer(self.sizer)
+
+    menubar = wx.MenuBar()
+    fileMenu = wx.Menu()
+    switch_panels_menu_item = fileMenu.Append(wx.ID_ANY,
+        "Switch Panels",
+        "Some text")
+    self.Bind(wx.EVT_MENU, self.onSwitchPanels,
+        switch_panels_menu_item)
+    menubar.Append(fileMenu, '&File')
+    self.SetMenuBar(menubar)
+
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+26673746_26759539_22_28
+26673746_26759539_38_46
+Title: Playing .mp3 files with PyAudio 
+----------------------------------------
+
+def run(self) :
+INDENT
+    while 1 :
+    INDENT
+        for root, folders, files in os.walk('./audio_files/') :
+        INDENT
+            for f in file :
+            INDENT
+                self.add_frame(f)
+            DEDENT
+        DEDENT
+        sleep(1)
+    DEDENT
+DEDENT
+----------------------------------------
+
+def run(self) :
+INDENT
+    while self.alive == 1 :
+    INDENT
+        self.render()
+
+    DEDENT
+    event = self.dispatch_events()
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+26673746_26759539_22_28
+26673746_45379460_57_88
+Title: Playing .mp3 files with PyAudio 
+----------------------------------------
+
+def run(self) :
+INDENT
+    while 1 :
+    INDENT
+        for root, folders, files in os.walk('./audio_files/') :
+        INDENT
+            for f in file :
+            INDENT
+                self.add_frame(f)
+            DEDENT
+        DEDENT
+        sleep(1)
+    DEDENT
+DEDENT
+----------------------------------------
+
+def run(self) :
+INDENT
+    sound = AudioSegment.from_file(self.filepath)
+    player = pyaudio.PyAudio()
+    stream = player.open(format = player.get_format_from_width(sound.sample_width),
+        channels = sound.channels,
+        rate = sound.frame_rate,
+        output = True)
+
+    start = 0
+    length = sound.duration_seconds
+    volume = 100.0
+    playchunk = sound [start * 1000.0 : (start + length) * 1000.0] - (60 - (60 * (volume / 100.0)))
+    millisecondchunk = 50 / 1000.0
+
+    while self.loop :
+    INDENT
+        self.time = start
+        for chunks in make_chunks(playchunk, millisecondchunk * 1000) :
+        INDENT
+            self.time += millisecondchunk
+            stream.write(chunks._data)
+            if not self.loop :
+            INDENT
+                break
+            DEDENT
+            if self.time > = start + length :
+            INDENT
+                break
+            DEDENT
+        DEDENT
+    DEDENT
+    stream.close()
+    player.terminate()
+
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+26673746_26759539_38_46
+26673746_45379460_57_88
+Title: Playing .mp3 files with PyAudio 
+----------------------------------------
+
+def run(self) :
+INDENT
+    while self.alive == 1 :
+    INDENT
+        self.render()
+
+    DEDENT
+    event = self.dispatch_events()
+DEDENT
+----------------------------------------
+
+def run(self) :
+INDENT
+    sound = AudioSegment.from_file(self.filepath)
+    player = pyaudio.PyAudio()
+    stream = player.open(format = player.get_format_from_width(sound.sample_width),
+        channels = sound.channels,
+        rate = sound.frame_rate,
+        output = True)
+
+    start = 0
+    length = sound.duration_seconds
+    volume = 100.0
+    playchunk = sound [start * 1000.0 : (start + length) * 1000.0] - (60 - (60 * (volume / 100.0)))
+    millisecondchunk = 50 / 1000.0
+
+    while self.loop :
+    INDENT
+        self.time = start
+        for chunks in make_chunks(playchunk, millisecondchunk * 1000) :
+        INDENT
+            self.time += millisecondchunk
+            stream.write(chunks._data)
+            if not self.loop :
+            INDENT
+                break
+            DEDENT
+            if self.time > = start + length :
+            INDENT
+                break
+            DEDENT
+        DEDENT
+    DEDENT
+    stream.close()
+    player.terminate()
+
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+26679515_34090379_12_114
+26679515_34090379_131_143
+Title: How to Update QSyntaxHighlighter Color Coding when user changes text 
+----------------------------------------
+
+def __init__(self, parent, theme) :
+INDENT
+    QSyntaxHighlighter.__init__(self, parent)
+    self.parent = parent
+    keyword = QTextCharFormat()
+    reservedClasses = QTextCharFormat()
+    assignmentOperator = QTextCharFormat()
+    delimiter = QTextCharFormat()
+    specialConstant = QTextCharFormat()
+    boolean = QTextCharFormat()
+    number = QTextCharFormat()
+    comment = QTextCharFormat()
+    string = QTextCharFormat()
+    singleQuotedString = QTextCharFormat()
+    self.highlightingRules = []
+
+    brush = QBrush(Qt.darkBlue, Qt.SolidPattern)
+    keyword.setForeground(brush)
+    keyword.setFontWeight(QFont.Bold)
+    keywords = QStringList(["break", "else", "for", "if", "in",
+            "next", "repeat", "return", "switch",
+            "try", "while"])
+    for word in keywords :
+    INDENT
+        pattern = QRegExp("\\b" + word + "\\b")
+        rule = HighlightingRule(pattern, keyword)
+        self.highlightingRules.append(rule)
+
+    DEDENT
+    reservedClasses.setForeground(brush)
+    reservedClasses.setFontWeight(QFont.Bold)
+    keywords = QStringList(["array", "character", "complex",
+            "data.frame", "double", "factor",
+            "function", "integer", "list",
+            "logical", "matrix", "numeric",
+            "vector"])
+    for word in keywords :
+    INDENT
+        pattern = QRegExp("\\b" + word + "\\b")
+        rule = HighlightingRule(pattern, reservedClasses)
+        self.highlightingRules.append(rule)
+
+    DEDENT
+    brush = QBrush(Qt.yellow, Qt.SolidPattern)
+    pattern = QRegExp("(<){1,2}-")
+    assignmentOperator.setForeground(brush)
+    assignmentOperator.setFontWeight(QFont.Bold)
+    rule = HighlightingRule(pattern, assignmentOperator)
+    self.highlightingRules.append(rule)
+
+    pattern = QRegExp("[\)\(]+|[\{\}]+|[][]+")
+    delimiter.setForeground(brush)
+    delimiter.setFontWeight(QFont.Bold)
+    rule = HighlightingRule(pattern, delimiter)
+    self.highlightingRules.append(rule)
+
+    brush = QBrush(Qt.green, Qt.SolidPattern)
+    specialConstant.setForeground(brush)
+    keywords = QStringList(["Inf", "NA", "NaN", "NULL"])
+    for word in keywords :
+    INDENT
+        pattern = QRegExp("\\b" + word + "\\b")
+        rule = HighlightingRule(pattern, specialConstant)
+        self.highlightingRules.append(rule)
+
+    DEDENT
+    boolean.setForeground(brush)
+    keywords = QStringList(["TRUE", "FALSE"])
+    for word in keywords :
+    INDENT
+        pattern = QRegExp("\\b" + word + "\\b")
+        rule = HighlightingRule(pattern, boolean)
+        self.highlightingRules.append(rule)
+
+    DEDENT
+    pattern = QRegExp("[-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?")
+    pattern.setMinimal(True)
+    number.setForeground(brush)
+    rule = HighlightingRule(pattern, number)
+    self.highlightingRules.append(rule)
+
+    brush = QBrush(Qt.blue, Qt.SolidPattern)
+    pattern = QRegExp("#[^\n]*")
+    comment.setForeground(brush)
+    rule = HighlightingRule(pattern, comment)
+    self.highlightingRules.append(rule)
+
+    brush = QBrush(Qt.red, Qt.SolidPattern)
+    pattern = QRegExp("\".*\"")
+    pattern.setMinimal(True)
+    string.setForeground(brush)
+    rule = HighlightingRule(pattern, string)
+    self.highlightingRules.append(rule)
+
+    pattern = QRegExp("\'.*\'")
+    pattern.setMinimal(True)
+    singleQuotedString.setForeground(brush)
+    rule = HighlightingRule(pattern, singleQuotedString)
+    self.highlightingRules.append(rule)
+DEDENT
+----------------------------------------
+
+def __init__(self) :
+INDENT
+    QMainWindow.__init__(self)
+    font = QFont()
+    font.setFamily("Courier")
+    font.setFixedPitch(True)
+    font.setPointSize(10)
+    editor = QTextEdit()
+    editor.setFont(font)
+    highlighter = MyHighlighter(editor, "Classic")
+    self.setCentralWidget(editor)
+    self.setWindowTitle("Syntax Highlighter")
+
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+26700927_26701175_1_13
+26700927_26701472_1_22
+Title: LgCeil - My professor says my code does not work for 1<n<=4 
+----------------------------------------
+
+def lgCeil(x) :
+INDENT
+    startNum = 0
+    numOfTimes = 0
+    base = 2
+    integer = base * 2
+    while not (integer > = x) :
+    INDENT
+        startNum = 2
+        numOfTimes = numOfTimes + 1
+        integer = integer * base
+    DEDENT
+    numOfTimes = numOfTimes + startNum
+    if (integer < = x) :
+    INDENT
+        base ** (numOfTimes + 1)
+    DEDENT
+    return numOfTimes
+DEDENT
+----------------------------------------
+
+def lgCeil(x) :
+INDENT
+    if (x < = 1) :
+    INDENT
+        return 0
+    DEDENT
+    startNum = 0
+    numOfTimes = 0
+    base = 2
+    integer = base * 1
+    while not (integer > = x) :
+    INDENT
+        startNum = 0
+        numOfTimes = numOfTimes + 1
+        integer = integer * base
+    DEDENT
+    numOfTimes = numOfTimes + startNum
+    if (integer < = x) :
+    INDENT
+        base ** (numOfTimes + 1)
+    DEDENT
+    return numOfTimes + 1
+
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+26705994_26706065_3_20
+26705994_38315616_3_21
+Title: 100 random numbers with an odd and even counter 
+----------------------------------------
+
+def main() :
+INDENT
+    numberList = []
+    for i in range(100) :
+    INDENT
+        numberList.append(random.randint(1, 1000))
+
+    DEDENT
+    oddCount = 0
+
+    for number in numberList :
+    INDENT
+        if number % 2 == 1 :
+        INDENT
+            oddCount += 1
+        DEDENT
+    DEDENT
+    evenCount = 100 - oddCount
+    print ("There are", oddCount, "odd numbers, and", evenCount, "even numbers")
+DEDENT
+----------------------------------------
+
+def main() :
+INDENT
+    counter = 1
+    even_numbers = 0
+    odd_numbers = 0
+    while counter < 101 :
+    INDENT
+
+        a = random.randint(1, 100)
+
+        if a % 2 == 0 :
+        INDENT
+            even_numbers += 1
+        DEDENT
+        else :
+        INDENT
+            odd_numbers += 1
+        DEDENT
+        counter += 1
+    DEDENT
+    if counter == 101 :
+    INDENT
+        reveal_total(even_numbers, odd_numbers)
+    DEDENT
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+26746484_26746579_1_13
+26746484_26746748_1_8
+Title: Using hashing to find a repeated substring inside a string 
+----------------------------------------
+
+def findsubs(str) :
+INDENT
+    d = {}
+    for i in range(len(str) - 1) :
+    INDENT
+        for j in range(i + 2, len(str) - 2) :
+        INDENT
+            if str [i : j] not in d :
+            INDENT
+                d [str [i : j]] = 0
+            DEDENT
+            if d [str [i : j]] > 1 :
+            INDENT
+                return str [i : j]
+            DEDENT
+            else :
+            INDENT
+                d [str [i : j]] = d [str [i : j]] + 1
+            DEDENT
+        DEDENT
+        return 0
+    DEDENT
+DEDENT
+----------------------------------------
+
+def findsubs(instr) :
+INDENT
+    d = {}
+    for i in range(len(instr)) :
+    INDENT
+        for j in range(i + 2, len(instr) + 1) :
+        INDENT
+            print instr [i : j]
+            d [instr [i : j]] = d.get(instr [i : j], 0) + 1
+        DEDENT
+    DEDENT
+    return d
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+2676133_6104825_31_38
+2676133_6104825_67_76
+Title: Best way to do enum in Sqlalchemy? 
+----------------------------------------
+
+def __init__(cls, classname, bases, dict_) :
+INDENT
+    cls._reg = reg = cls._reg.copy()
+    for k, v in dict_.items() :
+    INDENT
+        if isinstance(v, tuple) :
+        INDENT
+            sym = reg [v [0]] = EnumSymbol(cls, k, * v)
+            setattr(cls, k, sym)
+        DEDENT
+    DEDENT
+    return type.__init__(cls, classname, bases, dict_)
+DEDENT
+----------------------------------------
+
+def __init__(self, enum) :
+INDENT
+    self.enum = enum
+    self.impl = Enum(
+        * enum.values(),
+        name = "ck%s" % re.sub(
+            '([A-Z])',
+            lambda m : "_" + m.group(1).lower(),
+            enum.__name__))
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+2676133_6104825_31_38
+2676133_7927363_35_50
+Title: Best way to do enum in Sqlalchemy? 
+----------------------------------------
+
+def __init__(cls, classname, bases, dict_) :
+INDENT
+    cls._reg = reg = cls._reg.copy()
+    for k, v in dict_.items() :
+    INDENT
+        if isinstance(v, tuple) :
+        INDENT
+            sym = reg [v [0]] = EnumSymbol(cls, k, * v)
+            setattr(cls, k, sym)
+        DEDENT
+    DEDENT
+    return type.__init__(cls, classname, bases, dict_)
+DEDENT
+----------------------------------------
+
+def __init__(cls, classname, bases, dict_) :
+INDENT
+    reg = cls._reg = cls._reg.copy()
+    for k in sorted(dict_) :
+    INDENT
+        if k.startswith('__') :
+        INDENT
+            continue
+        DEDENT
+        v = dict_ [k]
+        if isinstance(v, basestring) :
+        INDENT
+            v = EnumSymbol(v)
+        DEDENT
+        elif isinstance(v, tuple) and len(v) == 2 :
+        INDENT
+            v = EnumSymbol(* v)
+        DEDENT
+        if isinstance(v, EnumSymbol) :
+        INDENT
+            v.bind(cls, k)
+            reg [k] = v
+        DEDENT
+    DEDENT
+    reg.sort(key = lambda k : reg [k]._creation_order)
+    return type.__init__(cls, classname, bases, dict_)
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+2676133_6104825_67_76
+2676133_7927363_35_50
+Title: Best way to do enum in Sqlalchemy? 
+----------------------------------------
+
+def __init__(self, enum) :
+INDENT
+    self.enum = enum
+    self.impl = Enum(
+        * enum.values(),
+        name = "ck%s" % re.sub(
+            '([A-Z])',
+            lambda m : "_" + m.group(1).lower(),
+            enum.__name__))
+DEDENT
+----------------------------------------
+
+def __init__(cls, classname, bases, dict_) :
+INDENT
+    reg = cls._reg = cls._reg.copy()
+    for k in sorted(dict_) :
+    INDENT
+        if k.startswith('__') :
+        INDENT
+            continue
+        DEDENT
+        v = dict_ [k]
+        if isinstance(v, basestring) :
+        INDENT
+            v = EnumSymbol(v)
+        DEDENT
+        elif isinstance(v, tuple) and len(v) == 2 :
+        INDENT
+            v = EnumSymbol(* v)
+        DEDENT
+        if isinstance(v, EnumSymbol) :
+        INDENT
+            v.bind(cls, k)
+            reg [k] = v
+        DEDENT
+    DEDENT
+    reg.sort(key = lambda k : reg [k]._creation_order)
+    return type.__init__(cls, classname, bases, dict_)
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+26777979_26778041_1_14
+26777979_26782538_1_12
+Title: how to modify the value of a variable by its reference in a python function? 
+----------------------------------------
+
+def subzoneStruct__(maxIndex) :
+INDENT
+    maxes = {"i" : maxIndex [0], "j" : maxIndex [1], "k" : maxIndex [2]}
+    for ind in ["i", "j", "k"] :
+    INDENT
+        val = maxes [ind]
+        print ind, val,
+        if val > - 1 :
+        INDENT
+            val = max(1, val - 1)
+            print "in", val,
+            maxes [ind] = val
+            print maxes [ind],
+            print "out", maxes [ind]
+        DEDENT
+        print "after", maxes ["i"]
+        return maxes ["i"], maxes ["j"], maxes ["k"]
+    DEDENT
+DEDENT
+----------------------------------------
+
+def subzoneStruct__(maxIndex) :
+INDENT
+    maxIndex = list(maxIndex)
+    imax, jmax, kmax = range(3)
+    print 'before:', maxIndex [imax], maxIndex [jmax], maxIndex [kmax]
+    for ind in imax, jmax, kmax :
+    INDENT
+        val = maxIndex [ind]
+        if val > - 1 :
+        INDENT
+            val = max(1, val - 1)
+            maxIndex [ind] = val
+        DEDENT
+    DEDENT
+    print 'after:', maxIndex [imax], maxIndex [jmax], maxIndex [kmax]
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+26788266_35466051_1_10
+26788266_45372201_1_21
+Title: Collatz sequence 
+----------------------------------------
+
+def collatz(number) :
+INDENT
+    while number ! = 1 :
+    INDENT
+        if number % 2 == 0 :
+        INDENT
+            number = number / / 2
+            print (number)
+        DEDENT
+        elif number % 2 == 1 :
+        INDENT
+            number = number * 3 + 1
+            print (number)
+        DEDENT
+    DEDENT
+DEDENT
+----------------------------------------
+
+def collatz(number) :
+INDENT
+    while number ! = 1 :
+    INDENT
+        if number == 0 :
+        INDENT
+            break
+        DEDENT
+        elif number == 2 :
+        INDENT
+            break
+        DEDENT
+        elif number % 2 == 0 :
+        INDENT
+            number = number / / 2
+            print (number)
+        DEDENT
+        elif number % 2 == 1 :
+        INDENT
+            number = 3 * number + 1
+            print (number)
+        DEDENT
+    DEDENT
+    if number == 0 :
+    INDENT
+        print ("This isn't a positive integer. It doesn't count")
+    DEDENT
+    elif number == 2 :
+    INDENT
+        print ("1")
+        print ("Done!")
+    DEDENT
+    elif number == 1 :
+    INDENT
+        print ("1")
+        print ("Done!")
+    DEDENT
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+26789825_26789997_11_16
+26789825_26826979_27_35
+Title: "More Pythonic way to define custom __eq__ method using try assert except" 
+----------------------------------------
+
+def __eq__(self, other) :
+INDENT
+    if set(self.__slots__) ! = set(other.__slots__) : return False
+    for slot in self.__slots__ :
+    INDENT
+        if getattr(self, slot) ! = getattr(other, slot) :
+        INDENT
+            return False
+        DEDENT
+    DEDENT
+    return True
+DEDENT
+----------------------------------------
+
+def __eq__(self, other) :
+INDENT
+    try :
+    INDENT
+        same_slots = self._ordered_slots == other._ordered_slots
+    DEDENT
+    except AttributeError :
+    INDENT
+        return False
+    DEDENT
+    if not same_slots :
+    INDENT
+        return False
+    DEDENT
+    return all(getattr(self, attr) == getattr(other, attr) for attr in self._ordered_slots)
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+26789825_26789997_21_25
+26789825_26789997_2_6
+Title: "More Pythonic way to define custom __eq__ method using try assert except" 
+----------------------------------------
+
+def __new__(klass, ** slots) :
+INDENT
+    klass.__slots__ = []
+    for k in slots :
+    INDENT
+        klass.__slots__.append(k)
+    DEDENT
+    return super(MySlottedClassBA, klass).__new__(klass)
+DEDENT
+----------------------------------------
+
+def __new__(klass, ** slots) :
+INDENT
+    klass.__slots__ = []
+    for k in slots :
+    INDENT
+        klass.__slots__.append(k)
+    DEDENT
+    return super(MySlottedClassAB, klass).__new__(klass)
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+26789825_26789997_21_25
+26789825_26789997_40_44
+Title: "More Pythonic way to define custom __eq__ method using try assert except" 
+----------------------------------------
+
+def __new__(klass, ** slots) :
+INDENT
+    klass.__slots__ = []
+    for k in slots :
+    INDENT
+        klass.__slots__.append(k)
+    DEDENT
+    return super(MySlottedClassBA, klass).__new__(klass)
+DEDENT
+----------------------------------------
+
+def __new__(klass, ** slots) :
+INDENT
+    klass.__slots__ = []
+    for k in slots :
+    INDENT
+        klass.__slots__.append(k)
+    DEDENT
+    return super(MySlottedClassXY, klass).__new__(klass)
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+26789825_26789997_21_25
+26789825_26789997_59_63
+Title: "More Pythonic way to define custom __eq__ method using try assert except" 
+----------------------------------------
+
+def __new__(klass, ** slots) :
+INDENT
+    klass.__slots__ = []
+    for k in slots :
+    INDENT
+        klass.__slots__.append(k)
+    DEDENT
+    return super(MySlottedClassBA, klass).__new__(klass)
+DEDENT
+----------------------------------------
+
+def __new__(klass, ** slots) :
+INDENT
+    klass.__slots__ = []
+    for k in slots :
+    INDENT
+        klass.__slots__.append(k)
+    DEDENT
+    return super(MySlottedClassABC, klass).__new__(klass)
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+26789825_26789997_21_25
+26789825_26826979_5_15
+Title: "More Pythonic way to define custom __eq__ method using try assert except" 
+----------------------------------------
+
+def __new__(klass, ** slots) :
+INDENT
+    klass.__slots__ = []
+    for k in slots :
+    INDENT
+        klass.__slots__.append(k)
+    DEDENT
+    return super(MySlottedClassBA, klass).__new__(klass)
+DEDENT
+----------------------------------------
+
+def __new__(metacls, name, bases, attrs) :
+INDENT
+    assert "__slots__" in attrs
+    attrs ["_ordered_slots"] = tuple(sorted(attrs ["__slots__"]))
+    attrs ["__init__"] = create_init(attrs ["__slots__"])
+    attrs ["__eq__"] = create_eq()
+    attrs ["__str__"] = create_str()
+    cls = super(MySlottedClassMeta, metacls).__new__(metacls, name, bases, attrs)
+    return cls
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+26789825_26789997_2_6
+26789825_26789997_40_44
+Title: "More Pythonic way to define custom __eq__ method using try assert except" 
+----------------------------------------
+
+def __new__(klass, ** slots) :
+INDENT
+    klass.__slots__ = []
+    for k in slots :
+    INDENT
+        klass.__slots__.append(k)
+    DEDENT
+    return super(MySlottedClassAB, klass).__new__(klass)
+DEDENT
+----------------------------------------
+
+def __new__(klass, ** slots) :
+INDENT
+    klass.__slots__ = []
+    for k in slots :
+    INDENT
+        klass.__slots__.append(k)
+    DEDENT
+    return super(MySlottedClassXY, klass).__new__(klass)
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+26789825_26789997_2_6
+26789825_26789997_59_63
+Title: "More Pythonic way to define custom __eq__ method using try assert except" 
+----------------------------------------
+
+def __new__(klass, ** slots) :
+INDENT
+    klass.__slots__ = []
+    for k in slots :
+    INDENT
+        klass.__slots__.append(k)
+    DEDENT
+    return super(MySlottedClassAB, klass).__new__(klass)
+DEDENT
+----------------------------------------
+
+def __new__(klass, ** slots) :
+INDENT
+    klass.__slots__ = []
+    for k in slots :
+    INDENT
+        klass.__slots__.append(k)
+    DEDENT
+    return super(MySlottedClassABC, klass).__new__(klass)
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+26789825_26789997_2_6
+26789825_26826979_5_15
+Title: "More Pythonic way to define custom __eq__ method using try assert except" 
+----------------------------------------
+
+def __new__(klass, ** slots) :
+INDENT
+    klass.__slots__ = []
+    for k in slots :
+    INDENT
+        klass.__slots__.append(k)
+    DEDENT
+    return super(MySlottedClassAB, klass).__new__(klass)
+DEDENT
+----------------------------------------
+
+def __new__(metacls, name, bases, attrs) :
+INDENT
+    assert "__slots__" in attrs
+    attrs ["_ordered_slots"] = tuple(sorted(attrs ["__slots__"]))
+    attrs ["__init__"] = create_init(attrs ["__slots__"])
+    attrs ["__eq__"] = create_eq()
+    attrs ["__str__"] = create_str()
+    cls = super(MySlottedClassMeta, metacls).__new__(metacls, name, bases, attrs)
+    return cls
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+26789825_26789997_30_35
+26789825_26826979_27_35
+Title: "More Pythonic way to define custom __eq__ method using try assert except" 
+----------------------------------------
+
+def __eq__(self, other) :
+INDENT
+    if set(self.__slots__) ! = set(other.__slots__) : return False
+    for slot in self.__slots__ :
+    INDENT
+        if getattr(self, slot) ! = getattr(other, slot) :
+        INDENT
+            return False
+        DEDENT
+    DEDENT
+    return True
+DEDENT
+----------------------------------------
+
+def __eq__(self, other) :
+INDENT
+    try :
+    INDENT
+        same_slots = self._ordered_slots == other._ordered_slots
+    DEDENT
+    except AttributeError :
+    INDENT
+        return False
+    DEDENT
+    if not same_slots :
+    INDENT
+        return False
+    DEDENT
+    return all(getattr(self, attr) == getattr(other, attr) for attr in self._ordered_slots)
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+26789825_26789997_40_44
+26789825_26789997_59_63
+Title: "More Pythonic way to define custom __eq__ method using try assert except" 
+----------------------------------------
+
+def __new__(klass, ** slots) :
+INDENT
+    klass.__slots__ = []
+    for k in slots :
+    INDENT
+        klass.__slots__.append(k)
+    DEDENT
+    return super(MySlottedClassXY, klass).__new__(klass)
+DEDENT
+----------------------------------------
+
+def __new__(klass, ** slots) :
+INDENT
+    klass.__slots__ = []
+    for k in slots :
+    INDENT
+        klass.__slots__.append(k)
+    DEDENT
+    return super(MySlottedClassABC, klass).__new__(klass)
+DEDENT
+----------------------------------------

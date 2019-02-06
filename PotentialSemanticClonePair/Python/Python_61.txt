@@ -1,0 +1,5219 @@
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+6971819_6972357_13_18
+6971819_6974515_1_10
+Title: "Find the numbers that can be made with addition and subtraction using all numbers given" 
+----------------------------------------
+
+def pmv(nums) :
+INDENT
+    if len(nums) > 1 :
+    INDENT
+        l = pmv(nums [: len(nums) / 2])
+        r = pmv(nums [len(nums) / 2 :])
+        return combine(l, r)
+    DEDENT
+    return {nums [0] : [1]}
+DEDENT
+----------------------------------------
+
+def pmv(nums) :
+INDENT
+    sums = set()
+    sums.add(0)
+    for i in range(0, len(nums)) :
+    INDENT
+        partialsums = set()
+        for s in sums :
+        INDENT
+            partialsums.add(s + nums [i])
+            partialsums.add(s - nums [i])
+        DEDENT
+        sums = partialsums
+    DEDENT
+    return sums
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+699468_15536649_4_20
+699468_812865_23_45
+Title: Python HTML sanitizer / scrubber / filter 
+----------------------------------------
+
+def clean_html(buf) :
+INDENT
+    buf = buf.strip()
+    if not buf :
+    INDENT
+        return buf
+    DEDENT
+    p = html5lib.HTMLParser(tree = treebuilders.getTreeBuilder("dom"),
+        tokenizer = sanitizer.HTMLSanitizer)
+    dom_tree = p.parseFragment(buf)
+    walker = treewalkers.getTreeWalker("dom")
+    stream = walker(dom_tree)
+    s = serializer.htmlserializer.HTMLSerializer(
+        omit_optional_tags = False,
+        quote_attr_values = True)
+    return s.render(stream)
+DEDENT
+----------------------------------------
+
+def clean_html(fragment) :
+INDENT
+    while True :
+    INDENT
+        soup = BeautifulSoup(fragment)
+        removed = False
+        for tag in soup.findAll(True) :
+        INDENT
+            if tag.name not in acceptable_elements :
+            INDENT
+                tag.extract()
+                removed = True
+            DEDENT
+            else :
+            INDENT
+                for attr in tag._getAttrMap().keys() :
+                INDENT
+                    if attr not in acceptable_attributes :
+                    INDENT
+                        del tag [attr]
+
+                    DEDENT
+                DEDENT
+            DEDENT
+        DEDENT
+        fragment = unicode(soup)
+        if removed :
+        INDENT
+            continue
+        DEDENT
+        return fragment
+    DEDENT
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+699468_5246109_13_31
+699468_699483_5_13
+Title: Python HTML sanitizer / scrubber / filter 
+----------------------------------------
+
+def sanitize_html(value, valid_tags = VALID_TAGS) :
+INDENT
+    soup = BeautifulSoup(value)
+    comments = soup.findAll(text = lambda text : isinstance(text, Comment))
+    [comment.extract() for comment in comments]
+
+    newoutput = soup.renderContents()
+    while 1 :
+    INDENT
+        oldoutput = newoutput
+        soup = BeautifulSoup(newoutput)
+        for tag in soup.findAll(True) :
+        INDENT
+            if tag.name not in valid_tags :
+            INDENT
+                tag.hidden = True
+            DEDENT
+            else :
+            INDENT
+                tag.attrs = [(attr, value) for attr, value in tag.attrs if attr in valid_tags [tag.name]]
+            DEDENT
+        DEDENT
+        newoutput = soup.renderContents()
+        if oldoutput == newoutput :
+        INDENT
+            break
+        DEDENT
+    DEDENT
+    return newoutput
+DEDENT
+----------------------------------------
+
+def sanitize_html(value) :
+INDENT
+    soup = BeautifulSoup(value)
+    for tag in soup.findAll(True) :
+    INDENT
+        if tag.name not in VALID_TAGS :
+        INDENT
+            tag.hidden = True
+        DEDENT
+    DEDENT
+    return soup.renderContents()
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+7010294_35547094_17_36
+7010294_7010572_32_41
+Title: Compact (archive) old log files in python 
+----------------------------------------
+
+def doRollover(self) :
+INDENT
+    if self.stream :
+    INDENT
+        self.stream.close()
+        self.stream = None
+    DEDENT
+    if self.backup_count > 0 :
+    INDENT
+        for i in range(self.backup_count - 1, 0, - 1) :
+        INDENT
+            sfn = "%s.%d.gz" % (self.baseFilename, i)
+            dfn = "%s.%d.gz" % (self.baseFilename, i + 1)
+            if os.path.exists(sfn) :
+            INDENT
+                if os.path.exists(dfn) :
+                INDENT
+                    os.remove(dfn)
+                DEDENT
+                os.rename(sfn, dfn)
+            DEDENT
+        DEDENT
+    DEDENT
+    dfn = self.baseFilename + ".1"
+    if os.path.exists(dfn) :
+    INDENT
+        os.remove(dfn)
+    DEDENT
+    if os.path.exists(self.baseFilename) :
+    INDENT
+        os.rename(self.baseFilename, dfn)
+        self.doArchive(dfn)
+    DEDENT
+    if not self.delay :
+    INDENT
+        self.stream = self._open()
+    DEDENT
+DEDENT
+----------------------------------------
+
+def doRollover(self) :
+INDENT
+    super(NewRotatingFileHandler, self).doRollover()
+
+    old_log = self.baseFilename + ".1"
+    with open(old_log) as log :
+    INDENT
+        with self.compress_cls.open(old_log + '.gz', 'wb') as comp_log :
+        INDENT
+            comp_log.writelines(log)
+        DEDENT
+    DEDENT
+    os.remove(old_log)
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+7028842_45261535_5_16
+7028842_7028912_5_12
+Title: List append in loop question 
+----------------------------------------
+
+def autoSolve() :
+INDENT
+    x = []
+    for i in range(5) :
+    INDENT
+        z = random.randrange(1, 10)
+        x.append(z)
+    DEDENT
+    y.append(x)
+    print(y, end = "")
+    for i in range(3) :
+    INDENT
+        print ("number", i + 1,)
+        autoSolve()
+        print ()
+    DEDENT
+DEDENT
+----------------------------------------
+
+def autoSolve() :
+INDENT
+    x = []
+    for i in range(5) :
+    INDENT
+        z = random.randrange(1, 10)
+        x.append(z)
+    DEDENT
+    print(x, end = "")
+    return x
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+7035643_7036023_7_18
+7035643_7036052_2_21
+Title: How do I alphabetize a file in Python? 
+----------------------------------------
+
+def main() :
+INDENT
+    with open('presidents.txt', 'r') as fi :
+    INDENT
+
+        presidents = [[x.strip() for x in line.split(',')] for line in fi]
+        presidents = sorted(presidents, cmp = lambda x, y : cmp(x [1], y [1]))
+    DEDENT
+    with open('presidents_out.txt', 'w') as fo :
+    INDENT
+        for pres in presidents :
+        INDENT
+            print >> fo, "president %s %s was president %s %s" % tuple(pres)
+        DEDENT
+    DEDENT
+DEDENT
+----------------------------------------
+
+def main() :
+INDENT
+    with open(INPUT_FILE) as infile :
+    INDENT
+
+        data = [line.rstrip().split('\t') for line in infile]
+
+    DEDENT
+    data.sort(key = operator.itemgetter(1))
+    with open(OUTPUT_FILE) as outfile :
+    INDENT
+        for item in data :
+        INDENT
+
+            outfile.write('%s %s was president from %s to %s' % item)
+        DEDENT
+    DEDENT
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+7047918_7048111_4_8
+7047918_7048202_8_14
+Title: why in python map() and multiprocessing.Pool.map() got different answers? 
+----------------------------------------
+
+def block_generator(filename) :
+INDENT
+    with open(filename) as infile :
+    INDENT
+        for pos in (infile.tell() for line in infile if line == 'START') :
+        INDENT
+            yield pos
+        DEDENT
+    DEDENT
+DEDENT
+----------------------------------------
+
+def block_generator(file) :
+INDENT
+    with open(file) as lines :
+    INDENT
+        for line in lines :
+        INDENT
+            if line == 'START' :
+            INDENT
+                block = list(itertools.takewhile(lambda x : x ! = 'STOP', lines))
+                yield block
+            DEDENT
+        DEDENT
+    DEDENT
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+7059153_16474102_164_174
+7059153_16474102_7_91
+Title: wxPython - dynamially update a listctrl depending on input into a textctrl 
+----------------------------------------
+
+def __init__(self, parent, id, title, headers = None, data_table = None, options = None, selected_list = None) :
+INDENT
+    wx.Dialog.__init__(self, parent, id, title = "", style = wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER)
+    options_in = options
+    self.panel = ULC_Panel(self, col_headers = headers, list_data = data_table, options = options_in,
+        dlg = self, selected_list = selected_list)
+    sizer = wx.BoxSizer(wx.VERTICAL)
+    sizer.Add(self.panel, 1, wx.EXPAND)
+    self.SetSizer(sizer)
+    (self.width, self.height) = self.panel.myGetNeedWH()
+DEDENT
+----------------------------------------
+
+def __init__(self, parent, col_headers = None, list_data = None, options = None, dlg = None,
+selected_list = None) :
+INDENT
+    wx.Panel.__init__(self, parent)
+    self.options = options
+    self.show_only_selected = False
+    self.filter_string = ""
+    hsizer = wx.BoxSizer(wx.HORIZONTAL)
+    okayButton = wx.Button(self, wx.ID_OK, "OK")
+    okayButton.SetToolTip(wx.ToolTip("Click to close this dialog and use the selections"))
+    self.Bind(wx.EVT_BUTTON, self.OnOkayCanButton, okayButton)
+    hsizer.Add(okayButton, 0, wx.ALL, 5)
+    canButton = wx.Button(self, wx.ID_CANCEL, "Cancel")
+    canButton.SetToolTip(wx.ToolTip("Click to close this dialog and cancel selections"))
+    self.Bind(wx.EVT_BUTTON, self.OnOkayCanButton, canButton)
+    hsizer.Add(canButton, 0, wx.ALL, 5)
+    cb_show_only = wx.CheckBox(self, - 1, "Show only selected items?")
+    cb_show_only.SetValue(self.show_only_selected)
+    cb_show_only.SetToolTip(wx.ToolTip("Click to show only selected rows"))
+    self.Bind(wx.EVT_CHECKBOX, self.EvtShowOnly, cb_show_only)
+    hsizer.Add(cb_show_only, 0, wx.ALL, 5)
+    self.stext = wx.StaticText(self, - 1, "Filter: ", style = wx.ALIGN_LEFT)
+    self.filtr = wx.TextCtrl(self, - 1, "", style = wx.ALIGN_LEFT)
+    self.Bind(wx.EVT_TEXT, self.OnFiltr, self.filtr)
+    fsizer = wx.BoxSizer(wx.HORIZONTAL)
+    fsizer.Add(self.stext, 0, wx.ALL)
+    fsizer.Add(self.filtr, 1, wx.EXPAND)
+    font = wx.SystemSettings_GetFont(wx.SYS_DEFAULT_GUI_FONT)
+    boldfont = wx.SystemSettings_GetFont(wx.SYS_DEFAULT_GUI_FONT)
+    boldfont.SetWeight(wx.BOLD)
+    boldfont.SetPointSize(12)
+    self.ultimateList = ULC.UltimateListCtrl(self, agwStyle = wx.LC_REPORT
+        | wx.LC_VRULES | ULC.ULC_HAS_VARIABLE_ROW_HEIGHT
+        | wx.LC_HRULES)
+
+    self.checkbox = [None] * len(list_data)
+    if selected_list ! = None :
+    INDENT
+        self.selected = selected_list
+    DEDENT
+    else :
+    INDENT
+        self.selected = [False] * len(list_data)
+    DEDENT
+    self.rows_max = len(list_data)
+    self.rows_current = - 1
+    self.cols_max = len(col_headers)
+    self.cols_extra = 1
+    if options & ULC.ULC_MASK_CHECK :
+    INDENT
+        self.cols_extra += 1
+    DEDENT
+    for i in xrange(self.cols_max + self.cols_extra) :
+    INDENT
+        info = ULC.UltimateListItem()
+        info._mask = wx.LIST_MASK_TEXT | wx.LIST_MASK_IMAGE | wx.LIST_MASK_FORMAT
+        info._image = []
+        info._format = 0
+        info._kind = 1
+        width = 150
+        if i > = self.cols_extra :
+        INDENT
+            info._text = col_headers [i - self.cols_extra]
+        DEDENT
+        elif i == 0 :
+        INDENT
+            info._text = "Row"
+            width = 35
+        DEDENT
+        elif i == 1 and options & ULC.ULC_MASK_CHECK :
+        INDENT
+            info._text = "Select"
+            width = 50
+        DEDENT
+        self.ultimateList.InsertColumnInfo(i, info)
+        self.ultimateList.SetColumnWidth(i, width)
+    DEDENT
+    self.list_data = list_data
+    pos = self.populate_table("")
+    if pos ! = None :
+    INDENT
+        self.sz = self.ultimateList.GetItemRect(pos)
+        self.width = self.sz [2] + self.sz [3]
+        self.height = self.sz [1]
+    DEDENT
+    sizer = wx.BoxSizer(wx.VERTICAL)
+    sizer.Add(hsizer, 0, wx.EXPAND)
+    sizer.Add(fsizer, 0, wx.EXPAND)
+    sizer.Add(self.ultimateList, 1, flag = wx.EXPAND)
+    self.SetSizer(sizer)
+    sizer.Fit(self)
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+7072875_7078283_16_80
+7072875_7085026_34_115
+Title: How to do dynamic creation of per-process queues in Python multiprocessing 
+----------------------------------------
+
+def run(self) :
+INDENT
+    print "Running"
+    inputs = []
+    outputs = []
+    server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    address = self.processes [self.id] ["address"]
+    print "Process %s binding to %s" % (self.id, address)
+    server.bind(address)
+    server.listen(5)
+    inputs.append(server)
+    process = self.processes [self.id]
+    process ["listening"] = True
+    self.processes [self.id] = process
+    print "Process %s now listening!(%s)" % (self.id, process)
+    while inputs :
+    INDENT
+        readable, writable, exceptional = select.select(inputs,
+            outputs,
+            inputs,
+            0.1)
+        for sock in readable :
+        INDENT
+            print "Process %s has a readable scoket: %s" % (self.id,
+                sock)
+            if sock is server :
+            INDENT
+                print "Process %s has a readable server scoket: %s" % (self.id,
+                    sock)
+                conn, addr = sock.accept()
+                conn.setblocking(0)
+                inputs.append(conn)
+            DEDENT
+            else :
+            INDENT
+                data = sock.recv(1024)
+                if data :
+                INDENT
+                    self.queue.append(data)
+                    print "non server readable socket with data"
+                DEDENT
+                else :
+                INDENT
+                    inputs.remove(sock)
+                    sock.close()
+                    print "non server readable socket with no data"
+                DEDENT
+            DEDENT
+        DEDENT
+        for sock in exceptional :
+        INDENT
+            print "exception occured on socket %s" % (sock)
+            inputs.remove(sock)
+            sock.close()
+        DEDENT
+        while len(self.queue) > = 1 :
+        INDENT
+            print "Received:", self.queue.pop()
+        DEDENT
+        random_id = random.choice(list(self.processes.keys()))
+        print "%s Attempting to send message to %s" % (self.id, random_id)
+        random_process = self.processes [random_id]
+        print "random_process:", random_process
+        if random_process ["listening"] :
+        INDENT
+            random_address = random_process ["address"]
+            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            try :
+            INDENT
+                s.connect(random_address)
+            DEDENT
+            except socket.error :
+            INDENT
+                print "%s failed to send to %s" % (self.id, random_id)
+            DEDENT
+            else :
+            INDENT
+                s.send("Hello World!")
+            DEDENT
+            finally :
+            INDENT
+                s.close()
+            DEDENT
+        DEDENT
+        time.sleep(1)
+    DEDENT
+DEDENT
+----------------------------------------
+
+def run(self) :
+INDENT
+    print ("Running")
+    self.processes [self.id] ["joinable"] = True
+    inputs = []
+    outputs = []
+    server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    address = self.processes [self.id] ["address"]
+    print ("Process %s binding to %s" % (self.id, address))
+    server.bind(address)
+    server.listen(5)
+    inputs.append(server)
+    process = self.processes [self.id]
+    process ["listening"] = True
+    self.processes [self.id] = process
+    print ("Process %s now listening!(%s)" % (self.id, process))
+    while inputs and len(list(self.processes.keys())) < 10 :
+    INDENT
+        readable, writable, exceptional = select.select(inputs,
+            outputs,
+            inputs,
+            0.1)
+        for sock in readable :
+        INDENT
+            print ("Process %s has a readable socket: %s" % (self.id, sock))
+            if sock is server :
+            INDENT
+                print ("Process %s has a readable server socket: %s" %
+                    (self.id, sock))
+                conn, addr = sock.accept()
+                conn.setblocking(0)
+                inputs.append(conn)
+            DEDENT
+            else :
+            INDENT
+                data = True
+                item = bytes()
+                recvs = 0
+                while data :
+                INDENT
+                    data = sock.recv(1024)
+                    item += data
+                    recvs += 1
+                DEDENT
+                if len(item) :
+                INDENT
+                    self.queue.append(item)
+                    print ("non server readable socket: recvd %d bytes in %d parts"
+                        % (len(item), recvs))
+                DEDENT
+                else :
+                INDENT
+                    inputs.remove(sock)
+                    sock.close()
+                    print ("non server readable socket: nothing to read")
+                DEDENT
+            DEDENT
+        DEDENT
+        for sock in exceptional :
+        INDENT
+            print ("exception occured on socket %s" % (sock))
+            inputs.remove(sock)
+            sock.close()
+        DEDENT
+        while len(self.queue) :
+        INDENT
+            msg = pickle.loads(self.queue.pop())
+            print ("received:" + str(msg))
+        DEDENT
+        random_id = random.choice(list(self.processes.keys()))
+        print ("%s attempting to send message to %s" % (self.id, random_id))
+        random_process = self.processes [random_id]
+        if random_process ["listening"] :
+        INDENT
+            random_address = random_process ["address"]
+            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            try :
+            INDENT
+                s.connect(random_address)
+            DEDENT
+            except socket.error :
+            INDENT
+                print ("%s failed to send to %s" % (self.id, random_id))
+            DEDENT
+            else :
+            INDENT
+                item = pickle.dumps(Message(self.id))
+                print ("sending a total of %d bytes" % len(item))
+                s.sendall(item)
+            DEDENT
+            finally :
+            INDENT
+                s.close()
+
+            DEDENT
+        DEDENT
+        if random.random() < 0.1 :
+        INDENT
+            mpp = MessagePassingProcess(self.processes, self.lock)
+            mpp.start()
+        DEDENT
+        else :
+        INDENT
+            time.sleep(1.0)
+        DEDENT
+    DEDENT
+    print ("process %d finished looping" % self.id)
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+7072875_7078283_16_80
+7072875_7122506_119_136
+Title: How to do dynamic creation of per-process queues in Python multiprocessing 
+----------------------------------------
+
+def run(self) :
+INDENT
+    print "Running"
+    inputs = []
+    outputs = []
+    server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    address = self.processes [self.id] ["address"]
+    print "Process %s binding to %s" % (self.id, address)
+    server.bind(address)
+    server.listen(5)
+    inputs.append(server)
+    process = self.processes [self.id]
+    process ["listening"] = True
+    self.processes [self.id] = process
+    print "Process %s now listening!(%s)" % (self.id, process)
+    while inputs :
+    INDENT
+        readable, writable, exceptional = select.select(inputs,
+            outputs,
+            inputs,
+            0.1)
+        for sock in readable :
+        INDENT
+            print "Process %s has a readable scoket: %s" % (self.id,
+                sock)
+            if sock is server :
+            INDENT
+                print "Process %s has a readable server scoket: %s" % (self.id,
+                    sock)
+                conn, addr = sock.accept()
+                conn.setblocking(0)
+                inputs.append(conn)
+            DEDENT
+            else :
+            INDENT
+                data = sock.recv(1024)
+                if data :
+                INDENT
+                    self.queue.append(data)
+                    print "non server readable socket with data"
+                DEDENT
+                else :
+                INDENT
+                    inputs.remove(sock)
+                    sock.close()
+                    print "non server readable socket with no data"
+                DEDENT
+            DEDENT
+        DEDENT
+        for sock in exceptional :
+        INDENT
+            print "exception occured on socket %s" % (sock)
+            inputs.remove(sock)
+            sock.close()
+        DEDENT
+        while len(self.queue) > = 1 :
+        INDENT
+            print "Received:", self.queue.pop()
+        DEDENT
+        random_id = random.choice(list(self.processes.keys()))
+        print "%s Attempting to send message to %s" % (self.id, random_id)
+        random_process = self.processes [random_id]
+        print "random_process:", random_process
+        if random_process ["listening"] :
+        INDENT
+            random_address = random_process ["address"]
+            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            try :
+            INDENT
+                s.connect(random_address)
+            DEDENT
+            except socket.error :
+            INDENT
+                print "%s failed to send to %s" % (self.id, random_id)
+            DEDENT
+            else :
+            INDENT
+                s.send("Hello World!")
+            DEDENT
+            finally :
+            INDENT
+                s.close()
+            DEDENT
+        DEDENT
+        time.sleep(1)
+    DEDENT
+DEDENT
+----------------------------------------
+
+def run(self) :
+INDENT
+    print ("%d: in run()" % self.id)
+    while len(list(self.nodes.keys())) < 10 :
+    INDENT
+        time.sleep(random.random() * 0.5)
+        self.send()
+        time.sleep(random.random() * 0.5)
+        self.receive()
+        if random.random() < 0.1 :
+        INDENT
+            new = Node(self.nodes, self.lock)
+            new.start()
+
+        DEDENT
+    DEDENT
+    print ("%d: finished" % self.id)
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+7072875_7085026_20_33
+7072875_7122506_24_87
+Title: How to do dynamic creation of per-process queues in Python multiprocessing 
+----------------------------------------
+
+def __init__(self, processes, lock) :
+INDENT
+    self.lock = lock
+    self.processes = processes
+    with self.lock :
+    INDENT
+        self.id = len(list(processes.keys()))
+        process_dict = {"id" : self.id,
+            "address" : ("127.0.0.1", 7000 + self.id),
+            "listening" : False}
+        self.processes [self.id] = process_dict
+    DEDENT
+    print ("new process: processes[%s] = %s" % (self.id, processes [self.id]))
+    self.queue = collections.deque()
+    super(MessagePassingProcess, self).__init__()
+DEDENT
+----------------------------------------
+
+def __init__(self, nodes, lock) :
+INDENT
+    super().__init__()
+
+    self.nodes = nodes
+    self.lock = lock
+    with self.lock :
+    INDENT
+        self.id = len(list(nodes.keys()))
+        host = "127.0.0.1"
+        port = 7022 + self.id
+        node = {"id" : self.id, "address" : (host, port), "listening" : False}
+        self.nodes [self.id] = node
+    DEDENT
+    print ("new node: nodes[%s] = %s" % (self.id, nodes [self.id]))
+    self.queue = mp.Queue()
+
+    class ThreadedTCPServer(socketserver.ThreadingMixIn,
+    socketserver.TCPServer) :
+    INDENT
+        pass
+    DEDENT
+    class HandlerWithQueue(socketserver.BaseRequestHandler) :
+    INDENT
+
+        handler_queue = self.queue
+        handler_id = self.id
+        def handle(self) :
+        INDENT
+            item = bytes()
+            recvs = 0
+            data = True
+            if data :
+            INDENT
+                data = self.request.recv(4096)
+                item += data
+                recvs += 1
+            DEDENT
+            if len(item) :
+            INDENT
+                print ("%d: socketserver received %d bytes in %d recv()s"
+                    % (self.handler_id, len(item), recvs))
+                self.handler_queue.put(item)
+            DEDENT
+        DEDENT
+    DEDENT
+    self.server = ThreadedTCPServer((host, port), HandlerWithQueue)
+    self.server_thread = threading.Thread(target = self.server.serve_forever)
+    self.server_thread.setDaemon(True)
+    self.server_thread.start()
+    print ("%d: server loop running in thread %s" %
+        (self.id, self.server_thread.getName()))
+    with self.lock :
+    INDENT
+
+        node = self.nodes [self.id]
+        node ["listening"] = True
+        self.nodes [self.id] = node
+    DEDENT
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+7072875_7085026_34_115
+7072875_7122506_119_136
+Title: How to do dynamic creation of per-process queues in Python multiprocessing 
+----------------------------------------
+
+def run(self) :
+INDENT
+    print ("Running")
+    self.processes [self.id] ["joinable"] = True
+    inputs = []
+    outputs = []
+    server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    address = self.processes [self.id] ["address"]
+    print ("Process %s binding to %s" % (self.id, address))
+    server.bind(address)
+    server.listen(5)
+    inputs.append(server)
+    process = self.processes [self.id]
+    process ["listening"] = True
+    self.processes [self.id] = process
+    print ("Process %s now listening!(%s)" % (self.id, process))
+    while inputs and len(list(self.processes.keys())) < 10 :
+    INDENT
+        readable, writable, exceptional = select.select(inputs,
+            outputs,
+            inputs,
+            0.1)
+        for sock in readable :
+        INDENT
+            print ("Process %s has a readable socket: %s" % (self.id, sock))
+            if sock is server :
+            INDENT
+                print ("Process %s has a readable server socket: %s" %
+                    (self.id, sock))
+                conn, addr = sock.accept()
+                conn.setblocking(0)
+                inputs.append(conn)
+            DEDENT
+            else :
+            INDENT
+                data = True
+                item = bytes()
+                recvs = 0
+                while data :
+                INDENT
+                    data = sock.recv(1024)
+                    item += data
+                    recvs += 1
+                DEDENT
+                if len(item) :
+                INDENT
+                    self.queue.append(item)
+                    print ("non server readable socket: recvd %d bytes in %d parts"
+                        % (len(item), recvs))
+                DEDENT
+                else :
+                INDENT
+                    inputs.remove(sock)
+                    sock.close()
+                    print ("non server readable socket: nothing to read")
+                DEDENT
+            DEDENT
+        DEDENT
+        for sock in exceptional :
+        INDENT
+            print ("exception occured on socket %s" % (sock))
+            inputs.remove(sock)
+            sock.close()
+        DEDENT
+        while len(self.queue) :
+        INDENT
+            msg = pickle.loads(self.queue.pop())
+            print ("received:" + str(msg))
+        DEDENT
+        random_id = random.choice(list(self.processes.keys()))
+        print ("%s attempting to send message to %s" % (self.id, random_id))
+        random_process = self.processes [random_id]
+        if random_process ["listening"] :
+        INDENT
+            random_address = random_process ["address"]
+            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            try :
+            INDENT
+                s.connect(random_address)
+            DEDENT
+            except socket.error :
+            INDENT
+                print ("%s failed to send to %s" % (self.id, random_id))
+            DEDENT
+            else :
+            INDENT
+                item = pickle.dumps(Message(self.id))
+                print ("sending a total of %d bytes" % len(item))
+                s.sendall(item)
+            DEDENT
+            finally :
+            INDENT
+                s.close()
+
+            DEDENT
+        DEDENT
+        if random.random() < 0.1 :
+        INDENT
+            mpp = MessagePassingProcess(self.processes, self.lock)
+            mpp.start()
+        DEDENT
+        else :
+        INDENT
+            time.sleep(1.0)
+        DEDENT
+    DEDENT
+    print ("process %d finished looping" % self.id)
+DEDENT
+----------------------------------------
+
+def run(self) :
+INDENT
+    print ("%d: in run()" % self.id)
+    while len(list(self.nodes.keys())) < 10 :
+    INDENT
+        time.sleep(random.random() * 0.5)
+        self.send()
+        time.sleep(random.random() * 0.5)
+        self.receive()
+        if random.random() < 0.1 :
+        INDENT
+            new = Node(self.nodes, self.lock)
+            new.start()
+
+        DEDENT
+    DEDENT
+    print ("%d: finished" % self.id)
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+7105371_7105446_9_22
+7105371_7108736_1_16
+Title: How does this while loop exit? 
+----------------------------------------
+
+def run(self) :
+INDENT
+    while self.continue_loop :
+    INDENT
+
+        host = self.queue.get()
+
+        url = urllib2.urlopen(host)
+        chunk = url.read()
+
+        self.out_queue.put(chunk)
+
+        self.queue.task_done()
+    DEDENT
+DEDENT
+----------------------------------------
+
+def run(self) :
+INDENT
+    while True :
+    INDENT
+        try :
+        INDENT
+            host = self.queue.get(block = False)
+        DEDENT
+        except Queue.Empty, ex :
+        INDENT
+            break
+        DEDENT
+        url = urllib2.urlopen(host)
+        chunk = url.read()
+
+        self.out_queue.put(chunk)
+
+        self.queue.task_done()
+    DEDENT
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+7138629_7138649_11_22
+7138629_7138661_7_20
+Title: A question regarding a class and it's methods 
+----------------------------------------
+
+def connect(self, server, port) :
+INDENT
+    self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    c = self.s.connect_ex((server, port))
+    if c == 111 :
+    INDENT
+        print ("Error: " + os.strerror(c))
+        sys.exit(1)
+        print ("Making connection to " + server + "\n")
+    DEDENT
+DEDENT
+----------------------------------------
+
+def connect(self, server, port) :
+INDENT
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    c = s.connect_ex((server, port))
+    if c == 111 :
+    INDENT
+        print ("Error: " + os.strerror(c))
+
+        sys.exit(1)
+    DEDENT
+    self.s = s
+
+    print ("Making connection to " + server + "\n")
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+7138629_7138661_7_20
+7138629_7138665_12_21
+Title: A question regarding a class and it's methods 
+----------------------------------------
+
+def connect(self, server, port) :
+INDENT
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    c = s.connect_ex((server, port))
+    if c == 111 :
+    INDENT
+        print ("Error: " + os.strerror(c))
+
+        sys.exit(1)
+    DEDENT
+    self.s = s
+
+    print ("Making connection to " + server + "\n")
+DEDENT
+----------------------------------------
+
+def connect(self, server, port) :
+INDENT
+    self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    c = self.s.connect_ex((server, port))
+    if c == 111 :
+    INDENT
+        print ("Error: " + os.strerror(c))
+        sys.exit(1)
+        print ("Making connection to " + server + "\n")
+    DEDENT
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+716477_1992070_1_10
+716477_716479_1_14
+Title: join list of lists in python 
+----------------------------------------
+
+def flatten(input) :
+INDENT
+    ret = []
+    if not isinstance(input, (list, tuple)) :
+    INDENT
+        return [input]
+    DEDENT
+    for i in input :
+    INDENT
+        if isinstance(i, (list, tuple)) :
+        INDENT
+            ret.extend(flatten(i))
+        DEDENT
+        else :
+        INDENT
+            ret.append(i)
+        DEDENT
+    DEDENT
+    return ret
+DEDENT
+----------------------------------------
+
+def flatten(l, ltypes = (list, tuple)) :
+INDENT
+    ltype = type(l)
+    l = list(l)
+    i = 0
+    while i < len(l) :
+    INDENT
+        while isinstance(l [i], ltypes) :
+        INDENT
+            if not l [i] :
+            INDENT
+                l.pop(i)
+                i -= 1
+                break
+            DEDENT
+            else :
+            INDENT
+                l [i : i + 1] = l [i]
+            DEDENT
+        DEDENT
+        i += 1
+    DEDENT
+    return ltype(l)
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+7194426_7194789_5_10
+7194426_7194802_7_14
+Title: Descriptor for lazy loading 
+----------------------------------------
+
+def __get__(self, obj, type) :
+INDENT
+    if not (hasattr(obj, "_loaded") and obj._loaded) :
+    INDENT
+        obj._loaded = True
+        return getattr(obj, self.loader_name)()
+    DEDENT
+    return None
+DEDENT
+----------------------------------------
+
+def __get__(self, obj, cls) :
+INDENT
+    try :
+    INDENT
+        return getattr(obj, self.var)
+    DEDENT
+    except AttributeError :
+    INDENT
+        value = getattr(obj, self.func)()
+        setattr(obj, self.var, value)
+        return value
+    DEDENT
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+722298_4856472_4_13
+722298_5705303_4_20
+Title: How can I get the width of a wx.ListCtrl and its column name? 
+----------------------------------------
+
+def __init__(self, * args, ** kw) :
+INDENT
+    wx.Frame.__init__(self, * args, ** kw)
+    self.list = wx.ListCtrl(self, style = wx.LC_REPORT)
+    items = ['A', 'b', 'something really REALLY long']
+    self.list.InsertColumn(0, "AA")
+    for item in items :
+    INDENT
+        self.list.InsertStringItem(0, item)
+    DEDENT
+    self.list.SetColumnWidth(0, wx.LIST_AUTOSIZE)
+DEDENT
+----------------------------------------
+
+def __init__(self, * args, ** kw) :
+INDENT
+    wx.Frame.__init__(self, * args, ** kw)
+    self.list = wx.ListCtrl(self, style = wx.LC_REPORT)
+    items = ['A', 'b', 'something really REALLY long']
+    self.list.InsertColumn(0, "AAAAAAAAAAAAAAAAAAAAAAAA")
+    for item in items :
+    INDENT
+        self.list.InsertStringItem(0, item)
+    DEDENT
+    self.list.SetColumnWidth(0, wx.LIST_AUTOSIZE)
+    a = self.list.GetColumnWidth(0)
+    print "a " + str(a)
+    self.list.SetColumnWidth(0, wx.LIST_AUTOSIZE_USEHEADER)
+    b = self.list.GetColumnWidth(0)
+    print "b " + str(b)
+    if a > b :
+    INDENT
+        print "a is bigger"
+        self.list.SetColumnWidth(0, wx.LIST_AUTOSIZE)
+    DEDENT
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+722298_4856472_4_13
+722298_722878_25_34
+Title: How can I get the width of a wx.ListCtrl and its column name? 
+----------------------------------------
+
+def __init__(self, * args, ** kw) :
+INDENT
+    wx.Frame.__init__(self, * args, ** kw)
+    self.list = wx.ListCtrl(self, style = wx.LC_REPORT)
+    items = ['A', 'b', 'something really REALLY long']
+    self.list.InsertColumn(0, "AA")
+    for item in items :
+    INDENT
+        self.list.InsertStringItem(0, item)
+    DEDENT
+    self.list.SetColumnWidth(0, wx.LIST_AUTOSIZE)
+DEDENT
+----------------------------------------
+
+def __init__(self) :
+INDENT
+    wx.Frame.__init__(self, None)
+    grid = wx.grid.Grid(self)
+    grid.SetTable(GridData())
+    grid.EnableEditing(False)
+    grid.SetSelectionMode(wx.grid.Grid.SelectRows)
+    grid.SetRowLabelSize(0)
+    grid.AutoSizeColumns()
+
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+722298_5705303_4_20
+722298_722878_25_34
+Title: How can I get the width of a wx.ListCtrl and its column name? 
+----------------------------------------
+
+def __init__(self, * args, ** kw) :
+INDENT
+    wx.Frame.__init__(self, * args, ** kw)
+    self.list = wx.ListCtrl(self, style = wx.LC_REPORT)
+    items = ['A', 'b', 'something really REALLY long']
+    self.list.InsertColumn(0, "AAAAAAAAAAAAAAAAAAAAAAAA")
+    for item in items :
+    INDENT
+        self.list.InsertStringItem(0, item)
+    DEDENT
+    self.list.SetColumnWidth(0, wx.LIST_AUTOSIZE)
+    a = self.list.GetColumnWidth(0)
+    print "a " + str(a)
+    self.list.SetColumnWidth(0, wx.LIST_AUTOSIZE_USEHEADER)
+    b = self.list.GetColumnWidth(0)
+    print "b " + str(b)
+    if a > b :
+    INDENT
+        print "a is bigger"
+        self.list.SetColumnWidth(0, wx.LIST_AUTOSIZE)
+    DEDENT
+DEDENT
+----------------------------------------
+
+def __init__(self) :
+INDENT
+    wx.Frame.__init__(self, None)
+    grid = wx.grid.Grid(self)
+    grid.SetTable(GridData())
+    grid.EnableEditing(False)
+    grid.SetSelectionMode(wx.grid.Grid.SelectRows)
+    grid.SetRowLabelSize(0)
+    grid.AutoSizeColumns()
+
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+7243750_34964610_4_10
+7243750_42853853_8_12
+Title: Download file from web in Python 3 
+----------------------------------------
+
+def download(url, file_name) :
+INDENT
+    with open(file_name, "wb") as file :
+    INDENT
+
+        response = get(url)
+        file.write(response.content)
+    DEDENT
+DEDENT
+----------------------------------------
+
+def download(url, file = None) :
+INDENT
+    if not file :
+    INDENT
+        file = url.split('/') [- 1]
+    DEDENT
+    with open(file, 'wb') as f :
+    INDENT
+        f.write(get(url))
+    DEDENT
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+7250659_10146415_12_21
+7250659_18143318_16_32
+Title: How to use Python to programmatically generate part of Sphinx documentation 
+----------------------------------------
+
+def run(self) :
+INDENT
+    oldStdout, sys.stdout = sys.stdout, StringIO()
+    try :
+    INDENT
+        exec '\n'.join(self.content)
+        return [nodes.paragraph(text = sys.stdout.getvalue())]
+    DEDENT
+    except Exception, e :
+    INDENT
+        return [nodes.error(None, nodes.paragraph(text = "Unable to execute python code at %s:%d:" % (basename(self.src), self.srcline)), nodes.paragraph(text = str(e)))]
+    DEDENT
+    finally :
+    INDENT
+        sys.stdout = oldStdout
+    DEDENT
+DEDENT
+----------------------------------------
+
+def run(self) :
+INDENT
+    oldStdout, sys.stdout = sys.stdout, StringIO()
+    tab_width = self.options.get('tab-width', self.state.document.settings.tab_width)
+    source = self.state_machine.input_lines.source(self.lineno - self.state_machine.input_offset - 1)
+    try :
+    INDENT
+        exec ('\n'.join(self.content))
+        text = sys.stdout.getvalue()
+        lines = statemachine.string2lines(text, tab_width, convert_whitespace = True)
+        self.state_machine.insert_input(lines, source)
+        return []
+    DEDENT
+    except Exception :
+    INDENT
+        return [nodes.error(None, nodes.paragraph(text = "Unable to execute python code at %s:%d:" % (basename(source), self.lineno)), nodes.paragraph(text = str(sys.exc_info() [1])))]
+    DEDENT
+    finally :
+    INDENT
+        sys.stdout = oldStdout
+    DEDENT
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+7259613_7259678_6_23
+7259613_7260234_6_19
+Title: Python Reference to Member Variable Which is Immutable 
+----------------------------------------
+
+def bar(self, cmd) :
+INDENT
+    if cmd == "do_this" :
+    INDENT
+        index_name = 'a'
+    DEDENT
+    elif cmd == "do_that" :
+    INDENT
+        index_name = 'b'
+    DEDENT
+    index = getattr(self, index_name)
+    filename = "file-%d.txt" % index
+    fp = open("filename", "w")
+
+    setattr(self, index_name, index)
+    return
+DEDENT
+----------------------------------------
+
+def bar(self, cmd) :
+INDENT
+    if cmd == "do_this" :
+    INDENT
+        index = self.a
+    DEDENT
+    elif cmd == "do_that" :
+    INDENT
+        index = self.b
+    DEDENT
+    filename = "file-%d.txt" % index [0]
+    fp = open("filename", "w")
+
+    index [0] = 42
+    return
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+7271245_7271877_5_10
+7271245_7271928_6_11
+Title: Python clean way to wrap individual statements in a try except block 
+----------------------------------------
+
+def __call__(self, expression) :
+INDENT
+    try :
+    INDENT
+        exec expression
+    DEDENT
+    except self._exception_type as e :
+    INDENT
+        print 'Suppressor: suppressed exception %s with content \'%s\'' % (type(self._exception_type), e)
+    DEDENT
+DEDENT
+----------------------------------------
+
+def __call__(self, * args, ** kwargs) :
+INDENT
+    try :
+    INDENT
+        return self.__fn(* args, ** kwargs)
+    DEDENT
+    except :
+    INDENT
+        print "swallowed exception"
+    DEDENT
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+7310511_49563385_10_22
+7310511_49563385_29_38
+Title: How to create downloading progress bar in ttk? 
+----------------------------------------
+
+def __init__(self, master) :
+INDENT
+    ttk.Frame.__init__(self, master = master)
+    self.master.title('Main GUI')
+    self.master.geometry('300x200')
+    self.lst = [
+        'Bushes01.png', 'Bushes02.png', 'Bushes03.png', 'Bushes04.png', 'Bushes05.png',
+        'Forest01.png', 'Forest02.png', 'Forest03.png', 'Forest04.png', 'Road01.png',
+        'Road02.png', 'Road03.png', 'Lake01.png', 'Lake02.png', 'Field01.png']
+    b = ttk.Button(self.master, text = 'Start', command = self.start_progress)
+    b.pack()
+    b.focus_set()
+DEDENT
+----------------------------------------
+
+def __init__(self, parent, name, lst) :
+INDENT
+    tk.Toplevel.__init__(self, master = parent)
+    self.name = name
+    self.lst = lst
+    self.length = 400
+    self.create_window()
+    self.create_widgets()
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+7310511_49563385_10_22
+7310511_7310778_7_17
+Title: How to create downloading progress bar in ttk? 
+----------------------------------------
+
+def __init__(self, master) :
+INDENT
+    ttk.Frame.__init__(self, master = master)
+    self.master.title('Main GUI')
+    self.master.geometry('300x200')
+    self.lst = [
+        'Bushes01.png', 'Bushes02.png', 'Bushes03.png', 'Bushes04.png', 'Bushes05.png',
+        'Forest01.png', 'Forest02.png', 'Forest03.png', 'Forest04.png', 'Road01.png',
+        'Road02.png', 'Road03.png', 'Lake01.png', 'Lake02.png', 'Field01.png']
+    b = ttk.Button(self.master, text = 'Start', command = self.start_progress)
+    b.pack()
+    b.focus_set()
+DEDENT
+----------------------------------------
+
+def __init__(self, * args, ** kwargs) :
+INDENT
+    tk.Tk.__init__(self, * args, ** kwargs)
+    self.button = ttk.Button(text = "start", command = self.start)
+    self.button.pack()
+    self.progress = ttk.Progressbar(self, orient = "horizontal",
+        length = 200, mode = "determinate")
+    self.progress.pack()
+    self.bytes = 0
+    self.maxbytes = 0
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+7310511_49563385_29_38
+7310511_7310778_7_17
+Title: How to create downloading progress bar in ttk? 
+----------------------------------------
+
+def __init__(self, parent, name, lst) :
+INDENT
+    tk.Toplevel.__init__(self, master = parent)
+    self.name = name
+    self.lst = lst
+    self.length = 400
+    self.create_window()
+    self.create_widgets()
+DEDENT
+----------------------------------------
+
+def __init__(self, * args, ** kwargs) :
+INDENT
+    tk.Tk.__init__(self, * args, ** kwargs)
+    self.button = ttk.Button(text = "start", command = self.start)
+    self.button.pack()
+    self.progress = ttk.Progressbar(self, orient = "horizontal",
+        length = 200, mode = "determinate")
+    self.progress.pack()
+    self.bytes = 0
+    self.maxbytes = 0
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+7323664_11510193_31_48
+7323664_7324603_14_18
+Title: Python generator pre-fetch? 
+----------------------------------------
+
+def next(self) :
+INDENT
+    self.t.join()
+    self.i += 1
+    self.t = threading.Thread(target = self.worker, args = (self.queue, self.i))
+    self.t.start()
+
+    while True :
+    INDENT
+        try :
+        INDENT
+            print "request at", time.time()
+            obj = self.queue.get(False)
+            self.queue.task_done()
+            return obj
+        DEDENT
+        except Queue.Empty :
+        INDENT
+            pass
+        DEDENT
+        time.sleep(.001)
+    DEDENT
+DEDENT
+----------------------------------------
+
+def next(self) :
+INDENT
+    next_item = self.queue.get()
+    if next_item is None :
+    INDENT
+        raise StopIteration
+    DEDENT
+    return next_item
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+7335237_7337187_12_16
+7335237_7337187_2_6
+Title: Is it best-practice to place __init__ in the beginning or end of a class? 
+----------------------------------------
+
+def __init__(self, method = None) :
+INDENT
+    if method is None :
+    INDENT
+        self.defaultMethod()
+    DEDENT
+    else :
+    INDENT
+        method(self)
+    DEDENT
+DEDENT
+----------------------------------------
+
+def __init__(self, method = "foo") :
+INDENT
+    if callable(method) :
+    INDENT
+        method(self)
+    DEDENT
+    else :
+    INDENT
+        getattr(self, method)()
+    DEDENT
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+7339685_36083737_60_68
+7339685_7341192_56_64
+Title: How to rotate a QPushButton? 
+----------------------------------------
+
+def __init__(self) :
+INDENT
+    QtGui.QFrame.__init__(self)
+    self.application = QtCore.QCoreApplication.instance()
+    self.layout = QtGui.QHBoxLayout()
+    self.button = RotatedButton("Hello", self, orientation = "west")
+    self.layout.addWidget(self.button)
+    self.setLayout(self.layout)
+DEDENT
+----------------------------------------
+
+def __init__(self) :
+INDENT
+    QtGui.QFrame.__init__(self)
+    self.application = QtCore.QCoreApplication.instance()
+    self.layout = QtGui.QHBoxLayout()
+    self.button = RotatedButton("Hello", self, orientation = "west")
+    self.layout.addWidget(self.button)
+    self.setLayout(self.layout)
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+742_2921293_14_19
+742_2921293_2_10
+Title: Class views in Django 
+----------------------------------------
+
+def __call__(self, request, * args, ** kwargs) :
+INDENT
+    if hasattr(self, request.method) :
+    INDENT
+        handler = getattr(self, request.method)
+        if hasattr(handler, '__call__') :
+        INDENT
+            return handler(request, * args, ** kwargs)
+        DEDENT
+    DEDENT
+    return HttpResponseBadRequest('Method Not Allowed', status = 405)
+DEDENT
+----------------------------------------
+
+def __call__(cls, * args, ** kwargs) :
+INDENT
+    if args and isinstance(args [0], HttpRequest) :
+    INDENT
+        instance = super(CallableViewClass, cls).__call__()
+        return instance.__call__(* args, ** kwargs)
+    DEDENT
+    else :
+    INDENT
+        instance = super(CallableViewClass, cls).__call__(* args, ** kwargs)
+        return instance
+
+    DEDENT
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+7449585_29039755_3_34
+7449585_37999370_4_15
+Title: How do you set the absolute position of figure windows with matplotlib? 
+----------------------------------------
+
+def move_figure(position = "top-right") :
+INDENT
+    mgr = plt.get_current_fig_manager()
+    mgr.full_screen_toggle()
+    py = mgr.canvas.height()
+    px = mgr.canvas.width()
+    d = 10
+    if position == "top" :
+    INDENT
+
+        mgr.window.setGeometry(d, 4 * d, px - 2 * d, py / 2 - 4 * d)
+    DEDENT
+    elif position == "bottom" :
+    INDENT
+        mgr.window.setGeometry(d, py / 2 + 5 * d, px - 2 * d, py / 2 - 4 * d)
+    DEDENT
+    elif position == "left" :
+    INDENT
+        mgr.window.setGeometry(d, 4 * d, px / 2 - 2 * d, py - 4 * d)
+    DEDENT
+    elif position == "right" :
+    INDENT
+        mgr.window.setGeometry(px / 2 + d, 4 * d, px / 2 - 2 * d, py - 4 * d)
+    DEDENT
+    elif position == "top-left" :
+    INDENT
+        mgr.window.setGeometry(d, 4 * d, px / 2 - 2 * d, py / 2 - 4 * d)
+    DEDENT
+    elif position == "top-right" :
+    INDENT
+        mgr.window.setGeometry(px / 2 + d, 4 * d, px / 2 - 2 * d, py / 2 - 4 * d)
+    DEDENT
+    elif position == "bottom-left" :
+    INDENT
+        mgr.window.setGeometry(d, py / 2 + 5 * d, px / 2 - 2 * d, py / 2 - 4 * d)
+    DEDENT
+    elif position == "bottom-right" :
+    INDENT
+        mgr.window.setGeometry(px / 2 + d, py / 2 + 5 * d, px / 2 - 2 * d, py / 2 - 4 * d)
+
+    DEDENT
+DEDENT
+----------------------------------------
+
+def move_figure(f, x, y) :
+INDENT
+    backend = matplotlib.get_backend()
+    if backend == 'TkAgg' :
+    INDENT
+        f.canvas.manager.window.wm_geometry("+%d+%d" % (x, y))
+    DEDENT
+    elif backend == 'WXAgg' :
+    INDENT
+        f.canvas.manager.window.SetPosition((x, y))
+    DEDENT
+    else :
+    INDENT
+
+        f.canvas.manager.window.move(x, y)
+    DEDENT
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+7465796_18157447_9_27
+7465796_27772324_9_17
+Title: django set DateTimeField to server's current time 
+----------------------------------------
+
+def patch(cls, field) :
+INDENT
+    orig_prep_db = field.get_db_prep_value
+    orig_prep_lookup = field.get_prep_lookup
+    orig_db_prep_lookup = field.get_db_prep_lookup
+    def prep_db_value(self, value, connection, prepared = False) :
+    INDENT
+        return value if isinstance(value, cls) else orig_prep_db(self, value, connection, prepared)
+    DEDENT
+    def prep_lookup(self, lookup_type, value) :
+    INDENT
+        return value if isinstance(value, cls) else orig_prep_lookup(self, lookup_type, value)
+    DEDENT
+    def prep_db_lookup(self, lookup_type, value, connection, prepared = True) :
+    INDENT
+        return value if isinstance(value, cls) else orig_db_prep_lookup(self, lookup_type, value, connection = connection, prepared = True)
+    DEDENT
+    field.get_db_prep_value = prep_db_value
+    field.get_prep_lookup = prep_lookup
+    field.get_db_prep_lookup = prep_db_lookup
+
+DEDENT
+----------------------------------------
+
+def patch(cls, * args) :
+INDENT
+    def create_tweaked_get_db_prep_value(orig_get_db_prep_value) :
+    INDENT
+        def get_db_prep_value(self, value, connection, prepared = False) :
+        INDENT
+            return value if isinstance(value, cls) else orig_get_db_prep_value(self, value, connection, prepared)
+        DEDENT
+        return get_db_prep_value
+    DEDENT
+    for field_class in args :
+    INDENT
+        field_class.get_db_prep_value = create_tweaked_get_db_prep_value(field_class.get_db_prep_value)
+    DEDENT
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+7486144_23634898_1_27
+7486144_7490925_3_22
+Title: efficient projection of a bipartite graph in python (using networkx) 
+----------------------------------------
+
+def time_overlap_projected_graph_parallel(bi, nodes) :
+INDENT
+    uni = nx.MultiGraph()
+    for u in nodes :
+    INDENT
+        uni.add_node(u)
+        u_adj = bi.adj [u]
+        for (w, uw_attr) in u_adj.iteritems() :
+        INDENT
+            w_adj = bi.adj [w]
+            for (v, wv_attr) in w_adj.iteritems() :
+            INDENT
+                if v == u :
+                INDENT
+                    continue
+                DEDENT
+                elif uni.has_edge(u, v) :
+                INDENT
+                    continue
+                DEDENT
+                for uspell in uw_attr.itervalues() :
+                INDENT
+                    ustart = uspell [1]
+                    uend = uspell [2]
+                    for vspell in wv_attr.itervalues() :
+                    INDENT
+                        vstart = vspell [1]
+                        vend = vspell [2]
+                        if uend > vstart and vend > ustart :
+                        INDENT
+                            ostart = max(ustart, vstart)
+                            oend = min(uend, vend)
+                            olen = (oend - ostart + 1) / 86400
+                            ocell = w
+
+                            uni.add_edge(u, v, ** {0 : olen, 1 : ostart, 2 : oend, 3 : ocell})
+                        DEDENT
+                    DEDENT
+                DEDENT
+            DEDENT
+        DEDENT
+    DEDENT
+    return uni
+DEDENT
+----------------------------------------
+
+def time_overlap_projected_graph_parallel(B, nodes) :
+INDENT
+    G = nx.MultiGraph()
+    G.add_nodes_from((n, B.node [n]) for n in nodes)
+    cells = [n for n in B.nodes() if n [0] not in nodes]
+    for cell in cells :
+    INDENT
+        for u, v in combinations(B [cell], 2) :
+        INDENT
+            for uspell in B.get_edge_data(u, cell).values() :
+            INDENT
+                ustart = uspell [1]
+                uend = uspell [2]
+                for vspell in B.get_edge_data(v, cell).values() :
+                INDENT
+                    vstart = vspell [1]
+                    vend = vspell [2]
+                    if uend > vstart and vend > ustart :
+                    INDENT
+                        ostart = max(ustart, vstart)
+                        oend = min(uend, vend)
+                        olen = (oend - ostart + 1) / 86400
+                        ocell = cell
+                        if (v not in G [u] or ostart not in [edict [1] for edict in G [u] [v].values()]) :
+                        INDENT
+                            G.add_edge(u, v, {0 : olen, 1 : ostart, 2 : oend, 3 : ocell})
+                        DEDENT
+                    DEDENT
+                DEDENT
+            DEDENT
+        DEDENT
+    DEDENT
+    return G
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+7486144_23634898_1_27
+7486144_7492229_1_22
+Title: efficient projection of a bipartite graph in python (using networkx) 
+----------------------------------------
+
+def time_overlap_projected_graph_parallel(bi, nodes) :
+INDENT
+    uni = nx.MultiGraph()
+    for u in nodes :
+    INDENT
+        uni.add_node(u)
+        u_adj = bi.adj [u]
+        for (w, uw_attr) in u_adj.iteritems() :
+        INDENT
+            w_adj = bi.adj [w]
+            for (v, wv_attr) in w_adj.iteritems() :
+            INDENT
+                if v == u :
+                INDENT
+                    continue
+                DEDENT
+                elif uni.has_edge(u, v) :
+                INDENT
+                    continue
+                DEDENT
+                for uspell in uw_attr.itervalues() :
+                INDENT
+                    ustart = uspell [1]
+                    uend = uspell [2]
+                    for vspell in wv_attr.itervalues() :
+                    INDENT
+                        vstart = vspell [1]
+                        vend = vspell [2]
+                        if uend > vstart and vend > ustart :
+                        INDENT
+                            ostart = max(ustart, vstart)
+                            oend = min(uend, vend)
+                            olen = (oend - ostart + 1) / 86400
+                            ocell = w
+
+                            uni.add_edge(u, v, ** {0 : olen, 1 : ostart, 2 : oend, 3 : ocell})
+                        DEDENT
+                    DEDENT
+                DEDENT
+            DEDENT
+        DEDENT
+    DEDENT
+    return uni
+DEDENT
+----------------------------------------
+
+def time_overlap_projected_graph_parallel(B, nodes) :
+INDENT
+    G = nx.MultiGraph()
+    G.add_nodes_from(nodes)
+    for u in G.nodes_iter() :
+    INDENT
+        for w in B.neighbors_iter(u) :
+        INDENT
+            for v in B.neighbors_iter(w) :
+            INDENT
+                if v == u :
+                INDENT
+                    continue
+                DEDENT
+                for uspell in B [u] [w].values() :
+                INDENT
+                    ustart = uspell [1]
+                    uend = uspell [2]
+                    for vspell in B [v] [w].values() :
+                    INDENT
+                        vstart = vspell [1]
+                        vend = vspell [2]
+                        if uend > vstart and vend > ustart :
+                        INDENT
+                            ostart = max(ustart, vstart)
+                            oend = min(uend, vend)
+                            olen = (oend - ostart + 1) / 86400
+                            ocell = w
+                            if (v not in G [u] or ostart not in [edict [1] for edict in G [u] [v].values()]) :
+                            INDENT
+                                G.add_edges_from([(u, v, {0 : olen, 1 : ostart, 2 : oend, 3 : ocell})])
+                            DEDENT
+                        DEDENT
+                    DEDENT
+                DEDENT
+            DEDENT
+        DEDENT
+    DEDENT
+    return G
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+7486144_7490925_3_22
+7486144_7492229_1_22
+Title: efficient projection of a bipartite graph in python (using networkx) 
+----------------------------------------
+
+def time_overlap_projected_graph_parallel(B, nodes) :
+INDENT
+    G = nx.MultiGraph()
+    G.add_nodes_from((n, B.node [n]) for n in nodes)
+    cells = [n for n in B.nodes() if n [0] not in nodes]
+    for cell in cells :
+    INDENT
+        for u, v in combinations(B [cell], 2) :
+        INDENT
+            for uspell in B.get_edge_data(u, cell).values() :
+            INDENT
+                ustart = uspell [1]
+                uend = uspell [2]
+                for vspell in B.get_edge_data(v, cell).values() :
+                INDENT
+                    vstart = vspell [1]
+                    vend = vspell [2]
+                    if uend > vstart and vend > ustart :
+                    INDENT
+                        ostart = max(ustart, vstart)
+                        oend = min(uend, vend)
+                        olen = (oend - ostart + 1) / 86400
+                        ocell = cell
+                        if (v not in G [u] or ostart not in [edict [1] for edict in G [u] [v].values()]) :
+                        INDENT
+                            G.add_edge(u, v, {0 : olen, 1 : ostart, 2 : oend, 3 : ocell})
+                        DEDENT
+                    DEDENT
+                DEDENT
+            DEDENT
+        DEDENT
+    DEDENT
+    return G
+DEDENT
+----------------------------------------
+
+def time_overlap_projected_graph_parallel(B, nodes) :
+INDENT
+    G = nx.MultiGraph()
+    G.add_nodes_from(nodes)
+    for u in G.nodes_iter() :
+    INDENT
+        for w in B.neighbors_iter(u) :
+        INDENT
+            for v in B.neighbors_iter(w) :
+            INDENT
+                if v == u :
+                INDENT
+                    continue
+                DEDENT
+                for uspell in B [u] [w].values() :
+                INDENT
+                    ustart = uspell [1]
+                    uend = uspell [2]
+                    for vspell in B [v] [w].values() :
+                    INDENT
+                        vstart = vspell [1]
+                        vend = vspell [2]
+                        if uend > vstart and vend > ustart :
+                        INDENT
+                            ostart = max(ustart, vstart)
+                            oend = min(uend, vend)
+                            olen = (oend - ostart + 1) / 86400
+                            ocell = w
+                            if (v not in G [u] or ostart not in [edict [1] for edict in G [u] [v].values()]) :
+                            INDENT
+                                G.add_edges_from([(u, v, {0 : olen, 1 : ostart, 2 : oend, 3 : ocell})])
+                            DEDENT
+                        DEDENT
+                    DEDENT
+                DEDENT
+            DEDENT
+        DEDENT
+    DEDENT
+    return G
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+749796_12940014_1_23
+749796_4590052_3_19
+Title: Pretty printing XML in Python 
+----------------------------------------
+
+def indent(elem, level = 0, more_sibs = False) :
+INDENT
+    i = "\n"
+    if level :
+    INDENT
+        i += (level - 1) * '  '
+    DEDENT
+    num_kids = len(elem)
+    if num_kids :
+    INDENT
+        if not elem.text or not elem.text.strip() :
+        INDENT
+            elem.text = i + "  "
+            if level :
+            INDENT
+                elem.text += '  '
+            DEDENT
+        DEDENT
+        count = 0
+        for kid in elem :
+        INDENT
+            indent(kid, level + 1, count < num_kids - 1)
+            count += 1
+        DEDENT
+        if not elem.tail or not elem.tail.strip() :
+        INDENT
+            elem.tail = i
+            if more_sibs :
+            INDENT
+                elem.tail += '  '
+            DEDENT
+        DEDENT
+    DEDENT
+    else :
+    INDENT
+        if level and (not elem.tail or not elem.tail.strip()) :
+        INDENT
+            elem.tail = i
+            if more_sibs :
+            INDENT
+                elem.tail += '  '
+            DEDENT
+        DEDENT
+    DEDENT
+DEDENT
+----------------------------------------
+
+def indent(elem, level = 0) :
+INDENT
+    i = "\n" + level * "  "
+    j = "\n" + (level - 1) * "  "
+    if len(elem) :
+    INDENT
+        if not elem.text or not elem.text.strip() :
+        INDENT
+            elem.text = i + "  "
+        DEDENT
+        if not elem.tail or not elem.tail.strip() :
+        INDENT
+            elem.tail = i
+        DEDENT
+        for subelem in elem :
+        INDENT
+            indent(subelem, level + 1)
+        DEDENT
+        if not elem.tail or not elem.tail.strip() :
+        INDENT
+            elem.tail = j
+        DEDENT
+    DEDENT
+    else :
+    INDENT
+        if level and (not elem.tail or not elem.tail.strip()) :
+        INDENT
+            elem.tail = j
+        DEDENT
+    DEDENT
+    return elem
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+7542794_7544220_31_38
+7542794_7544220_5_12
+Title: Grouping lists within lists in Python 3 
+----------------------------------------
+
+def pairing(iterable) :
+INDENT
+    it = iter(iterable)
+    itn = it.next
+    for x in it :
+    INDENT
+        yield [x, itn()]
+
+    DEDENT
+DEDENT
+----------------------------------------
+
+def pairing(iterable) :
+INDENT
+    it = iter(iterable)
+    itn = it.next
+    for x in it :
+    INDENT
+        yield (x, itn())
+
+    DEDENT
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+757244_43783033_1_19
+757244_758649_1_11
+Title: Converting tree list to hierarchy dict 
+----------------------------------------
+
+def build_tree(elems) :
+INDENT
+    elem_with_children = {}
+    def _build_children_sub_tree(parent) :
+    INDENT
+        cur_dict = {
+            'id' : parent,
+            }
+        if parent in elem_with_children.keys() :
+        INDENT
+            cur_dict ["children"] = [_build_children_sub_tree(cid) for cid in elem_with_children [parent]]
+        DEDENT
+        return cur_dict
+    DEDENT
+    for item in elems :
+    INDENT
+        cid = item ['id']
+        pid = item ['parent']
+        elem_with_children.setdefault(pid, []).append(cid)
+    DEDENT
+    res = _build_children_sub_tree(- 1)
+    return res
+DEDENT
+----------------------------------------
+
+def build_tree(category_data) :
+INDENT
+    top_level_map = {}
+    cat_map = {}
+    for cat_name, parent, depth in cat_data :
+    INDENT
+        cat_map.setdefault(parent, {})
+        cat_map.setdefault(cat_name, {})
+        cat_map [parent] [cat_name] = cat_map [cat_name]
+        if depth == 0 :
+        INDENT
+            top_level_map [cat_name] = cat_map [cat_name]
+        DEDENT
+    DEDENT
+    return top_level_map
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+7573031_7574011_18_27
+7573031_7574011_7_15
+Title: When I use update() with tkinter my Label writes another line instead of rewriting the same text 
+----------------------------------------
+
+def __init__(self, callback) :
+INDENT
+    super().__init__()
+    self.label = Label(self, text = str(callback()))
+    self.label.pack()
+    while True :
+    INDENT
+
+        self.label.configure(text = str(callback()))
+        self.update()
+        sleep(1)
+    DEDENT
+DEDENT
+----------------------------------------
+
+def __init__(self, price, time) :
+INDENT
+    super().__init__()
+    self.labels = []
+    while True :
+    INDENT
+        self.labels.append(Label(self, text = (price, time)))
+        self.labels [- 1].pack()
+        self.update()
+        sleep(1)
+    DEDENT
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+7576310_17316420_56_64
+7576310_17316420_71_96
+Title: Updating a tk ProgressBar from a multiprocess.proccess in python3 
+----------------------------------------
+
+def run(self) :
+INDENT
+    print "The Slave is outsourcing his work to Calcualte inc."
+    time.sleep(1)
+    Outsourcing = Calculate()
+    Results = Outsourcing.run(self.guest, self.data)
+    return Results
+
+DEDENT
+----------------------------------------
+
+def run(self, guest, data) :
+INDENT
+    print "This is Calculate inc. ... how can I help you?"
+    time.sleep(1)
+    maximum = int(guest.EntryBox.get())
+    guest.progress.configure(maximum = maximum, value = 0)
+    manager = multiprocessing.Manager()
+    queue = manager.Queue()
+    lock = manager.Lock()
+    print "Things are setup and good to go"
+    pool_size = multiprocessing.cpu_count()
+    print "Your system has %d CPUs" % (pool_size)
+    pool = multiprocessing.Pool(processes = pool_size)
+    Master.results = pool.map_async(calc, (zip([self] * len(data), [lock] * len(data),
+                [queue] * len(data), data)))
+    for job in range(1, maximum + 1) :
+    INDENT
+        queue.get()
+        guest.progress.configure(value = job)
+    DEDENT
+    pool.close()
+    pool.join()
+    print "All done"
+    guest.nextstep()
+    return
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+758256_30021530_10_21
+758256_8027187_12_25
+Title: PyQt4 Minimize to Tray 
+----------------------------------------
+
+def initUI(self) :
+INDENT
+    style = self.style()
+
+    icon = style.standardIcon(QtGui.QStyle.SP_MediaSeekForward)
+    self.tray_icon = QtGui.QSystemTrayIcon()
+    self.tray_icon.setIcon(QtGui.QIcon(icon))
+    self.setWindowIcon(QtGui.QIcon(icon))
+
+    self.tray_icon.activated.connect(self.restore_window)
+DEDENT
+----------------------------------------
+
+def initUI(self) :
+INDENT
+    self.icon = QSystemTrayIcon()
+    r = self.icon.isSystemTrayAvailable()
+    print r
+    self.icon.setIcon(QtGui.QIcon('/home/vzades/Desktop/web.png'))
+    self.icon.show()
+    self.setGeometry(300, 300, 250, 150)
+    self.setWindowIcon(QtGui.QIcon('/home/vzades/Desktop/web.png'))
+    self.setWindowTitle('Message box')
+    self.show()
+    self.icon.activated.connect(self.activate)
+    self.show()
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+758256_30021530_35_48
+758256_758422_5_15
+Title: PyQt4 Minimize to Tray 
+----------------------------------------
+
+def closeEvent(self, event) :
+INDENT
+    reply = QtGui.QMessageBox.question(
+        self,
+        'Message', "Are you sure to quit?",
+        QtGui.QMessageBox.Yes | QtGui.QMessageBox.No,
+        QtGui.QMessageBox.No)
+    if reply == QtGui.QMessageBox.Yes :
+    INDENT
+        event.accept()
+    DEDENT
+    else :
+    INDENT
+        self.tray_icon.show()
+        self.hide()
+        event.ignore()
+    DEDENT
+DEDENT
+----------------------------------------
+
+def closeEvent(self, event) :
+INDENT
+    if self.okayToClose() :
+    INDENT
+
+        self.trayIcon.hide()
+        event.accept()
+    DEDENT
+    else :
+    INDENT
+
+        self.hide()
+        self.trayIcon.show()
+        event.ignore()
+    DEDENT
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+7585488_8251187_21_62
+7585488_8251187_2_20
+Title: "python oauth 2.0 new fbsr facebook cookie error validating verification code" 
+----------------------------------------
+
+def get(self) :
+INDENT
+    fbuser = None
+    profile = None
+    access_token = None
+    accessed_token = None
+    if self.request.get('code') :
+    INDENT
+        args = dict(
+            code = self.request.get('code'),
+            client_id = facebookconf.FACEBOOK_APP_ID,
+            client_secret = facebookconf.FACEBOOK_APP_SECRET,
+            redirect_uri = 'http://' + self.get_host() + '/',
+            )
+        logging.debug("client_id" + str(args))
+        file = urllib.urlopen("https://graph.facebook.com/oauth/access_token?" + urllib.urlencode(args))
+        try :
+        INDENT
+            logging.debug("reading file")
+            token_response = file.read()
+            logging.debug("read file" + str(token_response))
+        DEDENT
+        finally :
+        INDENT
+            file.close()
+        DEDENT
+        access_token = cgi.parse_qs(token_response) ["access_token"] [- 1]
+        graph = main.GraphAPI(access_token)
+        user = graph.get_object("me")
+        fbuser = main.FBUser.get_by_key_name(user ["id"])
+        logging.debug("fbuser " + fbuser.name)
+        if not fbuser :
+        INDENT
+            fbuser = main.FBUser(key_name = str(user ["id"]),
+                id = str(user ["id"]),
+                name = user ["name"],
+                profile_url = user ["link"],
+                access_token = access_token)
+            fbuser.put()
+        DEDENT
+        elif fbuser.access_token ! = access_token :
+        INDENT
+            fbuser.access_token = access_token
+            fbuser.put()
+        DEDENT
+    DEDENT
+    current_user = main.get_user_from_cookie(self.request.cookies, facebookconf.FACEBOOK_APP_ID, facebookconf.FACEBOOK_APP_SECRET)
+    if current_user :
+    INDENT
+        graph = main.GraphAPI(current_user ["access_token"])
+        profile = graph.get_object("me")
+        accessed_token = current_user ["access_token"]
+    DEDENT
+DEDENT
+----------------------------------------
+
+def get(self) :
+INDENT
+    args = dict(
+        code = self.request.get('code'),
+        client_id = facebookconf.FACEBOOK_APP_ID,
+        client_secret = facebookconf.FACEBOOK_APP_SECRET,
+        redirect_uri = 'http://www.koolbusiness.com/oauth',
+        )
+    file = urllib.urlopen("https://graph.facebook.com/oauth/access_token?" + urllib.urlencode(args))
+    try :
+    INDENT
+        token_response = file.read()
+    DEDENT
+    finally :
+    INDENT
+        file.close()
+    DEDENT
+    access_token = cgi.parse_qs(token_response) ["access_token"] [- 1]
+    graph = main.GraphAPI(access_token)
+    user = graph.get_object("me")
+    self.response.out.write(user ["id"])
+    self.response.out.write(user ["name"])
+
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+7621897_7621969_33_45
+7621897_7621969_70_78
+Title: Python: logging module - globally 
+----------------------------------------
+
+def __init__(self, cfgdefaults, configdir, pidfile, logdir, test = False) :
+INDENT
+    self.logdir = logdir
+    logLevel = logging.DEBUG
+    logPrefix = "MainThread_TEST" if self.test else "MainThread"
+    try :
+    INDENT
+        self.logger = getLogger(logPrefix, self.logdir, logLevel, FORMAT)
+    DEDENT
+    except LogException, exc :
+    INDENT
+        sys.stderr.write("%s\n" % exc)
+        sys.stderr.flush()
+        os._exit(0)
+    DEDENT
+    else :
+    INDENT
+        self.logger.debug("-------------------- MainThread created.  Starting __init__() --------------------")
+    DEDENT
+DEDENT
+----------------------------------------
+
+def __init__(self, mainThread, name, config, logdir, test) :
+INDENT
+    self.mainThread = mainThread
+    self.name = name
+    logLevel = logging.DEBUG
+    self.logger = getLogger("MainThread%s.ReportThread_%s" % ("_TEST" if self.test else "", self.name), logdir, logLevel, FORMAT)
+    self.logger.info("init database...")
+    self.initDB()
+
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+7654971_20739425_1_12
+7654971_7655072_1_11
+Title: parsing a fasta file using a generator ( python ) 
+----------------------------------------
+
+def read_fasta(filename) :
+INDENT
+    name = None
+    with open(filename) as file :
+    INDENT
+        for line in file :
+        INDENT
+            if line [0] == "><![CDATA[" :
+            INDENT
+                if name :
+                INDENT
+                    yield (name, seq)
+                DEDENT
+                name = line [1 : - 1].split("|") [0]
+                seq = ""
+            DEDENT
+            else :
+            INDENT
+                seq += line [: - 1]
+            DEDENT
+        DEDENT
+        yield (name, seq)
+    DEDENT
+DEDENT
+----------------------------------------
+
+def read_fasta(fp) :
+INDENT
+    name, seq = None, []
+    for line in fp :
+    INDENT
+        line = line.rstrip()
+        if line.startswith("><![CDATA[") :
+        INDENT
+            if name : yield (name, ''.join(seq))
+            name, seq = line, []
+        DEDENT
+        else :
+        INDENT
+            seq.append(line)
+        DEDENT
+    DEDENT
+    if name : yield (name, ''.join(seq))
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+7659069_7663455_31_47
+7659069_7663455_4_29
+Title: Apply tags in a text widget 
+----------------------------------------
+
+def __init__(self, parent, * args, ** kwargs) :
+INDENT
+    tk.Text.__init__(self, * args, ** kwargs)
+    self.parent = parent
+
+    bindtags = list(self.bindtags())
+    i = bindtags.index("Text")
+    bindtags.insert(i + 1, "CustomText")
+    self.bindtags(tuple(bindtags))
+
+    self.bind_class("CustomText", "<Key>", self.OnKey)
+DEDENT
+----------------------------------------
+
+def __init__(self, * args, ** kwargs) :
+INDENT
+    tk.Tk.__init__(self, * args, ** kwargs)
+    self.tag_vars = {
+        "underline" : tk.IntVar(),
+        "red" : tk.IntVar(),
+        }
+    self.text = MyText(self, width = 40, height = 8)
+    self.text.tag_configure("red", foreground = "red")
+    self.text.tag_configure("underline", underline = True)
+    toolbar = tk.Frame(self)
+    self.underline = tk.Checkbutton(self, text = "Underline",
+        onvalue = True, offvalue = False,
+        variable = self.tag_vars ["underline"])
+    self.red = tk.Checkbutton(self, text = "Red",
+        onvalue = True, offvalue = False,
+        variable = self.tag_vars ["red"])
+    self.underline.pack(in_ = toolbar, side = "left")
+    self.red.pack(in_ = toolbar, side = "left")
+    toolbar.pack(side = "top", fill = "x")
+    self.text.pack(side = "top", fill = "both", expand = True)
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+7667667_7667714_1_6
+7667667_7667718_13_18
+Title: How to use static/helper method in a class? 
+----------------------------------------
+
+def gcd(a, b) :
+INDENT
+    if a > b : a, b = b, a
+    while True :
+    INDENT
+        if b % a == 0 : return a
+        a, b = b % a, a
+    DEDENT
+DEDENT
+----------------------------------------
+
+def gcd(a, b) :
+INDENT
+    if a > b : a, b = b, a
+    while True :
+    INDENT
+        if b % a == 0 : return a
+        a, b = b % a, a
+    DEDENT
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+7690677_7691393_10_21
+7690677_7691393_25_33
+Title: PyQt widgets in multiple files 
+----------------------------------------
+
+def __init__(self, parent = None) :
+INDENT
+    super(Form1, self).__init__(parent)
+    self.newGameButton = QPushButton("New Game", self)
+    self.quitButton = QPushButton("Quit", self)
+    layout = QVBoxLayout(self)
+    layout.addWidget(QLabel("<html>My Game<br>Start Page</html>"))
+    layout.addWidget(self.newGameButton)
+    layout.addWidget(self.quitButton)
+    self.newGameButton.clicked.connect(self.showForm2Signal.emit)
+    self.quitButton.clicked.connect(qApp.quit)
+
+DEDENT
+----------------------------------------
+
+def __init__(self, parent = None) :
+INDENT
+    super(Form2, self).__init__(parent)
+    self.backButton = QPushButton("Back", self)
+    layout = QVBoxLayout(self)
+    layout.addWidget(QLabel("New Game Started!"))
+    layout.addWidget(self.backButton)
+    self.backButton.clicked.connect(self.showForm1Signal.emit)
+
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+7690677_7691393_10_21
+7690677_7691393_35_49
+Title: PyQt widgets in multiple files 
+----------------------------------------
+
+def __init__(self, parent = None) :
+INDENT
+    super(Form1, self).__init__(parent)
+    self.newGameButton = QPushButton("New Game", self)
+    self.quitButton = QPushButton("Quit", self)
+    layout = QVBoxLayout(self)
+    layout.addWidget(QLabel("<html>My Game<br>Start Page</html>"))
+    layout.addWidget(self.newGameButton)
+    layout.addWidget(self.quitButton)
+    self.newGameButton.clicked.connect(self.showForm2Signal.emit)
+    self.quitButton.clicked.connect(qApp.quit)
+
+DEDENT
+----------------------------------------
+
+def __init__(self, parent = None) :
+INDENT
+    super(MainWidget, self).__init__(parent)
+    self.stack = QStackedWidget()
+    layout = QVBoxLayout(self)
+    layout.addWidget(self.stack)
+    self.form1 = Form1(self)
+    self.form2 = Form2(self)
+    self.stack.addWidget(self.form1)
+    self.stack.addWidget(self.form2)
+    self.form1.showForm2Signal.connect(partial(self.stack.setCurrentWidget,
+            self.form2))
+    self.form2.showForm1Signal.connect(partial(self.stack.setCurrentWidget,
+            self.form1))
+    self.stack.setCurrentWidget(self.form1)
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+7690677_7691393_25_33
+7690677_7691393_35_49
+Title: PyQt widgets in multiple files 
+----------------------------------------
+
+def __init__(self, parent = None) :
+INDENT
+    super(Form2, self).__init__(parent)
+    self.backButton = QPushButton("Back", self)
+    layout = QVBoxLayout(self)
+    layout.addWidget(QLabel("New Game Started!"))
+    layout.addWidget(self.backButton)
+    self.backButton.clicked.connect(self.showForm1Signal.emit)
+
+DEDENT
+----------------------------------------
+
+def __init__(self, parent = None) :
+INDENT
+    super(MainWidget, self).__init__(parent)
+    self.stack = QStackedWidget()
+    layout = QVBoxLayout(self)
+    layout.addWidget(self.stack)
+    self.form1 = Form1(self)
+    self.form2 = Form2(self)
+    self.stack.addWidget(self.form1)
+    self.stack.addWidget(self.form2)
+    self.form1.showForm2Signal.connect(partial(self.stack.setCurrentWidget,
+            self.form2))
+    self.form2.showForm1Signal.connect(partial(self.stack.setCurrentWidget,
+            self.form1))
+    self.stack.setCurrentWidget(self.form1)
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+7690736_7693459_17_25
+7690736_7700938_3_9
+Title: swapping in Tkinter 
+----------------------------------------
+
+def convert() :
+INDENT
+    st = entry1.get()
+    v = eval(st)
+    if type(v) ! = type('Hello') :
+    INDENT
+        if inputmode == 'feet' :
+        INDENT
+            answer.config(text = str(v *.3048))
+        DEDENT
+        else :
+        INDENT
+            answer.config(text = str(v * 3.28))
+        DEDENT
+    DEDENT
+DEDENT
+----------------------------------------
+
+def convert() :
+INDENT
+    global t1
+    st = entry1.get()
+    v = eval(st)
+    if type(v) ! = type('Hello') :
+    INDENT
+        answer.config(text = str(v * factor [t1]), anchor = 'w')
+    DEDENT
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+7750896_7751005_2_6
+7750896_7751845_5_10
+Title: The same method for class and instance 
+----------------------------------------
+
+def __get__(self, obj, objtype) :
+INDENT
+    x = objtype if obj is None else obj
+    def select(where) :
+    INDENT
+        print (x, where)
+    DEDENT
+    return select
+DEDENT
+----------------------------------------
+
+def __get__(self, obj, objtype) :
+INDENT
+    x = obj or objtype
+    def wrapped(* args, ** kwargs) :
+    INDENT
+        return self.method(x, * args, ** kwargs)
+    DEDENT
+    return wrapped
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+7770968_7771039_10_23
+7770968_7771039_37_42
+Title: Dedupe and sort a list in Python 2.2 
+----------------------------------------
+
+def add(self, value) :
+INDENT
+    if value == self.value :
+    INDENT
+        return
+    DEDENT
+    if value < self.value :
+    INDENT
+        if self.left is None :
+        INDENT
+            self.left = TreeNode(value)
+        DEDENT
+        else :
+        INDENT
+            self.left.add(value)
+        DEDENT
+    DEDENT
+    else :
+    INDENT
+        if self.right is None :
+        INDENT
+            self.right = TreeNode(value)
+        DEDENT
+        else :
+        INDENT
+            self.right.add(value)
+        DEDENT
+    DEDENT
+DEDENT
+----------------------------------------
+
+def add(self, value) :
+INDENT
+    if self.root is None :
+    INDENT
+        self.root = TreeNode(value)
+    DEDENT
+    else :
+    INDENT
+        self.root.add(value)
+    DEDENT
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+7770968_7771039_24_32
+7770968_7771039_43_48
+Title: Dedupe and sort a list in Python 2.2 
+----------------------------------------
+
+def __iter__(self) :
+INDENT
+    if self.left is not None :
+    INDENT
+        for value in self.left :
+        INDENT
+            yield value
+        DEDENT
+    DEDENT
+    yield self.value
+    if self.right is not None :
+    INDENT
+        for value in self.right :
+        INDENT
+            yield value
+        DEDENT
+    DEDENT
+DEDENT
+----------------------------------------
+
+def __iter__(self) :
+INDENT
+    if self.root is None :
+    INDENT
+        return []
+    DEDENT
+    else :
+    INDENT
+        return self.root.__iter__()
+    DEDENT
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+7782425_7784814_30_42
+7782425_7784814_6_17
+Title: tkinter and GUI programming methods 
+----------------------------------------
+
+def __init__(self, master, filename) :
+INDENT
+    tk.Toplevel.__init__(self, master)
+    self.title("%s - Tile Editor" % filename)
+    self.filename = filename
+
+    self.tileset = TileSet(filename)
+    label = tk.Label(self, text = "My filename is %s" % filename)
+    label.pack(padx = 20, pady = 40)
+    self.status = tk.Label(self, text = "", anchor = "w")
+    self.status.pack(side = "bottom", fill = "x")
+DEDENT
+----------------------------------------
+
+def __init__(self, * args, ** kwargs) :
+INDENT
+    tk.Tk.__init__(self, * args, ** kwargs)
+    self.windows = []
+    menubar = tk.Menu(self)
+    self.configure(menu = menubar)
+    fileMenu = tk.Menu(self)
+    fileMenu.add_command(label = "New...", command = self.new_window)
+    fileMenu.add_command(label = "Save All", command = self.save_all)
+    menubar.add_cascade(label = "Window", menu = fileMenu)
+    label = tk.Label(self, text = "Select 'New' from the window menu")
+    label.pack(padx = 20, pady = 40)
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+7826651_7827096_10_17
+7826651_7832415_6_13
+Title: is there a way to get a (static) method to be called when a class (not an instance) is created? 
+----------------------------------------
+
+def create_dict(cls) :
+INDENT
+    fieldTypeDic = {}
+    if not isinstance(cls, dict) :
+    INDENT
+        cls = cls.__dict__
+    DEDENT
+    for key, value in cls.items() :
+    INDENT
+        if isinstance(value, int) :
+        INDENT
+            fieldTypeDic [value] = key
+        DEDENT
+    DEDENT
+    cls ['fieldTypeDic'] = fieldTypeDic
+DEDENT
+----------------------------------------
+
+def create_dict(dicForReversing) :
+INDENT
+    fieldTypeDic = {}
+    for key, value in dicForReversing.items() :
+    INDENT
+        if isinstance(value, int) :
+        INDENT
+            if not value in fieldTypeDic :
+            INDENT
+                fieldTypeDic [value] = set()
+            DEDENT
+            fieldTypeDic [value].add(key)
+        DEDENT
+    DEDENT
+    return fieldTypeDic
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+7831655_7833063_13_24
+7831655_7833063_38_45
+Title: Python Classes in Tkinter's Grid Manager 
+----------------------------------------
+
+def __init__(self, master = None) :
+INDENT
+    tk.Frame.__init__(self, master)
+    self.grid(sticky = N + S + E + W)
+    top = self.winfo_toplevel()
+    top.rowconfigure(0, weight = 1)
+    top.columnconfigure(0, weight = 1)
+    self.rowconfigure(1, weight = 1)
+    self.columnconfigure(0, weight = 1)
+    self.__createWidgets()
+DEDENT
+----------------------------------------
+
+def __init__(self, parent, cnf = {}, ** kw) :
+INDENT
+    tk.Frame.__init__(self, parent, cnf, ** kw)
+    self.grid(row = 1, sticky = N + S + E + W)
+    self.rowconfigure(0, weight = 1)
+    self.columnconfigure(0, weight = 1)
+    self.myText = tk.Text(self)
+    self.myText.grid(row = 0, sticky = N + S + E + W)
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+7863471_7863647_18_23
+7863471_7863700_94_140
+Title: Rock Paper Scissors in Python 
+----------------------------------------
+
+def main() :
+INDENT
+    intro()
+    while main_loop() :
+    INDENT
+        pass
+    DEDENT
+    summary()
+DEDENT
+----------------------------------------
+
+def main() :
+INDENT
+    g = Game()
+
+    print TEXT_WELCOME
+    while True :
+    INDENT
+        inp = raw_input(TEXT_CHOOSE)
+        if inp.lower() in ('q', 'quit') :
+        INDENT
+            break
+        DEDENT
+        try :
+        INDENT
+            inp = g.evaluateInput(inp)
+        DEDENT
+        except ValueError :
+        INDENT
+            print TEXT_CHOICE_INVALID
+            continue
+        DEDENT
+        t, com = g.choose(inp)
+        inp = TABLE [inp]
+        com = TABLE [com]
+        print TEXT_PLAYER_CHOOSE, inp
+        print TEXT_COMPUTER_CHOOSE, com
+        print
+        if t == WIN :
+        INDENT
+            print inp, "beats", com + ".",
+            print TEXT_WIN
+        DEDENT
+        elif t == LOSS :
+        INDENT
+            print com, "beats", inp + ".",
+            print TEXT_LOSS
+        DEDENT
+        else :
+        INDENT
+            print inp, "euqals", com + ".",
+            print TEXT_TIE
+        DEDENT
+        print
+        printScores(g)
+        print "-" * 50
+        print
+    DEDENT
+    print TEXT_GOODBYE
+    printScores(g)
+    print
+    print "Press any key to exit."
+    sys.stdin.read(1)
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+7863471_7863647_18_23
+7863471_7865062_21_41
+Title: Rock Paper Scissors in Python 
+----------------------------------------
+
+def main() :
+INDENT
+    intro()
+    while main_loop() :
+    INDENT
+        pass
+    DEDENT
+    summary()
+DEDENT
+----------------------------------------
+
+def main() :
+INDENT
+    scores = dict(zip("computer player tie".split(), [0] * 3))
+    display_welcome_message()
+
+    keep_going = 'Y'
+    while keep_going.upper() == 'Y' :
+    INDENT
+        try : play_game(scores)
+        except Exception as e :
+        INDENT
+            print ("Error: %s" % (e,))
+            sys.exit(1)
+
+        DEDENT
+        keep_going = input('Would you like to play again? (Y for Yes): ')
+    DEDENT
+    print ('\nThe computer won {computer} times\n'
+        'The player won {player} times\n'
+        'There were {tie} tie scores'.format(** scores))
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+7863471_7863647_52_63
+7863471_7865062_76_89
+Title: Rock Paper Scissors in Python 
+----------------------------------------
+
+def get_player_input() :
+INDENT
+    while True :
+    INDENT
+        print
+        player = raw_input("Enter 1 for Rock 2 for paper or 3 for Scissors: ")
+        try :
+        INDENT
+            player = int(player)
+            if player in (1, 2, 3) :
+            INDENT
+                return player
+            DEDENT
+        DEDENT
+        except ValueError :
+        INDENT
+            pass
+        DEDENT
+        print "Please enter a number from 1 to 3."
+    DEDENT
+DEDENT
+----------------------------------------
+
+def get_player_input(ntries = 10) :
+INDENT
+    for _ in range(ntries) :
+    INDENT
+        try :
+        INDENT
+            choice = int(input('\nSelect %s for Rock, %s for Paper, or '
+                    '%s for Scissors: ' % tuple(ROCK_PAPER_SCISSORS)))
+        DEDENT
+        except ValueError :
+        INDENT
+            pass
+        DEDENT
+        else :
+        INDENT
+            if choice in ROCK_PAPER_SCISSORS :
+            INDENT
+                return choice
+            DEDENT
+        DEDENT
+        print ('Error: your choice must be one of: %s' % (
+                ', '.join(map(str, ROCK_PAPER_SCISSORS))))
+    DEDENT
+    raise RuntimeError('failed to get player choice in %d tries' % ntries)
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+7863471_7863700_94_140
+7863471_7865062_21_41
+Title: Rock Paper Scissors in Python 
+----------------------------------------
+
+def main() :
+INDENT
+    g = Game()
+
+    print TEXT_WELCOME
+    while True :
+    INDENT
+        inp = raw_input(TEXT_CHOOSE)
+        if inp.lower() in ('q', 'quit') :
+        INDENT
+            break
+        DEDENT
+        try :
+        INDENT
+            inp = g.evaluateInput(inp)
+        DEDENT
+        except ValueError :
+        INDENT
+            print TEXT_CHOICE_INVALID
+            continue
+        DEDENT
+        t, com = g.choose(inp)
+        inp = TABLE [inp]
+        com = TABLE [com]
+        print TEXT_PLAYER_CHOOSE, inp
+        print TEXT_COMPUTER_CHOOSE, com
+        print
+        if t == WIN :
+        INDENT
+            print inp, "beats", com + ".",
+            print TEXT_WIN
+        DEDENT
+        elif t == LOSS :
+        INDENT
+            print com, "beats", inp + ".",
+            print TEXT_LOSS
+        DEDENT
+        else :
+        INDENT
+            print inp, "euqals", com + ".",
+            print TEXT_TIE
+        DEDENT
+        print
+        printScores(g)
+        print "-" * 50
+        print
+    DEDENT
+    print TEXT_GOODBYE
+    printScores(g)
+    print
+    print "Press any key to exit."
+    sys.stdin.read(1)
+DEDENT
+----------------------------------------
+
+def main() :
+INDENT
+    scores = dict(zip("computer player tie".split(), [0] * 3))
+    display_welcome_message()
+
+    keep_going = 'Y'
+    while keep_going.upper() == 'Y' :
+    INDENT
+        try : play_game(scores)
+        except Exception as e :
+        INDENT
+            print ("Error: %s" % (e,))
+            sys.exit(1)
+
+        DEDENT
+        keep_going = input('Would you like to play again? (Y for Yes): ')
+    DEDENT
+    print ('\nThe computer won {computer} times\n'
+        'The player won {player} times\n'
+        'There were {tie} tie scores'.format(** scores))
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+7865682_7866208_32_43
+7865682_7866208_5_12
+Title: Python 2.7.2 global variables + tkinter 
+----------------------------------------
+
+def __init__(self, master = None) :
+INDENT
+    self.master = master
+    app = self.app = tk.Tk()
+    app.title("Mkee's Tools")
+    app.geometry('500x500')
+    menubar = tk.Menu(app)
+    self.shuffle = Shuffle(master)
+    self.current = self.shuffle
+    program_menu = tk.Menu(menubar)
+    program_menu.add_command(label = 'Shuffle', command = self.show_shuffle)
+    menubar.add_cascade(label = 'Programs', menu = program_menu)
+    app.config(menu = menubar)
+DEDENT
+----------------------------------------
+
+def __init__(self, master = None) :
+INDENT
+    self.master = master
+    self.text = tk.Label(master, text = "Type in something:")
+    self.box = tk.Entry(master)
+    self.buttn = tk.Button(master, text = "Done", width = 10, command = self.calc)
+    self.globvar = tk.StringVar()
+    self.globvar.set(0)
+    self.result = tk.Label(self.master, textvariable = self.globvar)
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+7878730_49442784_88_102
+7878730_49443069_40_50
+Title: ttk treeview: alternate row colors 
+----------------------------------------
+
+def test_colors(self) :
+INDENT
+    new_customer_lb.delete(* new_customer_lb.get_children())
+
+    new_customer_lb.tag_configure("evenrow", background = 'white', foreground = 'black')
+    new_customer_lb.tag_configure("oddrow", background = 'black', foreground = 'white')
+    with DB_connection() as DB :
+    INDENT
+        for a, b, c in DB.session.query(Customer.Id, Customer.first_name, Customer.last_name).order_by(Customer.Id) :
+        INDENT
+            if a % 2 == 0 :
+            INDENT
+                new_customer_lb.insert('', 'end', values = (a, b, c), tags = ('evenrow',))
+            DEDENT
+            else :
+            INDENT
+                new_customer_lb.insert('', 'end', values = (a, b, c), tags = ('oddrow',))
+            DEDENT
+        DEDENT
+    DEDENT
+DEDENT
+----------------------------------------
+
+def test_colors(self) :
+INDENT
+    new_customer_lb.delete(* new_customer_lb.get_children())
+    new_customer_lb.tag_configure("evenrow", background = 'white', foreground = 'black')
+    new_customer_lb.tag_configure("oddrow", background = 'black', foreground = 'white')
+    for a in range(0, 10) :
+    INDENT
+        if a % 2 == 0 :
+        INDENT
+            new_customer_lb.insert('', 'end', values = (a, 'first', 'last'), tags = ('evenrow',))
+        DEDENT
+        if a % 2 ! = 0 :
+        INDENT
+            new_customer_lb.insert('', 'end', values = (a, 'first', 'last'), tags = ('oddrow',))
+        DEDENT
+    DEDENT
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+7925535_7930522_15_20
+7925535_7930522_5_10
+Title: Thead-safe object and dict types in python 
+----------------------------------------
+
+def decorator(function) :
+INDENT
+    body = tryfinally(lock.release)(function)
+    def execute(* args, ** kwargs) :
+    INDENT
+        lock.acquire()
+        return body(* args, ** kwargs)
+    DEDENT
+    return execute
+DEDENT
+----------------------------------------
+
+def decorator(callable) :
+INDENT
+    def execute(* args, ** kwargs) :
+    INDENT
+        try : result = callable(* args, ** kwargs)
+        finally : finallyf()
+        return result
+    DEDENT
+    return execute
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+7925931_14095615_43_48
+7925931_14095615_53_57
+Title: Can Mustache Templates do template extension? 
+----------------------------------------
+
+def go() :
+INDENT
+    def render(nested) :
+    INDENT
+        content = namespace.renderer.render(nested, namespace)
+        namespace.add_content(key, content)
+        return content
+    DEDENT
+    return render
+DEDENT
+----------------------------------------
+
+def go() :
+INDENT
+    def render(nested) :
+    INDENT
+        namespace.renderer.render(nested, namespace)
+        return namespace.renderer.render_name(name, namespace)
+    DEDENT
+    return render
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+795190_795877_2_8
+795190_795978_2_12
+Title: How to perform common post-initialization tasks in inherited Python classes? 
+----------------------------------------
+
+def __init__(self, specifics = None) :
+INDENT
+    print 'base __init__'
+    self.common1()
+    if specifics is not None :
+    INDENT
+        specifics()
+    DEDENT
+    self.finalizeInitialization()
+DEDENT
+----------------------------------------
+
+def __init__(self) :
+INDENT
+    def common() :
+    INDENT
+        print "common initialization..."
+    DEDENT
+    def final() :
+    INDENT
+        print "common finalization..."
+    DEDENT
+    common()
+    self.specific()
+    final()
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+7960087_7964278_23_32
+7960087_7964278_34_45
+Title: wxpython: How to set width and height of a wxnotebook? 
+----------------------------------------
+
+def __init__(self, * args, ** kwargs) :
+INDENT
+    wx.Notebook.__init__(self, * args, ** kwargs)
+    self.panels = []
+    for name in PANELS :
+    INDENT
+        panel = TabPanel(self)
+        self.panels.append(panel)
+        self.AddPage(panel, name)
+
+    DEDENT
+DEDENT
+----------------------------------------
+
+def __init__(self, * args, ** kwargs) :
+INDENT
+    wx.Panel.__init__(self, * args, ** kwargs)
+    self.notebook = MyNotebook(self, size = (400, - 1))
+
+    self.sizer = wx.BoxSizer()
+    self.sizer.Add(self.notebook, proportion = 0, flag = wx.EXPAND)
+    self.SetSizer(self.sizer)
+
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+7960087_7964278_23_32
+7960087_7964278_47_64
+Title: wxpython: How to set width and height of a wxnotebook? 
+----------------------------------------
+
+def __init__(self, * args, ** kwargs) :
+INDENT
+    wx.Notebook.__init__(self, * args, ** kwargs)
+    self.panels = []
+    for name in PANELS :
+    INDENT
+        panel = TabPanel(self)
+        self.panels.append(panel)
+        self.AddPage(panel, name)
+
+    DEDENT
+DEDENT
+----------------------------------------
+
+def __init__(self, * args, ** kwargs) :
+INDENT
+    wx.Frame.__init__(self, * args, ** kwargs)
+    self.panel = MyPanel(self)
+    self.status = self.CreateStatusBar()
+    self.menubar = wx.MenuBar()
+    first = wx.Menu()
+    second = wx.Menu()
+    first.Append(wx.NewId(), "New", "Creates A new file")
+    first.Append(wx.NewId(), "ADID", "Yo")
+    self.menubar.Append(first, "File")
+    self.menubar.Append(second, "Edit")
+    self.SetMenuBar(self.menubar)
+    self.Show()
+
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+7960087_7964278_23_32
+7960087_7964278_9_21
+Title: wxpython: How to set width and height of a wxnotebook? 
+----------------------------------------
+
+def __init__(self, * args, ** kwargs) :
+INDENT
+    wx.Notebook.__init__(self, * args, ** kwargs)
+    self.panels = []
+    for name in PANELS :
+    INDENT
+        panel = TabPanel(self)
+        self.panels.append(panel)
+        self.AddPage(panel, name)
+
+    DEDENT
+DEDENT
+----------------------------------------
+
+def __init__(self, * args, ** kwargs) :
+INDENT
+    wx.Panel.__init__(self, * args, ** kwargs)
+    self.SetBackgroundColour(random.choice(COLORS))
+    self.listBox = wx.ListBox(self, size = (200, - 1), choices = NUMBERS, style = wx.LB_SINGLE)
+
+    self.sizer = wx.BoxSizer()
+    self.sizer.Add(self.listBox, proportion = 0, flag = wx.ALL | wx.EXPAND, border = 5)
+
+    self.SetSizer(self.sizer)
+
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+7960087_7964278_34_45
+7960087_7964278_47_64
+Title: wxpython: How to set width and height of a wxnotebook? 
+----------------------------------------
+
+def __init__(self, * args, ** kwargs) :
+INDENT
+    wx.Panel.__init__(self, * args, ** kwargs)
+    self.notebook = MyNotebook(self, size = (400, - 1))
+
+    self.sizer = wx.BoxSizer()
+    self.sizer.Add(self.notebook, proportion = 0, flag = wx.EXPAND)
+    self.SetSizer(self.sizer)
+
+DEDENT
+----------------------------------------
+
+def __init__(self, * args, ** kwargs) :
+INDENT
+    wx.Frame.__init__(self, * args, ** kwargs)
+    self.panel = MyPanel(self)
+    self.status = self.CreateStatusBar()
+    self.menubar = wx.MenuBar()
+    first = wx.Menu()
+    second = wx.Menu()
+    first.Append(wx.NewId(), "New", "Creates A new file")
+    first.Append(wx.NewId(), "ADID", "Yo")
+    self.menubar.Append(first, "File")
+    self.menubar.Append(second, "Edit")
+    self.SetMenuBar(self.menubar)
+    self.Show()
+
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+7960087_7964278_34_45
+7960087_7964278_9_21
+Title: wxpython: How to set width and height of a wxnotebook? 
+----------------------------------------
+
+def __init__(self, * args, ** kwargs) :
+INDENT
+    wx.Panel.__init__(self, * args, ** kwargs)
+    self.notebook = MyNotebook(self, size = (400, - 1))
+
+    self.sizer = wx.BoxSizer()
+    self.sizer.Add(self.notebook, proportion = 0, flag = wx.EXPAND)
+    self.SetSizer(self.sizer)
+
+DEDENT
+----------------------------------------
+
+def __init__(self, * args, ** kwargs) :
+INDENT
+    wx.Panel.__init__(self, * args, ** kwargs)
+    self.SetBackgroundColour(random.choice(COLORS))
+    self.listBox = wx.ListBox(self, size = (200, - 1), choices = NUMBERS, style = wx.LB_SINGLE)
+
+    self.sizer = wx.BoxSizer()
+    self.sizer.Add(self.listBox, proportion = 0, flag = wx.ALL | wx.EXPAND, border = 5)
+
+    self.SetSizer(self.sizer)
+
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+7960087_7964278_47_64
+7960087_7964278_9_21
+Title: wxpython: How to set width and height of a wxnotebook? 
+----------------------------------------
+
+def __init__(self, * args, ** kwargs) :
+INDENT
+    wx.Frame.__init__(self, * args, ** kwargs)
+    self.panel = MyPanel(self)
+    self.status = self.CreateStatusBar()
+    self.menubar = wx.MenuBar()
+    first = wx.Menu()
+    second = wx.Menu()
+    first.Append(wx.NewId(), "New", "Creates A new file")
+    first.Append(wx.NewId(), "ADID", "Yo")
+    self.menubar.Append(first, "File")
+    self.menubar.Append(second, "Edit")
+    self.SetMenuBar(self.menubar)
+    self.Show()
+
+DEDENT
+----------------------------------------
+
+def __init__(self, * args, ** kwargs) :
+INDENT
+    wx.Panel.__init__(self, * args, ** kwargs)
+    self.SetBackgroundColour(random.choice(COLORS))
+    self.listBox = wx.ListBox(self, size = (200, - 1), choices = NUMBERS, style = wx.LB_SINGLE)
+
+    self.sizer = wx.BoxSizer()
+    self.sizer.Add(self.listBox, proportion = 0, flag = wx.ALL | wx.EXPAND, border = 5)
+
+    self.SetSizer(self.sizer)
+
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+7966119_23840010_10_18
+7966119_7966437_4_10
+Title: Display fullscreen mode on Tkinter 
+----------------------------------------
+
+def __init__(self) :
+INDENT
+    self.tk = Tk()
+    self.tk.attributes('-zoomed', True)
+    self.frame = Frame(self.tk)
+    self.frame.pack()
+    self.state = False
+    self.tk.bind("<F11>", self.toggle_fullscreen)
+    self.tk.bind("<Escape>", self.end_fullscreen)
+DEDENT
+----------------------------------------
+
+def __init__(self, master, ** kwargs) :
+INDENT
+    self.master = master
+    pad = 3
+    self._geom = '200x200+0+0'
+    master.geometry("{0}x{1}+0+0".format(
+            master.winfo_screenwidth() - pad, master.winfo_screenheight() - pad))
+    master.bind('<Escape>', self.toggle_geom)
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+798442_798794_9_15
+798442_804973_2_9
+Title: "What is the correct (or best) way to subclass the Python set class adding a new instance variable?" 
+----------------------------------------
+
+def __init__(self, s = []) :
+INDENT
+    set.__init__(self, s)
+    if isinstance(s, Fooset) :
+    INDENT
+        self.foo = s.foo
+    DEDENT
+    else :
+    INDENT
+        self.foo = 'default'
+    DEDENT
+DEDENT
+----------------------------------------
+
+def __init__(self, s = (), foo = None) :
+INDENT
+    super(Fooset, self).__init__(s)
+    if foo is None and hasattr(s, 'foo') :
+    INDENT
+        foo = s.foo
+    DEDENT
+    self.foo = foo
+
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+7989255_7989333_1_14
+7989255_7989339_1_17
+Title: Comparing Values in List in For Loop; Python 
+----------------------------------------
+
+def listComp(listA, listB) :
+INDENT
+    Awins = 0
+    Aties = 0
+    Alosses = 0
+    for i in range(0, whatever) :
+    INDENT
+        random.shuffle(listA)
+        random.shuffle(listB)
+        for j in range(0, len(listA)) :
+        INDENT
+            if A [j] > B [j] :
+            INDENT
+                Awins += 1
+            DEDENT
+            elif A [j] == B [j] :
+            INDENT
+                Aties += 1
+            DEDENT
+            elif A [j] < B [j] :
+            INDENT
+                Alosses += 1
+            DEDENT
+        DEDENT
+    DEDENT
+DEDENT
+----------------------------------------
+
+def listComp(listA, listB) :
+INDENT
+    wins = 0
+    ties = 0
+    losses = 0
+    shuffle(listA)
+    shuffle(listB)
+    for a, b in zip(listA, listB) :
+    INDENT
+        if a < b :
+        INDENT
+            wins += 1
+        DEDENT
+        elif a == b :
+        INDENT
+            ties += 1
+        DEDENT
+        else :
+        INDENT
+            losses += 1
+        DEDENT
+    DEDENT
+    return wins, ties, losses
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+7997152_32297563_6_18
+7997152_7997925_26_34
+Title: "Python 3D polynomial surface fit order dependent" 
+----------------------------------------
+
+def polyfit2d(x, y, f, deg) :
+INDENT
+    from numpy.polynomial import polynomial
+    import numpy as np
+    x = np.asarray(x)
+    y = np.asarray(y)
+    f = np.asarray(f)
+    deg = np.asarray(deg)
+    vander = polynomial.polyvander2d(x, y, deg)
+    vander = vander.reshape((- 1, vander.shape [- 1]))
+    f = f.reshape((vander.shape [0],))
+    c = np.linalg.lstsq(vander, f) [0]
+    return c.reshape(deg + 1)
+DEDENT
+----------------------------------------
+
+def polyfit2d(x, y, z, order = 3) :
+INDENT
+    ncols = (order + 1) ** 2
+    G = np.zeros((x.size, ncols))
+    ij = itertools.product(range(order + 1), range(order + 1))
+    for k, (i, j) in enumerate(ij) :
+    INDENT
+        G [:, k] = x ** i * y ** j
+    DEDENT
+    m, _, _, _ = np.linalg.lstsq(G, z)
+    return m
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+8077146_8082725_3_15
+8077146_8097151_3_15
+Title: numpy(.ma) array: Number of values since last value change? 
+----------------------------------------
+
+def main() :
+INDENT
+    t = np.linspace(0, 6 * np.pi, 100)
+    x = np.sin(t)
+    condition = x > 0
+    regions = contiguous_regions(condition)
+    lengths = regions [:, 1] - regions [:, 0]
+    for reg, length in zip(regions, lengths) :
+    INDENT
+        print 'Condition was True for {0} seconds'.format(length)
+        print '    From time {0}s to {1}s'.format(* reg)
+    DEDENT
+DEDENT
+----------------------------------------
+
+def main() :
+INDENT
+    t = np.linspace(0, 10 * np.pi, 30)
+    x = np.sin(t)
+    condition = np.where(x > 0, 1, 0)
+    onarray, offarray = on_off_times(condition)
+    print "Condition: ", condition
+    print "Ontimes:   ", onarray
+    print "Offtimes:  ", offarray
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+8086412_8089576_33_38
+8086412_8089576_78_89
+Title: Howto determine file owner on windows using python without pywin32 
+----------------------------------------
+
+def __init__(self, value = None) :
+INDENT
+    if value is not None :
+    INDENT
+        if value not in self.sid_types :
+        INDENT
+            raise ValueError('invalid SID type')
+        DEDENT
+        wintypes.DWORD.__init__(value)
+    DEDENT
+DEDENT
+----------------------------------------
+
+def __init__(self, value = None, needs_free = False) :
+INDENT
+    super(PSECURITY_DESCRIPTOR, self).__init__(value, needs_free)
+    self.pOwner = PSID()
+    self.pGroup = PSID()
+    self.pDacl = PACL()
+    self.pSacl = PACL()
+    self.pOwner._SD = self
+    self.pGroup._SD = self
+    self.pDacl._SD = self
+    self.pSacl._SD = self
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+8100664_8143214_41_60
+8100664_8143214_85_121
+Title: Destroy() wxpython simple error? 
+----------------------------------------
+
+def __init__(self, parent, grandparent) :
+INDENT
+    wx.Panel.__init__(self, parent)
+    self.parent = grandparent
+    self.image_listsel = 0
+    self.listBox = wx.ListBox(self, size = (200, - 1), choices = IMAGE_NAME, style = wx.LB_SINGLE)
+    self.sizer = wx.BoxSizer(wx.VERTICAL)
+    btnSizer = wx.BoxSizer(wx.VERTICAL)
+    self.sizerMain = wx.BoxSizer()
+    self.listBox.Bind(wx.EVT_LISTBOX_DCLICK, self.reName)
+    self.listBox.Bind(wx.EVT_LISTBOX, self.imagesel)
+    btn = wx.Button(self, label = "Create New", size = (200, 40))
+    btnTwo = wx.Button(self, label = "Test 2", size = (200, 40))
+    btn.Bind(wx.EVT_BUTTON, self.newAddImage)
+    self.sizer.Add(self.listBox, proportion = 1, flag = wx.TOP | wx.EXPAND | wx.LEFT, border = 5)
+    btnSizer.Add(btn, 0, wx.ALL, 5)
+    btnSizer.Add(btnTwo, 0, wx.ALL, 5)
+    self.sizer.Add(btnSizer)
+    self.sizerMain.Add(self.sizer, proportion = 0, flag = wx.BOTTOM | wx.EXPAND, border = 0)
+    self.SetSizer(self.sizerMain)
+DEDENT
+----------------------------------------
+
+def __init__(self, * args, ** kwargs) :
+INDENT
+    wx.Panel.__init__(self, * args, ** kwargs)
+    self.notebook = wx.Notebook(self, size = (225, - 1))
+    self.tab_images = imageTab(self.notebook, self)
+    self.notebook.AddPage(self.tab_images, "Pics", select = True)
+    self.scroll_img = wx.ScrolledWindow(self, - 1)
+    self.scroll_img.SetScrollbars(1, 1, 600, 400)
+    self.images_area = wx.StaticBox(self, - 1, '')
+    self.sizerBox = wx.StaticBoxSizer(self.images_area, wx.HORIZONTAL)
+    self.sizerBox2 = wx.BoxSizer()
+    self.sizerBox.Add(self.scroll_img, 1, wx.EXPAND | wx.ALL, 10)
+    self.sizerBox2.Add(self.sizerBox, 1, wx.EXPAND | wx.ALL, 10)
+    self.sizer = wx.BoxSizer()
+    self.sizer.Add(self.notebook, proportion = 0, flag = wx.EXPAND)
+    btnSizer = wx.BoxSizer()
+    btnTwo = wx.Button(self, label = "Load File", size = (200, 40))
+    btnTwo.Bind(wx.EVT_BUTTON, self.onOpenFile)
+    self.bmp = None
+    self.bitmap = None
+    btnSizer.Add(btnTwo, 0, wx.TOP, 15)
+    self.sizerBox2.Add(btnSizer)
+    self.sizer.Add(self.sizerBox2, proportion = 1, flag = wx.EXPAND)
+    self.SetSizer(self.sizer)
+    self.notebook.Bind(wx.EVT_NOTEBOOK_PAGE_CHANGED, self.OnPageChanged)
+    areachange(self, self.notebook.GetPageText(0))
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+81451_4787543_11_19
+81451_4787543_27_33
+Title: Upload files in Google App Engine 
+----------------------------------------
+
+def get(self) :
+INDENT
+    upload_url = blobstore.create_upload_url('/upload')
+    self.response.out.write('<html><body>')
+    self.response.out.write('<form action="%s" method="POST" enctype="multipart/form-data"><![CDATA[' % upload_url)
+    self.response.out.write("""Upload File: <input type="file" name="file"><![CDATA[<br> <input type="submit" name="submit" value="Submit"><![CDATA[ </form></body></html>""")
+    for b in blobstore.BlobInfo.all() :
+    INDENT
+        self.response.out.write('<li><a href="/serve/%s' % str(b.key()) + '"><![CDATA[' + str(b.filename) + '</a>')
+    DEDENT
+DEDENT
+----------------------------------------
+
+def get(self, blob_key) :
+INDENT
+    blob_key = str(urllib.unquote(blob_key))
+    if not blobstore.get(blob_key) :
+    INDENT
+        self.error(404)
+    DEDENT
+    else :
+    INDENT
+        self.send_blob(blobstore.BlobInfo.get(blob_key), save_as = True)
+    DEDENT
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+8146386_8146398_1_10
+8146386_8146401_17_23
+Title: Python - Conditionally Catching Exceptions 
+----------------------------------------
+
+def my_func(my_arg, handle_exceptions) :
+INDENT
+    try :
+    INDENT
+        do_something(my_arg)
+    DEDENT
+    except Exception :
+    INDENT
+        if handle_exceptions :
+        INDENT
+            print "my_func is handling the exception"
+        DEDENT
+        else :
+        INDENT
+            print "my_func is NOT handling the exception"
+            raise
+        DEDENT
+    DEDENT
+DEDENT
+----------------------------------------
+
+def my_func(my_arg) :
+INDENT
+    try :
+    INDENT
+        something()
+    DEDENT
+    except MyException, e :
+    INDENT
+        print e.message
+    DEDENT
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+8146386_8146398_1_10
+8146386_8146450_1_10
+Title: Python - Conditionally Catching Exceptions 
+----------------------------------------
+
+def my_func(my_arg, handle_exceptions) :
+INDENT
+    try :
+    INDENT
+        do_something(my_arg)
+    DEDENT
+    except Exception :
+    INDENT
+        if handle_exceptions :
+        INDENT
+            print "my_func is handling the exception"
+        DEDENT
+        else :
+        INDENT
+            print "my_func is NOT handling the exception"
+            raise
+        DEDENT
+    DEDENT
+DEDENT
+----------------------------------------
+
+def my_func(my_arg, handle_exceptions) :
+INDENT
+    if handle_exceptions :
+    INDENT
+        exc_type = Exception
+    DEDENT
+    else :
+    INDENT
+        exc_type = None
+    DEDENT
+    try :
+    INDENT
+        do_something(my_arg);
+    DEDENT
+    except exc_type, e :
+    INDENT
+        print "my_func is handling the exception";
+    DEDENT
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+8146386_8146401_17_23
+8146386_8146450_1_10
+Title: Python - Conditionally Catching Exceptions 
+----------------------------------------
+
+def my_func(my_arg) :
+INDENT
+    try :
+    INDENT
+        something()
+    DEDENT
+    except MyException, e :
+    INDENT
+        print e.message
+    DEDENT
+DEDENT
+----------------------------------------
+
+def my_func(my_arg, handle_exceptions) :
+INDENT
+    if handle_exceptions :
+    INDENT
+        exc_type = Exception
+    DEDENT
+    else :
+    INDENT
+        exc_type = None
+    DEDENT
+    try :
+    INDENT
+        do_something(my_arg);
+    DEDENT
+    except exc_type, e :
+    INDENT
+        print "my_func is handling the exception";
+    DEDENT
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+8166294_8167527_11_21
+8166294_8170557_3_10
+Title: Reusing patch objects in matplotlib without them moving position 
+----------------------------------------
+
+def doplot(x, y, patch, count) :
+INDENT
+    ax.set_xlim(- 0.2, 1.2)
+    ax.set_ylim(- 0.2, 1.2)
+    x = sp.random.random(100)
+    y = sp.random.random(100)
+    im = ax.scatter(x, y)
+    ax.add_patch(patch)
+    im.set_clip_path(patch)
+    plt.savefig(str(count) + '.png')
+    ax.cla()
+DEDENT
+----------------------------------------
+
+def doplot(x, y, patch, count) :
+INDENT
+    newPatch = copy.copy(patch)
+    fig = plt.figure(dpi = 50)
+    ax = fig.add_subplot(111)
+    im = ax.scatter(x, y)
+    ax.add_patch(newPatch)
+    im.set_clip_path(newPatch)
+    plt.savefig(str(count) + '.png')
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+816887_50245844_34_52
+816887_50245844_6_24
+Title: wxPython: A foldable panel widget 
+----------------------------------------
+
+def __init__(self) :
+INDENT
+    wx.Frame.__init__(self, None)
+    left = wx.Panel(self, style = wx.BORDER_SUNKEN)
+    right = wx.Panel(self, style = wx.BORDER_SUNKEN)
+    left_sizer = wx.BoxSizer(wx.VERTICAL)
+    left.SetSizer(left_sizer)
+    left_sizer.Add(wx.adv.CalendarCtrl(left), 1, wx.EXPAND | wx.ALL, 5)
+
+    right_sizer = wx.BoxSizer(wx.VERTICAL)
+    right.SetSizer(right_sizer)
+    right_sizer.Add(wx.StaticText(right, label = "Fold this panel using the thin vertical button on the right"),
+        1, wx.EXPAND | wx.ALL, 5)
+    FoldableWindowContainer(self, left, right)
+
+DEDENT
+----------------------------------------
+
+def __init__(self, parent, left, right) :
+INDENT
+    wx.Panel.__init__(self, parent)
+    sizer = wx.BoxSizer(wx.HORIZONTAL)
+    self.SetSizer(sizer)
+    self.splitter = wx.SplitterWindow(self, style = wx.SP_LIVE_UPDATE)
+    left.Reparent(self.splitter)
+    right.Reparent(self.splitter)
+    self.left = left
+    self.right = right
+    self.splitter.SplitVertically(self.left, self.right)
+    self.splitter.SetMinimumPaneSize(50)
+    self.sash_pos = self.splitter.GetSashPosition()
+    sizer.Add(self.splitter, 1, wx.EXPAND)
+    fold_button = wx.Button(self, size = (10, - 1))
+    fold_button.Bind(wx.EVT_BUTTON, self.On_FoldToggle)
+    sizer.Add(fold_button, 0, wx.EXPAND)
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+816887_50245844_34_52
+816887_817095_5_23
+Title: wxPython: A foldable panel widget 
+----------------------------------------
+
+def __init__(self) :
+INDENT
+    wx.Frame.__init__(self, None)
+    left = wx.Panel(self, style = wx.BORDER_SUNKEN)
+    right = wx.Panel(self, style = wx.BORDER_SUNKEN)
+    left_sizer = wx.BoxSizer(wx.VERTICAL)
+    left.SetSizer(left_sizer)
+    left_sizer.Add(wx.adv.CalendarCtrl(left), 1, wx.EXPAND | wx.ALL, 5)
+
+    right_sizer = wx.BoxSizer(wx.VERTICAL)
+    right.SetSizer(right_sizer)
+    right_sizer.Add(wx.StaticText(right, label = "Fold this panel using the thin vertical button on the right"),
+        1, wx.EXPAND | wx.ALL, 5)
+    FoldableWindowContainer(self, left, right)
+
+DEDENT
+----------------------------------------
+
+def __init__(self, parent, left, right) :
+INDENT
+    wx.Panel.__init__(self, parent)
+    sizer = wx.BoxSizer(wx.HORIZONTAL)
+    self.SetSizer(sizer)
+    self.splitter = wx.SplitterWindow(self, style = wx.SP_LIVE_UPDATE)
+    left.Reparent(self.splitter)
+    right.Reparent(self.splitter)
+    self.left = left
+    self.right = right
+    self.splitter.SplitVertically(self.left, self.right)
+    self.splitter.SetMinimumPaneSize(50)
+    self.sash_pos = self.splitter.SashPosition
+    sizer.Add(self.splitter, 1, wx.EXPAND)
+    fold_button = wx.Button(self, size = (10, - 1))
+    fold_button.Bind(wx.EVT_BUTTON, self.On_FoldToggle)
+    sizer.Add(fold_button, 0, wx.EXPAND)
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+816887_50245844_6_24
+816887_817095_33_53
+Title: wxPython: A foldable panel widget 
+----------------------------------------
+
+def __init__(self, parent, left, right) :
+INDENT
+    wx.Panel.__init__(self, parent)
+    sizer = wx.BoxSizer(wx.HORIZONTAL)
+    self.SetSizer(sizer)
+    self.splitter = wx.SplitterWindow(self, style = wx.SP_LIVE_UPDATE)
+    left.Reparent(self.splitter)
+    right.Reparent(self.splitter)
+    self.left = left
+    self.right = right
+    self.splitter.SplitVertically(self.left, self.right)
+    self.splitter.SetMinimumPaneSize(50)
+    self.sash_pos = self.splitter.GetSashPosition()
+    sizer.Add(self.splitter, 1, wx.EXPAND)
+    fold_button = wx.Button(self, size = (10, - 1))
+    fold_button.Bind(wx.EVT_BUTTON, self.On_FoldToggle)
+    sizer.Add(fold_button, 0, wx.EXPAND)
+DEDENT
+----------------------------------------
+
+def __init__(self) :
+INDENT
+    wx.Frame.__init__(self, None)
+    left = wx.Panel(self, style = wx.BORDER_SUNKEN)
+    right = wx.Panel(self, style = wx.BORDER_SUNKEN)
+    left_sizer = wx.BoxSizer(wx.VERTICAL)
+    left.SetSizer(left_sizer)
+    left_sizer.Add(wx.calendar.CalendarCtrl(left), 1, wx.EXPAND | wx.ALL, 5)
+    left_sizer.Add(wx.Button(left, label = "Act"), 0, wx.EXPAND | wx.ALL, 5)
+    right_sizer = wx.BoxSizer(wx.VERTICAL)
+    right.SetSizer(right_sizer)
+    right_sizer.Add(
+        wx.StaticText(right, label = "Fold panel", style = wx.BORDER_RAISED),
+        1, wx.EXPAND | wx.ALL, 5)
+    FoldableWindowContainer(self, left, right)
+
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+816887_817095_33_53
+816887_817095_5_23
+Title: wxPython: A foldable panel widget 
+----------------------------------------
+
+def __init__(self) :
+INDENT
+    wx.Frame.__init__(self, None)
+    left = wx.Panel(self, style = wx.BORDER_SUNKEN)
+    right = wx.Panel(self, style = wx.BORDER_SUNKEN)
+    left_sizer = wx.BoxSizer(wx.VERTICAL)
+    left.SetSizer(left_sizer)
+    left_sizer.Add(wx.calendar.CalendarCtrl(left), 1, wx.EXPAND | wx.ALL, 5)
+    left_sizer.Add(wx.Button(left, label = "Act"), 0, wx.EXPAND | wx.ALL, 5)
+    right_sizer = wx.BoxSizer(wx.VERTICAL)
+    right.SetSizer(right_sizer)
+    right_sizer.Add(
+        wx.StaticText(right, label = "Fold panel", style = wx.BORDER_RAISED),
+        1, wx.EXPAND | wx.ALL, 5)
+    FoldableWindowContainer(self, left, right)
+
+DEDENT
+----------------------------------------
+
+def __init__(self, parent, left, right) :
+INDENT
+    wx.Panel.__init__(self, parent)
+    sizer = wx.BoxSizer(wx.HORIZONTAL)
+    self.SetSizer(sizer)
+    self.splitter = wx.SplitterWindow(self, style = wx.SP_LIVE_UPDATE)
+    left.Reparent(self.splitter)
+    right.Reparent(self.splitter)
+    self.left = left
+    self.right = right
+    self.splitter.SplitVertically(self.left, self.right)
+    self.splitter.SetMinimumPaneSize(50)
+    self.sash_pos = self.splitter.SashPosition
+    sizer.Add(self.splitter, 1, wx.EXPAND)
+    fold_button = wx.Button(self, size = (10, - 1))
+    fold_button.Bind(wx.EVT_BUTTON, self.On_FoldToggle)
+    sizer.Add(fold_button, 0, wx.EXPAND)
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+8172643_8172676_8_37
+8172643_8172735_3_25
+Title: python error - unboundLocalError 
+----------------------------------------
+
+def getVerb() :
+INDENT
+    correctAnswers = 0
+
+    for level in (level1, level2) :
+    INDENT
+        level_name, choices = level [0], level [1 :]
+
+        random.shuffle(choices)
+
+        for choice in choices :
+        INDENT
+            prefix, suffix = choice.split(' ', 2)
+            print (prefix, blanks, level_name)
+            ans = raw_input('Answer: ')
+            while True :
+            INDENT
+                if ans == suffix :
+                INDENT
+                    correctAnswers += 1
+                    print ("Nice one!")
+                    print (correctAnswers)
+                    break
+                DEDENT
+                else :
+                INDENT
+                    print ("Bad luck!")
+                    ans = raw_input('Try again: ')
+
+                DEDENT
+            DEDENT
+        DEDENT
+    DEDENT
+DEDENT
+----------------------------------------
+
+def getVerb() :
+INDENT
+    level1 = ["(manger)", "je mange", "tu manges", "il mange", "elle mange", "nous mangeons", "vous mangez", "ils mangent", "elles mangent"]
+    level2 = ["(boire)", "je bois", "tu bois", "il boit", "elle boit", "nous buvons", "vous buvez", "ils boivent", "elles boivent"]
+    blanks = '_' * 8
+    correctAnswers = 0
+    randomElement = random.choice(level1)
+    print (randomElement.split() [0], blanks, level1 [0])
+    ans = input()
+    while True :
+    INDENT
+        if ans == randomElement.split() [1] :
+        INDENT
+            correctAnswers += 1
+            print ("Nice one!")
+            print (correctAnswers)
+        DEDENT
+        else :
+        INDENT
+            print ("Bad luck!")
+        DEDENT
+        ans = input()
+    DEDENT
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+8172931_14999400_1_56
+8172931_36923358_5_83
+Title: Data from a MATLAB .fig file using Python? 
+----------------------------------------
+
+def plotFig(filename, fignr = 1) :
+INDENT
+    from scipy.io import loadmat
+    from numpy import size
+    from matplotlib.pyplot import plot, figure, hold, xlabel, ylabel, show, clf, xlim, legend
+    d = loadmat(filename, squeeze_me = True, struct_as_record = False)
+    ax1 = d ['hgS_070000'].children
+    if size(ax1) > 1 :
+    INDENT
+        legs = ax1 [1]
+        ax1 = ax1 [0]
+    DEDENT
+    else :
+    INDENT
+        legs = 0
+    DEDENT
+    figure(fignr)
+    clf()
+    hold(True)
+    counter = 0
+    for line in ax1.children :
+    INDENT
+        if line.type == 'graph2d.lineseries' :
+        INDENT
+            if hasattr(line.properties, 'Marker') :
+            INDENT
+                mark = "%s" % line.properties.Marker
+                mark = mark [0]
+            DEDENT
+            else :
+            INDENT
+                mark = '.'
+            DEDENT
+            if hasattr(line.properties, 'LineStyle') :
+            INDENT
+                linestyle = "%s" % line.properties.LineStyle
+            DEDENT
+            else :
+            INDENT
+                linestyle = '-'
+            DEDENT
+            if hasattr(line.properties, 'Color') :
+            INDENT
+                r, g, b = line.properties.Color
+            DEDENT
+            else :
+            INDENT
+                r = 0
+                g = 0
+                b = 1
+            DEDENT
+            if hasattr(line.properties, 'MarkerSize') :
+            INDENT
+                marker_size = line.properties.MarkerSize
+            DEDENT
+            else :
+            INDENT
+                marker_size = 1
+            DEDENT
+            x = line.properties.XData
+            y = line.properties.YData
+            plot(x, y, marker = mark, linestyle = linestyle, color(r, g, b), markersize = marker_size)
+        DEDENT
+        elif line.type == 'text' :
+        INDENT
+            if counter < 1 :
+            INDENT
+                xlabel("%s" % line.properties.String, fontsize = 16)
+                counter += 1
+            DEDENT
+            elif counter < 2 :
+            INDENT
+                ylabel("%s" % line.properties.String, fontsize = 16)
+                counter += 1
+            DEDENT
+        DEDENT
+    DEDENT
+    xlim(ax1.properties.XLim)
+    if legs :
+    INDENT
+        leg_entries = tuple(legs.properties.String)
+        py_locs = ['upper center', 'lower center', 'right', 'left', 'upper right', 'upper left', 'lower right', 'lower left', 'best']
+        MAT_locs = ['North', 'South', 'East', 'West', 'NorthEast', 'NorthWest', 'SouthEast', 'SouthWest', 'Best']
+        Mat2py = dict(zip(MAT_locs, py_locs))
+        location = legs.properties.Location
+        legend(leg_entries, loc = Mat2py [location])
+        hold(False)
+        show()
+    DEDENT
+DEDENT
+----------------------------------------
+
+def plotFig(filename, fignr = 1) :
+INDENT
+    d = loadmat(filename, squeeze_me = True, struct_as_record = False)
+    matfig = d ['hgS_070000']
+    childs = matfig.children
+    ax1 = [c for c in childs if c.type == 'axes']
+    if (len(ax1) > 0) :
+    INDENT
+        ax1 = ax1 [0]
+    DEDENT
+    legs = [c for c in childs if c.type == 'scribe.legend']
+    if (len(legs) > 0) :
+    INDENT
+        legs = legs [0]
+    DEDENT
+    else :
+    INDENT
+        legs = 0
+    DEDENT
+    pos = matfig.properties.Position
+    size = np.array([pos [2] - pos [0], pos [3] - pos [1]]) / 96
+    plt.figure(fignr, figsize = size)
+    plt.clf()
+    plt.hold(True)
+    counter = 0
+    for line in ax1.children :
+    INDENT
+        if line.type == 'graph2d.lineseries' :
+        INDENT
+            if hasattr(line.properties, 'Marker') :
+            INDENT
+                mark = "%s" % line.properties.Marker
+                if (mark ! = "none") :
+                INDENT
+                    mark = mark [0]
+                DEDENT
+            DEDENT
+            else :
+            INDENT
+                mark = '.'
+            DEDENT
+            if hasattr(line.properties, 'LineStyle') :
+            INDENT
+                linestyle = "%s" % line.properties.LineStyle
+            DEDENT
+            else :
+            INDENT
+                linestyle = '-'
+            DEDENT
+            if hasattr(line.properties, 'Color') :
+            INDENT
+                r, g, b = line.properties.Color
+            DEDENT
+            else :
+            INDENT
+                r = 0
+                g = 0
+                b = 1
+            DEDENT
+            if hasattr(line.properties, 'MarkerSize') :
+            INDENT
+                marker_size = line.properties.MarkerSize
+            DEDENT
+            else :
+            INDENT
+                marker_size = - 1
+            DEDENT
+            x = line.properties.XData
+            y = line.properties.YData
+            if (mark == "none") :
+            INDENT
+                plt.plot(x, y, linestyle = linestyle, color = [r, g, b])
+            DEDENT
+            elif (marker_size == - 1) :
+            INDENT
+                plt.plot(x, y, marker = mark, linestyle = linestyle, color = [r, g, b])
+            DEDENT
+            else :
+            INDENT
+                plt.plot(x, y, marker = mark, linestyle = linestyle, color = [r, g, b], ms = marker_size)
+            DEDENT
+        DEDENT
+        elif line.type == 'text' :
+        INDENT
+            if counter == 0 :
+            INDENT
+                plt.xlabel("$%s$" % line.properties.String, fontsize = 16)
+            DEDENT
+            elif counter == 1 :
+            INDENT
+                plt.ylabel("$%s$" % line.properties.String, fontsize = 16)
+            DEDENT
+            elif counter == 3 :
+            INDENT
+                plt.title("$%s$" % line.properties.String, fontsize = 16)
+            DEDENT
+            counter += 1
+        DEDENT
+    DEDENT
+    plt.grid(ax1.properties.XGrid)
+    if (hasattr(ax1.properties, 'XTick')) :
+    INDENT
+        if (hasattr(ax1.properties, 'XTickLabelRotation')) :
+        INDENT
+            plt.xticks(ax1.properties.XTick, ax1.properties.XTickLabel, rotation = ax1.properties.XTickLabelRotation)
+        DEDENT
+        else :
+        INDENT
+            plt.xticks(ax1.properties.XTick, ax1.properties.XTickLabel)
+        DEDENT
+    DEDENT
+    if (hasattr(ax1.properties, 'YTick')) :
+    INDENT
+        if (hasattr(ax1.properties, 'YTickLabelRotation')) :
+        INDENT
+            plt.yticks(ax1.properties.YTick, ax1.properties.YTickLabel, rotation = ax1.properties.YTickLabelRotation)
+        DEDENT
+        else :
+        INDENT
+            plt.yticks(ax1.properties.YTick, ax1.properties.YTickLabel)
+        DEDENT
+    DEDENT
+    plt.xlim(ax1.properties.XLim)
+    plt.ylim(ax1.properties.YLim)
+    if legs :
+    INDENT
+        leg_entries = tuple(['$' + l + '$' for l in legs.properties.String])
+        py_locs = ['upper center', 'lower center', 'right', 'left', 'upper right', 'upper left', 'lower right', 'lower left', 'best', 'best']
+        MAT_locs = ['North', 'South', 'East', 'West', 'NorthEast', 'NorthWest', 'SouthEast', 'SouthWest', 'Best', 'none']
+        Mat2py = dict(zip(MAT_locs, py_locs))
+        location = legs.properties.Location
+        plt.legend(leg_entries, loc = Mat2py [location])
+    DEDENT
+    plt.hold(False)
+    plt.show()
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+8193920_48613185_6_21
+8193920_8196526_5_22
+Title: How to use QPrinter and QPrintPreviewDialog 
+----------------------------------------
+
+def __init__(self) :
+INDENT
+    QtWidgets.QWidget.__init__(self)
+    self.setWindowTitle(self.tr('Chart Printing'))
+    self.chart = QtChart.QChart()
+    self.chart_view = QtChart.QChartView(self.chart)
+    self.chart_view.setRenderHint(QtGui.QPainter.Antialiasing)
+    self.buttonPreview = QtWidgets.QPushButton('Preview', self)
+    self.buttonPreview.clicked.connect(self.handle_preview)
+    self.buttonPrint = QtWidgets.QPushButton('Print', self)
+    self.buttonPrint.clicked.connect(self.handle_print)
+    layout = QtWidgets.QGridLayout(self)
+    layout.addWidget(self.chart_view, 0, 0, 1, 2)
+    layout.addWidget(self.buttonPreview, 1, 0)
+    layout.addWidget(self.buttonPrint, 1, 1)
+    self.create_chart()
+DEDENT
+----------------------------------------
+
+def __init__(self) :
+INDENT
+    super(Window, self).__init__()
+    self.setWindowTitle('Document Printer')
+    self.editor = QtWidgets.QTextEdit(self)
+    self.editor.textChanged.connect(self.handleTextChanged)
+    self.buttonOpen = QtWidgets.QPushButton('Open', self)
+    self.buttonOpen.clicked.connect(self.handleOpen)
+    self.buttonPrint = QtWidgets.QPushButton('Print', self)
+    self.buttonPrint.clicked.connect(self.handlePrint)
+    self.buttonPreview = QtWidgets.QPushButton('Preview', self)
+    self.buttonPreview.clicked.connect(self.handlePreview)
+    layout = QtWidgets.QGridLayout(self)
+    layout.addWidget(self.editor, 0, 0, 1, 3)
+    layout.addWidget(self.buttonOpen, 1, 0)
+    layout.addWidget(self.buttonPrint, 1, 1)
+    layout.addWidget(self.buttonPreview, 1, 2)
+    self.handleTextChanged()
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+8202979_8203245_4_16
+8202979_8204122_1_10
+Title: Loop colours from variables for graphics.py 
+----------------------------------------
+
+def main() :
+INDENT
+    print (("Please enter four comma seperated colours e.g.:"
+            "'red,green,blue'\n"
+            "Allowed colours are: red, green, blue, yellow and cyan"))
+    colours = input("Enter your four colours: ").split(',')
+    print ("Please enter gridsize e.g.: '100'")
+    gsize = int(input("Enter gridsize: "))
+    win_size = 250
+    win = GraphWin("Squares", win_size, win_size)
+    drawSquares(win, gsize, win_size, colours)
+    win.getMouse()
+    win.close()
+DEDENT
+----------------------------------------
+
+def main() :
+INDENT
+    print ("Please enter four comma seperated colours e.g.: 'red,green,blue,yellow'\n\
+    Allowed colours are: red, green, blue, yellow and cyan")
+    colours = input("Enter your four colours: ").split(',')
+    win = GraphWin("Squares", 500, 500)
+    drawSquare(win, colours)
+    win.getMouse()
+    win.close()
+
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+8217269_45653735_23_34
+8217269_8232171_28_41
+Title: Decrypting strings in Python that were encrypted with MCRYPT_RIJNDAEL_256 in PHP 
+----------------------------------------
+
+def decrypt(key, encoded) :
+INDENT
+    key = key.encode('ascii')
+    padded_key = key.ljust(KEY_SIZE, b'\0')
+    ciphertext = base64.b64decode(encoded.encode('ascii'))
+    sg = pprp.data_source_gen(ciphertext, block_size = BLOCK_SIZE)
+    dg = pprp.rjindael_decrypt_gen(padded_key, sg, block_size = BLOCK_SIZE)
+    return pprp.decrypt_sink(dg).decode('utf-8')
+
+DEDENT
+----------------------------------------
+
+def decrypt(key, encoded) :
+INDENT
+    padded_key = key.ljust(KEY_SIZE, '\0')
+    ciphertext = base64.b64decode(encoded)
+    r = rijndael.rijndael(padded_key, BLOCK_SIZE)
+    padded_text = ''
+    for start in range(0, len(ciphertext), BLOCK_SIZE) :
+    INDENT
+        padded_text += r.decrypt(ciphertext [start : start + BLOCK_SIZE])
+    DEDENT
+    plaintext = padded_text.split('\x00', 1) [0]
+    return plaintext
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+8217269_45653735_8_22
+8217269_8232171_7_27
+Title: Decrypting strings in Python that were encrypted with MCRYPT_RIJNDAEL_256 in PHP 
+----------------------------------------
+
+def encrypt(key, plaintext) :
+INDENT
+    key = key.encode('ascii')
+    plaintext = plaintext.encode('utf-8')
+    padded_key = key.ljust(KEY_SIZE, b'\0')
+    sg = pprp.data_source_gen(plaintext, block_size = BLOCK_SIZE)
+    eg = pprp.rjindael_encrypt_gen(padded_key, sg, block_size = BLOCK_SIZE)
+    ciphertext = pprp.encrypt_sink(eg)
+    encoded = base64.b64encode(ciphertext)
+    return encoded.decode('ascii')
+
+DEDENT
+----------------------------------------
+
+def encrypt(key, plaintext) :
+INDENT
+    padded_key = key.ljust(KEY_SIZE, '\0')
+    padded_text = plaintext + (BLOCK_SIZE - len(plaintext) % BLOCK_SIZE) * '\0'
+
+    r = rijndael.rijndael(padded_key, BLOCK_SIZE)
+    ciphertext = ''
+    for start in range(0, len(padded_text), BLOCK_SIZE) :
+    INDENT
+        ciphertext += r.encrypt(padded_text [start : start + BLOCK_SIZE])
+    DEDENT
+    encoded = base64.b64encode(ciphertext)
+    return encoded
+
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+8218900_20295812_5_13
+8218900_33672591_2_10
+Title: How can I change the cursor shape with PyQt? 
+----------------------------------------
+
+def new_function(self) :
+INDENT
+    QApplication.setOverrideCursor(QCursor(Qt.WaitCursor))
+    try :
+    INDENT
+        function(self)
+    DEDENT
+    except Exception as e :
+    INDENT
+        raise e
+        print ("Error {}".format(e.args [0]))
+    DEDENT
+    finally :
+    INDENT
+        QApplication.restoreOverrideCursor()
+    DEDENT
+DEDENT
+----------------------------------------
+
+def new_function(* args, ** kwargs) :
+INDENT
+    QApplication.setOverrideCursor(QCursor(Qt.WaitCursor))
+    try :
+    INDENT
+        return function(* args, ** kwargs)
+    DEDENT
+    except Exception as e :
+    INDENT
+        raise e
+        print ("Error {}".format(e.args [0]))
+    DEDENT
+    finally :
+    INDENT
+        QApplication.restoreOverrideCursor()
+    DEDENT
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+8247973_19102353_5_94
+8247973_39782685_6_87
+Title: How do I specify an arrow-like linestyle in Matplotlib? 
+----------------------------------------
+
+def arrowplot(axes, x, y, narrs = 30, dspace = 0.5, direc = 'pos', hl = 0.3, hw = 6, c = 'black') :
+INDENT
+    r = [0]
+    for i in range(1, len(x)) :
+    INDENT
+        dx = x [i] - x [i - 1]
+        dy = y [i] - y [i - 1]
+        r.append(np.sqrt(dx * dx + dy * dy))
+    DEDENT
+    r = np.array(r)
+
+    rtot = []
+    for i in range(len(r)) :
+    INDENT
+        rtot.append(r [0 : i].sum())
+    DEDENT
+    rtot.append(r.sum())
+
+    aspace = r.sum() / narrs
+    if direc is 'neg' :
+    INDENT
+        dspace = - 1.* abs(dspace)
+    DEDENT
+    else :
+    INDENT
+        dspace = abs(dspace)
+    DEDENT
+    arrowData = []
+    arrowPos = aspace * (dspace)
+
+    ndrawn = 0
+    rcount = 1
+    while arrowPos < r.sum() and ndrawn < narrs :
+    INDENT
+        x1, x2 = x [rcount - 1], x [rcount]
+        y1, y2 = y [rcount - 1], y [rcount]
+        da = arrowPos - rtot [rcount]
+        theta = np.arctan2((x2 - x1), (y2 - y1))
+        ax = np.sin(theta) * da + x1
+        ay = np.cos(theta) * da + y1
+        arrowData.append((ax, ay, theta))
+        ndrawn += 1
+        arrowPos += aspace
+        while arrowPos > rtot [rcount + 1] :
+        INDENT
+            rcount += 1
+            if arrowPos > rtot [- 1] :
+            INDENT
+                break
+            DEDENT
+        DEDENT
+    DEDENT
+    for ax, ay, theta in arrowData :
+    INDENT
+
+        dx0 = np.sin(theta) * hl / 2.+ ax
+        dy0 = np.cos(theta) * hl / 2.+ ay
+        dx1 = - 1.* np.sin(theta) * hl / 2.+ ax
+        dy1 = - 1.* np.cos(theta) * hl / 2.+ ay
+        if direc is 'neg' :
+        INDENT
+            ax0 = dx0
+            ay0 = dy0
+            ax1 = dx1
+            ay1 = dy1
+        DEDENT
+        else :
+        INDENT
+            ax0 = dx1
+            ay0 = dy1
+            ax1 = dx0
+            ay1 = dy0
+        DEDENT
+        axes.annotate('', xy = (ax0, ay0), xycoords = 'data',
+            xytext = (ax1, ay1), textcoords = 'data',
+            arrowprops = dict(headwidth = hw, frac = 1., ec = c, fc = c))
+
+    DEDENT
+    axes.plot(x, y, color = c)
+    axes.set_xlim(x.min() *.9, x.max() * 1.1)
+    axes.set_ylim(y.min() *.9, y.max() * 1.1)
+
+DEDENT
+----------------------------------------
+
+def arrowplot(axes, x, y, nArrs = 30, mutateSize = 10, color = 'gray', markerStyle = 'o') :
+INDENT
+    x = np.array(x, dtype = 'f')
+    y = np.array(y, dtype = 'f')
+    nPts = len(x)
+
+    axes.plot(x, y, markerStyle, ms = 5, color = color)
+
+    inv = ax.transData.inverted()
+
+    xyDisp = np.array(axes.transData.transform(zip(x, y)))
+    xD = xyDisp [:, 0]
+    yD = xyDisp [:, 1]
+
+    dxD = xD [1 :] - xD [: - 1]
+    dyD = yD [1 :] - yD [: - 1]
+    drD = np.sqrt(dxD ** 2 + dyD ** 2)
+
+    dxD [np.where(dxD == 0.0)] = 0.1
+
+    rtotD = np.sum(drD)
+
+    arrSpaceD = rtotD / nArrs
+
+    iSeg = 0
+    while iSeg < nPts - 1 :
+    INDENT
+
+        nArrSeg = max(1, int(drD [iSeg] / arrSpaceD + 0.5))
+        xArr = (dxD [iSeg]) / nArrSeg
+        segSlope = dyD [iSeg] / dxD [iSeg]
+        xBeg = xD [iSeg]
+        xEnd = xBeg + xArr
+        yBeg = yD [iSeg]
+        yEnd = yBeg + segSlope * xArr
+        for iArr in range(nArrSeg) :
+        INDENT
+
+            xyData = inv.transform(((xBeg, yBeg), (xEnd, yEnd)))
+
+            p = patches.FancyArrowPatch(
+                xyData [0], xyData [1],
+                arrowstyle = 'simple',
+                mutation_scale = mutateSize,
+                color = color, alpha = 0.5)
+            axes.add_patch(p)
+            xBeg = xEnd
+            xEnd += xArr
+            yBeg = yEnd
+            yEnd += segSlope * xArr
+        DEDENT
+        iSeg += 1
+    DEDENT
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+8254309_8257794_26_34
+8254309_8291356_1_12
+Title: Conditional disabling of widget 
+----------------------------------------
+
+def refresh(self) :
+INDENT
+    choice = self.cb.get()
+    if choice == "Enable 1 only" :
+    INDENT
+        self.e1.configure(state = "normal")
+        self.e2.configure(state = "disabled")
+    DEDENT
+    else :
+    INDENT
+        self.e1.configure(state = "disabled")
+        self.e2.configure(state = "normal")
+    DEDENT
+DEDENT
+----------------------------------------
+
+def refresh(* args) :
+INDENT
+    if v.get() == 'Disable' :
+    INDENT
+        fb_entry.state(['disabled'])
+        fw_entry.state(['disabled'])
+        fb.set('')
+        fw.set('')
+    DEDENT
+    elif v.get() == 'Enable' :
+    INDENT
+        fb_entry.state(['!disabled'])
+        fw_entry.state(['!disabled'])
+
+    DEDENT
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+8263513_8268638_19_26
+8263513_8268638_4_12
+Title: Show another window wxpython? 
+----------------------------------------
+
+def __init__(self, parent) :
+INDENT
+    wx.Frame.__init__(self, None, size = (150, 100), title = 'ChildFrame')
+    self.parent = parent
+    pan = wx.Panel(self)
+    self.txt = wx.TextCtrl(pan, - 1, pos = (0, 0), size = (100, 20), style = wx.DEFAULT)
+    self.but = wx.Button(pan, - 1, pos = (10, 30), label = 'Tell parent')
+    self.Bind(wx.EVT_BUTTON, self.onbutton, self.but)
+DEDENT
+----------------------------------------
+
+def __init__(self) :
+INDENT
+    wx.Frame.__init__(self, None, size = (150, 100), title = 'MainFrame')
+    pan = wx.Panel(self)
+    self.txt = wx.TextCtrl(pan, - 1, pos = (0, 0), size = (100, 20), style = wx.DEFAULT)
+    self.but = wx.Button(pan, - 1, pos = (10, 30), label = 'Tell child')
+    self.Bind(wx.EVT_BUTTON, self.onbutton, self.but)
+    self.child = ChildFrame(self)
+    self.child.Show()
+DEDENT
+----------------------------------------

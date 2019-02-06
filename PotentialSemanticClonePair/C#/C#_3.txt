@@ -1,0 +1,4182 @@
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+12469117_12469486_20_34
+12469117_12469486_2_16
+Title: Possible to create list from class of public strings in c# 
+----------------------------------------
+
+public Dictionary < string, string > GetDictionaryFromProperties < T > (T instance) {
+    Type t = typeof (T);
+    PropertyInfo [] props = t.GetProperties (BindingFlags.Public | BindingFlags.Instance);
+    Dictionary < string, string > artists = new Dictionary < string, string > (props.Length);
+    for (int i = 0; i < props.Length; i ++) {
+        if (artists.ContainsKey (props [i].Name) || ! props [i].Name.Contains ("_artist")) {
+            continue;
+        }
+        artists.Add (props [i].Name, props [i].GetValue (instance, null).ToString ());
+    }
+    return artists;
+}
+----------------------------------------
+
+public List < string > GetListFromProperties < T > (T instance) {
+    Type t = typeof (T);
+    PropertyInfo [] props = t.GetProperties (BindingFlags.Public | BindingFlags.Instance);
+    List < string > artists = new List < string > (props.Length);
+    for (int i = 0; i < props.Length; i ++) {
+        if (! props [i].Name.Contains ("_artist")) {
+            continue;
+        }
+        artists.Add (props [i].GetValue (instance, null).ToString ());
+    }
+    return artists;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+12475455_12475499_1_14
+12475455_12475523_1_14
+Title: command line in C# 
+----------------------------------------
+
+static void Main (string [] args) {
+    string User;
+    if (args.Length != 0) {
+        User = args [0];
+    } else {
+        Console.Write ("Please Enter the Username");
+        User = Console.ReadLine ();
+    }
+}
+----------------------------------------
+
+static void Main (string [] args) {
+    string User;
+    if (args.Length > 0) {
+        User = args [0];
+    } else {
+        Console.Write ("Please Enter the Username");
+        User = Console.ReadLine ();
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+12481522_12481944_110_124
+12481522_12481944_76_90
+Title: How to avoid empty base abstract class? 
+----------------------------------------
+
+public bool Execute (string action, params object [] parameters) {
+    if (action == "third" && parameters.Length == 2 && parameters [0].GetType () == typeof (string) && parameters [1].GetType () == typeof (int)) {
+        string s = (string) parameters [0];
+        int i = (int) parameters [1];
+        return true;
+    } else
+        return false;
+
+}
+----------------------------------------
+
+public bool Execute (string action, params object [] parameters) {
+    if (action == "first" && parameters.Length == 2 && parameters [0].GetType () == typeof (int) && parameters [1].GetType () == typeof (double)) {
+        int i = (int) parameters [0];
+        double d = (double) parameters [1];
+        return true;
+    } else
+        return false;
+
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+12495273_12495836_1_28
+12495273_12497396_13_23
+Title: Is there already a Conditional Zip function in c#? 
+----------------------------------------
+
+public static IEnumerable < Tuple < T1, IEnumerable < T2 > > > ConditionalZip < T1, T2 > (this IEnumerable < T1 > src1, IEnumerable < T2 > src2, Func < T1, T2, bool > check) {
+    var list = new List < T2 > ();
+    using (var enumerator = src2.GetEnumerator ())
+    {
+        foreach (var item1 in src1) {
+            while (enumerator.MoveNext ()) {
+                var pickedItem = enumerator.Current;
+                if (check (item1, pickedItem)) {
+                    list.Add (pickedItem);
+                } else {
+                    break;
+                }
+            }
+            var items = list.ToArray ();
+            list.Clear ();
+            yield return new Tuple < T1, IEnumerable < T2 > > (item1, items);
+        }
+    }}
+----------------------------------------
+
+public static IEnumerable < TResult > ConditionalZip < TFirst, TSecond, TResult > (this IEnumerable < TFirst > larger, IEnumerable < TSecond > smaller, Func < TFirst, TSecond, bool > predicate, Func < TFirst, TSecond, bool, TResult > resultSelector) {
+    if (larger == null)
+        throw new ArgumentNullException ("larger");
+
+    if (smaller == null)
+        throw new ArgumentNullException ("smaller");
+
+    if (resultSelector == null)
+        throw new ArgumentNullException ("resultSelector");
+    else
+        return ConditionalZipIterator (larger, smaller, predicate, resultSelector);
+
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+12495273_12495836_1_28
+12495273_12497396_25_54
+Title: Is there already a Conditional Zip function in c#? 
+----------------------------------------
+
+public static IEnumerable < Tuple < T1, IEnumerable < T2 > > > ConditionalZip < T1, T2 > (this IEnumerable < T1 > src1, IEnumerable < T2 > src2, Func < T1, T2, bool > check) {
+    var list = new List < T2 > ();
+    using (var enumerator = src2.GetEnumerator ())
+    {
+        foreach (var item1 in src1) {
+            while (enumerator.MoveNext ()) {
+                var pickedItem = enumerator.Current;
+                if (check (item1, pickedItem)) {
+                    list.Add (pickedItem);
+                } else {
+                    break;
+                }
+            }
+            var items = list.ToArray ();
+            list.Clear ();
+            yield return new Tuple < T1, IEnumerable < T2 > > (item1, items);
+        }
+    }}
+----------------------------------------
+
+private static IEnumerable < TResult > ConditionalZipIterator < TFirst, TSecond, TResult > (IEnumerable < TFirst > first, IEnumerable < TSecond > second, Func < TFirst, TSecond, bool > predicate, Func < TFirst, TSecond, bool, TResult > resultSelector) {
+    using (IEnumerator < TFirst > enumerator1 = first.GetEnumerator ())
+    {
+        using (IEnumerator < TSecond > enumerator2 = second.GetEnumerator ())
+        {
+            if (! enumerator2.MoveNext ()) {
+                secondIsFinished = true;
+            }
+            currentSecond = secondIsFinished ? default (TSecond) : enumerator2.Current;
+            while (enumerator1.MoveNext ()) {
+                while (! secondIsFinished && ! predicate (enumerator1.Current, currentSecond)) {
+                    if (! enumerator2.MoveNext ()) {
+                        secondIsFinished = true;
+                    }
+                    currentSecond = secondIsFinished ? default (TSecond) : enumerator2.Current;
+                }
+                yield return resultSelector (enumerator1.Current, currentSecond, secondIsFinished);
+            }
+        }}}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+12495273_12497396_13_23
+12495273_12497396_25_54
+Title: Is there already a Conditional Zip function in c#? 
+----------------------------------------
+
+public static IEnumerable < TResult > ConditionalZip < TFirst, TSecond, TResult > (this IEnumerable < TFirst > larger, IEnumerable < TSecond > smaller, Func < TFirst, TSecond, bool > predicate, Func < TFirst, TSecond, bool, TResult > resultSelector) {
+    if (larger == null)
+        throw new ArgumentNullException ("larger");
+
+    if (smaller == null)
+        throw new ArgumentNullException ("smaller");
+
+    if (resultSelector == null)
+        throw new ArgumentNullException ("resultSelector");
+    else
+        return ConditionalZipIterator (larger, smaller, predicate, resultSelector);
+
+}
+----------------------------------------
+
+private static IEnumerable < TResult > ConditionalZipIterator < TFirst, TSecond, TResult > (IEnumerable < TFirst > first, IEnumerable < TSecond > second, Func < TFirst, TSecond, bool > predicate, Func < TFirst, TSecond, bool, TResult > resultSelector) {
+    using (IEnumerator < TFirst > enumerator1 = first.GetEnumerator ())
+    {
+        using (IEnumerator < TSecond > enumerator2 = second.GetEnumerator ())
+        {
+            if (! enumerator2.MoveNext ()) {
+                secondIsFinished = true;
+            }
+            currentSecond = secondIsFinished ? default (TSecond) : enumerator2.Current;
+            while (enumerator1.MoveNext ()) {
+                while (! secondIsFinished && ! predicate (enumerator1.Current, currentSecond)) {
+                    if (! enumerator2.MoveNext ()) {
+                        secondIsFinished = true;
+                    }
+                    currentSecond = secondIsFinished ? default (TSecond) : enumerator2.Current;
+                }
+                yield return resultSelector (enumerator1.Current, currentSecond, secondIsFinished);
+            }
+        }}}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+124975_17973520_51_64
+124975_4961388_42_60
+Title: Windows Forms textbox that has line numbers? 
+----------------------------------------
+
+private void DrawLines (Graphics g) {
+    g.Clear (BackColor);
+    int y = - editBox.ScrollPos.Y;
+    for (var i = 1; i < _lines + 1; i ++) {
+        var size = g.MeasureString (i.ToString (), Font);
+        g.DrawString (i.ToString (), Font, new SolidBrush (LineNumberColor), new Point (3, y));
+        y += Font.Height + 2;
+    }
+    var max = (int) g.MeasureString ((_lines + 1).ToString (), Font).Width + 6;
+    editBox.Location = new Point (max, 0);
+    editBox.Size = new Size (ClientRectangle.Width - max, ClientRectangle.Height);
+}
+----------------------------------------
+
+private void DrawLines (Graphics g) {
+    int counter, y;
+    g.Clear (BackColor);
+    counter = lineIndex + 1;
+    y = 2;
+    int max = 0;
+    while (y < ClientRectangle.Height - 15) {
+        SizeF size = g.MeasureString (counter.ToString (), Font);
+        g.DrawString (counter.ToString (), Font, new SolidBrush (ForeColor), new Point (3, y));
+        counter ++;
+        y += (int) size.Height;
+        if (max < size.Width) {
+            max = (int) size.Width;
+        }
+    }
+    max += 6;
+    editBox.Location = new Point (max, 0);
+    editBox.Size = new Size (ClientRectangle.Width - max, ClientRectangle.Height);
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+12519561_12533662_109_145
+12519561_17594125_1_42
+Title: Throw HttpResponseException or return Request.CreateErrorResponse? 
+----------------------------------------
+
+public override void OnException (HttpActionExecutedContext actionExecutedContext) {
+    if (actionExecutedContext == null || actionExecutedContext.Exception == null) {
+        return;
+    }
+    var type = actionExecutedContext.Exception.GetType ();
+    Tuple < HttpStatusCode ?, Func < Exception, HttpRequestMessage, HttpResponseMessage > > registration = null;
+    if (this.Handlers.TryGetValue (type, out registration)) {
+        var statusCode = registration.Item1;
+        var handler = registration.Item2;
+        var response = handler (actionExecutedContext.Exception.GetBaseException (), actionExecutedContext.Request);
+        if (statusCode.HasValue) {
+            response.StatusCode = statusCode.Value;
+        }
+        actionExecutedContext.Response = response;
+    } else {
+        actionExecutedContext.Response = DefaultHandler (actionExecutedContext.Exception.GetBaseException (), actionExecutedContext.Request);
+    }
+}
+----------------------------------------
+
+public override void OnException (HttpActionExecutedContext actionExecutedContext) {
+    if (actionExecutedContext == null || actionExecutedContext.Exception == null) {
+        return;
+    }
+    var type = actionExecutedContext.Exception.GetType ();
+    Tuple < HttpStatusCode ?, Func < Exception, HttpRequestMessage, HttpResponseMessage > > registration = null;
+    if (! this.Handlers.TryGetValue (type, out registration)) {
+        foreach (var item in this.Handlers.Keys) {
+            if (type.IsSubclassOf (item)) {
+                registration = this.Handlers [item];
+                break;
+            }
+        }
+    }
+    if (registration != null) {
+        var statusCode = registration.Item1;
+        var handler = registration.Item2;
+        var response = handler (actionExecutedContext.Exception.GetBaseException (), actionExecutedContext.Request);
+        if (statusCode.HasValue) {
+            response.StatusCode = statusCode.Value;
+        }
+        actionExecutedContext.Response = response;
+    } else {
+        actionExecutedContext.Response = DefaultHandler (actionExecutedContext.Exception.GetBaseException (), actionExecutedContext.Request);
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+12519561_12533662_157_177
+12519561_12533662_191_215
+Title: Throw HttpResponseException or return Request.CreateErrorResponse? 
+----------------------------------------
+
+public UnhandledExceptionFilterAttribute Register < TException > (HttpStatusCode statusCode) where TException : Exception {
+    var type = typeof (TException);
+    var item = new Tuple < HttpStatusCode ?, Func < Exception, HttpRequestMessage, HttpResponseMessage > > (statusCode, DefaultHandler);
+    if (! this.Handlers.TryAdd (type, item)) {
+        Tuple < HttpStatusCode ?, Func < Exception, HttpRequestMessage, HttpResponseMessage > > oldItem = null;
+        if (this.Handlers.TryRemove (type, out oldItem)) {
+            this.Handlers.TryAdd (type, item);
+        }
+    }
+    return this;
+}
+----------------------------------------
+
+public UnhandledExceptionFilterAttribute Register < TException > (Func < Exception, HttpRequestMessage, HttpResponseMessage > handler) where TException : Exception {
+    if (handler == null) {
+        throw new ArgumentNullException ("handler");
+    }
+    var type = typeof (TException);
+    var item = new Tuple < HttpStatusCode ?, Func < Exception, HttpRequestMessage, HttpResponseMessage > > (null, handler);
+    if (! this.Handlers.TryAdd (type, item)) {
+        Tuple < HttpStatusCode ?, Func < Exception, HttpRequestMessage, HttpResponseMessage > > oldItem = null;
+        if (this.Handlers.TryRemove (type, out oldItem)) {
+            this.Handlers.TryAdd (type, item);
+        }
+    }
+    return this;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+12522870_12524017_1_25
+12522870_12531854_3_40
+Title: Catch exception thrown in foreach condition 
+----------------------------------------
+
+public IEnumerable < T > TryForEach < T > (IEnumerable < T > list, Action executeCatch) {
+    if (list == null) {
+        executeCatch ();
+    }
+    IEnumerator < T > enumerator = list.GetEnumerator ();
+    bool success = false;
+    do
+        {
+            try {
+                success = enumerator.MoveNext ();
+            }
+            catch {
+                executeCatch ();
+                success = false;
+            }
+            if (success) {
+                T item = enumerator.Current;
+                yield return item;
+            }
+        } while (success);
+}
+----------------------------------------
+
+public static IEnumerable < T > TryForEach < T > (this IEnumerable < T > sequence, Action < Exception > handler) {
+    if (sequence == null) {
+        throw new ArgumentNullException ("sequence");
+    }
+    if (handler == null) {
+        throw new ArgumentNullException ("handler");
+    }
+    var mover = sequence.GetEnumerator ();
+    bool more;
+    try {
+        more = mover.MoveNext ();
+    }
+    catch (Exception e) {
+        handler (e);
+        yield break;
+    }
+    while (more) {
+        yield return mover.Current;
+        try {
+            more = mover.MoveNext ();
+        }
+        catch (Exception e) {
+            handler (e);
+            yield break;
+        }
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+12530410_12530530_1_14
+12530410_12532204_13_27
+Title: Selecting 3 identical items from list 
+----------------------------------------
+
+public static bool ContainsNTimes < T > (this IEnumerable < T > sequence, T element, int duplicateCount) {
+    if (element == null)
+        throw new ArgumentNullException ("element");
+
+    if (! sequence.Any ())
+        throw new ArgumentException ("Sequence must contain elements", "sequence");
+
+    if (duplicateCount < 1)
+        throw new ArgumentException ("DuplicateCount must be greater 0", "duplicateCount");
+
+    bool containsNTimes = sequence.Where (i = > i.Equals (element)).Take (duplicateCount).Count () == duplicateCount;
+    return containsNTimes;
+}
+----------------------------------------
+
+static IEnumerable < T > FirstRepeatedTimesImpl < T > (this IEnumerable < T > sequence, int threshold) {
+    var map = new Dictionary < T, int > ();
+    foreach (var e in sequence) {
+        if (! map.ContainsKey (e))
+            map.Add (e, 0);
+
+        if (map [e] + 1 == threshold) {
+            yield return e;
+            yield break;
+        }
+        map [e] = map [e] + 1;
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+12530410_12530530_1_14
+12530410_12532204_3_11
+Title: Selecting 3 identical items from list 
+----------------------------------------
+
+public static bool ContainsNTimes < T > (this IEnumerable < T > sequence, T element, int duplicateCount) {
+    if (element == null)
+        throw new ArgumentNullException ("element");
+
+    if (! sequence.Any ())
+        throw new ArgumentException ("Sequence must contain elements", "sequence");
+
+    if (duplicateCount < 1)
+        throw new ArgumentException ("DuplicateCount must be greater 0", "duplicateCount");
+
+    bool containsNTimes = sequence.Where (i = > i.Equals (element)).Take (duplicateCount).Count () == duplicateCount;
+    return containsNTimes;
+}
+----------------------------------------
+
+public static IEnumerable < T > FirstRepeatedTimes < T > (this IEnumerable < T > sequence, int threshold) {
+    if (! sequence.Any ())
+        throw new ArgumentException ("Sequence must contain elements", "sequence");
+
+    if (threshold < 2)
+        throw new ArgumentException ("DuplicateCount must be greater than 1", "threshold");
+
+    return FirstRepeatedTimesImpl (sequence, threshold);
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+12530410_12532204_13_27
+12530410_12532204_3_11
+Title: Selecting 3 identical items from list 
+----------------------------------------
+
+static IEnumerable < T > FirstRepeatedTimesImpl < T > (this IEnumerable < T > sequence, int threshold) {
+    var map = new Dictionary < T, int > ();
+    foreach (var e in sequence) {
+        if (! map.ContainsKey (e))
+            map.Add (e, 0);
+
+        if (map [e] + 1 == threshold) {
+            yield return e;
+            yield break;
+        }
+        map [e] = map [e] + 1;
+    }
+}
+----------------------------------------
+
+public static IEnumerable < T > FirstRepeatedTimes < T > (this IEnumerable < T > sequence, int threshold) {
+    if (! sequence.Any ())
+        throw new ArgumentException ("Sequence must contain elements", "sequence");
+
+    if (threshold < 2)
+        throw new ArgumentException ("DuplicateCount must be greater than 1", "threshold");
+
+    return FirstRepeatedTimesImpl (sequence, threshold);
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+12537676_12542091_3_30
+12537676_12542130_1_23
+Title: MVC Model.IsValid for enumerations 
+----------------------------------------
+
+public static SelectList ToSelectList < TEnum > (this TEnum enumObj) {
+    var enumType = typeof (TEnum);
+    if (enumType.IsGenericType && enumType.GetGenericTypeDefinition () == typeof (Nullable < >)) {
+        enumType = enumType.GetGenericArguments () [0];
+    }
+    var fields = enumType.GetFields (BindingFlags.Static | BindingFlags.GetField | BindingFlags.Public);
+    var values = Enum.GetValues (enumType).OfType < TEnum > ();
+    var items = from value in values
+        from field in fields
+        let xmlEnumAttribute = field.GetCustomAttributes (typeof (XmlEnumAttribute), true).OfType < XmlEnumAttribute > ().FirstOrDefault ()
+        let name = (xmlEnumAttribute != null) ? xmlEnumAttribute.Name : value.ToString ()
+        where value.ToString () == field.Name
+        select new {Id = value, Name = name};
+    return new SelectList (items, "Id", "Name", enumObj);
+}
+----------------------------------------
+
+public static MvcHtmlString EnumDropDownListFor < TModel, TEnum > (this HtmlHelper < TModel > htmlHelper, Expression < Func < TModel, TEnum > > expression, object htmlAttributes, string selectItem) {
+    ModelMetadata metadata = ModelMetadata.FromLambdaExpression (expression, htmlHelper.ViewData);
+    Type enumType = GetNonNullableModelType (metadata);
+    IEnumerable < TEnum > values = Enum.GetValues (enumType).Cast < TEnum > ();
+    IEnumerable < SelectListItem > items = from value in values
+        select new SelectListItem {Text = GetEnumDescription (value), Value = value.ToString (), Selected = value.Equals (metadata.Model)};
+    if (metadata.IsNullableValueType)
+        items = SingleEmptyItem.Concat (items);
+
+    if (! string.IsNullOrEmpty (selectItem))
+        return htmlHelper.DropDownListFor (expression, items, selectItem, htmlAttributes);
+
+    return htmlHelper.DropDownListFor (expression, items, htmlAttributes);
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+12540457_12542836_27_38
+12540457_19044567_1_14
+Title: Moving an item up and down in a WPF list box 
+----------------------------------------
+
+private void down_click (object sender, RoutedEventArgs e) {
+    var selectedIndex = this.lbItems.SelectedIndex;
+    if (selectedIndex + 1 < this.ListItems.Count) {
+        var itemToMoveDown = this.ListItems [selectedIndex];
+        this.ListItems.RemoveAt (selectedIndex);
+        this.ListItems.Insert (selectedIndex + 1, itemToMoveDown);
+        this.lbItems.SelectedIndex = selectedIndex + 1;
+    }
+}
+----------------------------------------
+
+private void down_click (object sender, RoutedEventArgs e) {
+    if (this.lbItems.SelectedIndex != - 1) {
+        var selectedIndex = this.lbItems.SelectedIndex;
+        if (selectedIndex + 1 < this.ListItems.Count) {
+            var itemToMoveDown = this.ListItems [selectedIndex];
+            this.ListItems.RemoveAt (selectedIndex);
+            this.ListItems.Insert (selectedIndex + 1, itemToMoveDown);
+            this.lbItems.SelectedIndex = selectedIndex + 1;
+        }
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+1254995_1255107_1_13
+1254995_1255434_1_63
+Title: Thread-safe memoization 
+----------------------------------------
+
+public static Func < A, R > Memoize < A, R > (this Func < A, R > f) {
+    var map = new ConcurrentDictionary < A, Lazy < R > > ();
+    return a = > {
+        Lazy < R > lazy = new Lazy < R > (() = > f (a), LazyExecutionMode.EnsureSingleThreadSafeExecution);
+        if (! map.TryAdd (a, lazy)) {
+            return map [a].Value;
+        }
+        return lazy.Value;
+    };
+}
+----------------------------------------
+
+public static Func < A, R > Memoize < A, R > (this Func < A, R > f) {
+    var map = new Dictionary < A, R > ();
+    var mapSync = new Dictionary < A, object > ();
+    return a = > {
+        R value;
+        object sync = null;
+        bool calc = false;
+        bool wait = false;
+        lock (map)
+        {
+            if (! map.TryGetValue (a, out value)) {
+                if (! mapSync.TryGetValue (a, out sync)) {
+                    sync = new object ();
+                    mapSync [a] = sync;
+                    calc = true;
+                } else {
+                    calc = false;
+                    wait = true;
+                }
+            }
+        } if (calc) {
+            lock (sync)
+            {
+                value = f (a);
+                lock (map)
+                {
+                    map.Add (a, value);
+                    mapSync.Remove (a);
+                } Monitor.PulseAll (sync);
+                return value;
+            }} else if (wait) {
+            lock (sync)
+            {
+                while (! map.TryGetValue (a, out value)) {
+                    Monitor.Wait (sync);
+                }
+                return value;
+            }}
+        lock (map)
+        {
+            return map [a];
+        }};
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+12607356_12607406_1_20
+12607356_12607414_1_20
+Title: How to cast object type based on parameter? 
+----------------------------------------
+
+public static T GetDataFromFile < T > (string path) where T : class {
+    if (! File.Exists (path)) {
+        return null;
+    }
+    try {
+        System.Xml.Serialization.XmlSerializer x = new System.Xml.Serialization.XmlSerializer (typeof (T));
+        StreamReader tempReader = new StreamReader (path);
+        T result = (T) x.Deserialize (tempReader);
+        tempReader.Close ();
+        return result;
+    }
+    catch {
+        return null;
+    }
+}
+----------------------------------------
+
+public static T GetDataFromFile < T > (string path) where T : class {
+    if (! File.Exists (path)) {
+        return null;
+    }
+    try {
+        System.Xml.Serialization.XmlSerializer x = new System.Xml.Serialization.XmlSerializer (typeof (T));
+        using (StreamReader tempReader = new StreamReader (path))
+        {
+            return (T) x.Deserialize (tempReader);
+        }}
+    catch {
+        return null;
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+12611814_12612064_1_30
+12611814_12629280_1_40
+Title: How to trigger an event when a variable gets the same value in a specified timeframe? 
+----------------------------------------
+
+static void barreader_method () {
+    barreader.OpenPort (barport, 19200);
+    byte TagType;
+    byte [] TagSerial = new byte [4];
+    byte ReturnCode = 0;
+    string bartagno;
+    string previousbartango;
+    var lastTimeCalled = DateTime.MinValue;
+    while (true) {
+        bartagno = "";
+        while (! barreader.CMD_SelectTag (out TagType, out TagSerial, out ReturnCode)) {
+        }
+        for (int i = 0; i < 4; i ++) {
+            bartagno += TagSerial [i].ToString ("X2");
+        }
+        var spanSinceLastCalled = DateTime.Now - lastTimeCalled;
+        if (spanSinceLastCalled > TimeSpan.FromMinutes (1) || bartango != previousbartango) {
+            barprocess (bartagno);
+            previousbartango = bartango;
+            lastTimeCalled = DateTime.Now;
+        }
+        Thread.Sleep (1200);
+    }
+}
+----------------------------------------
+
+static void barreader_method () {
+    barreader.OpenPort (barport, 19200);
+    byte TagType;
+    byte [] TagSerial = new byte [4];
+    byte ReturnCode = 0;
+    string bartagno;
+    List < Tuple < DateTime, String > > previoustags = new List < Tuple < DateTime, String > > ();
+    DateTime lastreaddt = DateTime.MinValue;
+    while (true) {
+        bartagno = "";
+        while (! barreader.CMD_SelectTag (out TagType, out TagSerial, out ReturnCode)) {
+        }
+        for (int i = 0; i < 4; i ++) {
+            bartagno += TagSerial [i].ToString ("X2");
+        }
+        if (DateTime.Now - lastreaddt > TimeSpan.FromMinutes (1)) {
+            previoustags.Clear ();
+            barprocess (bartagno);
+            previoustags.Add (Tuple.Create (DateTime.Now, bartagno));
+            lastreaddt = DateTime.Now;
+        } else {
+            if (! previoustags.Exists (a = > a.Item2.Equals (bartagno))) {
+                barprocess (bartagno);
+                previoustags.Add (Tuple.Create (DateTime.Now, bartagno));
+                lastreaddt = DateTime.Now;
+            }
+        }
+        previoustags.RemoveAll (a = > a.Item1.CompareTo (DateTime.Now - TimeSpan.FromMinutes (1)) < 0);
+        Thread.Sleep (1200);
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+12618140_12618174_1_20
+12618140_12618231_1_20
+Title: How can I interrogate an SqlDataReader object for containing data? 
+----------------------------------------
+
+public static bool login (SchoolBAL bal) {
+    bool isFound = false;
+    using (SqlConnection con = DBConnection.OpenConnection ())
+    {
+        using (SqlCommand cmd1 = new SqlCommand ("login", con))
+        {
+            cmd1.CommandType = CommandType.StoredProcedure;
+            cmd1.Parameters.AddWithValue ("@username", bal.UserName);
+            cmd1.Parameters.AddWithValue ("@password", bal.Password);
+            con.Open ();
+            SqlDataReader dr = cmd1.ExecuteReader ();
+            if (dr.Read ())
+                isFound = true;
+
+            dr.Close ();
+            con.Close ();
+        }} return isFound;
+}
+----------------------------------------
+
+public static int login (SchoolBAL bal) {
+    SqlConnection con = DBConnection.OpenConnection ();
+    try {
+        int i;
+        SqlCommand cmd1 = new SqlCommand ("login", con);
+        cmd1.CommandType = CommandType.StoredProcedure;
+        cmd1.Parameters.AddWithValue ("@username", bal.UserName);
+        cmd1.Parameters.AddWithValue ("@password", bal.Password);
+        i = cmd1.ExecuteScalar ();
+        return i;
+    }
+    catch (Exception) {
+        throw;
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+12620260_12620349_1_13
+12620260_12620355_1_15
+Title: recursive function in collection 
+----------------------------------------
+
+public static void GetNodes (Node node, List < Node > output) {
+    if (node == null)
+        return;
+
+    output.Add (node);
+    Console.WriteLine (node.Name);
+    foreach (var n in node.Nodes) {
+        GetNodes (n, output);
+    }
+}
+----------------------------------------
+
+public static IEnumerable < Node > GetNodes (Node node) {
+    if (node == null) {
+        yield break;
+    }
+    yield return node;
+    foreach (var n in node.Nodes) {
+        foreach (var innerN in GetNodes (n)) {
+            yield return innerN;
+        }
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+12623548_12624209_1_17
+12623548_12624526_18_31
+Title: "C# UTF8 Decoding returning bytes/numbers instead of string" 
+----------------------------------------
+
+public static String Decode (string Path) {
+    String text;
+    using (StreamReader sr = new StreamReader (Path))
+    {
+        text = st.ReadToEnd ();
+        byte [] bytes = Convert.FromBase64String (text);
+        System.Text.UTF8Encoding encoder = new System.Text.UTF8Encoding ();
+        System.Text.Decoder decoder = encoder.GetDecoder ();
+        int count = decoder.GetCharCount (bytes, 0, bytes.Length);
+        char [] arr = new char [count];
+        decoder.GetChars (bytes, 0, bytes.Length, arr, 0);
+        text = new string (arr);
+        return text;
+    }}
+----------------------------------------
+
+public static void Decode (string path) {
+    var data = new List < byte > ();
+    using (var sr = new StreamReader (path))
+    {
+        string line;
+        while ((line = sr.ReadLine ()) != null)
+            data.Add (Byte.Parse (line));
+
+    } using (var sw = new StreamWriter (path))
+    {
+        sw.Write (Encoding.UTF8.GetString (data.ToArray ()));
+    }}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+12631114_12631304_11_17
+12631114_12631304_2_8
+Title: Making List<MyItem> objects Equal? 
+----------------------------------------
+
+public bool Equals (MyObject other) {
+    if (ReferenceEquals (null, other))
+        return false;
+
+    if (ReferenceEquals (this, other))
+        return true;
+
+    return other.listItems.Count == listItems.Count && listItems.Select ((l, i) = > other.listItems.Contains (l)).All (b = > b);
+}
+----------------------------------------
+
+public bool Equals (MyObject other) {
+    if (ReferenceEquals (null, other))
+        return false;
+
+    if (ReferenceEquals (this, other))
+        return true;
+
+    return other.listItems.Count == listItems.Count && listItems.Select ((l, i) = > other.listItems [i] == l).All (b = > b);
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+12635774_12636280_17_33
+12635774_12639819_4_17
+Title: """Promote"" generic type to Nullable in C#?" 
+----------------------------------------
+
+private static bool TryFetchValue < T > (string name, out T value) {
+    var page = HttpContext.Current.Handler as Page;
+    string str = page.Request.QueryString [name];
+    if (str == null) {
+        value = default (T);
+        return false;
+    }
+    value = (T) Convert.ChangeType (str, typeof (T));
+    return true;
+}
+----------------------------------------
+
+private static T FetchValue < T > (this Page page, string name, object defaultValue) {
+    string str = page.Request.QueryString [name];
+    if (string.IsNullOrEmpty (str)) {
+        if (defaultValue != null)
+            return (T) defaultValue;
+
+        throw new HttpRequestValidationException ("A " + name + " must be specified.");
+    }
+    return (T) Convert.ChangeType (str, typeof (T));
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+12668163_33166611_40_86
+12668163_33166611_88_103
+Title: Convert all DateTime fields in a complex object from local time zone to UTC 
+----------------------------------------
+
+private static void DeepConvert < TInput > (this TInput obj, TimeZoneInfo sourceTimeZone, TimeZoneInfo destTimeZone) where TInput : class {
+    if (obj == null) {
+        return;
+    }
+    var items = obj as ICollection;
+    if (items != null) {
+        foreach (var item in items) {
+            item.DeepConvert (sourceTimeZone, destTimeZone);
+        }
+        return;
+    }
+    var props = obj.GetType ().GetProperties ();
+    foreach (var prop in props.Where (prop = > ! IsIgnore (prop))) {
+        if (prop.PropertyType == typeof (DateTime) || prop.PropertyType == typeof (DateTime ?)) {
+            prop.ConvertDateTime (obj, sourceTimeZone, destTimeZone);
+            continue;
+        }
+        var value = prop.GetValue (obj);
+        var list = value as ICollection;
+        if (list != null) {
+            foreach (var item in list) {
+                item.DeepConvert (sourceTimeZone, destTimeZone);
+            }
+            continue;
+        }
+        if (prop.PropertyType.Assembly.FullName.StartsWith ("Should be your namespace")) {
+            value.DeepConvert (sourceTimeZone, destTimeZone);
+        }
+    }
+}
+----------------------------------------
+
+private static void ConvertDateTime < TInput > (this PropertyInfo prop, TInput obj, TimeZoneInfo sourceTimeZone, TimeZoneInfo destTimeZone) where TInput : class {
+    var value = prop.GetValue (obj);
+    if (value != null) {
+        var dateTime = DateTime.SpecifyKind ((DateTime) value, DateTimeKind.Unspecified);
+        value = TimeZoneInfo.ConvertTime (dateTime, sourceTimeZone, destTimeZone);
+        var setMethod = prop.SetMethod;
+        if (setMethod != null) {
+            setMethod.Invoke (obj, new [] {value});
+        }
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+1269967_1269972_1_22
+1269967_1269972_24_45
+Title: Feeding an object literal to ILGenerator 
+----------------------------------------
+
+private static Func < object, object > BuildAccessor (MethodInfo method) {
+    DynamicMethod dm = new DynamicMethod (method.DeclaringType.Name + method.Name + "MethodAccessor", typeof (object), new Type [] {typeof (object)}, method.DeclaringType);
+    var gen = dm.GetILGenerator ();
+    if (! method.IsStatic) {
+        gen.Emit (System.Reflection.Emit.OpCodes.Ldarg_0);
+        gen.Emit (System.Reflection.Emit.OpCodes.Castclass, method.DeclaringType);
+    }
+    if (method.IsVirtual && ! method.IsFinal)
+        gen.EmitCall (System.Reflection.Emit.OpCodes.Callvirt, method, null);
+    else
+        gen.EmitCall (System.Reflection.Emit.OpCodes.Call, method, null);
+
+    if (method.ReturnType.IsValueType)
+        gen.Emit (System.Reflection.Emit.OpCodes.Box, method.ReturnType);
+
+    gen.Emit (System.Reflection.Emit.OpCodes.Ret);
+    return (Func < object, object >) dm.CreateDelegate (typeof (Func < object, object >));
+}
+----------------------------------------
+
+private static Func < object, object > BuildAccessor (FieldInfo field) {
+    DynamicMethod dm = new DynamicMethod (field.DeclaringType.Name + field.Name + "FieldAccessor", typeof (object), new Type [] {typeof (object)}, field.DeclaringType);
+    var gen = dm.GetILGenerator ();
+    if (field.IsStatic) {
+        gen.Emit (System.Reflection.Emit.OpCodes.Ldsfld, field);
+    } else {
+        gen.Emit (System.Reflection.Emit.OpCodes.Ldarg_0);
+        gen.Emit (System.Reflection.Emit.OpCodes.Castclass, field.DeclaringType);
+        gen.Emit (System.Reflection.Emit.OpCodes.Ldfld, field);
+    }
+    if (field.FieldType.IsValueType)
+        gen.Emit (System.Reflection.Emit.OpCodes.Box, field.FieldType);
+
+    gen.Emit (System.Reflection.Emit.OpCodes.Ret);
+    return (Func < object, object >) dm.CreateDelegate (typeof (Func < object, object >));
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+12703945_12704016_1_11
+12703945_37590953_6_23
+Title: How to compare sequence of two string array 
+----------------------------------------
+
+public static bool IsSequenceEqual (string [] a, string [] b) {
+    if (a.Length != b.Length)
+        return false;
+
+    for (int i = 0; i < a.Length; i ++) {
+        if (a [i] != b [i])
+            return false;
+
+    }
+    return true;
+}
+----------------------------------------
+
+bool IsSequenceEqual (string [] a, string [] b) {
+    if (a == null && b == null)
+        return true;
+
+    if (a == null || b == null)
+        return false;
+
+    if (a.Length != b.Length)
+        return false;
+
+    for (int i = 0; i < a.Length; i ++) {
+        if (a [i] != b [i])
+            return false;
+
+    }
+    return true;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+12706680_12706970_1_22
+12706680_12707112_1_21
+Title: "Convert IEnumerable<T> to object[] C#" 
+----------------------------------------
+
+public object [,] ConvertListToObject < T > (IEnumerable < T > DataSource) {
+    int rows = DataSource.Count ();
+    PropertyInfo [] propertyInfos;
+    propertyInfos = typeof (T).GetProperties (BindingFlags.Public | BindingFlags.Instance);
+    int cols = propertyInfos.Length;
+    object [,] excelarray = new object [rows, cols];
+    int i = 0;
+    foreach (T data in DataSource) {
+        for (int j = 0; j < cols; j ++) {
+            excelarray [i, j] = propertyInfos [j].GetValue (data, null);
+        }
+        i ++;
+    }
+    return excelarray;
+}
+----------------------------------------
+
+public object [,] ConvertListToObject < T > (IEnumerable < T > dataSource) {
+    if (dataSource != null) {
+        var rows = dataSource.Count ();
+        var propertyInfos = typeof (T).GetProperties (BindingFlags.Public);
+        var cols = propertyInfos.Length;
+        var excelarray = new object [rows, cols];
+        var i = 0;
+        foreach (var data in dataSource) {
+            for (var j = 0; j < cols; j ++) {
+                excelarray [i, j] = propertyInfos [j].GetValue (data, null);
+            }
+            i ++;
+        }
+        return excelarray;
+    }
+    return new object [,] {};
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+12727143_12728298_53_66
+12727143_12728298_99_117
+Title: Need math library for operations over sequences/ranges 
+----------------------------------------
+
+internal static ContinuousRange ConstructFrom (IEnumerable < int > values) {
+    int [] sorted = values.ToArray ();
+    if (sorted.Length <= 1)
+        return null;
+
+    for (int i = 1; i < sorted.Length; i ++) {
+        if (sorted [i] - sorted [i - 1] != 1)
+            return null;
+
+    }
+    return new ContinuousRange (sorted.First (), sorted.Last ());
+}
+----------------------------------------
+
+internal static Range ConstructFrom (IEnumerable < int > values) {
+    if (values.Count () < 2)
+        return null;
+
+    var sorted = values.OrderBy (a = > a).ToArray ();
+    int step = sorted [1] - sorted [0];
+    for (int i = 2; i < sorted.Length; i ++) {
+        if (step != sorted [i] - sorted [i - 1])
+            return null;
+
+    }
+    return new PeriodicRange (sorted [0], step, sorted.Length - 1);
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+12733800_12734060_10_48
+12733800_12734118_10_44
+Title: String Manipulation 
+----------------------------------------
+
+static void Main (string [] args) {
+    string a = "A:001,002,003|B999|C:002,003";
+    StringBuilder b = new StringBuilder ();
+    IList < string > main = a.Split ('|');
+    foreach (var VARIABLE in main) {
+        if (VARIABLE.Contains (':')) {
+            string initial = VARIABLE.Substring (0, 1);
+            string getNumberString = VARIABLE.Substring (2, VARIABLE.Length - 2);
+            IList < string > numbers = getNumberString.Split (',');
+            foreach (var number in numbers) {
+                if (b.Length == 0)
+                    b.Append (initial + number);
+                else {
+                    b.Append ("|" + initial + number);
+                }
+            }
+        } else {
+            if (b.Length != 0) {
+                b.Append ("|");
+            }
+            b.Append (VARIABLE);
+        }
+    }
+    Console.WriteLine (b);
+    Console.ReadKey ();
+}
+----------------------------------------
+
+static void Main (string [] args) {
+    string A = "A:001,002,003|B999|C:002,003";
+    string output = "";
+    string [] parts = A.Split ('|');
+    foreach (string s in parts) {
+        string [] nameValue = s.Split (':');
+        if (nameValue.Length == 1) {
+            output += s + "|";
+        } else if (nameValue.Length > 1) {
+            string name = nameValue [0];
+            string [] values = nameValue [1].Split (',');
+            for (int i = 0; i < values.Length; i ++) {
+                output += (name + values [i] + "|");
+            }
+        }
+    }
+    if (output.Length > 0) {
+        output = output.Substring (0, output.Length - 1);
+    }
+    Console.WriteLine (output);
+    Console.Read ();
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+1274742_1277473_28_40
+1274742_1296944_29_69
+Title: 3D transformation WPF 
+----------------------------------------
+
+public void Init (Point3D firstPoint, Point3D secondPoint) {
+    var midPoint = firstPoint - secondPoint;
+    var size = new Size3D (10, 10, 10);
+    _models.Add (GetCube (GetSurfaceMaterial (Colors.Green), firstPoint, size));
+    _models.Add (GetCube (GetSurfaceMaterial (Colors.Green), secondPoint, size));
+    _models.Add (GetCylinder (GetSurfaceMaterial (Colors.Red), secondPoint, 2, midPoint.Z));
+    _models.ForEach (x = > mainViewport.Children.Add (x));
+    _timer = new Timer (10);
+    _timer.Elapsed += TimerElapsed;
+    _timer.Enabled = true;
+}
+----------------------------------------
+
+public void Init () {
+    _models.Add (CreateSphere (new Point3D (0, 0, 0), 0.1, 10, 10, Colors.AliceBlue));
+    _models.Add (CreateSphere (new Point3D (0, 0, 2), 0.1, 10, 10, Colors.AliceBlue));
+    _models.Add (CreateSphere (new Point3D (0, 0, - 2), 0.1, 10, 10, Colors.AliceBlue));
+    _models.Add (CreateSphere (new Point3D (0, 0, - 2), 0.1, 10, 10, Colors.AliceBlue));
+    _models.Add (GetCylinder (GetSurfaceMaterial (Colors.Red), new Point3D (0, 0, 0), 0.02, 2));
+    _models.Add (GetCylinder (GetSurfaceMaterial (Colors.Red), new Point3D (0, 0, 0), 0.02, - 2));
+    _models.Add (GetCylinder (GetSurfaceMaterial (Colors.Green), new Point3D (0, 0, 0), 0.02, - 2));
+    _transform3DGroup = new Transform3DGroup ();
+    _models.ForEach (x = > x.Transform = _transform3DGroup);
+    _altTransform = new Transform3DGroup ();
+    _models [3].Transform = _altTransform;
+    _models [6].Transform = _altTransform;
+    var rotateTransform3D = new RotateTransform3D {CenterX = 0, CenterZ = 0};
+    _axisAngleRotation3D = new AxisAngleRotation3D {Axis = new Vector3D (1, 1, 1), Angle = _angle};
+    rotateTransform3D.Rotation = _axisAngleRotation3D;
+    _transform3DGroup.Children.Add (rotateTransform3D);
+    _altTransform.Children.Add (rotateTransform3D);
+    var altRotate = new RotateTransform3D {CenterX = 0, CenterZ = 0};
+    var altAxis = new AxisAngleRotation3D {Axis = new Vector3D (0, 1, 1), Angle = 90};
+    altRotate.Rotation = altAxis;
+    _altTransform.Children.Add (altRotate);
+    _models.ForEach (x = > mainViewport.Children.Add (x));
+    _timer = new Timer (10);
+    _timer.Elapsed += TimerElapsed;
+    _timer.Enabled = true;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+1274742_1277473_49_58
+1274742_1296944_78_87
+Title: 3D transformation WPF 
+----------------------------------------
+
+public MaterialGroup GetSurfaceMaterial (Color colour) {
+    var materialGroup = new MaterialGroup ();
+    var emmMat = new EmissiveMaterial (new SolidColorBrush (colour));
+    materialGroup.Children.Add (emmMat);
+    materialGroup.Children.Add (new DiffuseMaterial (new SolidColorBrush (colour)));
+    var specMat = new SpecularMaterial (new SolidColorBrush (Colors.White), 30);
+    materialGroup.Children.Add (specMat);
+    return materialGroup;
+}
+----------------------------------------
+
+public MaterialGroup GetSurfaceMaterial (Color colour) {
+    var materialGroup = new MaterialGroup ();
+    var emmMat = new EmissiveMaterial (new SolidColorBrush (colour));
+    materialGroup.Children.Add (emmMat);
+    materialGroup.Children.Add (new DiffuseMaterial (new SolidColorBrush (colour)));
+    var specMat = new SpecularMaterial (new SolidColorBrush (Colors.White), 30);
+    materialGroup.Children.Add (specMat);
+    return materialGroup;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+12771647_12771881_14_21
+12771647_12771881_1_7
+Title: List Intersect and Concat 
+----------------------------------------
+
+public static bool Any < TSource > (this IEnumerable < TSource > source, Func < TSource, bool > predicate) {
+    if (source == null)
+        throw Error.ArgumentNull ("source");
+
+    if (predicate == null)
+        throw Error.ArgumentNull ("predicate");
+
+    foreach (TSource element in source) {
+        if (predicate (element))
+            return true;
+
+    }
+    return false;
+}
+----------------------------------------
+
+static IEnumerable < TSource > IntersectIterator < TSource > (IEnumerable < TSource > first, IEnumerable < TSource > second, IEqualityComparer < TSource > comparer) {
+    Set < TSource > set = new Set < TSource > (comparer);
+    foreach (TSource element in second)
+        set.Add (element);
+
+    foreach (TSource element in first)
+        if (set.Remove (element))
+            yield return element;
+
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+1280889_1280895_1_13
+1280889_1281561_1_15
+Title: How to specify parameter for generic list type extension method in c# 
+----------------------------------------
+
+public static void Shuffle < T > (this List < T > source) {
+    Random rnd = new Random ();
+    for (int i = 0; i < source.Count; i ++) {
+        int index = rnd.Next (0, source.Count);
+        T o = source [0];
+        source.RemoveAt (0);
+        source.Insert (index, o);
+    }
+}
+----------------------------------------
+
+public static void ShuffleInPlace < T > (this IList < T > source) {
+    if (source == null)
+        throw new ArgumentNullException ("source");
+
+    var rng = new Random ();
+    for (int i = 0; i < source.Count - 1; i ++) {
+        int j = rng.Next (i, source.Count);
+        T temp = source [j];
+        source [j] = source [i];
+        source [i] = temp;
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+12817758_12817845_1_16
+12817758_12818025_1_16
+Title: Sorting of data in Dropdown 
+----------------------------------------
+
+public DetaView GetAllStudentNameFromMentor (Guid MentorId) {
+    DataTable AllStudents = new DataTable ();
+    AllStudents.Columns.Add ("StudentID", typeof (Guid));
+    AllStudents.Columns.Add ("studentName", typeof (string));
+    var allm = from sm in Db.StudentMentor
+        where sm.MentorID.Equals (MentorId)
+        select sm;
+    foreach (var v in allm) {
+        string studentname = BussinesCollection.BussinesPerson.GetFullName (v.StudentID.Value);
+        AllStudents.Rows.Add (v.StudentID, studentname);
+    }
+    AllStudents.DefaultView.Sort = "studentName ASC";
+    return AllStudents.DefaultView;
+}
+----------------------------------------
+
+public Dictionary < Guid, string > GetAllStudentNameFromMentor (Guid MentorId) {
+    Dictionary < Guid, string > myDic = new Dictionary < Guid, string > ();
+    var allm = from sm in Db.StudentMentor
+        where sm.MentorID.Equals (MentorId)
+        select sm;
+    foreach (var v in allm) {
+        myDic.Add (v.StudentID, BussinesCollection.BussinesPerson.GetFullName (v.StudentID.Value));
+    }
+    return myDic.OrderBy (x = > x.Value).ToDictionary (x = > x.Key, x = > x.Value);
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+12819728_12819976_8_23
+12819728_46260257_8_42
+Title: Leaving a Database Connection Open? 
+----------------------------------------
+
+public void ExecuteNonQuery (string query) {
+    try {
+        _cn.Open ();
+        var cmd = _cn.CreateCommand ();
+        cmd.CommandText = query;
+        cmd.ExecuteNonQuery ();
+    }
+    catch (ExpectedExceptions) {
+    }
+    finally {
+        _cn.Close ();
+    }
+}
+----------------------------------------
+
+public void ExecuteNonQuery (string query) {
+    using (SqliteCommand cmd = new SqliteCommand {Connection = _cn})
+    {
+        if (_cn.State == ConnectionState.Open)
+            _cn.Close ();
+
+        try {
+            _cn.Open ();
+        }
+        catch {
+        }
+        try {
+            cmd.CommandText = query;
+            cmd.ExecuteNonQuery ();
+        }
+        catch {
+        }
+        finally {
+            _cn.Close ();
+        }
+    }}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+12823422_12824522_1_15
+12823422_12863705_1_15
+Title: GridView HyperLink field in C# 
+----------------------------------------
+
+protected void GridView1_RowDataBound (object sender, GridViewRowEventArgs e) {
+    if (e.Row.RowType == DataControlRowType.DataRow) {
+        HyperLink hl = (HyperLink) e.Row.FindControl ("link");
+        if (hl != null) {
+            DataRowView drv = (DataRowView) e.Row.DataItem;
+            string keyword = drv ["Keyword"].ToString ();
+            string state = Request.QueryString ["State"];
+            string city = Request.QueryString ["City"];
+            hl.NavigateUrl = "~/KeywordSrchSumDtl.aspx?Keyword=" + keyword + "&State=" + Server.UrlEncode (state) + "&City=" + Server.UrlEncode (city);
+        }
+    }
+}
+----------------------------------------
+
+protected void GridView1_RowDataBound (object sender, GridViewRowEventArgs e) {
+    if (e.Row.RowType == DataControlRowType.DataRow) {
+        HyperLink hl = (HyperLink) e.Row.FindControl ("Link");
+        if (hl != null) {
+            DataRowView drv = (DataRowView) e.Row.DataItem;
+            string keyword = drv ["Keyword"].ToString ().Trim ();
+            string state = strState.ToString ().Trim ();
+            string city = strCity.ToString ().Trim ();
+            hl.NavigateUrl = "KeywordSrchSumDtl.aspx?Keyword=" + keyword + "&Geo=" + geo + "&Site=" + site;
+        }
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+1283125_1283152_1_15
+1283125_1283157_1_11
+Title: Using recursion to add odd numbers 
+----------------------------------------
+
+private Int32 CalcOdd (Int32 value) {
+    Int32 r = 0;
+    {
+        while (value >= 1) {
+            value --;
+            if (value % 2 != 0) {
+                r += value;
+            }
+        }
+    } return r;
+}
+----------------------------------------
+
+private static int CalcOdd (int n) {
+    if (n <= 1)
+        return 0;
+
+    if (n % 2 == 1)
+        n --;
+
+    int k = n / 2;
+    return k * k;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+1283125_1283152_1_15
+1283125_1283173_1_12
+Title: Using recursion to add odd numbers 
+----------------------------------------
+
+private Int32 CalcOdd (Int32 value) {
+    Int32 r = 0;
+    {
+        while (value >= 1) {
+            value --;
+            if (value % 2 != 0) {
+                r += value;
+            }
+        }
+    } return r;
+}
+----------------------------------------
+
+int CalcOdd (int n) {
+    n --;
+    if (n <= 1)
+        return 0;
+    else if (n % 2 == 0)
+        n --;
+
+    return n + CalcOdd (n);
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+1283125_1283157_1_11
+1283125_1283173_1_12
+Title: Using recursion to add odd numbers 
+----------------------------------------
+
+private static int CalcOdd (int n) {
+    if (n <= 1)
+        return 0;
+
+    if (n % 2 == 1)
+        n --;
+
+    int k = n / 2;
+    return k * k;
+}
+----------------------------------------
+
+int CalcOdd (int n) {
+    n --;
+    if (n <= 1)
+        return 0;
+    else if (n % 2 == 0)
+        n --;
+
+    return n + CalcOdd (n);
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+1283125_1285691_10_19
+1283125_1285691_21_33
+Title: Using recursion to add odd numbers 
+----------------------------------------
+
+public IEnumerable < int > GetIterator (int n, bool isOdd, bool includeOriginal) {
+    if (includeOriginal)
+        n ++;
+
+    if (isOdd)
+        return GetIterator (n, 1);
+    else
+        return GetIterator (n, 0);
+
+}
+----------------------------------------
+
+public IEnumerable < int > GetIterator (int n, int odd) {
+    n --;
+    if (n < 0)
+        yield break;
+
+    if (n % 2 == odd)
+        yield return n;
+
+    foreach (int i in GetIterator (n, odd))
+        yield return i;
+
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+12852494_12884992_19_34
+12852494_45111122_33_53
+Title: Best way to update cmdlet progress from a separate thread 
+----------------------------------------
+
+public void Listen () {
+    ProgressRecord progress = new ProgressRecord (1, "Counting to 100", " ");
+    while (! Finished || Queue.Count > 0) {
+        while (Queue.Count > 0) {
+            progress.PercentComplete = ++ Count * 100 / Total;
+            progress.StatusDescription = Count + "/" + Total;
+            Cmdlet.WriteObject (Queue.Dequeue ());
+            Cmdlet.WriteProgress (progress);
+        }
+        Thread.Sleep (100);
+    }
+}
+----------------------------------------
+
+public void Listen () {
+    ProgressRecord progress = new ProgressRecord (1, "Counting to 100", " ");
+    while (! Finished) {
+        while (true) {
+            object item;
+            lock (LockToken)
+            {
+                if (Queue.Count == 0)
+                    break;
+
+                item = Queue.Dequeue ();
+            } progress.PercentComplete = ++ Count * 100 / Total;
+            progress.StatusDescription = Count + "/" + Total;
+            Cmdlet.WriteObject (item);
+            Cmdlet.WriteProgress (progress);
+        }
+        sync.WaitOne ();
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+12864120_12864698_105_116
+12864120_12864698_118_139
+Title: Need to hard-code a password 
+----------------------------------------
+
+public static string encryptString (string Value, string PassPhrase, Encoding PassPhraseEncoding, Encoding inputEncoding, stringIOType outputType) {
+    try {
+        Monitor.Enter (_lock);
+        return encryptString (Value, getKeyFromPassPhrase (PassPhrase, PassPhraseEncoding), getIVFromPassPhrase (PassPhrase, PassPhraseEncoding), inputEncoding, outputType);
+    }
+    finally {
+        Monitor.Exit (_lock);
+    }
+}
+----------------------------------------
+
+public static string encryptString (string Value, byte [] Key, byte [] IV, Encoding inputEncoding, stringIOType outputType) {
+    try {
+        Monitor.Enter (_lock);
+        byte [] baseValue = (byte []) Array.CreateInstance (typeof (byte), inputEncoding.GetByteCount (Value));
+        baseValue = inputEncoding.GetBytes (Value);
+        switch (outputType) {
+            case stringIOType.base64EncodedString :
+                return Convert.ToBase64String (encryptBytes (baseValue, Key, IV));
+            case stringIOType.HexEncodedString :
+                return ByteArrayToHexString (encryptBytes (baseValue, Key, IV));
+            default :
+                return Convert.ToBase64String (encryptBytes (baseValue, Key, IV));
+        }
+    }
+    finally {
+        Monitor.Exit (_lock);
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+12864120_12864698_143_154
+12864120_12864698_156_214
+Title: Need to hard-code a password 
+----------------------------------------
+
+public static byte [] decryptBytes (byte [] Value, string PassPhrase, Encoding PassPhraseEncoding) {
+    try {
+        Monitor.Enter (_lock);
+        return decryptBytes (Value, getKeyFromPassPhrase (PassPhrase, PassPhraseEncoding), getIVFromPassPhrase (PassPhrase, PassPhraseEncoding));
+    }
+    finally {
+        Monitor.Exit (_lock);
+    }
+}
+----------------------------------------
+
+public static byte [] decryptBytes (byte [] Value, byte [] Key, byte [] IV) {
+    try {
+        Monitor.Enter (_lock);
+        thisCSP = new RijndaelManaged ();
+        thisCSP.KeySize = KeySize;
+        Int32 bitLength = Key.Length * 8;
+        if (bitLength != thisCSP.KeySize) {
+            throw new ArgumentException ("The supplied key's length [" + bitLength.ToString () + " bits] is not a valid key size for the AES-256 algorithm.", "Key");
+        }
+        bitLength = IV.Length * 8;
+        if (bitLength != thisCSP.BlockSize) {
+            throw new ArgumentException ("The supplied IV's length [" + bitLength.ToString () + " bits] is not a valid IV size for the AES-256 algorithm.", "IV");
+        }
+        try {
+            byte [] Decrypted;
+            ICryptoTransform Decryptor = thisCSP.CreateDecryptor (Key, IV);
+            msDecrypt = new MemoryStream (Value);
+            csDecrypt = new CryptoStream (msDecrypt, Decryptor, CryptoStreamMode.Read);
+            Decrypted = (byte []) Array.CreateInstance (typeof (byte), msDecrypt.Length);
+            csDecrypt.Read (Decrypted, 0, Decrypted.Length);
+            Decryptor.Dispose ();
+            Decryptor = null;
+            msDecrypt.Close ();
+            Int32 trimCount = 0;
+            for (Int32 i = Decrypted.Length - 1; i >= 0; i --) {
+                if (Decrypted [i] == 0) {
+                    trimCount ++;
+                } else {
+                    break;
+                }
+            }
+            if (trimCount > 0) {
+                byte [] buffer = (byte []) Array.CreateInstance (typeof (byte), Decrypted.Length - trimCount);
+                Array.ConstrainedCopy (Decrypted, 0, buffer, 0, buffer.Length);
+                Array.Clear (Decrypted, 0, Decrypted.Length);
+                Array.Resize < byte > (ref Decrypted, buffer.Length);
+                Array.Copy (buffer, Decrypted, buffer.Length);
+                buffer = null;
+            }
+            return Decrypted;
+        }
+        finally {
+            thisCSP = null;
+        }
+    }
+    finally {
+        Monitor.Exit (_lock);
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+12864120_12864698_216_227
+12864120_12864698_229_253
+Title: Need to hard-code a password 
+----------------------------------------
+
+public static string decryptString (string Value, string PassPhrase, Encoding PassPhraseEncoding, stringIOType inputType, Encoding outputEncoding) {
+    try {
+        Monitor.Enter (_lock);
+        return decryptString (Value, getKeyFromPassPhrase (PassPhrase, PassPhraseEncoding), getIVFromPassPhrase (PassPhrase, PassPhraseEncoding), inputType, outputEncoding);
+    }
+    finally {
+        Monitor.Exit (_lock);
+    }
+}
+----------------------------------------
+
+public static string decryptString (string Value, byte [] Key, byte [] IV, stringIOType inputType, Encoding outputEncoding) {
+    try {
+        Monitor.Enter (_lock);
+        byte [] baseValue;
+        switch (inputType) {
+            case stringIOType.base64EncodedString :
+                baseValue = Convert.FromBase64String (Value);
+                break;
+            case stringIOType.HexEncodedString :
+                baseValue = HexStringToByteArray (Value);
+                break;
+            default :
+                baseValue = Convert.FromBase64String (Value);
+                break;
+        }
+        return outputEncoding.GetString (decryptBytes (baseValue, Key, IV));
+    }
+    finally {
+        Monitor.Exit (_lock);
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+12864120_12864698_290_301
+12864120_12864698_303_317
+Title: Need to hard-code a password 
+----------------------------------------
+
+public static byte [] getDigest (string value, Encoding encoder, Int32 digestLength) {
+    Monitor.Enter (_lock);
+    try {
+        return getDigest (encoder.GetBytes (value), digestLength);
+    }
+    finally {
+        Monitor.Exit (_lock);
+    }
+}
+----------------------------------------
+
+public static byte [] getDigest (object value, Int32 digestLength) {
+    Monitor.Enter (_lock);
+    try {
+        BinaryFormatter bf = new BinaryFormatter ();
+        MemoryStream ms = new MemoryStream ();
+        bf.Serialize (ms, value);
+        return getDigest (ms.ToArray (), digestLength);
+    }
+    finally {
+        Monitor.Exit (_lock);
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+12864120_12864698_290_301
+12864120_12864698_319_339
+Title: Need to hard-code a password 
+----------------------------------------
+
+public static byte [] getDigest (string value, Encoding encoder, Int32 digestLength) {
+    Monitor.Enter (_lock);
+    try {
+        return getDigest (encoder.GetBytes (value), digestLength);
+    }
+    finally {
+        Monitor.Exit (_lock);
+    }
+}
+----------------------------------------
+
+public static byte [] getDigest (byte [] value, Int32 digestLength) {
+    Monitor.Enter (_lock);
+    try {
+        Int32 iterations = 0;
+        for (Int32 i = 0; i < value.Length; i ++) {
+            if (value [i] != 0) {
+                iterations = (Int32) (value [i] * 10);
+                break;
+            }
+        }
+        if (iterations == 0) {
+            iterations = (Int32) (byte.MaxValue * 10);
+        }
+        Rfc2898DeriveBytes deriveBytes = new Rfc2898DeriveBytes (value, new SHA256Managed ().ComputeHash (value), iterations);
+        return deriveBytes.GetBytes (digestLength);
+    }
+    finally {
+        Monitor.Exit (_lock);
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+12864120_12864698_303_317
+12864120_12864698_319_339
+Title: Need to hard-code a password 
+----------------------------------------
+
+public static byte [] getDigest (object value, Int32 digestLength) {
+    Monitor.Enter (_lock);
+    try {
+        BinaryFormatter bf = new BinaryFormatter ();
+        MemoryStream ms = new MemoryStream ();
+        bf.Serialize (ms, value);
+        return getDigest (ms.ToArray (), digestLength);
+    }
+    finally {
+        Monitor.Exit (_lock);
+    }
+}
+----------------------------------------
+
+public static byte [] getDigest (byte [] value, Int32 digestLength) {
+    Monitor.Enter (_lock);
+    try {
+        Int32 iterations = 0;
+        for (Int32 i = 0; i < value.Length; i ++) {
+            if (value [i] != 0) {
+                iterations = (Int32) (value [i] * 10);
+                break;
+            }
+        }
+        if (iterations == 0) {
+            iterations = (Int32) (byte.MaxValue * 10);
+        }
+        Rfc2898DeriveBytes deriveBytes = new Rfc2898DeriveBytes (value, new SHA256Managed ().ComputeHash (value), iterations);
+        return deriveBytes.GetBytes (digestLength);
+    }
+    finally {
+        Monitor.Exit (_lock);
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+12864120_12864698_54_65
+12864120_12864698_67_103
+Title: Need to hard-code a password 
+----------------------------------------
+
+public static byte [] encryptBytes (byte [] Value, string PassPhrase, Encoding PassPhraseEncoding) {
+    try {
+        Monitor.Enter (_lock);
+        return encryptBytes (Value, getKeyFromPassPhrase (PassPhrase, PassPhraseEncoding), getIVFromPassPhrase (PassPhrase, PassPhraseEncoding));
+    }
+    finally {
+        Monitor.Exit (_lock);
+    }
+}
+----------------------------------------
+
+public static byte [] encryptBytes (byte [] Value, byte [] Key, byte [] IV) {
+    try {
+        Monitor.Enter (_lock);
+        thisCSP = new RijndaelManaged ();
+        thisCSP.KeySize = KeySize;
+        Int32 bitLength = Key.Length * 8;
+        if (bitLength != thisCSP.KeySize) {
+            throw new ArgumentException ("The supplied key's length [" + bitLength.ToString () + " bits] is not a valid key size for the AES-256 algorithm.", "Key");
+        }
+        bitLength = IV.Length * 8;
+        if (bitLength != thisCSP.BlockSize) {
+            throw new ArgumentException ("The supplied IV's length [" + bitLength.ToString () + " bits] is not a valid IV size for the AES-256 algorithm.", "IV");
+        }
+        ICryptoTransform Encryptor = thisCSP.CreateEncryptor (Key, IV);
+        msEncrypt = new MemoryStream ();
+        csEncrypt = new CryptoStream (msEncrypt, Encryptor, CryptoStreamMode.Write);
+        csEncrypt.Write (Value, 0, Value.Length);
+        csEncrypt.FlushFinalBlock ();
+        Encryptor.Dispose ();
+        Encryptor = null;
+        msEncrypt.Close ();
+        return msEncrypt.ToArray ();
+    }
+    finally {
+        thisCSP = null;
+        Monitor.Exit (_lock);
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+1289013_1289445_1_25
+1289013_1289634_1_22
+Title: dynamic join based on where expression - linq/c# 
+----------------------------------------
+
+IQueryable < Committee > GetCommittees (int ? committeeID, int ? employeeID, int ? committeeTypeID) {
+    var result = db.Committees.Select (c = > c);
+    if (committeeID.HasValue) {
+        result = result.Where (c = > c.ID = committeeID);
+    } else if (employeeID.HasValue) {
+        result = from R in result
+            join C in db.Employees.Where (e = > employeeID == e.ID) on R.PID equals C.PID
+            select R;
+    } else if (committeeTypeID.HasValue) {
+        result = from R in result
+            join K in db.CommitteeTypes.Where (ct = > committeeTypeID == ct.ID) on R.PID equals K.PID
+            select R;
+    }
+    return result;
+}
+----------------------------------------
+
+IQueryable < Committee > GetCommittees (int ? committeeID, int ? employeeID, int ? committeeTypeID) {
+    IQueryable < Committee > result = db.Committees.AsQueryable ();
+    if (committeeID.HasValue) {
+        result = result.Where (c = > c.ID = committeeID);
+    }
+    if (employeeID.HasValue) {
+        result = result.Where (committee = > committee.Employees.Any (e = > employeeID == e.ID));
+    }
+    if (committeeTypeID.HasValue) {
+        result = result.Where (committee = > committee.CommitteeTypes.Any (ct = > committeeTypeID == ct.ID));
+    }
+    return result;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+1290621_1290666_1_10
+1290621_1290844_1_22
+Title: Optimize code so that it executes faster 
+----------------------------------------
+
+static void Main (string [] args) {
+    String a = "Hello ";
+    String b = " World! ";
+    StringBuilder result = new StringBuilder (a.Length + b.Length * 20000);
+    result.Append (a);
+    for (int i = 0; i < 20000; i ++) {
+        result.Append (b);
+    }
+    Console.WriteLine (result.ToString ());
+}
+----------------------------------------
+
+static void Main (string [] args) {
+    String a = "Hello ";
+    String b = " World! ";
+    int worldCount = 20000;
+    StringBuilder worldList = new StringBuilder (b.Length * worldCount);
+    worldList.append (b);
+    StringBuilder result = new StringBuilder (a.Length + b.Length * worldCount);
+    result.Append (a);
+    while (worldCount > 0) {
+        if ((worldCount & 0x1) > 0) {
+            result.Append (worldList);
+        }
+        worldCount > >= 1;
+        if (worldCount > 0) {
+            worldList.Append (worldList);
+        }
+    }
+    Console.WriteLine (result.ToString ());
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+1290621_1290666_1_10
+1290621_1291211_1_18
+Title: Optimize code so that it executes faster 
+----------------------------------------
+
+static void Main (string [] args) {
+    String a = "Hello ";
+    String b = " World! ";
+    StringBuilder result = new StringBuilder (a.Length + b.Length * 20000);
+    result.Append (a);
+    for (int i = 0; i < 20000; i ++) {
+        result.Append (b);
+    }
+    Console.WriteLine (result.ToString ());
+}
+----------------------------------------
+
+static void Main (string [] args) {
+    String a = "Hello ";
+    String b = " World! ";
+    System.IO.MemoryStream ms = new System.IO.MemoryStream (20000 * b.Length + a.Length);
+    System.IO.StreamWriter sw = new System.IO.StreamWriter (ms);
+    sw.Write (a);
+    for (int i = 0; i < 20000; i ++) {
+        sw.Write (b);
+    }
+    ms.Seek (0, System.IO.SeekOrigin.Begin);
+    System.IO.StreamReader sr = new System.IO.StreamReader (ms);
+    Console.WriteLine (sr.ReadToEnd ());
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+1290621_1290666_1_10
+1290621_1291365_1_15
+Title: Optimize code so that it executes faster 
+----------------------------------------
+
+static void Main (string [] args) {
+    String a = "Hello ";
+    String b = " World! ";
+    StringBuilder result = new StringBuilder (a.Length + b.Length * 20000);
+    result.Append (a);
+    for (int i = 0; i < 20000; i ++) {
+        result.Append (b);
+    }
+    Console.WriteLine (result.ToString ());
+}
+----------------------------------------
+
+static void Main (string [] args) {
+    String a = "Hello ";
+    String b = " World! ";
+    int it = 20000;
+    char [] result = new char [a.Length + it * b.Length];
+    a.ToCharArray ().CopyTo (result, 0);
+    for (int i = 0; i < it; i ++)
+        b.ToCharArray ().CopyTo (result, a.Length + i * b.Length);
+
+    Console.WriteLine (result);
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+1290621_1290844_1_22
+1290621_1291211_1_18
+Title: Optimize code so that it executes faster 
+----------------------------------------
+
+static void Main (string [] args) {
+    String a = "Hello ";
+    String b = " World! ";
+    int worldCount = 20000;
+    StringBuilder worldList = new StringBuilder (b.Length * worldCount);
+    worldList.append (b);
+    StringBuilder result = new StringBuilder (a.Length + b.Length * worldCount);
+    result.Append (a);
+    while (worldCount > 0) {
+        if ((worldCount & 0x1) > 0) {
+            result.Append (worldList);
+        }
+        worldCount > >= 1;
+        if (worldCount > 0) {
+            worldList.Append (worldList);
+        }
+    }
+    Console.WriteLine (result.ToString ());
+}
+----------------------------------------
+
+static void Main (string [] args) {
+    String a = "Hello ";
+    String b = " World! ";
+    System.IO.MemoryStream ms = new System.IO.MemoryStream (20000 * b.Length + a.Length);
+    System.IO.StreamWriter sw = new System.IO.StreamWriter (ms);
+    sw.Write (a);
+    for (int i = 0; i < 20000; i ++) {
+        sw.Write (b);
+    }
+    ms.Seek (0, System.IO.SeekOrigin.Begin);
+    System.IO.StreamReader sr = new System.IO.StreamReader (ms);
+    Console.WriteLine (sr.ReadToEnd ());
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+1290621_1290844_1_22
+1290621_1291365_1_15
+Title: Optimize code so that it executes faster 
+----------------------------------------
+
+static void Main (string [] args) {
+    String a = "Hello ";
+    String b = " World! ";
+    int worldCount = 20000;
+    StringBuilder worldList = new StringBuilder (b.Length * worldCount);
+    worldList.append (b);
+    StringBuilder result = new StringBuilder (a.Length + b.Length * worldCount);
+    result.Append (a);
+    while (worldCount > 0) {
+        if ((worldCount & 0x1) > 0) {
+            result.Append (worldList);
+        }
+        worldCount > >= 1;
+        if (worldCount > 0) {
+            worldList.Append (worldList);
+        }
+    }
+    Console.WriteLine (result.ToString ());
+}
+----------------------------------------
+
+static void Main (string [] args) {
+    String a = "Hello ";
+    String b = " World! ";
+    int it = 20000;
+    char [] result = new char [a.Length + it * b.Length];
+    a.ToCharArray ().CopyTo (result, 0);
+    for (int i = 0; i < it; i ++)
+        b.ToCharArray ().CopyTo (result, a.Length + i * b.Length);
+
+    Console.WriteLine (result);
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+1290621_1291211_1_18
+1290621_1291365_1_15
+Title: Optimize code so that it executes faster 
+----------------------------------------
+
+static void Main (string [] args) {
+    String a = "Hello ";
+    String b = " World! ";
+    System.IO.MemoryStream ms = new System.IO.MemoryStream (20000 * b.Length + a.Length);
+    System.IO.StreamWriter sw = new System.IO.StreamWriter (ms);
+    sw.Write (a);
+    for (int i = 0; i < 20000; i ++) {
+        sw.Write (b);
+    }
+    ms.Seek (0, System.IO.SeekOrigin.Begin);
+    System.IO.StreamReader sr = new System.IO.StreamReader (ms);
+    Console.WriteLine (sr.ReadToEnd ());
+}
+----------------------------------------
+
+static void Main (string [] args) {
+    String a = "Hello ";
+    String b = " World! ";
+    int it = 20000;
+    char [] result = new char [a.Length + it * b.Length];
+    a.ToCharArray ().CopyTo (result, 0);
+    for (int i = 0; i < it; i ++)
+        b.ToCharArray ().CopyTo (result, a.Length + i * b.Length);
+
+    Console.WriteLine (result);
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+12924892_12925066_1_22
+12924892_12925392_1_25
+Title: "Applying delimiters to a list of bytes in serial protocol replacing one byte with two" 
+----------------------------------------
+
+private List < byte > Finalize (List < byte > packet) {
+    int i = 1;
+    while (i < packet.Count - 1) {
+        if (packet [i] == 0x7D) {
+            packet [i] = 0x7D;
+            packet.Insert (i + 1, 0x5D);
+            i += 2;
+        } else if (packet [i] == 0x7E) {
+            packet [i] = 0x7D;
+            packet.Insert (i + 1, 0x5E);
+            i += 2;
+        } else
+            i ++;
+
+    }
+    return packet;
+}
+----------------------------------------
+
+public static IEnumerable < byte > Finalize (this IList < byte > packet) {
+    yield return 0x7E;
+    for (int i = 1; i < packet.Count - 1; i ++) {
+        if (packet [i] == 0x7E) {
+            yield return 0x7D;
+            yield return 0x5E;
+            continue;
+        }
+        if (packet [i] == 0x7D) {
+            yield return 0x7D;
+            yield return 0x5D;
+            continue;
+        }
+        yield return packet [i];
+    }
+    yield return 0x7E;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+1292490_10805153_10_21
+1292490_1292523_6_30
+Title: converting .txt files into unicode 
+----------------------------------------
+
+static void Main (string [] args) {
+    using (StreamReader sr = new StreamReader (args [0], Encoding.UTF8))
+    using (StreamWriter sw = new StreamWriter (args [1], false, Encoding.Unicode))
+    {
+        string line;
+        while ((line = sr.ReadLine ()) != null) {
+            sw.WriteLine (line);
+        }
+    }}
+----------------------------------------
+
+public static void Main () {
+    using (StreamWriter output = new StreamWriter ("practice.txt"))
+    {
+        string srcString = "Area = \u03A0r^2";
+        byte [] utf8String = Encoding.UTF8.GetBytes (srcString);
+        byte [] asciiString = Encoding.ASCII.GetBytes (srcString);
+        output.WriteLine ("UTF-8  Bytes: {0}", BitConverter.ToString (utf8String));
+        output.WriteLine ("ASCII  Bytes: {0}", BitConverter.ToString (asciiString));
+        output.WriteLine ("UTF-8  Text : {0}", Encoding.UTF8.GetString (utf8String));
+        output.WriteLine ("ASCII  Text : {0}", Encoding.ASCII.GetString (asciiString));
+        Console.WriteLine (Encoding.UTF8.GetString (utf8String));
+        Console.WriteLine (Encoding.ASCII.GetString (asciiString));
+    }}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+1293496_22043425_32_55
+1293496_5261678_38_64
+Title: Serialize a Static Class? 
+----------------------------------------
+
+public static bool Load (Type static_class, string filename) {
+    try {
+        FieldInfo [] fields = static_class.GetFields (BindingFlags.Static | BindingFlags.Public);
+        object [,] a;
+        Stream f = File.Open (filename, FileMode.Open);
+        BinaryFormatter formatter = new BinaryFormatter ();
+        a = formatter.Deserialize (f) as object [,];
+        f.Close ();
+        if (a.GetLength (0) != fields.Length - 1)
+            return false;
+
+        foreach (FieldInfo field in fields)
+            for (int i = 0; i < fields.Length - 1; i ++)
+                if (field.Name == (a [i, 0] as string))
+                    field.SetValue (null, a [i, 1]);
+
+        return true;
+    }
+    catch (Exception ex) {
+        System.Windows.Forms.MessageBox.Show (ex.ToString ());
+        return false;
+    }
+}
+----------------------------------------
+
+public static bool Load (Type static_class, string filename) {
+    try {
+        FieldInfo [] fields = static_class.GetFields (BindingFlags.Static | BindingFlags.Public);
+        object [,] a;
+        Stream f = File.Open (filename, FileMode.Open);
+        SoapFormatter formatter = new SoapFormatter ();
+        a = formatter.Deserialize (f) as object [,];
+        f.Close ();
+        if (a.GetLength (0) != fields.Length)
+            return false;
+
+        int i = 0;
+        foreach (FieldInfo field in fields) {
+            if (field.Name == (a [i, 0] as string)) {
+                field.SetValue (null, a [i, 1]);
+            }
+            i ++;
+        }
+        return true;
+    }
+    catch {
+        return false;
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+1293496_24638193_127_171
+1293496_24638193_88_114
+Title: Serialize a Static Class? 
+----------------------------------------
+
+public static bool Deserialize (Type staticClass, XmlReader xmlReader) {
+    FieldInfo [] fieldArray = staticClass.GetFields (BindingFlags.Static | BindingFlags.Public);
+    string currentElement = null;
+    while (xmlReader.Read ()) {
+        if (xmlReader.NodeType == XmlNodeType.EndElement)
+            continue;
+
+        if (xmlReader.NodeType == XmlNodeType.Element) {
+            currentElement = xmlReader.Name;
+        }
+        foreach (FieldInfo fieldInfo in fieldArray) {
+            string fieldName = fieldInfo.Name;
+            Type fieldType = fieldInfo.FieldType;
+            object fieldObject = fieldInfo.GetValue (fieldType);
+            if (fieldInfo.IsNotSerialized)
+                continue;
+
+            if (fieldInfo.Name == currentElement) {
+                if (typeof (IDictionary).IsAssignableFrom (fieldType) || typeof (IList).IsAssignableFrom (fieldType)) {
+                    fieldObject = Deserialize (fieldName, fieldType, xmlReader);
+                    fieldInfo.SetValueDirect (__makeref (fieldObject), fieldObject);
+                } else if (xmlReader.NodeType == XmlNodeType.Text) {
+                    TypeConverter typeConverter = TypeDescriptor.GetConverter (fieldType);
+                    object value = typeConverter.ConvertFromString (xmlReader.Value);
+                    fieldInfo.SetValue (fieldObject, value);
+                }
+            }
+        }
+    }
+    return true;
+}
+----------------------------------------
+
+public static bool Deserialize (Type staticClass, string fileName) {
+    XmlReader xmlReader = null;
+    try {
+        xmlReader = new XmlTextReader (fileName);
+        Deserialize (staticClass, xmlReader);
+        return true;
+    }
+    catch (Exception ex) {
+        System.Windows.Forms.MessageBox.Show (ex.ToString ());
+        return false;
+    }
+    finally {
+        if (xmlReader != null) {
+            xmlReader.Close ();
+            xmlReader = null;
+        }
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+1293496_24638193_37_47
+1293496_24638193_3_35
+Title: Serialize a Static Class? 
+----------------------------------------
+
+public static void Serialize (string name, object obj, XmlTextWriter xmlWriter) {
+    Type type = obj.GetType ();
+    XmlAttributeOverrides xmlAttributeOverrides = new XmlAttributeOverrides ();
+    XmlAttributes xmlAttributes = new XmlAttributes ();
+    xmlAttributes.XmlRoot = new XmlRootAttribute (name);
+    xmlAttributeOverrides.Add (type, xmlAttributes);
+    XmlSerializer xmlSerializer = new XmlSerializer (type, xmlAttributeOverrides);
+    xmlSerializer.Serialize (xmlWriter, obj);
+}
+----------------------------------------
+
+public static bool Serialize (Type staticClass, string fileName) {
+    XmlTextWriter xmlWriter = null;
+    try {
+        xmlWriter = new XmlTextWriter (fileName, null);
+        xmlWriter.Formatting = Formatting.Indented;
+        xmlWriter.WriteStartDocument ();
+        Serialize (staticClass, xmlWriter);
+        xmlWriter.WriteEndDocument ();
+        return true;
+    }
+    catch (Exception ex) {
+        System.Windows.Forms.MessageBox.Show (ex.ToString ());
+        return false;
+    }
+    finally {
+        if (xmlWriter != null) {
+            xmlWriter.Flush ();
+            xmlWriter.Close ();
+        }
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+1293496_24638193_37_47
+1293496_24638193_49_86
+Title: Serialize a Static Class? 
+----------------------------------------
+
+public static void Serialize (string name, object obj, XmlTextWriter xmlWriter) {
+    Type type = obj.GetType ();
+    XmlAttributeOverrides xmlAttributeOverrides = new XmlAttributeOverrides ();
+    XmlAttributes xmlAttributes = new XmlAttributes ();
+    xmlAttributes.XmlRoot = new XmlRootAttribute (name);
+    xmlAttributeOverrides.Add (type, xmlAttributes);
+    XmlSerializer xmlSerializer = new XmlSerializer (type, xmlAttributeOverrides);
+    xmlSerializer.Serialize (xmlWriter, obj);
+}
+----------------------------------------
+
+public static bool Serialize (Type staticClass, XmlTextWriter xmlWriter) {
+    FieldInfo [] fieldArray = staticClass.GetFields (BindingFlags.Static | BindingFlags.Public);
+    xmlWriter.WriteStartElement (staticClass.Name);
+    foreach (FieldInfo fieldInfo in fieldArray) {
+        if (fieldInfo.IsNotSerialized)
+            continue;
+
+        string fieldName = fieldInfo.Name;
+        string fieldValue = null;
+        Type fieldType = fieldInfo.FieldType;
+        object fieldObject = fieldInfo.GetValue (fieldType);
+        if (fieldObject != null) {
+            if (fieldType.GetInterface ("IDictionary") != null || fieldType.GetInterface ("IList") != null) {
+                Serialize (fieldName, fieldObject, xmlWriter);
+            } else {
+                TypeConverter typeConverter = TypeDescriptor.GetConverter (fieldInfo.FieldType);
+                fieldValue = typeConverter.ConvertToString (fieldObject);
+                xmlWriter.WriteStartElement (fieldName);
+                xmlWriter.WriteString (fieldValue);
+                xmlWriter.WriteEndElement ();
+            }
+        }
+    }
+    xmlWriter.WriteEndElement ();
+    return true;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+1293496_24638193_3_35
+1293496_24638193_49_86
+Title: Serialize a Static Class? 
+----------------------------------------
+
+public static bool Serialize (Type staticClass, string fileName) {
+    XmlTextWriter xmlWriter = null;
+    try {
+        xmlWriter = new XmlTextWriter (fileName, null);
+        xmlWriter.Formatting = Formatting.Indented;
+        xmlWriter.WriteStartDocument ();
+        Serialize (staticClass, xmlWriter);
+        xmlWriter.WriteEndDocument ();
+        return true;
+    }
+    catch (Exception ex) {
+        System.Windows.Forms.MessageBox.Show (ex.ToString ());
+        return false;
+    }
+    finally {
+        if (xmlWriter != null) {
+            xmlWriter.Flush ();
+            xmlWriter.Close ();
+        }
+    }
+}
+----------------------------------------
+
+public static bool Serialize (Type staticClass, XmlTextWriter xmlWriter) {
+    FieldInfo [] fieldArray = staticClass.GetFields (BindingFlags.Static | BindingFlags.Public);
+    xmlWriter.WriteStartElement (staticClass.Name);
+    foreach (FieldInfo fieldInfo in fieldArray) {
+        if (fieldInfo.IsNotSerialized)
+            continue;
+
+        string fieldName = fieldInfo.Name;
+        string fieldValue = null;
+        Type fieldType = fieldInfo.FieldType;
+        object fieldObject = fieldInfo.GetValue (fieldType);
+        if (fieldObject != null) {
+            if (fieldType.GetInterface ("IDictionary") != null || fieldType.GetInterface ("IList") != null) {
+                Serialize (fieldName, fieldObject, xmlWriter);
+            } else {
+                TypeConverter typeConverter = TypeDescriptor.GetConverter (fieldInfo.FieldType);
+                fieldValue = typeConverter.ConvertToString (fieldObject);
+                xmlWriter.WriteStartElement (fieldName);
+                xmlWriter.WriteString (fieldValue);
+                xmlWriter.WriteEndElement ();
+            }
+        }
+    }
+    xmlWriter.WriteEndElement ();
+    return true;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+129388_129571_9_50
+129388_129645_10_37
+Title: GetElementsByTagName functionality from .net code-behind page? 
+----------------------------------------
+
+protected void Page_Load (Object sender, EventArgs e) {
+    DataTable dt = new DataTable ();
+    dt.Columns.Add (new DataColumn ("column"));
+    DataRow dr = null;
+    for (Int32 i = 0; i < 10; i ++) {
+        dr = dt.NewRow ();
+        dr ["column"] = "";
+        dt.Rows.Add (dr);
+    }
+    this.Repeater1.DataSource = dt;
+    this.Repeater1.DataBind ();
+    foreach (RepeaterItem ri in this.Repeater1.Controls) {
+        foreach (Control c in ri.Controls) {
+            Button b = new Button ();
+            try {
+                b = (Button) c;
+            }
+            catch (Exception exc) {
+            }
+            b.Text = "I was found and changed";
+        }
+    }
+}
+----------------------------------------
+
+protected void Page_Load (Object sender, EventArgs e) {
+    DataTable dt = new DataTable ();
+    dt.Columns.Add (new DataColumn ("column"));
+    DataRow dr = null;
+    for (Int32 i = 0; i < 10; i ++) {
+        dr = dt.NewRow ();
+        dr ["column"] = "";
+        dt.Rows.Add (dr);
+    }
+    this.Repeater1.DataSource = dt;
+    this.Repeater1.DataBind ();
+    foreach (Button b in this.FindButtonsInRepeater (ref this.Repeater1)) {
+        b.Text = "I was found and changed";
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+12969669_12969723_5_44
+12969669_12969915_4_43
+Title: How to construct a loop that runs three times and tests the age input 
+----------------------------------------
+
+static void Main (string [] args) {
+    string answer;
+    int runCount = 0;
+    do
+        {
+            ++ runCount;
+            Console.WriteLine ("please enter your name:");
+            string name = Console.ReadLine ();
+            Console.WriteLine ("please enter your surname:");
+            string surname = Console.ReadLine ();
+            Console.WriteLine ("please enter your age:");
+            int age = int.Parse (Console.ReadLine ());
+            if (age >= 0 && age <= 10) {
+                Console.WriteLine ("Child");
+            } else if (age <= 20) {
+                Console.WriteLine ("Young adult");
+            } else if (age <= 65) {
+                Console.WriteLine ("Adult");
+            }
+            Console.WriteLine ("please enter your adress:");
+            string adress = Console.ReadLine ();
+            Console.WriteLine ("hallo,{0} {1},veel sucess met C#", name, surname);
+            Console.WriteLine ("zijn deze gegevens juist? J/N");
+            answer = Console.ReadLine ();
+        } while (runCount < 3 && answer == "N");
+}
+----------------------------------------
+
+static void Main (string [] args) {
+    string answer;
+    do
+        {
+            Console.WriteLine ("please enter your name:");
+            string name = Console.ReadLine ();
+            Console.WriteLine ("please enter your surname:");
+            string surname = Console.ReadLine ();
+            Console.WriteLine ("please enter your age:");
+            age = Convert.ToInt32 (Console.ReadLine ());
+            Console.WriteLine ("please enter your adress:");
+            string adress = Console.ReadLine ();
+            Console.WriteLine ("hallo,{0} {1},veel sucess met C#", name, surname);
+            Console.WriteLine ("zijn deze gegevens juist? J/N");
+            answer = Console.ReadLine ();
+        } while (answer == "N");
+    for (int i = 0; i < 3; i ++) {
+        if (age >= 0 && age <= 10) {
+        }
+        if (age >= 11 && age <= 20) {
+        }
+        if (age >= 21 && age <= 65) {
+        }
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+12981979_19514788_3_19
+12981979_35228850_41_75
+Title: Creating HiddenFor IEnumerable<String> in View 
+----------------------------------------
+
+public static MvcHtmlString HiddenForEnumerable < TModel, TProperty > (this HtmlHelper < TModel > helper, Expression < Func < TModel, IEnumerable < TProperty > > > expression) {
+    var sb = new StringBuilder ();
+    var membername = expression.GetMemberName ();
+    var model = helper.ViewData.Model;
+    var list = expression.Compile () (model);
+    for (var i = 0; i < list.Count (); i ++) {
+        sb.Append (helper.Hidden (string.Format ("{0}[{1}]", membername, i), list.ElementAt (i)));
+    }
+    return new MvcHtmlString (sb.ToString ());
+}
+----------------------------------------
+
+public static MvcHtmlString HiddenForEnumerable < TModel, TModelProperty > (this HtmlHelper < TModel > helper, Expression < Func < TModel, IEnumerable < TModelProperty > > > expression, bool allPublicProps) {
+    if (! allPublicProps)
+        return HiddenForEnumerable (helper, expression);
+
+    var sb = new StringBuilder ();
+    var membername = expression.GetMemberName ();
+    var model = helper.ViewData.Model;
+    var list = expression.Compile () (model);
+    var type = typeof (TModelProperty);
+    var memPropsInfo = type.GetProperties (BindingFlags.Public | BindingFlags.Instance).Where (x = > x.GetSetMethod (false) != null && x.GetGetMethod (false) != null).Select (x = > new {MemberPropName = x.Name, ListItemPropGetter = (Func < TModelProperty, object >) (p = > x.GetValue (p, null))}).ToList ();
+    if (memPropsInfo.Count == 0)
+        return HiddenForEnumerable (helper, expression);
+
+    for (var i = 0; i < list.Count (); i ++) {
+        var listItem = list.ElementAt (i);
+        foreach (var q in memPropsInfo) {
+            sb.Append (helper.Hidden (string.Format ("{0}[{1}].{2}", membername, i, q.MemberPropName), q.ListItemPropGetter (listItem)));
+        }
+    }
+    return new MvcHtmlString (sb.ToString ());
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+12981979_19514788_3_19
+12981979_35228850_4_36
+Title: Creating HiddenFor IEnumerable<String> in View 
+----------------------------------------
+
+public static MvcHtmlString HiddenForEnumerable < TModel, TProperty > (this HtmlHelper < TModel > helper, Expression < Func < TModel, IEnumerable < TProperty > > > expression) {
+    var sb = new StringBuilder ();
+    var membername = expression.GetMemberName ();
+    var model = helper.ViewData.Model;
+    var list = expression.Compile () (model);
+    for (var i = 0; i < list.Count (); i ++) {
+        sb.Append (helper.Hidden (string.Format ("{0}[{1}]", membername, i), list.ElementAt (i)));
+    }
+    return new MvcHtmlString (sb.ToString ());
+}
+----------------------------------------
+
+public static MvcHtmlString HiddenForEnumerable < TModel, TModelProperty > (this HtmlHelper < TModel > helper, Expression < Func < TModel, IEnumerable < TModelProperty > > > expression, params Expression < Func < TModelProperty, object > > [] memberPropsExpressions) {
+    var sb = new StringBuilder ();
+    var membername = expression.GetMemberName ();
+    var model = helper.ViewData.Model;
+    var list = expression.Compile () (model);
+    var memPropsInfo = memberPropsExpressions.Select (x = > new {MemberPropName = x.GetMemberName (), ListItemPropGetter = x.Compile ()}).ToList ();
+    for (var i = 0; i < list.Count (); i ++) {
+        var listItem = list.ElementAt (i);
+        if (memPropsInfo.Any ()) {
+            foreach (var q in memPropsInfo) {
+                sb.Append (helper.Hidden (string.Format ("{0}[{1}].{2}", membername, i, q.MemberPropName), q.ListItemPropGetter (listItem)));
+            }
+        } else {
+            sb.Append (helper.Hidden (string.Format ("{0}[{1}]", membername, i), listItem));
+        }
+    }
+    return new MvcHtmlString (sb.ToString ());
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+12981979_19514788_3_19
+12981979_35228850_77_90
+Title: Creating HiddenFor IEnumerable<String> in View 
+----------------------------------------
+
+public static MvcHtmlString HiddenForEnumerable < TModel, TProperty > (this HtmlHelper < TModel > helper, Expression < Func < TModel, IEnumerable < TProperty > > > expression) {
+    var sb = new StringBuilder ();
+    var membername = expression.GetMemberName ();
+    var model = helper.ViewData.Model;
+    var list = expression.Compile () (model);
+    for (var i = 0; i < list.Count (); i ++) {
+        sb.Append (helper.Hidden (string.Format ("{0}[{1}]", membername, i), list.ElementAt (i)));
+    }
+    return new MvcHtmlString (sb.ToString ());
+}
+----------------------------------------
+
+public static string GetMemberName < TModel, T > (this Expression < Func < TModel, T > > input) {
+    if (input == null)
+        return null;
+
+    MemberExpression memberExp = null;
+    if (input.Body.NodeType == ExpressionType.MemberAccess)
+        memberExp = input.Body as MemberExpression;
+    else if (input.Body.NodeType == ExpressionType.Convert)
+        memberExp = ((UnaryExpression) input.Body).Operand as MemberExpression;
+
+    return memberExp != null ? memberExp.Member.Name : null;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+12981979_19514788_3_19
+12981979_48903872_14_46
+Title: Creating HiddenFor IEnumerable<String> in View 
+----------------------------------------
+
+public static MvcHtmlString HiddenForEnumerable < TModel, TProperty > (this HtmlHelper < TModel > helper, Expression < Func < TModel, IEnumerable < TProperty > > > expression) {
+    var sb = new StringBuilder ();
+    var membername = expression.GetMemberName ();
+    var model = helper.ViewData.Model;
+    var list = expression.Compile () (model);
+    for (var i = 0; i < list.Count (); i ++) {
+        sb.Append (helper.Hidden (string.Format ("{0}[{1}]", membername, i), list.ElementAt (i)));
+    }
+    return new MvcHtmlString (sb.ToString ());
+}
+----------------------------------------
+
+public static IHtmlContent HiddenForEnumerable < TModel, TModelProperty > (this IHtmlHelper < TModel > helper, Expression < Func < TModel, IEnumerable < TModelProperty > > > expression, params Expression < Func < TModelProperty, object > > [] memberPropsExpressions) {
+    var hcb = new HtmlContentBuilder ();
+    var membername = expression.GetMemberName ();
+    var model = helper.ViewData.Model;
+    var list = expression.Compile () (model);
+    var memPropsInfo = memberPropsExpressions.Select (x = > new {MemberPropName = x.GetMemberName (), ListItemPropGetter = x.Compile ()}).ToList ();
+    for (var i = 0; i < list.Count (); i ++) {
+        var listItem = list.ElementAt (i);
+        if (memPropsInfo.Any ()) {
+            foreach (var q in memPropsInfo) {
+                hcb.AppendHtml (helper.Hidden (string.Format ("{0}[{1}].{2}", membername, i, q.MemberPropName), q.ListItemPropGetter (listItem)));
+            }
+        } else {
+            hcb.AppendHtml (helper.Hidden (string.Format ("{0}[{1}]", membername, i), listItem));
+        }
+    }
+    return hcb;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+12981979_19514788_3_19
+12981979_48903872_51_85
+Title: Creating HiddenFor IEnumerable<String> in View 
+----------------------------------------
+
+public static MvcHtmlString HiddenForEnumerable < TModel, TProperty > (this HtmlHelper < TModel > helper, Expression < Func < TModel, IEnumerable < TProperty > > > expression) {
+    var sb = new StringBuilder ();
+    var membername = expression.GetMemberName ();
+    var model = helper.ViewData.Model;
+    var list = expression.Compile () (model);
+    for (var i = 0; i < list.Count (); i ++) {
+        sb.Append (helper.Hidden (string.Format ("{0}[{1}]", membername, i), list.ElementAt (i)));
+    }
+    return new MvcHtmlString (sb.ToString ());
+}
+----------------------------------------
+
+public static IHtmlContent HiddenForEnumerable < TModel, TModelProperty > (this IHtmlHelper < TModel > helper, Expression < Func < TModel, IEnumerable < TModelProperty > > > expression, bool allPublicProps) {
+    if (! allPublicProps)
+        return HiddenForEnumerable (helper, expression);
+
+    var hcb = new HtmlContentBuilder ();
+    var membername = expression.GetMemberName ();
+    var model = helper.ViewData.Model;
+    var list = expression.Compile () (model);
+    var type = typeof (TModelProperty);
+    var memPropsInfo = type.GetProperties (BindingFlags.Public | BindingFlags.Instance).Where (x = > x.GetSetMethod (false) != null && x.GetGetMethod (false) != null).Select (x = > new {MemberPropName = x.Name, ListItemPropGetter = (Func < TModelProperty, object >) (p = > x.GetValue (p, null))}).ToList ();
+    if (memPropsInfo.Count == 0)
+        return HiddenForEnumerable (helper, expression);
+
+    for (var i = 0; i < list.Count (); i ++) {
+        var listItem = list.ElementAt (i);
+        foreach (var q in memPropsInfo) {
+            hcb.AppendHtml (helper.Hidden (string.Format ("{0}[{1}].{2}", membername, i, q.MemberPropName), q.ListItemPropGetter (listItem)));
+        }
+    }
+    return hcb;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+12981979_19514788_3_19
+12981979_48903872_87_100
+Title: Creating HiddenFor IEnumerable<String> in View 
+----------------------------------------
+
+public static MvcHtmlString HiddenForEnumerable < TModel, TProperty > (this HtmlHelper < TModel > helper, Expression < Func < TModel, IEnumerable < TProperty > > > expression) {
+    var sb = new StringBuilder ();
+    var membername = expression.GetMemberName ();
+    var model = helper.ViewData.Model;
+    var list = expression.Compile () (model);
+    for (var i = 0; i < list.Count (); i ++) {
+        sb.Append (helper.Hidden (string.Format ("{0}[{1}]", membername, i), list.ElementAt (i)));
+    }
+    return new MvcHtmlString (sb.ToString ());
+}
+----------------------------------------
+
+public static string GetMemberName < TModel, T > (this Expression < Func < TModel, T > > input) {
+    if (input == null)
+        return null;
+
+    MemberExpression memberExp = null;
+    if (input.Body.NodeType == ExpressionType.MemberAccess)
+        memberExp = input.Body as MemberExpression;
+    else if (input.Body.NodeType == ExpressionType.Convert)
+        memberExp = ((UnaryExpression) input.Body).Operand as MemberExpression;
+
+    return memberExp != null ? memberExp.Member.Name : null;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+12981979_35228850_41_75
+12981979_35228850_4_36
+Title: Creating HiddenFor IEnumerable<String> in View 
+----------------------------------------
+
+public static MvcHtmlString HiddenForEnumerable < TModel, TModelProperty > (this HtmlHelper < TModel > helper, Expression < Func < TModel, IEnumerable < TModelProperty > > > expression, bool allPublicProps) {
+    if (! allPublicProps)
+        return HiddenForEnumerable (helper, expression);
+
+    var sb = new StringBuilder ();
+    var membername = expression.GetMemberName ();
+    var model = helper.ViewData.Model;
+    var list = expression.Compile () (model);
+    var type = typeof (TModelProperty);
+    var memPropsInfo = type.GetProperties (BindingFlags.Public | BindingFlags.Instance).Where (x = > x.GetSetMethod (false) != null && x.GetGetMethod (false) != null).Select (x = > new {MemberPropName = x.Name, ListItemPropGetter = (Func < TModelProperty, object >) (p = > x.GetValue (p, null))}).ToList ();
+    if (memPropsInfo.Count == 0)
+        return HiddenForEnumerable (helper, expression);
+
+    for (var i = 0; i < list.Count (); i ++) {
+        var listItem = list.ElementAt (i);
+        foreach (var q in memPropsInfo) {
+            sb.Append (helper.Hidden (string.Format ("{0}[{1}].{2}", membername, i, q.MemberPropName), q.ListItemPropGetter (listItem)));
+        }
+    }
+    return new MvcHtmlString (sb.ToString ());
+}
+----------------------------------------
+
+public static MvcHtmlString HiddenForEnumerable < TModel, TModelProperty > (this HtmlHelper < TModel > helper, Expression < Func < TModel, IEnumerable < TModelProperty > > > expression, params Expression < Func < TModelProperty, object > > [] memberPropsExpressions) {
+    var sb = new StringBuilder ();
+    var membername = expression.GetMemberName ();
+    var model = helper.ViewData.Model;
+    var list = expression.Compile () (model);
+    var memPropsInfo = memberPropsExpressions.Select (x = > new {MemberPropName = x.GetMemberName (), ListItemPropGetter = x.Compile ()}).ToList ();
+    for (var i = 0; i < list.Count (); i ++) {
+        var listItem = list.ElementAt (i);
+        if (memPropsInfo.Any ()) {
+            foreach (var q in memPropsInfo) {
+                sb.Append (helper.Hidden (string.Format ("{0}[{1}].{2}", membername, i, q.MemberPropName), q.ListItemPropGetter (listItem)));
+            }
+        } else {
+            sb.Append (helper.Hidden (string.Format ("{0}[{1}]", membername, i), listItem));
+        }
+    }
+    return new MvcHtmlString (sb.ToString ());
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+12981979_35228850_41_75
+12981979_35228850_77_90
+Title: Creating HiddenFor IEnumerable<String> in View 
+----------------------------------------
+
+public static MvcHtmlString HiddenForEnumerable < TModel, TModelProperty > (this HtmlHelper < TModel > helper, Expression < Func < TModel, IEnumerable < TModelProperty > > > expression, bool allPublicProps) {
+    if (! allPublicProps)
+        return HiddenForEnumerable (helper, expression);
+
+    var sb = new StringBuilder ();
+    var membername = expression.GetMemberName ();
+    var model = helper.ViewData.Model;
+    var list = expression.Compile () (model);
+    var type = typeof (TModelProperty);
+    var memPropsInfo = type.GetProperties (BindingFlags.Public | BindingFlags.Instance).Where (x = > x.GetSetMethod (false) != null && x.GetGetMethod (false) != null).Select (x = > new {MemberPropName = x.Name, ListItemPropGetter = (Func < TModelProperty, object >) (p = > x.GetValue (p, null))}).ToList ();
+    if (memPropsInfo.Count == 0)
+        return HiddenForEnumerable (helper, expression);
+
+    for (var i = 0; i < list.Count (); i ++) {
+        var listItem = list.ElementAt (i);
+        foreach (var q in memPropsInfo) {
+            sb.Append (helper.Hidden (string.Format ("{0}[{1}].{2}", membername, i, q.MemberPropName), q.ListItemPropGetter (listItem)));
+        }
+    }
+    return new MvcHtmlString (sb.ToString ());
+}
+----------------------------------------
+
+public static string GetMemberName < TModel, T > (this Expression < Func < TModel, T > > input) {
+    if (input == null)
+        return null;
+
+    MemberExpression memberExp = null;
+    if (input.Body.NodeType == ExpressionType.MemberAccess)
+        memberExp = input.Body as MemberExpression;
+    else if (input.Body.NodeType == ExpressionType.Convert)
+        memberExp = ((UnaryExpression) input.Body).Operand as MemberExpression;
+
+    return memberExp != null ? memberExp.Member.Name : null;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+12981979_35228850_41_75
+12981979_48903872_14_46
+Title: Creating HiddenFor IEnumerable<String> in View 
+----------------------------------------
+
+public static MvcHtmlString HiddenForEnumerable < TModel, TModelProperty > (this HtmlHelper < TModel > helper, Expression < Func < TModel, IEnumerable < TModelProperty > > > expression, bool allPublicProps) {
+    if (! allPublicProps)
+        return HiddenForEnumerable (helper, expression);
+
+    var sb = new StringBuilder ();
+    var membername = expression.GetMemberName ();
+    var model = helper.ViewData.Model;
+    var list = expression.Compile () (model);
+    var type = typeof (TModelProperty);
+    var memPropsInfo = type.GetProperties (BindingFlags.Public | BindingFlags.Instance).Where (x = > x.GetSetMethod (false) != null && x.GetGetMethod (false) != null).Select (x = > new {MemberPropName = x.Name, ListItemPropGetter = (Func < TModelProperty, object >) (p = > x.GetValue (p, null))}).ToList ();
+    if (memPropsInfo.Count == 0)
+        return HiddenForEnumerable (helper, expression);
+
+    for (var i = 0; i < list.Count (); i ++) {
+        var listItem = list.ElementAt (i);
+        foreach (var q in memPropsInfo) {
+            sb.Append (helper.Hidden (string.Format ("{0}[{1}].{2}", membername, i, q.MemberPropName), q.ListItemPropGetter (listItem)));
+        }
+    }
+    return new MvcHtmlString (sb.ToString ());
+}
+----------------------------------------
+
+public static IHtmlContent HiddenForEnumerable < TModel, TModelProperty > (this IHtmlHelper < TModel > helper, Expression < Func < TModel, IEnumerable < TModelProperty > > > expression, params Expression < Func < TModelProperty, object > > [] memberPropsExpressions) {
+    var hcb = new HtmlContentBuilder ();
+    var membername = expression.GetMemberName ();
+    var model = helper.ViewData.Model;
+    var list = expression.Compile () (model);
+    var memPropsInfo = memberPropsExpressions.Select (x = > new {MemberPropName = x.GetMemberName (), ListItemPropGetter = x.Compile ()}).ToList ();
+    for (var i = 0; i < list.Count (); i ++) {
+        var listItem = list.ElementAt (i);
+        if (memPropsInfo.Any ()) {
+            foreach (var q in memPropsInfo) {
+                hcb.AppendHtml (helper.Hidden (string.Format ("{0}[{1}].{2}", membername, i, q.MemberPropName), q.ListItemPropGetter (listItem)));
+            }
+        } else {
+            hcb.AppendHtml (helper.Hidden (string.Format ("{0}[{1}]", membername, i), listItem));
+        }
+    }
+    return hcb;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+12981979_35228850_41_75
+12981979_48903872_87_100
+Title: Creating HiddenFor IEnumerable<String> in View 
+----------------------------------------
+
+public static MvcHtmlString HiddenForEnumerable < TModel, TModelProperty > (this HtmlHelper < TModel > helper, Expression < Func < TModel, IEnumerable < TModelProperty > > > expression, bool allPublicProps) {
+    if (! allPublicProps)
+        return HiddenForEnumerable (helper, expression);
+
+    var sb = new StringBuilder ();
+    var membername = expression.GetMemberName ();
+    var model = helper.ViewData.Model;
+    var list = expression.Compile () (model);
+    var type = typeof (TModelProperty);
+    var memPropsInfo = type.GetProperties (BindingFlags.Public | BindingFlags.Instance).Where (x = > x.GetSetMethod (false) != null && x.GetGetMethod (false) != null).Select (x = > new {MemberPropName = x.Name, ListItemPropGetter = (Func < TModelProperty, object >) (p = > x.GetValue (p, null))}).ToList ();
+    if (memPropsInfo.Count == 0)
+        return HiddenForEnumerable (helper, expression);
+
+    for (var i = 0; i < list.Count (); i ++) {
+        var listItem = list.ElementAt (i);
+        foreach (var q in memPropsInfo) {
+            sb.Append (helper.Hidden (string.Format ("{0}[{1}].{2}", membername, i, q.MemberPropName), q.ListItemPropGetter (listItem)));
+        }
+    }
+    return new MvcHtmlString (sb.ToString ());
+}
+----------------------------------------
+
+public static string GetMemberName < TModel, T > (this Expression < Func < TModel, T > > input) {
+    if (input == null)
+        return null;
+
+    MemberExpression memberExp = null;
+    if (input.Body.NodeType == ExpressionType.MemberAccess)
+        memberExp = input.Body as MemberExpression;
+    else if (input.Body.NodeType == ExpressionType.Convert)
+        memberExp = ((UnaryExpression) input.Body).Operand as MemberExpression;
+
+    return memberExp != null ? memberExp.Member.Name : null;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+12981979_35228850_4_36
+12981979_35228850_77_90
+Title: Creating HiddenFor IEnumerable<String> in View 
+----------------------------------------
+
+public static MvcHtmlString HiddenForEnumerable < TModel, TModelProperty > (this HtmlHelper < TModel > helper, Expression < Func < TModel, IEnumerable < TModelProperty > > > expression, params Expression < Func < TModelProperty, object > > [] memberPropsExpressions) {
+    var sb = new StringBuilder ();
+    var membername = expression.GetMemberName ();
+    var model = helper.ViewData.Model;
+    var list = expression.Compile () (model);
+    var memPropsInfo = memberPropsExpressions.Select (x = > new {MemberPropName = x.GetMemberName (), ListItemPropGetter = x.Compile ()}).ToList ();
+    for (var i = 0; i < list.Count (); i ++) {
+        var listItem = list.ElementAt (i);
+        if (memPropsInfo.Any ()) {
+            foreach (var q in memPropsInfo) {
+                sb.Append (helper.Hidden (string.Format ("{0}[{1}].{2}", membername, i, q.MemberPropName), q.ListItemPropGetter (listItem)));
+            }
+        } else {
+            sb.Append (helper.Hidden (string.Format ("{0}[{1}]", membername, i), listItem));
+        }
+    }
+    return new MvcHtmlString (sb.ToString ());
+}
+----------------------------------------
+
+public static string GetMemberName < TModel, T > (this Expression < Func < TModel, T > > input) {
+    if (input == null)
+        return null;
+
+    MemberExpression memberExp = null;
+    if (input.Body.NodeType == ExpressionType.MemberAccess)
+        memberExp = input.Body as MemberExpression;
+    else if (input.Body.NodeType == ExpressionType.Convert)
+        memberExp = ((UnaryExpression) input.Body).Operand as MemberExpression;
+
+    return memberExp != null ? memberExp.Member.Name : null;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+12981979_35228850_4_36
+12981979_48903872_51_85
+Title: Creating HiddenFor IEnumerable<String> in View 
+----------------------------------------
+
+public static MvcHtmlString HiddenForEnumerable < TModel, TModelProperty > (this HtmlHelper < TModel > helper, Expression < Func < TModel, IEnumerable < TModelProperty > > > expression, params Expression < Func < TModelProperty, object > > [] memberPropsExpressions) {
+    var sb = new StringBuilder ();
+    var membername = expression.GetMemberName ();
+    var model = helper.ViewData.Model;
+    var list = expression.Compile () (model);
+    var memPropsInfo = memberPropsExpressions.Select (x = > new {MemberPropName = x.GetMemberName (), ListItemPropGetter = x.Compile ()}).ToList ();
+    for (var i = 0; i < list.Count (); i ++) {
+        var listItem = list.ElementAt (i);
+        if (memPropsInfo.Any ()) {
+            foreach (var q in memPropsInfo) {
+                sb.Append (helper.Hidden (string.Format ("{0}[{1}].{2}", membername, i, q.MemberPropName), q.ListItemPropGetter (listItem)));
+            }
+        } else {
+            sb.Append (helper.Hidden (string.Format ("{0}[{1}]", membername, i), listItem));
+        }
+    }
+    return new MvcHtmlString (sb.ToString ());
+}
+----------------------------------------
+
+public static IHtmlContent HiddenForEnumerable < TModel, TModelProperty > (this IHtmlHelper < TModel > helper, Expression < Func < TModel, IEnumerable < TModelProperty > > > expression, bool allPublicProps) {
+    if (! allPublicProps)
+        return HiddenForEnumerable (helper, expression);
+
+    var hcb = new HtmlContentBuilder ();
+    var membername = expression.GetMemberName ();
+    var model = helper.ViewData.Model;
+    var list = expression.Compile () (model);
+    var type = typeof (TModelProperty);
+    var memPropsInfo = type.GetProperties (BindingFlags.Public | BindingFlags.Instance).Where (x = > x.GetSetMethod (false) != null && x.GetGetMethod (false) != null).Select (x = > new {MemberPropName = x.Name, ListItemPropGetter = (Func < TModelProperty, object >) (p = > x.GetValue (p, null))}).ToList ();
+    if (memPropsInfo.Count == 0)
+        return HiddenForEnumerable (helper, expression);
+
+    for (var i = 0; i < list.Count (); i ++) {
+        var listItem = list.ElementAt (i);
+        foreach (var q in memPropsInfo) {
+            hcb.AppendHtml (helper.Hidden (string.Format ("{0}[{1}].{2}", membername, i, q.MemberPropName), q.ListItemPropGetter (listItem)));
+        }
+    }
+    return hcb;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+12981979_35228850_4_36
+12981979_48903872_87_100
+Title: Creating HiddenFor IEnumerable<String> in View 
+----------------------------------------
+
+public static MvcHtmlString HiddenForEnumerable < TModel, TModelProperty > (this HtmlHelper < TModel > helper, Expression < Func < TModel, IEnumerable < TModelProperty > > > expression, params Expression < Func < TModelProperty, object > > [] memberPropsExpressions) {
+    var sb = new StringBuilder ();
+    var membername = expression.GetMemberName ();
+    var model = helper.ViewData.Model;
+    var list = expression.Compile () (model);
+    var memPropsInfo = memberPropsExpressions.Select (x = > new {MemberPropName = x.GetMemberName (), ListItemPropGetter = x.Compile ()}).ToList ();
+    for (var i = 0; i < list.Count (); i ++) {
+        var listItem = list.ElementAt (i);
+        if (memPropsInfo.Any ()) {
+            foreach (var q in memPropsInfo) {
+                sb.Append (helper.Hidden (string.Format ("{0}[{1}].{2}", membername, i, q.MemberPropName), q.ListItemPropGetter (listItem)));
+            }
+        } else {
+            sb.Append (helper.Hidden (string.Format ("{0}[{1}]", membername, i), listItem));
+        }
+    }
+    return new MvcHtmlString (sb.ToString ());
+}
+----------------------------------------
+
+public static string GetMemberName < TModel, T > (this Expression < Func < TModel, T > > input) {
+    if (input == null)
+        return null;
+
+    MemberExpression memberExp = null;
+    if (input.Body.NodeType == ExpressionType.MemberAccess)
+        memberExp = input.Body as MemberExpression;
+    else if (input.Body.NodeType == ExpressionType.Convert)
+        memberExp = ((UnaryExpression) input.Body).Operand as MemberExpression;
+
+    return memberExp != null ? memberExp.Member.Name : null;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+12981979_35228850_77_90
+12981979_48903872_14_46
+Title: Creating HiddenFor IEnumerable<String> in View 
+----------------------------------------
+
+public static string GetMemberName < TModel, T > (this Expression < Func < TModel, T > > input) {
+    if (input == null)
+        return null;
+
+    MemberExpression memberExp = null;
+    if (input.Body.NodeType == ExpressionType.MemberAccess)
+        memberExp = input.Body as MemberExpression;
+    else if (input.Body.NodeType == ExpressionType.Convert)
+        memberExp = ((UnaryExpression) input.Body).Operand as MemberExpression;
+
+    return memberExp != null ? memberExp.Member.Name : null;
+}
+----------------------------------------
+
+public static IHtmlContent HiddenForEnumerable < TModel, TModelProperty > (this IHtmlHelper < TModel > helper, Expression < Func < TModel, IEnumerable < TModelProperty > > > expression, params Expression < Func < TModelProperty, object > > [] memberPropsExpressions) {
+    var hcb = new HtmlContentBuilder ();
+    var membername = expression.GetMemberName ();
+    var model = helper.ViewData.Model;
+    var list = expression.Compile () (model);
+    var memPropsInfo = memberPropsExpressions.Select (x = > new {MemberPropName = x.GetMemberName (), ListItemPropGetter = x.Compile ()}).ToList ();
+    for (var i = 0; i < list.Count (); i ++) {
+        var listItem = list.ElementAt (i);
+        if (memPropsInfo.Any ()) {
+            foreach (var q in memPropsInfo) {
+                hcb.AppendHtml (helper.Hidden (string.Format ("{0}[{1}].{2}", membername, i, q.MemberPropName), q.ListItemPropGetter (listItem)));
+            }
+        } else {
+            hcb.AppendHtml (helper.Hidden (string.Format ("{0}[{1}]", membername, i), listItem));
+        }
+    }
+    return hcb;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+12981979_35228850_77_90
+12981979_48903872_51_85
+Title: Creating HiddenFor IEnumerable<String> in View 
+----------------------------------------
+
+public static string GetMemberName < TModel, T > (this Expression < Func < TModel, T > > input) {
+    if (input == null)
+        return null;
+
+    MemberExpression memberExp = null;
+    if (input.Body.NodeType == ExpressionType.MemberAccess)
+        memberExp = input.Body as MemberExpression;
+    else if (input.Body.NodeType == ExpressionType.Convert)
+        memberExp = ((UnaryExpression) input.Body).Operand as MemberExpression;
+
+    return memberExp != null ? memberExp.Member.Name : null;
+}
+----------------------------------------
+
+public static IHtmlContent HiddenForEnumerable < TModel, TModelProperty > (this IHtmlHelper < TModel > helper, Expression < Func < TModel, IEnumerable < TModelProperty > > > expression, bool allPublicProps) {
+    if (! allPublicProps)
+        return HiddenForEnumerable (helper, expression);
+
+    var hcb = new HtmlContentBuilder ();
+    var membername = expression.GetMemberName ();
+    var model = helper.ViewData.Model;
+    var list = expression.Compile () (model);
+    var type = typeof (TModelProperty);
+    var memPropsInfo = type.GetProperties (BindingFlags.Public | BindingFlags.Instance).Where (x = > x.GetSetMethod (false) != null && x.GetGetMethod (false) != null).Select (x = > new {MemberPropName = x.Name, ListItemPropGetter = (Func < TModelProperty, object >) (p = > x.GetValue (p, null))}).ToList ();
+    if (memPropsInfo.Count == 0)
+        return HiddenForEnumerable (helper, expression);
+
+    for (var i = 0; i < list.Count (); i ++) {
+        var listItem = list.ElementAt (i);
+        foreach (var q in memPropsInfo) {
+            hcb.AppendHtml (helper.Hidden (string.Format ("{0}[{1}].{2}", membername, i, q.MemberPropName), q.ListItemPropGetter (listItem)));
+        }
+    }
+    return hcb;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+12981979_48903872_14_46
+12981979_48903872_51_85
+Title: Creating HiddenFor IEnumerable<String> in View 
+----------------------------------------
+
+public static IHtmlContent HiddenForEnumerable < TModel, TModelProperty > (this IHtmlHelper < TModel > helper, Expression < Func < TModel, IEnumerable < TModelProperty > > > expression, params Expression < Func < TModelProperty, object > > [] memberPropsExpressions) {
+    var hcb = new HtmlContentBuilder ();
+    var membername = expression.GetMemberName ();
+    var model = helper.ViewData.Model;
+    var list = expression.Compile () (model);
+    var memPropsInfo = memberPropsExpressions.Select (x = > new {MemberPropName = x.GetMemberName (), ListItemPropGetter = x.Compile ()}).ToList ();
+    for (var i = 0; i < list.Count (); i ++) {
+        var listItem = list.ElementAt (i);
+        if (memPropsInfo.Any ()) {
+            foreach (var q in memPropsInfo) {
+                hcb.AppendHtml (helper.Hidden (string.Format ("{0}[{1}].{2}", membername, i, q.MemberPropName), q.ListItemPropGetter (listItem)));
+            }
+        } else {
+            hcb.AppendHtml (helper.Hidden (string.Format ("{0}[{1}]", membername, i), listItem));
+        }
+    }
+    return hcb;
+}
+----------------------------------------
+
+public static IHtmlContent HiddenForEnumerable < TModel, TModelProperty > (this IHtmlHelper < TModel > helper, Expression < Func < TModel, IEnumerable < TModelProperty > > > expression, bool allPublicProps) {
+    if (! allPublicProps)
+        return HiddenForEnumerable (helper, expression);
+
+    var hcb = new HtmlContentBuilder ();
+    var membername = expression.GetMemberName ();
+    var model = helper.ViewData.Model;
+    var list = expression.Compile () (model);
+    var type = typeof (TModelProperty);
+    var memPropsInfo = type.GetProperties (BindingFlags.Public | BindingFlags.Instance).Where (x = > x.GetSetMethod (false) != null && x.GetGetMethod (false) != null).Select (x = > new {MemberPropName = x.Name, ListItemPropGetter = (Func < TModelProperty, object >) (p = > x.GetValue (p, null))}).ToList ();
+    if (memPropsInfo.Count == 0)
+        return HiddenForEnumerable (helper, expression);
+
+    for (var i = 0; i < list.Count (); i ++) {
+        var listItem = list.ElementAt (i);
+        foreach (var q in memPropsInfo) {
+            hcb.AppendHtml (helper.Hidden (string.Format ("{0}[{1}].{2}", membername, i, q.MemberPropName), q.ListItemPropGetter (listItem)));
+        }
+    }
+    return hcb;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+12981979_48903872_14_46
+12981979_48903872_87_100
+Title: Creating HiddenFor IEnumerable<String> in View 
+----------------------------------------
+
+public static IHtmlContent HiddenForEnumerable < TModel, TModelProperty > (this IHtmlHelper < TModel > helper, Expression < Func < TModel, IEnumerable < TModelProperty > > > expression, params Expression < Func < TModelProperty, object > > [] memberPropsExpressions) {
+    var hcb = new HtmlContentBuilder ();
+    var membername = expression.GetMemberName ();
+    var model = helper.ViewData.Model;
+    var list = expression.Compile () (model);
+    var memPropsInfo = memberPropsExpressions.Select (x = > new {MemberPropName = x.GetMemberName (), ListItemPropGetter = x.Compile ()}).ToList ();
+    for (var i = 0; i < list.Count (); i ++) {
+        var listItem = list.ElementAt (i);
+        if (memPropsInfo.Any ()) {
+            foreach (var q in memPropsInfo) {
+                hcb.AppendHtml (helper.Hidden (string.Format ("{0}[{1}].{2}", membername, i, q.MemberPropName), q.ListItemPropGetter (listItem)));
+            }
+        } else {
+            hcb.AppendHtml (helper.Hidden (string.Format ("{0}[{1}]", membername, i), listItem));
+        }
+    }
+    return hcb;
+}
+----------------------------------------
+
+public static string GetMemberName < TModel, T > (this Expression < Func < TModel, T > > input) {
+    if (input == null)
+        return null;
+
+    MemberExpression memberExp = null;
+    if (input.Body.NodeType == ExpressionType.MemberAccess)
+        memberExp = input.Body as MemberExpression;
+    else if (input.Body.NodeType == ExpressionType.Convert)
+        memberExp = ((UnaryExpression) input.Body).Operand as MemberExpression;
+
+    return memberExp != null ? memberExp.Member.Name : null;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+12981979_48903872_51_85
+12981979_48903872_87_100
+Title: Creating HiddenFor IEnumerable<String> in View 
+----------------------------------------
+
+public static IHtmlContent HiddenForEnumerable < TModel, TModelProperty > (this IHtmlHelper < TModel > helper, Expression < Func < TModel, IEnumerable < TModelProperty > > > expression, bool allPublicProps) {
+    if (! allPublicProps)
+        return HiddenForEnumerable (helper, expression);
+
+    var hcb = new HtmlContentBuilder ();
+    var membername = expression.GetMemberName ();
+    var model = helper.ViewData.Model;
+    var list = expression.Compile () (model);
+    var type = typeof (TModelProperty);
+    var memPropsInfo = type.GetProperties (BindingFlags.Public | BindingFlags.Instance).Where (x = > x.GetSetMethod (false) != null && x.GetGetMethod (false) != null).Select (x = > new {MemberPropName = x.Name, ListItemPropGetter = (Func < TModelProperty, object >) (p = > x.GetValue (p, null))}).ToList ();
+    if (memPropsInfo.Count == 0)
+        return HiddenForEnumerable (helper, expression);
+
+    for (var i = 0; i < list.Count (); i ++) {
+        var listItem = list.ElementAt (i);
+        foreach (var q in memPropsInfo) {
+            hcb.AppendHtml (helper.Hidden (string.Format ("{0}[{1}].{2}", membername, i, q.MemberPropName), q.ListItemPropGetter (listItem)));
+        }
+    }
+    return hcb;
+}
+----------------------------------------
+
+public static string GetMemberName < TModel, T > (this Expression < Func < TModel, T > > input) {
+    if (input == null)
+        return null;
+
+    MemberExpression memberExp = null;
+    if (input.Body.NodeType == ExpressionType.MemberAccess)
+        memberExp = input.Body as MemberExpression;
+    else if (input.Body.NodeType == ExpressionType.Convert)
+        memberExp = ((UnaryExpression) input.Body).Operand as MemberExpression;
+
+    return memberExp != null ? memberExp.Member.Name : null;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+12983765_12983824_1_15
+12983765_12983924_1_16
+Title: Returning variables in C# 
+----------------------------------------
+
+public string tostringmeth () {
+    string markstring;
+    string matricstring;
+    markstring = "";
+    matricstring = "";
+    Mark.ToString (markstring);
+    Matric.ToString (matricstring);
+    return FirstName + " " + SecondName + " " + DoB + " " + Course + " " + markstring + " " + matricstring;
+}
+----------------------------------------
+
+public string tostringmeth (string concat) {
+    string markstring;
+    string matricstring;
+    markstring = "";
+    matricstring = "";
+    Mark.ToString (markstring);
+    Matric.ToString (matricstring);
+    concat = FirstName + " " + SecondName + " " + DoB + " " + Course + " " + markstring + " " + matricstring;
+    return concat;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+12989915_12990037_12_39
+12989915_13040776_1_19
+Title: How to bind an array of lists with a GridView or a DataList? 
+----------------------------------------
+
+private System.Data.DataTable CreateDataTable (List < string > columnDefinitions, List < List < string > > rows) {
+    DataTable table = new DataTable ();
+    foreach (string colDef in columnDefinitions) {
+        DataColumn column;
+        column = new DataColumn ();
+        column.DataType = typeof (string);
+        column.ColumnName = colDef;
+        table.Columns.Add (column);
+    }
+    foreach (List < string > rowData in rows) {
+        DataRow row = table.NewRow ();
+        for (int i = 0; i < rowData.Count; i ++) {
+            row [i] = rowData [i];
+        }
+        table.Rows.Add (row);
+    }
+    return table;
+}
+----------------------------------------
+
+private System.Data.DataTable CreateDataTable (List < string > columnDefinitions, List < List < string > > rows) {
+    DataTable table = new DataTable ();
+    foreach (string colDef in columnDefinitions) {
+        DataColumn column;
+        column = new DataColumn ();
+        column.DataType = typeof (string);
+        column.ColumnName = colDef;
+        table.Columns.Add (column);
+    }
+    for (int i = 0; i < rows [0].Count; i ++) {
+        table.Rows.Add (rows [0] [i], rows [1] [i], rows [2] [i], rows [3] [i], rows [4] [i], rows [5] [i], rows [6] [i]);
+    }
+    return table;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+12992722_35200504_22_39
+12992722_35200504_3_18
+Title: Why is my ASP.NET Web API ActionFilterAttribute OnActionExecuting not firing? 
+----------------------------------------
+
+public override void OnActionExecuted (HttpActionExecutedContext actionExecutedContext) {
+    if (actionExecutedContext.Response != null && actionExecutedContext.Request != null && actionExecutedContext.Request.Headers.Referrer != null) {
+        var allowedCrossDomains = TypeSafeConfigurationManager.GetValueString ("allowedCrossDomains", "none");
+        var allowedHosts = allowedCrossDomains.Split (',').ToList ();
+        var requestHost = actionExecutedContext.Request.Headers.Referrer.GetLeftPart (UriPartial.Authority);
+        if (allowedHosts.Contains (requestHost.ToLower ())) {
+            actionExecutedContext.Response.Headers.Add ("Access-Control-Allow-Origin", requestHost);
+        }
+        base.OnActionExecuted (actionExecutedContext);
+    }
+}
+----------------------------------------
+
+public override void OnActionExecuted (System.Web.Mvc.ActionExecutedContext filterContext) {
+    if (filterContext.HttpContext != null && filterContext.HttpContext.Response != null && filterContext.HttpContext.Request != null && filterContext.HttpContext.Request.UrlReferrer != null) {
+        var allowedCrossDomains = TypeSafeConfigurationManager.GetValueString ("allowedCrossDomains", "none");
+        var allowedHosts = allowedCrossDomains.Split (',');
+        var requestHost = filterContext.HttpContext.Request.UrlReferrer.GetLeftPart (UriPartial.Authority);
+        if (allowedHosts.Contains (requestHost.ToLower ())) {
+            filterContext.HttpContext.Response.Headers.Add ("Access-Control-Allow-Origin", requestHost);
+        }
+    }
+    base.OnActionExecuted (filterContext);
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+13005098_36281600_31_52
+13005098_36281600_8_23
+Title: Parsing HTML Table in C# 
+----------------------------------------
+
+public List < string > getTableData (HtmlElement tbl) {
+    int nrec = 0;
+    List < string > data = new List < string > ();
+    string rowBuff;
+    HtmlElementCollection rows = tbl.GetElementsByTagName ("tr");
+    HtmlElementCollection cols;
+    foreach (HtmlElement tr in rows) {
+        cols = tr.GetElementsByTagName ("td");
+        nrec ++;
+        rowBuff = nrec.ToString ();
+        foreach (HtmlElement td in cols) {
+            rowBuff += "\t" + WebUtility.HtmlDecode (td.InnerText);
+        }
+        data.Add (rowBuff);
+    }
+    return data;
+}
+----------------------------------------
+
+public List < string > getTableData (HtmlDocument doc, int number) {
+    HtmlElementCollection tables = doc.GetElementsByTagName ("table");
+    int idx = 0;
+    List < string > data = new List < string > ();
+    foreach (HtmlElement tbl in tables) {
+        if (idx ++ == number) {
+            data = getTableData (tbl);
+            break;
+        }
+    }
+    return data;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+13028185_13028908_1_12
+13028185_13029302_59_74
+Title: Building a query (LINQ) with a sub-query 
+----------------------------------------
+
+static IQueryable < ComplexClass > GetSubQuery (string someParameter, string someOtherParameter) {
+    var query = list.AsQueryable ();
+    if (! String.IsNullOrEmpty (someParameter))
+        query = query.Where (c = > c.SubClasses.Where (sc = > sc.Name.StartsWith (someParameter)).Any ());
+
+    if (! String.IsNullOrEmpty (someOtherParameter))
+        query = query.Where (c = > c.SubClasses.Where (sc = > sc.Name.StartsWith (someOtherParameter)).Any ());
+
+    return query;
+}
+----------------------------------------
+
+private static void GetSubQuery (string startsWith, string endsWith) {
+    var query = from item in list
+        let StartIsNull = string.IsNullOrEmpty (startsWith)
+        let EndIsNull = string.IsNullOrEmpty (endsWith)
+        where (StartIsNull || item.SubClasses.Any (sc = > sc.SubName.StartsWith (startsWith))) && (EndIsNull || item.SubClasses.Any (sc = > sc.SubName.EndsWith (endsWith)))
+        select item;
+    foreach (var complexClass in query) {
+        Console.WriteLine (complexClass.SubClasses.First ().SubName);
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+13077010_13077392_1_21
+13077010_13077543_1_17
+Title: How do I modify a textbox control so that pressing backspace deletes whole words instead of just one character at a time? 
+----------------------------------------
+
+private void textBox1_KeyDown (object sender, KeyEventArgs e) {
+    TextBox t = (TextBox) sender;
+    if (e.KeyCode == Keys.Back) {
+        int carretIndex = t.SelectionStart;
+        if (carretIndex > 0 && carretIndex == t.Text.Length && t.Text [carretIndex - 1] == ' ') {
+            int lastWordIndex = t.Text.Substring (0, t.Text.Length - 1).LastIndexOf (' ');
+            if (lastWordIndex >= 0) {
+                t.Text = t.Text.Remove (lastWordIndex + 1);
+                t.Select (t.Text.Length, 0);
+            } else {
+                t.Text = string.Empty;
+            }
+        }
+    }
+}
+----------------------------------------
+
+private void textBox1_KeyDown (object sender, KeyEventArgs e) {
+    String [] chars = new String [1] {" "};
+    if (e.KeyValue == 8) {
+        var temp = (from string s in textBox1.Text.Split (chars, StringSplitOptions.None)
+            select s).ToArray ();
+        temp [temp.Length - 1] = "";
+        textBox1.Text = String.Join (" ", temp).ToString ();
+        SendKeys.Send ("{END}");
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+13083952_13084635_10_25
+13083952_13086714_3_29
+Title: Combine similar character in string in C# 
+----------------------------------------
+
+static List < HashSet < T > > Step < T > (List < HashSet < T > > all, IEnumerable < T > current) {
+    var bucket = new HashSet < T > ();
+    foreach (var c in current)
+        bucket.Add (c);
+
+    foreach (var i in all.Where (b = > b.Overlaps (bucket)).ToArray ()) {
+        bucket.UnionWith (i);
+        all.Remove (i);
+    }
+    all.Add (bucket);
+    return all;
+}
+----------------------------------------
+
+static IEnumerable < IEnumerable < T > > CombineSets < T > (IEnumerable < IEnumerable < T > > sets, IEqualityComparer < T > eq) {
+    var result_sets = new LinkedList < HashSet < T > > ();
+    foreach (var set in sets) {
+        var result_set = new HashSet < T > (eq);
+        foreach (var element in set) {
+            result_set.Add (element);
+            var node = result_sets.First;
+            while (node != null) {
+                var next = node.Next;
+                if (node.Value.Contains (element)) {
+                    result_set.UnionWith (node.Value);
+                    result_sets.Remove (node);
+                }
+                node = next;
+            }
+        }
+        result_sets.AddLast (result_set);
+    }
+    return result_sets;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+1309037_1311429_3_16
+1309037_1313072_3_22
+Title: log4net....separate log files 
+----------------------------------------
+
+static void Main (string [] args) {
+    log4net.Config.BasicConfigurator.Configure ();
+    var file = Path.Combine (Directory.GetCurrentDirectory (), Guid.NewGuid () + ".log");
+    var log = InitialiseLogToFile (file);
+    log.Info ("Made it here!");
+    log.Error ("Made it here!");
+    var file2 = Path.Combine (Directory.GetCurrentDirectory (), Guid.NewGuid () + ".log");
+    var log2 = InitialiseLogToFile (file2);
+    log2.Info ("Made it here!");
+    log2.Error ("Made it here!");
+}
+----------------------------------------
+
+static void Main (string [] args) {
+    log4net.Config.BasicConfigurator.Configure ();
+    var file = Path.Combine (Directory.GetCurrentDirectory (), Guid.NewGuid () + ".log");
+    using (var log = new CustomFileLogger (file))
+    {
+        log.Info ("file: Made it here!");
+        log.Error ("file: Made it here!");
+    } var file2 = Path.Combine (Directory.GetCurrentDirectory (), Guid.NewGuid () + ".log");
+    using (var log = new CustomFileLogger (file2))
+    {
+        log.Info ("file2: Made it here!");
+        log.Error ("file2: Made it here!");
+    }}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+13097269_13097384_1_23
+13097269_13097429_1_18
+Title: What is the correct way to read from NetworkStream in .NET 
+----------------------------------------
+
+string SendCmd (string cmd, string ip, int port) {
+    var client = new TcpClient (ip, port);
+    var data = Encoding.GetEncoding (1252).GetBytes (cmd);
+    var stm = client.GetStream ();
+    stm.Write (data, 0, data.Length);
+    byte [] resp = new byte [2048];
+    var memStream = new MemoryStream ();
+    int bytes = 0;
+    do
+        {
+            bytes = 0;
+            while (! stm.DataAvailable)
+                Thread.Sleep (20);
+
+            bytes = stm.Read (resp, 0, resp.Length);
+            memStream.Write (resp, 0, bytes);
+        } while (bytes > 0);
+    return Encoding.GetEncoding (1252).GetString (memStream.ToArray ());
+}
+----------------------------------------
+
+string SendCmd (string cmd, string ip, int port) {
+    var client = new TcpClient (ip, port);
+    var data = Encoding.GetEncoding (1252).GetBytes (cmd);
+    var stm = client.GetStream ();
+    stm.ReadTimeout = 250;
+    stm.Write (data, 0, data.Length);
+    byte [] resp = new byte [2048];
+    var memStream = new MemoryStream ();
+    int bytesread = stm.Read (resp, 0, resp.Length);
+    while (bytesread > 0) {
+        memStream.Write (resp, 0, bytesread);
+        bytesread = stm.Read (resp, 0, resp.Length);
+    }
+    return Encoding.GetEncoding (1252).GetString (memStream.ToArray ());
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+13097269_13097384_1_23
+13097269_13097757_1_31
+Title: What is the correct way to read from NetworkStream in .NET 
+----------------------------------------
+
+string SendCmd (string cmd, string ip, int port) {
+    var client = new TcpClient (ip, port);
+    var data = Encoding.GetEncoding (1252).GetBytes (cmd);
+    var stm = client.GetStream ();
+    stm.Write (data, 0, data.Length);
+    byte [] resp = new byte [2048];
+    var memStream = new MemoryStream ();
+    int bytes = 0;
+    do
+        {
+            bytes = 0;
+            while (! stm.DataAvailable)
+                Thread.Sleep (20);
+
+            bytes = stm.Read (resp, 0, resp.Length);
+            memStream.Write (resp, 0, bytes);
+        } while (bytes > 0);
+    return Encoding.GetEncoding (1252).GetString (memStream.ToArray ());
+}
+----------------------------------------
+
+string SendCmd (string cmd, string ip, int port) {
+    var client = new TcpClient (ip, port);
+    var data = Encoding.GetEncoding (1252).GetBytes (cmd);
+    var stm = client.GetStream ();
+    stm.Write (data, 0, data.Length);
+    byte [] resp = new byte [2048];
+    var memStream = new MemoryStream ();
+    var bytes = 0;
+    client.Client.ReceiveTimeout = 20;
+    do
+        {
+            try {
+                bytes = stm.Read (resp, 0, resp.Length);
+                memStream.Write (resp, 0, bytes);
+            }
+            catch (IOException ex) {
+                var socketExept = ex.InnerException as SocketException;
+                if (socketExept == null || socketExept.ErrorCode != 10060)
+                    throw ex;
+
+                bytes = 0;
+            }
+        } while (bytes > 0);
+    return Encoding.GetEncoding (1252).GetString (memStream.ToArray ());
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+13097269_13097429_1_18
+13097269_13097757_1_31
+Title: What is the correct way to read from NetworkStream in .NET 
+----------------------------------------
+
+string SendCmd (string cmd, string ip, int port) {
+    var client = new TcpClient (ip, port);
+    var data = Encoding.GetEncoding (1252).GetBytes (cmd);
+    var stm = client.GetStream ();
+    stm.ReadTimeout = 250;
+    stm.Write (data, 0, data.Length);
+    byte [] resp = new byte [2048];
+    var memStream = new MemoryStream ();
+    int bytesread = stm.Read (resp, 0, resp.Length);
+    while (bytesread > 0) {
+        memStream.Write (resp, 0, bytesread);
+        bytesread = stm.Read (resp, 0, resp.Length);
+    }
+    return Encoding.GetEncoding (1252).GetString (memStream.ToArray ());
+}
+----------------------------------------
+
+string SendCmd (string cmd, string ip, int port) {
+    var client = new TcpClient (ip, port);
+    var data = Encoding.GetEncoding (1252).GetBytes (cmd);
+    var stm = client.GetStream ();
+    stm.Write (data, 0, data.Length);
+    byte [] resp = new byte [2048];
+    var memStream = new MemoryStream ();
+    var bytes = 0;
+    client.Client.ReceiveTimeout = 20;
+    do
+        {
+            try {
+                bytes = stm.Read (resp, 0, resp.Length);
+                memStream.Write (resp, 0, bytes);
+            }
+            catch (IOException ex) {
+                var socketExept = ex.InnerException as SocketException;
+                if (socketExept == null || socketExept.ErrorCode != 10060)
+                    throw ex;
+
+                bytes = 0;
+            }
+        } while (bytes > 0);
+    return Encoding.GetEncoding (1252).GetString (memStream.ToArray ());
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+13106493_13109208_5_14
+13106493_40852210_7_44
+Title: How do I only allow number input into my C# Console Application? 
+----------------------------------------
+
+public static void Main () {
+    string entry = ConsoleExtensions.ReadKeys (s = > {
+        StringToDouble (s);
+        return true;
+    });
+    double result = StringToDouble (entry);
+    Console.WriteLine ();
+    Console.WriteLine ("Result was {0}", result);
+}
+----------------------------------------
+
+static void Main (string [] args) {
+    Console.Title = "";
+    Console.Write ("Enter your value: ");
+    do
+        {
+            inputKey = Console.ReadKey (true);
+            if (char.IsDigit (inputKey.KeyChar)) {
+                if (inputKey.KeyChar == '0') {
+                    if (! backValue.StartsWith ("0") || backValue.Contains ('.'))
+                        Write ();
+
+                } else
+                    Write ();
+
+            }
+            if (inputKey.KeyChar == '-' && backValue.Length == 0 || inputKey.KeyChar == '.' && ! backValue.Contains (inputKey.KeyChar) && backValue.Length > 0)
+                Write ();
+
+            if (inputKey.Key == ConsoleKey.Backspace && backValue.Length > 0) {
+                backValue = backValue.Substring (0, backValue.Length - 1);
+                Console.Write ("\b \b");
+            }
+        } while (inputKey.Key != ConsoleKey.Enter);
+    if (double.TryParse (backValue, out value))
+        Console.Write ("\n{0}^2 = {1}", value, Math.Pow (value, 2));
+
+    Console.ReadKey ();
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+13117079_13117677_1_12
+13117079_13117983_1_13
+Title: "How do you code a ""Create"" view for a model?" 
+----------------------------------------
+
+[HttpPost] public ActionResult Create (MenuViewModel model) {
+    if (ModelState.IsValid) {
+        var menu = new Menu {Name = model.Name};
+        menu.Roles = _db.UserRoles.Where (rl = > model.SelectedRoles.Contains (rl.Id)).ToList ();
+        _db.SaveChanges ();
+        return RedirectToAction ("Index");
+    }
+    return View (model);
+}
+----------------------------------------
+
+[HttpPost] public ActionResult Create (Menu menu) {
+    if (ModelState.IsValid) {
+        _db.Menus.Add (menu);
+        _db.SaveChanges ();
+        return RedirectToAction ("Index");
+    }
+    ViewBag.ParentMenuId = new SelectList (_db.Menus, "Id", "Name", menu.ParentMenuId);
+    ViewBag.Roles = new SelectList (_db.UserRoles.ToList (), "Id", "Name");
+    return View (menu);
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+13127171_13240029_1_17
+13127171_13240579_1_14
+Title: The image is shifted when convert 8bpp to 24bpp 
+----------------------------------------
+
+private static Bitmap ConvertTo24 (Bitmap bmpIn) {
+    bmpIn.Save (@"F:\sara1.bmp");
+    return;
+    Bitmap converted = new Bitmap (bmpIn.Width, bmpIn.Height, PixelFormat.Format24bppRgb);
+    using (Graphics g = Graphics.FromImage (converted))
+    {
+        g.PageUnit = GraphicsUnit.Pixel;
+        g.DrawImageUnscaled (bmpIn, 0, 0);
+    } converted.Save (@"F:\sara2.bmp");
+}
+----------------------------------------
+
+private static Bitmap ConvertTo24 (Bitmap bmpIn) {
+    bmpIn.Save (@"F:\sara1.bmp");
+    Bitmap converted = new Bitmap (bmpIn.Width, bmpIn.Height, PixelFormat.Format24bppRgb);
+    using (Graphics g = Graphics.FromImage (converted))
+    {
+        g.PageUnit = GraphicsUnit.Pixel;
+        g.DrawImage (bmpIn, 0, 0, converted.Width, converted.Height);
+    } converted.Save (@"F:\sara2.bmp");
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+1314155_1314165_13_25
+1314155_6584661_1_12
+Title: Returning a value from thread? 
+----------------------------------------
+
+static void Main (string [] args) {
+    BackgroundWorker bg = new BackgroundWorker ();
+    bg.DoWork += new DoWorkEventHandler (bg_DoWork);
+    bg.RunWorkerCompleted += new RunWorkerCompletedEventHandler (bg_RunWorkerCompleted);
+    bg.RunWorkerAsync ();
+    while (! done) {
+        Console.WriteLine ("Waiting in Main, tid " + Thread.CurrentThread.ManagedThreadId);
+        Thread.Sleep (100);
+    }
+}
+----------------------------------------
+
+void Main () {
+    object value = null;
+    var thread = new Thread (() = > {
+        value = "Hello World";
+    });
+    thread.Start ();
+    thread.Join ();
+    Console.WriteLine (value);
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+13159326_38442826_20_35
+13159326_47355769_10_30
+Title: Implementing retry logic for deadlock exceptions 
+----------------------------------------
+
+protected override bool ShouldRetryOn (Exception exception) {
+    var sqlException = exception as SqlException;
+    if (sqlException != null) {
+        foreach (SqlError err in sqlException.Errors) {
+            if (_errorCodesToRetry.Contains (err.Number)) {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+----------------------------------------
+
+protected override bool ShouldRetryOn (Exception ex) {
+    bool retry = false;
+    SqlException sqlException = ex as SqlException;
+    if (sqlException != null) {
+        int [] errorsToRetry = {1205, - 2,};
+        if (sqlException.Errors.Cast < SqlError > ().Any (x = > errorsToRetry.Contains (x.Number))) {
+            retry = true;
+        }
+    }
+    return retry;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+13184641_13184688_1_17
+13184641_13184729_1_19
+Title: How to access a ComboBox in Datagrid programatically 
+----------------------------------------
+
+private childItem FindVisualChild < childItem > (DependencyObject obj) where childItem : DependencyObject {
+    for (int i = 0; i < VisualTreeHelper.GetChildrenCount (obj); i ++) {
+        DependencyObject child = VisualTreeHelper.GetChild (obj, i);
+        if (child != null && child is childItem)
+            return (childItem) child;
+        else {
+            childItem childOfChild = FindVisualChild < childItem > (child);
+            if (childOfChild != null)
+                return childOfChild;
+
+        }
+    }
+    return null;
+}
+----------------------------------------
+
+public static IEnumerable < T > FindVisualChildren < T > (DependencyObject depObj) where T : DependencyObject {
+    if (depObj != null) {
+        for (int i = 0; i < VisualTreeHelper.GetChildrenCount (depObj); i ++) {
+            DependencyObject child = VisualTreeHelper.GetChild (depObj, i);
+            if (child != null && child is T) {
+                yield return (T) child;
+            }
+            foreach (T childOfChild in FindVisualChildren < T > (child)) {
+                yield return childOfChild;
+            }
+        }
+    }
+}
+----------------------------------------

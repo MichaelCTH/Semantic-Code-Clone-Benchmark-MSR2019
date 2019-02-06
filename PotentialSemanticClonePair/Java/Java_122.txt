@@ -1,0 +1,4740 @@
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+51719848_51723040_4_33
+51719848_52323080_3_15
+Title: Find the smallest positive integer that does not occur in a given sequence 
+----------------------------------------
+
+public static int solution (int [] A) {
+    int N = A.length;
+    int [] C = new int [N];
+    for (int i = 0;
+    i < N; i ++) {
+        int j = Math.abs (A [i]) - 1;
+        if (j >= 0 && j < N && A [j] > 0) {
+            C [j] = - A [j];
+        }
+    }
+    for (int i = 0;
+    i < N; i ++) {
+        if (C [i] == 0) {
+            return i + 1;
+        }
+    }
+    return N + 1;
+}
+----------------------------------------
+
+public int solution (int [] A) {
+    Arrays.sort (A);
+    int min = 1;
+    int cap = A.length;
+    for (int i = 0;
+    i < cap; i ++) {
+        if (A [i] == min) {
+            min ++;
+        }
+    }
+    return min;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+51778013_51778279_5_28
+51778013_51778579_5_16
+Title: Java - Do not delete files that match any of the array values 
+----------------------------------------
+
+public static void main (String args []) {
+    LocalDate today = LocalDate.now ();
+    long storagePeriod = 5L;
+    String fileName = "file_20180804";
+    int year = 0;
+    int month = 0;
+    int day = 0;
+    String pattern = "file_(\\d{4})(\\d{2})(\\d{2})";
+    Pattern r = Pattern.compile (pattern);
+    Matcher m = r.matcher (fileName);
+    if (m.find ()) {
+        year = Integer.parseInt (m.group (1));
+        month = Integer.parseInt (m.group (2));
+        day = Integer.parseInt (m.group (3));
+    }
+    LocalDate fileDate = LocalDate.of (year, month, day);
+    if (fileDate.isBefore (today.minusDays (storagePeriod))) {
+        System.out.println ("Delete this file");
+    }
+}
+----------------------------------------
+
+public static void main (String [] args) {
+    List < String > filter = Arrays.asList ("20180810", "20180808", "20180809", "20180807", "20180806", "20180805");
+    List < File > files = Arrays.asList (new File ("file_20180810"), new File ("file_19950101"), new File ("file_20180809"));
+    for (File file : files) {
+        String fileDateStr = getDateStringFromFileName (file.getName ());
+        if (filter.contains (fileDateStr)) {
+            System.out.println (file.toString ());
+        }
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+51779774_51781294_40_52
+51779774_51800933_40_54
+Title: efficient way to remove elements from list of ranges from a bigger range 
+----------------------------------------
+
+public static void printRange (Range outer, int [] indexes) {
+    int outerRangeSize = outer.end - outer.start + 2;
+    int rangeShift = - (outer.start - 1);
+    int current = 0;
+    while (indexes [current] - rangeShift <= outer.end) {
+        System.out.println (indexes [current] - rangeShift);
+        current = indexes [current];
+    }
+}
+----------------------------------------
+
+public static void printRange (Range outer, int [] indexes) {
+    int outerRangeSize = outer.end - outer.start + 2;
+    int rangeShift = - (outer.start - 1);
+    int current = 0;
+    int currentNext = ((indexes [current] > 0) ? indexes [current] : current + 1);
+    while (currentNext - rangeShift <= outer.end) {
+        System.out.println (currentNext - rangeShift);
+        current = currentNext;
+        currentNext = ((indexes [current] > 0) ? indexes [current] : current + 1);
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+51779774_51781294_54_88
+51779774_51782403_1_22
+Title: efficient way to remove elements from list of ranges from a bigger range 
+----------------------------------------
+
+public static int [] removeRanges (Range outer, List < Range > rangesToBeRemoved) {
+    int outerRangeSize = outer.end - outer.start + 2;
+    int rangeShift = - (outer.start - 1);
+    int [] outerElementsIndexes = new int [outerRangeSize];
+    for (int i = 0;
+    i < outerRangeSize; i ++) {
+        outerElementsIndexes [i] = i + 1;
+    }
+    int currentIndex = 0;
+    int currentIndexNext = 1;
+    for (Range range : rangesToBeRemoved) {
+        if (currentIndex >= outerRangeSize) break;
+
+        int nextIndexStart = range.start + rangeShift - 1;
+        if (nextIndexStart < 0) nextIndexStart = 0;
+
+        int nextIndexEnd = range.end + rangeShift + 1;
+        if (nextIndexEnd <= currentIndexNext) continue;
+
+        if (nextIndexStart <= currentIndexNext) {
+            outerElementsIndexes [currentIndex] = nextIndexEnd;
+            currentIndexNext = nextIndexEnd;
+        } else {
+            outerElementsIndexes [nextIndexStart] = nextIndexEnd;
+            currentIndex = nextIndexStart;
+            currentIndexNext = nextIndexEnd;
+        }
+    }
+    return outerElementsIndexes;
+}
+----------------------------------------
+
+public static Set < Integer > removeRanges (Range outer, List < Range > rangesToBeRemoved) {
+    HashMap < Integer, Integer > Ranges = new HashMap < > ();
+    for (Range range : rangesToBeRemoved) {
+        Ranges.put (range.start, range.end);
+    }
+    Set < Integer > outerElements = new HashSet < > ();
+    for (int j = range.start;
+    j <= range.end; j ++) {
+        if (Ranges.get (j)) {
+            int left = j, right = Ranges.get (j);
+            j += right - left + 1;
+        } else {
+            outerElements.add (j);
+        }
+    }
+    return outerElements;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+51779774_51782403_1_22
+51779774_51800933_56_85
+Title: efficient way to remove elements from list of ranges from a bigger range 
+----------------------------------------
+
+public static Set < Integer > removeRanges (Range outer, List < Range > rangesToBeRemoved) {
+    HashMap < Integer, Integer > Ranges = new HashMap < > ();
+    for (Range range : rangesToBeRemoved) {
+        Ranges.put (range.start, range.end);
+    }
+    Set < Integer > outerElements = new HashSet < > ();
+    for (int j = range.start;
+    j <= range.end; j ++) {
+        if (Ranges.get (j)) {
+            int left = j, right = Ranges.get (j);
+            j += right - left + 1;
+        } else {
+            outerElements.add (j);
+        }
+    }
+    return outerElements;
+}
+----------------------------------------
+
+public static int [] removeRanges (Range outer, List < Range > rangesToBeRemoved) {
+    int outerRangeSize = outer.end - outer.start + 2;
+    int rangeShift = - (outer.start - 1);
+    int [] outerElementsIndexes = new int [outerRangeSize];
+    int currentIndex = 0;
+    int currentIndexNext = 1;
+    for (Range range : rangesToBeRemoved) {
+        if (currentIndex >= outerRangeSize) break;
+
+        int nextIndexStart = range.start + rangeShift - 1;
+        if (nextIndexStart < 0) nextIndexStart = 0;
+
+        int nextIndexEnd = range.end + rangeShift + 1;
+        if (nextIndexEnd <= currentIndexNext) continue;
+
+        if (nextIndexStart <= currentIndexNext) {
+            outerElementsIndexes [currentIndex] = nextIndexEnd;
+            currentIndexNext = nextIndexEnd;
+        } else {
+            outerElementsIndexes [nextIndexStart] = nextIndexEnd;
+            currentIndex = nextIndexStart;
+            currentIndexNext = nextIndexEnd;
+        }
+    }
+    return outerElementsIndexes;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+51787217_51787290_1_20
+51787217_51787411_3_44
+Title: Array pairwise matching in java give error also store data between two similar element 
+----------------------------------------
+
+public static void main (String args []) {
+    double [] xcoordinate = {2.3, 1.2, 3.3, 5.5, 2.3, 1.3, 7.9, 1.2, 3.3, 3.3, 5.2};
+    double [] ycordinate = {5.4, 2.2, 4.4, 6.6, 5.4, 1.9, 5.2, 2.2, 3.5, 4.4, 4.2};
+    int i = 0;
+    while (i < xcoordinate.length) {
+        int k = i + 1;
+        while (k < xcoordinate.length) {
+            if (xcoordinate [i] == xcoordinate [k] && ycordinate [i] == ycordinate [k]) {
+                System.out.println ("Both co ordinates are same: " + i + "," + k);
+            } else {
+                System.out.println ("They are not same" + i + " " + k);
+            }
+            k ++;
+        }
+        i ++;
+    }
+}
+----------------------------------------
+
+public static void main (String args []) {
+    double [] xcoordinate = {2.3, 1.2, 3.3, 5.5, 2.3, 1.3, 7.9, 1.2, 3.3, 3.3, 5.2};
+    double [] ycoordinate = {5.4, 2.2, 4.4, 6.6, 5.4, 1.9, 5.2, 2.2, 3.5, 4.4, 4.2};
+    double [] repeatedx = new double [xcoordinate.length];
+    double [] repeatedy = new double [ycoordinate.length];
+    int k = 0;
+    for (int i = 0;
+    i < xcoordinate.length - 1; i ++) {
+        double xcoordinate1 = xcoordinate [i];
+        double ycoordinate1 = ycoordinate [i];
+        for (int j = i + 1;
+        j < xcoordinate.length; j ++) {
+            double xcoordinate2 = xcoordinate [j];
+            double ycoordinate2 = ycoordinate [j];
+            if ((xcoordinate1 == xcoordinate2) && (ycoordinate1 == ycoordinate2)) {
+                System.out.println ("same pair repeated at index " + i + " and " + j + " index");
+                repeatedx [k] = xcoordinate [i];
+                repeatedy [k] = ycoordinate [i];
+                k ++;
+            }
+        }
+    }
+    System.out.print ("repeated x values ");
+    for (int l = 0;
+    l < k; l ++) {
+        System.out.print (repeatedx [l] + " ");
+    }
+    System.out.print ("repeated y values ");
+    for (int m = 0;
+    m < k; m ++) {
+        System.out.print (repeatedy [m] + " ");
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+51792670_51792764_4_15
+51792670_51792772_4_14
+Title: How to print non symmetric value while using for loop in Java 
+----------------------------------------
+
+public static void main (String args []) {
+    Matrix Mytest = new Matrix (5, 5);
+    for (int i = 0;
+    i < 4; i ++) {
+        if (i == 0) {
+            Mytest.set (i, i, 2);
+        } else {
+            Mytest.set (i, i, 1);
+        }
+        Mytest.set (i + 1, i, 1);
+    }
+    Mytest.print (9, 6);
+}
+----------------------------------------
+
+public static void main (String args []) {
+    Matrix Mytest = new Matrix (5, 5);
+    for (int i = 0;
+    i < 4; i ++) {
+        if (i == 0) {
+            Mytest.set (i, i, 2);
+        }
+        Mytest.set (i, i, 1);
+        Mytest.set (i + 1, i, 1);
+    }
+    Mytest.print (9, 6);
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+51792670_51792764_4_15
+51792670_51792812_4_18
+Title: How to print non symmetric value while using for loop in Java 
+----------------------------------------
+
+public static void main (String args []) {
+    Matrix Mytest = new Matrix (5, 5);
+    for (int i = 0;
+    i < 4; i ++) {
+        if (i == 0) {
+            Mytest.set (i, i, 2);
+        } else {
+            Mytest.set (i, i, 1);
+        }
+        Mytest.set (i + 1, i, 1);
+    }
+    Mytest.print (9, 6);
+}
+----------------------------------------
+
+public static void main (String args []) {
+    Matrix Mytest = new Matrix (5, 5);
+    Mytest.set (0, 0, 2);
+    Mytest.set (1, 0, 1);
+    for (int i = 1;
+    i < 4; i ++) {
+        Mytest.set (i, i, 1);
+        Mytest.set (i + 1, i, 1);
+    }
+    Mytest.print (9, 6);
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+51792670_51792772_4_14
+51792670_51792812_4_18
+Title: How to print non symmetric value while using for loop in Java 
+----------------------------------------
+
+public static void main (String args []) {
+    Matrix Mytest = new Matrix (5, 5);
+    for (int i = 0;
+    i < 4; i ++) {
+        if (i == 0) {
+            Mytest.set (i, i, 2);
+        }
+        Mytest.set (i, i, 1);
+        Mytest.set (i + 1, i, 1);
+    }
+    Mytest.print (9, 6);
+}
+----------------------------------------
+
+public static void main (String args []) {
+    Matrix Mytest = new Matrix (5, 5);
+    Mytest.set (0, 0, 2);
+    Mytest.set (1, 0, 1);
+    for (int i = 1;
+    i < 4; i ++) {
+        Mytest.set (i, i, 1);
+        Mytest.set (i + 1, i, 1);
+    }
+    Mytest.print (9, 6);
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+51795370_51795592_34_47
+51795370_51796103_38_53
+Title: How do I make a loop start and end with a key press and release? 
+----------------------------------------
+
+public void run () {
+    try {
+        UIManager.setLookAndFeel (UIManager.getSystemLookAndFeelClassName ());
+    } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException ex) {
+        ex.printStackTrace ();
+    }
+    JFrame frame = new JFrame ("Testing");
+    frame.setDefaultCloseOperation (JFrame.EXIT_ON_CLOSE);
+    frame.add (new TestPane ());
+    frame.pack ();
+    frame.setLocationRelativeTo (null);
+    frame.setVisible (true);
+}
+----------------------------------------
+
+public void run () {
+    for (int n = 2;
+    ; n ++) {
+        while (! spaceKeyPressed) {
+            synchronized (this) {
+                try {
+                    wait ();
+                } catch (InterruptedException e) {
+                }
+            }
+        }
+        if (isPrime (n)) {
+            System.out.println (n);
+        }
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+51824446_51824572_1_12
+51824446_51824575_1_8
+Title: java array - cannot find symbol 
+----------------------------------------
+
+public static int [] diff (int [] x) {
+    int [] newlist = new int [x.length - 1];
+    for (int i = 0;
+    i < x.length - 1; i ++) {
+        int current = 0;
+        current = x [i];
+        int next = x [i + 1];
+        int total = current - next;
+        newlist [i] = total;
+    }
+    return newlist;
+}
+----------------------------------------
+
+public static int [] diff (int [] input) {
+    if (input.length == 0) return input;
+
+    int [] output = new int [input.length - 1];
+    for (int i = 0;
+    i < output.length; i ++) output [i] = input [i] - input [i + 1];
+
+    return output;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+51831210_51831296_1_25
+51831210_51831326_1_15
+Title: Calculator-Error when try to sum an integer with an empty field 
+----------------------------------------
+
+public void plus (View view) {
+    try {
+        int a = Integer.parseInt (num1.getText ().toString ());
+        int b = Integer.parseInt (num2.getText ().toString ());
+    } catch (NumberFormatterException e) {
+        if (num1.getText ().toString () == null) {
+            a = 0;
+        }
+        if (num2.getText ().toString () == null) {
+            b = 0;
+        }
+    }
+    int sum2 = a + b;
+    result.setText (" " + sum2);
+}
+----------------------------------------
+
+public void plus (View view) {
+    int a = 0;
+    int b = 0;
+    if (num1 != null && num1.getText () != null && num1.getText ().toString () != "") {
+        a = Integer.parseInt (num1.getText ().toString ());
+    }
+    if (num2 != null && num2.getText () != null && num2.getText ().toString () != "") {
+        b = Integer.parseInt (num2.getText ().toString ());
+    }
+    int sum2 = a + b;
+    result.setText (" " + sum2);
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+51831210_51831296_1_25
+51831210_51831567_1_16
+Title: Calculator-Error when try to sum an integer with an empty field 
+----------------------------------------
+
+public void plus (View view) {
+    try {
+        int a = Integer.parseInt (num1.getText ().toString ());
+        int b = Integer.parseInt (num2.getText ().toString ());
+    } catch (NumberFormatterException e) {
+        if (num1.getText ().toString () == null) {
+            a = 0;
+        }
+        if (num2.getText ().toString () == null) {
+            b = 0;
+        }
+    }
+    int sum2 = a + b;
+    result.setText (" " + sum2);
+}
+----------------------------------------
+
+public void plus (View view) {
+    int a = 0;
+    int b = 0;
+    try {
+        a = Integer.parseInt (num1.getText ().toString ().trim ());
+    } catch (NumberFormatException e) {
+    }
+    try {
+        b = Integer.parseInt (num2.getText ().toString ().trim ());
+    } catch (NumberFormatException e) {
+    }
+    int sum2 = a + b;
+    result.setText ("" + sum2);
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+51831210_51831326_1_15
+51831210_51831567_1_16
+Title: Calculator-Error when try to sum an integer with an empty field 
+----------------------------------------
+
+public void plus (View view) {
+    int a = 0;
+    int b = 0;
+    if (num1 != null && num1.getText () != null && num1.getText ().toString () != "") {
+        a = Integer.parseInt (num1.getText ().toString ());
+    }
+    if (num2 != null && num2.getText () != null && num2.getText ().toString () != "") {
+        b = Integer.parseInt (num2.getText ().toString ());
+    }
+    int sum2 = a + b;
+    result.setText (" " + sum2);
+}
+----------------------------------------
+
+public void plus (View view) {
+    int a = 0;
+    int b = 0;
+    try {
+        a = Integer.parseInt (num1.getText ().toString ().trim ());
+    } catch (NumberFormatException e) {
+    }
+    try {
+        b = Integer.parseInt (num2.getText ().toString ().trim ());
+    } catch (NumberFormatException e) {
+    }
+    int sum2 = a + b;
+    result.setText ("" + sum2);
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+51834852_51834928_3_18
+51834852_51835098_1_17
+Title: How do I code the sum of arrays? 
+----------------------------------------
+
+public static void main (String [] args) {
+    int array1 [] = {1, 2, 3};
+    int array2 [] = {10, 10, 10, 10};
+    int sum = 0;
+    for (int i = 0;
+    i < array2.length; i ++) {
+        sum += array2 [i];
+    }
+    for (int i = 0;
+    i < array1.length; i ++) {
+        sum += array1 [i];
+    }
+    System.out.println ("result: " + sum);
+}
+----------------------------------------
+
+public static void main (String [] args) {
+    int array1 [] = {1, 2, 3};
+    int array2 [] = {10, 9, 8};
+    int [] c = new int [array1.length];
+    int sumOfAll = 0;
+    for (int i = 0;
+    i < array1.length; i ++) {
+        c [i] = array1 [i] + array2 [i];
+        sumOfAll += c [i];
+        System.out.println ("Sum each: " + c [i]);
+    }
+    System.out.println ("Sum of all: " + sumOfAll);
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+51834852_51834928_3_18
+51834852_51840026_1_14
+Title: How do I code the sum of arrays? 
+----------------------------------------
+
+public static void main (String [] args) {
+    int array1 [] = {1, 2, 3};
+    int array2 [] = {10, 10, 10, 10};
+    int sum = 0;
+    for (int i = 0;
+    i < array2.length; i ++) {
+        sum += array2 [i];
+    }
+    for (int i = 0;
+    i < array1.length; i ++) {
+        sum += array1 [i];
+    }
+    System.out.println ("result: " + sum);
+}
+----------------------------------------
+
+public static void main (String [] args) {
+    int array1 [] = {1, 2, 3};
+    int array2 [] = {10, 9, 8};
+    int [] c = new int [array1.length];
+    for (int i = 0;
+    i < array1.length; i ++) {
+        c [i] = array1 [i] + array2 [i];
+        System.out.println (c [i]);
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+51834852_51835098_1_17
+51834852_51840026_1_14
+Title: How do I code the sum of arrays? 
+----------------------------------------
+
+public static void main (String [] args) {
+    int array1 [] = {1, 2, 3};
+    int array2 [] = {10, 9, 8};
+    int [] c = new int [array1.length];
+    int sumOfAll = 0;
+    for (int i = 0;
+    i < array1.length; i ++) {
+        c [i] = array1 [i] + array2 [i];
+        sumOfAll += c [i];
+        System.out.println ("Sum each: " + c [i]);
+    }
+    System.out.println ("Sum of all: " + sumOfAll);
+}
+----------------------------------------
+
+public static void main (String [] args) {
+    int array1 [] = {1, 2, 3};
+    int array2 [] = {10, 9, 8};
+    int [] c = new int [array1.length];
+    for (int i = 0;
+    i < array1.length; i ++) {
+        c [i] = array1 [i] + array2 [i];
+        System.out.println (c [i]);
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+51840078_51840250_1_17
+51840078_51840263_1_18
+Title: I don't know why this code does line breaking by itself 
+----------------------------------------
+
+public String status () {
+    if (formula >= 86) {
+        return "Very very uncomfortable";
+    } else if (formula >= 83) {
+        return "Very uncomfortable";
+    } else if (formula >= 80) {
+        return "uncomfortable";
+    } else if (formula >= 75) {
+        return "nomal";
+    } else if (formula >= 70) {
+        return "good";
+    } else if (formula >= 68) {
+        return "very good";
+    } else {
+        return "";
+    }
+
+}
+----------------------------------------
+
+public String status () {
+    String str = "";
+    if (formula >= 86) {
+        str = "Very very uncomfortable";
+    } else if (formula >= 83) {
+        str = "Very uncomfortable";
+    } else if (formula >= 80) {
+        str = "uncomfortable";
+    } else if (formula >= 75) {
+        str = "nomal";
+    } else if (formula >= 70) {
+        str = "good";
+    } else if (formula >= 68) {
+        str = "very good";
+    }
+
+    return str;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+51841123_51841355_1_22
+51841123_51841364_1_26
+Title: Thread.join() does not work when executing the Thread by ExecutorService 
+----------------------------------------
+
+public static void main (String [] args) {
+    System.out.println ("program started");
+    ExecutorService executor = Executors.newCachedThreadPool ();
+    Runnable runnable = new Runnable () {
+        @Override
+        public void run () {
+            try {
+                Thread.sleep (3000);
+            } catch (InterruptedException e) {
+                e.printStackTrace ();
+            }
+            System.out.println ("thread finished");
+        }}
+
+    ;
+    Future < ? > future = executor.submit (runnable);
+    try {
+        future.get ();
+    } catch (Exception e) {
+        e.printStackTrace ();
+    }
+    System.out.println ("waited for completion");
+}
+----------------------------------------
+
+public static void main (String [] args) {
+    System.out.println ("program started");
+    ExecutorService executor = Executors.newCachedThreadPool ();
+    Runnable runnable = new Runnable () {
+        @Override
+        public void run () {
+            try {
+                Thread.sleep (3000);
+            } catch (InterruptedException e) {
+                e.printStackTrace ();
+            }
+            System.out.println ("thread finished");
+        }}
+
+    ;
+    executor.execute (runnable);
+    try {
+        Thread thread = new Thread (runnable);
+        thread.join ();
+    } catch (Exception e) {
+        e.printStackTrace ();
+    }
+    System.out.println ("thread joined");
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+51850636_51850768_33_62
+51850636_51850768_43_59
+Title: How to make KeyListener accept input from Robot 
+----------------------------------------
+
+public void run () {
+    Main frame = new Main ();
+    frame.setTitle ("Copier");
+    frame.setResizable (false);
+    frame.setSize (100, 100);
+    frame.setDefaultCloseOperation (JFrame.EXIT_ON_CLOSE);
+    frame.setVisible (true);
+    Thread t = new Thread (new Runnable () {
+        @Override
+        public void run () {
+            try {
+                Thread.sleep (1000);
+            } catch (InterruptedException ex) {
+            }
+            try {
+                Robot robObject = new Robot ();
+                robObject.keyPress (KeyEvent.VK_ESCAPE);
+                robObject.keyRelease (KeyEvent.VK_ESCAPE);
+                System.out.println ("press");
+            } catch (AWTException e1) {
+                e1.printStackTrace ();
+            }
+        }}
+
+    );
+    t.start ();
+}
+----------------------------------------
+
+public void run () {
+    try {
+        Thread.sleep (1000);
+    } catch (InterruptedException ex) {
+    }
+    try {
+        Robot robObject = new Robot ();
+        robObject.keyPress (KeyEvent.VK_ESCAPE);
+        robObject.keyRelease (KeyEvent.VK_ESCAPE);
+        System.out.println ("press");
+    } catch (AWTException e1) {
+        e1.printStackTrace ();
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+51851587_51851632_14_25
+51851587_51851656_1_22
+Title: Binary search function not working 
+----------------------------------------
+
+public int binarySearch (int array [], int low, int high, int desired) {
+    int mid = low + (high - low) / 2;
+    int pivot = array [mid];
+    if (desired < pivot) {
+        binarySearch (array, low, mid - 1, desired);
+    } else if (desired > pivot) {
+        binarySearch (array, mid + 1, high, desired);
+    } else {
+        return mid;
+    }
+
+    return - 1;
+}
+----------------------------------------
+
+public int binarySearch (int array [], int low, int high, int desired) {
+    if (high < low) return - 1;
+
+    int m = low + (high - low) / 2;
+    int pivot = array [m];
+    if (desired < pivot) binarySearch (array, low, m - 1, desired);
+    else if (desired > pivot) binarySearch (array, m + 1, high, desired);
+    else return (low + high) / 2;
+
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+51854007_51854409_11_22
+51854007_51854916_10_24
+Title: Final list or array wont store the value 
+----------------------------------------
+
+public void onDataChange (DataSnapshot dataSnapshot) {
+    if (dataSnapshot.exists ()) {
+        for (DataSnapshot post : dataSnapshot.getChildren ()) {
+            Data_model_milk dmm = post.getValue (Data_model_milk.class);
+            Log.e ("value", dmm.getDate ());
+            listener.onDataChange ("item was added last at " + dmm.getDate ());
+        }
+    } else {
+        listener.onDataChange ("no insert for " + ok);
+    }
+}
+----------------------------------------
+
+public void onDataChange (DataSnapshot dataSnapshot) {
+    if (dataSnapshot.exists ()) {
+        for (DataSnapshot post : dataSnapshot.getChildren ()) {
+            Data_model_milk dmm = post.getValue (Data_model_milk.class);
+            Log.e ("value", dmm.getDate ());
+            list.add ("item was added last at " + dmm.getDate ());
+        }
+    } else {
+        list.add ("no insert for " + ok);
+    }
+    performSomeAction (list.get (0));
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+51864676_51864898_4_60
+51864676_51866044_8_63
+Title: Checking if parentheses match always saying that they match 
+----------------------------------------
+
+static String [] braces (String [] values) {
+    Stack < Character > st = new Stack < Character > ();
+    String [] answer = new String [values.length];
+    for (int i = 0;
+    i < values.length; i ++) {
+        char [] crt = values [i].toCharArray ();
+        boolean an = false;
+        for (char c : crt) {
+            switch (c) {
+                case '{' :
+                case '(' :
+                case '[' :
+                    st.push (c);
+                    break;
+                case '}' :
+                    if (st.isEmpty () || (st.firstElement () != '{')) {
+                        answer [i] = "NO";
+                        System.out.println ("I set answer[" + i + "] = NO due to mismatched }");
+                    }
+                    st.pop ();
+                    break;
+                case ')' :
+                    if (st.isEmpty () || (st.firstElement () != '(')) {
+                        answer [i] = "NO";
+                        System.out.println ("I set answer[" + i + "] = NO due to mismatched )");
+                    }
+                    st.pop ();
+                    break;
+                case ']' :
+                    if (st.isEmpty () || (st.firstElement () != '[')) {
+                        answer [i] = "NO";
+                        System.out.println ("I set answer[" + i + "] = NO due to mismatched ]");
+                    }
+                    st.pop ();
+                    break;
+            }
+        }
+        if (st.isEmpty ()) {
+            answer [i] = "yes";
+            System.out.println ("I set answer[" + i + "] = YES due to stack being empty");
+        } else {
+            answer [i] = "no";
+            System.out.println ("I set answer[" + i + "] = NO due to stack being non-empty");
+        }
+        st.clear ();
+    }
+    return answer;
+}
+----------------------------------------
+
+public static String [] braces (String [] values) {
+    Stack < Character > stack = new Stack < Character > ();
+    String [] isCorrect = new String [values.length];
+    for (int i = 0;
+    i < values.length; i ++) {
+        char [] crt = values [i].toCharArray ();
+        boolean an = false;
+        for (char c : crt) {
+            switch (c) {
+                case '{' :
+                case '(' :
+                case '[' :
+                    stack.push (c);
+                    break;
+                case '}' :
+                    if (stack.isEmpty () || (stack.peek () != '{')) {
+                        isCorrect [i] = "NO";
+                    }
+                case ')' :
+                    if (stack.isEmpty () || (stack.peek () != '(')) {
+                        isCorrect [i] = "NO";
+                    }
+                case ']' :
+                    if (stack.isEmpty () || (stack.peek () != '[')) {
+                        isCorrect [i] = "NO";
+                    }
+                    if (! stack.isEmpty ()) stack.pop ();
+
+                    break;
+            }
+        }
+        if (stack.isEmpty ()) {
+            isCorrect [i] = "yes";
+        } else {
+            isCorrect [i] = "no";
+        }
+        stack.clear ();
+    }
+    return isCorrect;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+51864676_51864898_4_60
+51864676_51910019_1_73
+Title: Checking if parentheses match always saying that they match 
+----------------------------------------
+
+static String [] braces (String [] values) {
+    Stack < Character > st = new Stack < Character > ();
+    String [] answer = new String [values.length];
+    for (int i = 0;
+    i < values.length; i ++) {
+        char [] crt = values [i].toCharArray ();
+        boolean an = false;
+        for (char c : crt) {
+            switch (c) {
+                case '{' :
+                case '(' :
+                case '[' :
+                    st.push (c);
+                    break;
+                case '}' :
+                    if (st.isEmpty () || (st.firstElement () != '{')) {
+                        answer [i] = "NO";
+                        System.out.println ("I set answer[" + i + "] = NO due to mismatched }");
+                    }
+                    st.pop ();
+                    break;
+                case ')' :
+                    if (st.isEmpty () || (st.firstElement () != '(')) {
+                        answer [i] = "NO";
+                        System.out.println ("I set answer[" + i + "] = NO due to mismatched )");
+                    }
+                    st.pop ();
+                    break;
+                case ']' :
+                    if (st.isEmpty () || (st.firstElement () != '[')) {
+                        answer [i] = "NO";
+                        System.out.println ("I set answer[" + i + "] = NO due to mismatched ]");
+                    }
+                    st.pop ();
+                    break;
+            }
+        }
+        if (st.isEmpty ()) {
+            answer [i] = "yes";
+            System.out.println ("I set answer[" + i + "] = YES due to stack being empty");
+        } else {
+            answer [i] = "no";
+            System.out.println ("I set answer[" + i + "] = NO due to stack being non-empty");
+        }
+        st.clear ();
+    }
+    return answer;
+}
+----------------------------------------
+
+static String [] braces (String [] values) {
+    Stack < Character > st = new Stack < Character > ();
+    String [] answer = new String [values.length];
+    Boolean isCorrect = false;
+    for (int i = 0;
+    i < values.length; i ++) {
+        isCorrect = true;
+        st.clear ();
+        char crt [] = values [i].toCharArray ();
+        for (char c : crt) {
+            switch (c) {
+                case '{' :
+                case '[' :
+                case '(' :
+                    st.push (c);
+                    break;
+                case '}' :
+                    if (st.isEmpty () || st.peek () != '{') {
+                        System.out.println ("Hellooo");
+                        answer [i] = "NO";
+                        isCorrect = false;
+                    }
+                    if (! st.isEmpty ()) {
+                        st.pop ();
+                    }
+                    break;
+                case ']' :
+                    if (st.isEmpty () || st.peek () != '[') {
+                        System.out.println ("Hell");
+                        answer [i] = "NO";
+                        isCorrect = false;
+                    }
+                    if (! st.isEmpty ()) {
+                        st.pop ();
+                    }
+                    break;
+                case ')' :
+                    if (st.isEmpty () || st.peek () != '(') {
+                        isCorrect = false;
+                    }
+                    if (! st.isEmpty ()) {
+                        st.pop ();
+                    }
+                    break;
+            }
+        }
+        if (isCorrect && st.isEmpty ()) {
+            answer [i] = "YES";
+            System.out.println ("Hello");
+        } else answer [i] = "NO";
+
+    }
+    return answer;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+51864676_51866044_8_63
+51864676_51910019_1_73
+Title: Checking if parentheses match always saying that they match 
+----------------------------------------
+
+public static String [] braces (String [] values) {
+    Stack < Character > stack = new Stack < Character > ();
+    String [] isCorrect = new String [values.length];
+    for (int i = 0;
+    i < values.length; i ++) {
+        char [] crt = values [i].toCharArray ();
+        boolean an = false;
+        for (char c : crt) {
+            switch (c) {
+                case '{' :
+                case '(' :
+                case '[' :
+                    stack.push (c);
+                    break;
+                case '}' :
+                    if (stack.isEmpty () || (stack.peek () != '{')) {
+                        isCorrect [i] = "NO";
+                    }
+                case ')' :
+                    if (stack.isEmpty () || (stack.peek () != '(')) {
+                        isCorrect [i] = "NO";
+                    }
+                case ']' :
+                    if (stack.isEmpty () || (stack.peek () != '[')) {
+                        isCorrect [i] = "NO";
+                    }
+                    if (! stack.isEmpty ()) stack.pop ();
+
+                    break;
+            }
+        }
+        if (stack.isEmpty ()) {
+            isCorrect [i] = "yes";
+        } else {
+            isCorrect [i] = "no";
+        }
+        stack.clear ();
+    }
+    return isCorrect;
+}
+----------------------------------------
+
+static String [] braces (String [] values) {
+    Stack < Character > st = new Stack < Character > ();
+    String [] answer = new String [values.length];
+    Boolean isCorrect = false;
+    for (int i = 0;
+    i < values.length; i ++) {
+        isCorrect = true;
+        st.clear ();
+        char crt [] = values [i].toCharArray ();
+        for (char c : crt) {
+            switch (c) {
+                case '{' :
+                case '[' :
+                case '(' :
+                    st.push (c);
+                    break;
+                case '}' :
+                    if (st.isEmpty () || st.peek () != '{') {
+                        System.out.println ("Hellooo");
+                        answer [i] = "NO";
+                        isCorrect = false;
+                    }
+                    if (! st.isEmpty ()) {
+                        st.pop ();
+                    }
+                    break;
+                case ']' :
+                    if (st.isEmpty () || st.peek () != '[') {
+                        System.out.println ("Hell");
+                        answer [i] = "NO";
+                        isCorrect = false;
+                    }
+                    if (! st.isEmpty ()) {
+                        st.pop ();
+                    }
+                    break;
+                case ')' :
+                    if (st.isEmpty () || st.peek () != '(') {
+                        isCorrect = false;
+                    }
+                    if (! st.isEmpty ()) {
+                        st.pop ();
+                    }
+                    break;
+            }
+        }
+        if (isCorrect && st.isEmpty ()) {
+            answer [i] = "YES";
+            System.out.println ("Hello");
+        } else answer [i] = "NO";
+
+    }
+    return answer;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+51890030_51890183_16_38
+51890030_51890243_1_8
+Title: HashMap adding object with equals true and same hashcode 
+----------------------------------------
+
+public boolean equals (Object obj) {
+    if (this == obj) {
+        return true;
+    }
+    if (obj == null) {
+        return false;
+    }
+    if (getClass () != obj.getClass ()) {
+        return false;
+    }
+    B other = (B) obj;
+    if (id != other.id) {
+        return false;
+    }
+    if (name == null) {
+        if (other.name != null) {
+            return false;
+        }
+    } else if (! name.equals (other.name)) {
+        return false;
+    }
+
+    return true;
+}
+----------------------------------------
+
+@Override
+public boolean equals (Object o) {
+    if (this == o) return true;
+
+    if (o == null || getClass () != o.getClass ()) return false;
+
+    B b = (B) o;
+    return id == b.id && Objects.equals (name, b.name);
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+51893380_51893976_16_36
+51893380_51893976_42_63
+Title: Jackson chain custom deserializers 
+----------------------------------------
+
+public User deserialize (JsonParser jp, DeserializationContext ctxt) throws IOException, JsonProcessingException {
+    System.out.println ("Deserializing User...");
+    ObjectNode node = jp.getCodec ().readTree (jp);
+    User user = new User ();
+    user.setFirstName (node.get ("firstName").asText ());
+    user.setLastName (node.get ("lastName").asText ());
+    JsonNode addressNode = node.get ("address");
+    if (addressNode != null) {
+        JsonParser parser = addressNode.traverse ();
+        parser.setCodec (jp.getCodec ());
+        Address address = parser.readValueAs (Address.class);
+        user.setAddress (address);
+    }
+    return user;
+}
+----------------------------------------
+
+public Address deserialize (JsonParser jp, DeserializationContext ctxt) throws IOException, JsonProcessingException {
+    System.out.println ("Deserializing Address...");
+    ObjectNode node = jp.getCodec ().readTree (jp);
+    Address address = new Address ();
+    address.setStreetName (node.get ("streetName").asText ());
+    address.setPostCode (node.get ("postCode").asText ());
+    JsonNode addressTypeNode = node.get ("addressType");
+    if (addressTypeNode != null) {
+        JsonParser parser = addressTypeNode.traverse ();
+        parser.setCodec (jp.getCodec ());
+        Address.AddressType addressType = parser.readValueAs (Address.AddressType.class);
+        address.setAddressType (addressType);
+    }
+    return address;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+51894071_51895722_1_52
+51894071_51907092_26_84
+Title: How to reverse animation after it has finished? 
+----------------------------------------
+
+@Override
+public void start (Stage stage) {
+    Circle c = new Circle (5, Color.RED);
+    List < Animation > animations = new ArrayList < > (10);
+    for (int i = 0;
+    i < 10; i ++) {
+        TranslateTransition move = new TranslateTransition (Duration.seconds (1), c);
+        animations.add (move);
+        int step = i>> 1;
+        if ((i & 1) == 0) {
+            move.setFromX (step * 10);
+            move.setToX ((step + 1) * 10);
+        } else {
+            move.setFromY (step * 10);
+            move.setToY ((step + 1) * 10);
+        }
+    }
+    final ListIterator < Animation > iterator = animations.listIterator ();
+    Button next = new Button ("Next");
+    Button previous = new Button ("Previous");
+    previous.setDisable (true);
+    next.setOnAction (e -> {
+        Animation move = iterator.next ();
+        next.setDisable (! iterator.hasNext ());
+        previous.setDisable (false);
+        move.setRate (1);
+        move.play ();
+    });
+    previous.setOnAction (e -> {
+        Animation move = iterator.previous ();
+        next.setDisable (false);
+        previous.setDisable (! iterator.hasPrevious ());
+        move.setRate (- 1);
+        move.play ();
+    });
+    Pane p = new Pane (c);
+    p.setPrefSize (100, 100);
+    HBox buttons = new HBox (next, previous);
+    VBox root = new VBox (p, buttons);
+    stage.setScene (new Scene (root));
+    stage.show ();
+}
+----------------------------------------
+
+public void start (Stage stage) throws Exception {
+    Circle c = new Circle (10, Color.RED);
+    List < Animation > animations = new ArrayList < > (size);
+    for (int i = 0;
+    i < size; i ++) {
+        TranslateTransition move = new TranslateTransition (Duration.seconds (1), c);
+        move.setByX (20);
+        move.setByY (20);
+        PauseTransition pauser = new PauseTransition (move.getCycleDuration ());
+        ParallelTransition parallel = new ParallelTransition (move, pauser);
+        pauser.setOnFinished (e -> parallel.pause ());
+        parallel.setCycleCount (2);
+        parallel.setAutoReverse (true);
+        animations.add (parallel);
+    }
+    Button next = new Button ("Next");
+    Button previous = new Button ("Previous");
+    previous.setDisable (true);
+    Label l = new Label (current + "");
+    next.setOnAction (e -> {
+        next.setDisable (current == size - 1);
+        previous.setDisable (false);
+        Animation cur = animations.get (current);
+        cur.playFromStart ();
+        current ++;
+        l.setText (current + "");
+    });
+    previous.setOnAction (e -> {
+        current --;
+        l.setText (current + "");
+        next.setDisable (false);
+        previous.setDisable (current == 0);
+        Animation cur = animations.get (current);
+        cur.play ();
+    });
+    Pane p = new Pane (c);
+    p.setPrefSize (200, 200);
+    HBox buttons = new HBox (5, next, previous, l);
+    VBox root = new VBox (p, buttons);
+    stage.setScene (new Scene (root));
+    stage.show ();
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+51900507_51900818_1_12
+51900507_51900912_1_10
+Title: Ceasar cipher java codin gproblem 
+----------------------------------------
+
+public static void encode (StringBuffer message, char a [], char b []) {
+    for (int i = 0;
+    i < message.length (); i ++) {
+        for (int j = 0;
+        j < a.length; j ++) {
+            if (message.charAt (i) == a [j]) {
+                message.setCharAt (i, b [j]);
+                break;
+            }
+        }
+    }
+}
+----------------------------------------
+
+public static void encode (StringBuffer message, char a [], char b []) {
+    for (int i = 0;
+    i < message.length (); i ++) {
+        for (int j = 0;
+        j < a.length; j ++) {
+            if (message.charAt (i) == a [j]) {
+                message.setCharAt (i, b [j]);
+                break;
+            }
+        }
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+51910121_51910215_4_21
+51910121_51910243_11_28
+Title: Display multiple String items Java 
+----------------------------------------
+
+public static void main (String [] args) {
+    Employee employee1 = new Employee ("Dobrobaba", "Irina", "Ivanovna", "Moskva", 1900, 6);
+    Employee employee2 = new Employee ("Shmal", "Anna", "Nikolaevna", "Krasnodar", 2017, 8);
+    Employee employee3 = new Employee ("Kerimova", "Niseimhalum", "Magomedmirzaevna", "New-York", 2010, 3);
+    Employee employee4 = new Employee ("Dobryden", "Yuri", "Viktorovich", "Auckland", 2000, 11);
+    Employee employee5 = new Employee ("Lopata", "Leonid", "Nikolaevich", "Beijing", 2014, 11);
+    employee.add (employee1);
+    employee.add (employee2);
+    employee.add (employee3);
+    employee.add (employee4);
+    employee.add (employee5);
+}
+----------------------------------------
+
+public static void main (String [] args) {
+    Employee employee1 = new Employee ("Dobrobaba", "Irina", "Ivanovna", "Moskva", 1900, 6);
+    Employee employee2 = new Employee ("Shmal", "Anna", "Nikolaevna", "Krasnodar", 2017, 8);
+    Employee employee3 = new Employee ("Kerimova", "Niseimhalum", "Magomedmirzaevna", "New-York", 2010, 3);
+    Employee employee4 = new Employee ("Dobryden", "Yuri", "Viktorovich", "Auckland", 2000, 11);
+    Employee employee5 = new Employee ("Lopata", "Leonid", "Nikolaevich", "Beijing", 2014, 11);
+    listEmps = new ArrayList < > (Arrays.asList (employee1, employee2, employee3, employee4, employee5));
+    displayEmployees (17);
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+51916832_51917099_1_58
+51916832_51917127_1_58
+Title: Arrays and print statements/ java 
+----------------------------------------
+
+public static void main (String [] args) {
+    Scanner input = new Scanner (System.in);
+    System.out.println ("How many trucks are operating today (Number of trucks must be 2 or greater)? :");
+    int totalTrucks = input.nextInt ();
+    if (totalTrucks < 2) {
+        System.out.println ("You entered a value less than 2 for number of trucks.");
+        System.out.println ("Terminating program. ");
+        System.exit (0);
+    } else {
+        HashMap < Integer, Double > smallTrucks = new HashMap ();
+        HashMap < Integer, Double > largeTrucks = new HashMap ();
+        for (int i = 0;
+        i < totalTrucks; i ++) {
+            System.out.println ("What is the size of truck " + (i + 1) + "(large trucks max crates = 100, small trucks max crates = 10)? ");
+            String truckSize = input.next ();
+            boolean repeatLoop = true;
+            while (repeatLoop) {
+                if (truckSize.equals ("large")) {
+                    System.out.println ("What is the actual number of crates that truck " + (i + 1) + " is hauling today (Truck 1 max crates is 100)? ");
+                    Double crates = input.nextDouble ();
+                    largeTrucks.put (i, crates);
+                    repeatLoop = false;
+                } else if (truckSize.equals ("small")) {
+                    System.out.println ("What is the actual number of crates that truck " + (i + 1) + " is hauling today (Truck 2 max crates is 10)? ");
+                    boolean sizeWrong = true;
+                    while (sizeWrong) {
+                        Double crates = input.nextDouble ();
+                        if (crates > 10) {
+                            System.out.println ("Small Truck max crates is 10,Please enter size again ");
+                            repeatLoop = true;
+                            continue;
+                        }
+                        sizeWrong = false;
+                        smallTrucks.put (i, crates);
+                    }
+                    repeatLoop = false;
+                } else {
+                    System.out.println ("Enter either large or small: ");
+                }
+
+            }
+        }
+        System.out.println ("**Entry for all trucks completed**");
+        for (int i = 0;
+        i < totalTrucks; i ++) {
+            Double maxTruckSize = smallTrucks.get (i);
+            if (maxTruckSize != null) {
+                System.out.println ("Truck " + (i + 1) + " max: 100 actual: " + maxTruckSize + " capacity at: " + maxTruckSize / 100 + "%");
+            } else System.out.println ("Truck " + (i + 1) + " max: 10 actual: " + smallTrucks.get (i) + " capacity at: " + maxTruckSize / 10 + "%");
+
+        }
+    }
+}
+----------------------------------------
+
+public static void main (String [] args) {
+    Scanner input = new Scanner (System.in);
+    System.out.println ("How many trucks are operating today (Number of trucks must be 2 or greater)? :");
+    int t1 = input.nextInt ();
+    if (t1 < 2) {
+        System.out.println ("You entered a value less than 2 for number of trucks.");
+        System.out.println ("Terminating program. ");
+        System.exit (0);
+    } else {
+        double crates = 0;
+        double crates1 = 0;
+        String truck;
+        int i = 0;
+        double array [] = new double [t1];
+        double array1 [] = new double [t1];
+        for (i = 0; i < array.length; i ++) {
+            boolean ok = false;
+            while (! ok) {
+                System.out.println ("What is the size of truck " + (i + 1) + "(large trucks max crates = 100, small trucks max crates = 10)? ");
+                truck = input.next ();
+                if (truck.equals ("large")) {
+                    System.out.println ("What is the actual number of crates that truck " + (i + 1) + " is hauling today (Truck 1 max crates is 100)? ");
+                    crates = input.nextDouble ();
+                    ok = true;
+                    array [i] = (crates / 100);
+                } else if (truck.equals ("small")) {
+                    System.out.println ("What is the actual number of crates that truck " + (i + 1) + " is hauling today (Truck 2 max crates is 10)? ");
+                    crates1 = input.nextDouble ();
+                    ok = true;
+                    array1 [i] = (crates1 / 10) * 100;
+                } else {
+                    System.out.println ("Enter either large or small: ");
+                    ok = false;
+                }
+
+            }
+        }
+        System.out.println ("**Entry for all trucks completed**");
+        System.out.println ("Truck " + (i - 1) + " max: 100 actual: " + crates + " capacity at: " + (array [i - 2]) + "%");
+        System.out.println ("Truck " + (i) + " max: 10 actual: " + crates1 + " capacity at: " + (array1 [i - 2]) + "%");
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+51918614_51918926_1_17
+51918614_51918938_1_20
+Title: How can I get my if statement to work properly when a csv value does not exist? 
+----------------------------------------
+
+public String countryInfo (CSVParser parser, String desiredCountry) {
+    FileResource fr = new FileResource ();
+    String exports = "";
+    String countryName = "";
+    String value = "";
+    for (CSVRecord record : parser) {
+        exports = record.get ("Exports");
+        countryName = record.get ("Country");
+        value = record.get ("Value");
+        if (exports == null || ! countryName.equals (desiredCountry)) {
+            String notf = "info has not been found";
+            return notf;
+        }
+    }
+    String info = countryName + ":" + exports;
+    return info;
+}
+----------------------------------------
+
+public String countryInfo (CSVParser parser, String country) {
+    String exports = "";
+    String countryName = "";
+    String value = "";
+    String x = null;
+    for (CSVRecord record : parser) {
+        String countries = record.get ("Country");
+        if (countries.contains (country)) {
+            countryName = record.get (country);
+            value = record.get ("Value");
+            exports = record.get ("Exports");
+            x = countryName + ":" + exports + ":" + value;
+        } else {
+            x = "information not found";
+        }
+    }
+    return x;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+51925363_51925763_1_19
+51925363_51926037_1_19
+Title: One to Many ResultSet In Java 
+----------------------------------------
+
+public List < Employee > fetchDistinctEmployee () {
+    Map < String, Employee > empMap = new HashMap < String, Employee > ();
+    Statement stmt = conn.createStatement ();
+    ResultSet rs = stmt.executeQuery ("select NAME, ID, DEP_CODE FROM Emp_Table");
+    while (rs.next ()) {
+        String id = rs.getInt ("ID");
+        Employee ep = empMap.get (id);
+        if (ep == null) {
+            ep = new Employee ();
+            empMap.put (id, ep);
+            ep.setID (id);
+            ep.setNAME (rs.getString ("NAME"));
+        }
+        ep.getDEPCODE.add (rs.getString ("DEP_CODE"));
+    }
+    return new ArrayList < Employee > (empMap.values ());
+}
+----------------------------------------
+
+public List < Employee > fetchDistinctEmployee () {
+    List < Employee > empList = new ArrayList < Employee > ();
+    Statement stmt = conn.createStatement ();
+    ResultSet rs = stmt.executeQuery ("select NAME, ID, DEP_CODE FROM Emp_Table sort by ID");
+    Employee em = null;
+    while (rs.next ()) {
+        if (em == null || em.getID () != rs.getInt ("ID")) {
+            em = new Employee ();
+            em.setDEPCODE (new ArrayList < String > ());
+            empList.add (em);
+        }
+        em.setNAME (rs.getString ("NAME"));
+        em.setID (rs.getInt ("ID"));
+        em.getDEPCODE ().add (rs.getString ("DEP_CODE"));
+    }
+    return empList;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+51946207_51946294_8_19
+51946207_51946335_1_10
+Title: How do I separate words using split() string method in Java 
+----------------------------------------
+
+public static String separatingWords (String str) {
+    String [] words = str.split (" ");
+    String result = words [0];
+    for (int i = 1;
+    i < words.length; i ++) {
+        result = result + "-" + words [i];
+    }
+    return result;
+}
+----------------------------------------
+
+public static String separatingWords (String str) {
+    String [] words = str.split (" ");
+    String result = "";
+    for (int i = 0;
+    i < words.length - 1; i ++) {
+        result += words [i] + "-";
+    }
+    result += words [words.length - 1];
+    return result;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+51946207_51946294_8_19
+51946207_51946342_8_20
+Title: How do I separate words using split() string method in Java 
+----------------------------------------
+
+public static String separatingWords (String str) {
+    String [] words = str.split (" ");
+    String result = words [0];
+    for (int i = 1;
+    i < words.length; i ++) {
+        result = result + "-" + words [i];
+    }
+    return result;
+}
+----------------------------------------
+
+public static String separatingWords (String str) {
+    String [] words = str.split (" ");
+    StringBuilder resultBuilder = new StringBuilder ();
+    for (int i = 0;
+    i < words.length; i ++) {
+        resultBuilder.append (words [i]);
+        if (i != words.length - 1) {
+            resultBuilder.append ("-");
+        }
+    }
+    return resultBuilder.toString ();
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+51946207_51946294_8_19
+51946207_51946354_8_18
+Title: How do I separate words using split() string method in Java 
+----------------------------------------
+
+public static String separatingWords (String str) {
+    String [] words = str.split (" ");
+    String result = words [0];
+    for (int i = 1;
+    i < words.length; i ++) {
+        result = result + "-" + words [i];
+    }
+    return result;
+}
+----------------------------------------
+
+public static String separatingWords (String str) {
+    String [] words = str.split (" ");
+    String result = "";
+    for (int i = 0;
+    i < words.length; i ++) {
+        result += words [i] + "-";
+    }
+    return result;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+51946207_51946335_1_10
+51946207_51946342_8_20
+Title: How do I separate words using split() string method in Java 
+----------------------------------------
+
+public static String separatingWords (String str) {
+    String [] words = str.split (" ");
+    String result = "";
+    for (int i = 0;
+    i < words.length - 1; i ++) {
+        result += words [i] + "-";
+    }
+    result += words [words.length - 1];
+    return result;
+}
+----------------------------------------
+
+public static String separatingWords (String str) {
+    String [] words = str.split (" ");
+    StringBuilder resultBuilder = new StringBuilder ();
+    for (int i = 0;
+    i < words.length; i ++) {
+        resultBuilder.append (words [i]);
+        if (i != words.length - 1) {
+            resultBuilder.append ("-");
+        }
+    }
+    return resultBuilder.toString ();
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+51946207_51946335_1_10
+51946207_51946354_8_18
+Title: How do I separate words using split() string method in Java 
+----------------------------------------
+
+public static String separatingWords (String str) {
+    String [] words = str.split (" ");
+    String result = "";
+    for (int i = 0;
+    i < words.length - 1; i ++) {
+        result += words [i] + "-";
+    }
+    result += words [words.length - 1];
+    return result;
+}
+----------------------------------------
+
+public static String separatingWords (String str) {
+    String [] words = str.split (" ");
+    String result = "";
+    for (int i = 0;
+    i < words.length; i ++) {
+        result += words [i] + "-";
+    }
+    return result;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+51946207_51946342_8_20
+51946207_51946354_8_18
+Title: How do I separate words using split() string method in Java 
+----------------------------------------
+
+public static String separatingWords (String str) {
+    String [] words = str.split (" ");
+    StringBuilder resultBuilder = new StringBuilder ();
+    for (int i = 0;
+    i < words.length; i ++) {
+        resultBuilder.append (words [i]);
+        if (i != words.length - 1) {
+            resultBuilder.append ("-");
+        }
+    }
+    return resultBuilder.toString ();
+}
+----------------------------------------
+
+public static String separatingWords (String str) {
+    String [] words = str.split (" ");
+    String result = "";
+    for (int i = 0;
+    i < words.length; i ++) {
+        result += words [i] + "-";
+    }
+    return result;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+51953875_51954006_3_26
+51953875_51954215_5_26
+Title: Redirecting the flow of the code for an Error Message 
+----------------------------------------
+
+public static void main (String [] args) {
+    Scanner input = new Scanner (System.in);
+    System.out.println ("Let’s play a game called “Odds and Evens”");
+    System.out.println ("What is your name?");
+    String name = input.next ();
+    boolean errorFlag = true;
+    while (errorFlag) {
+        System.out.println ("Hello " + name + " which one do you choose? (O)dds or (E)vens?");
+        String oe = input.next ();
+        switch (oe.toLowerCase ()) {
+            case "e" :
+                System.out.println (name + " has picked evens! The computer will be odds.");
+                errorFlag = false;
+                break;
+            case "o" :
+                System.out.println (name + " has picked odds! The computer will be evens.");
+                errorFlag = false;
+                break;
+            default :
+                System.out.println ("You have typed an invalid answer.");
+                errorFlag = true;
+        }
+    }
+}
+----------------------------------------
+
+public static void main (String [] args) {
+    Scanner input = new Scanner (System.in);
+    System.out.println ("Let’s play a game called “Odds and Evens”");
+    System.out.println ("What is your name?");
+    String name = input.next ();
+    do {
+        System.out.println ("Hello " + name + " which one do you choose? (O)dds or (E)vens?");
+        String oe = input.next ();
+        if (oe.equalsIgnoreCase ("e")) {
+            System.out.println (name + " has picked evens! The computer will be odds.");
+            break;
+        } else if (oe.equalsIgnoreCase ("o")) {
+            System.out.println (name + " has picked odds! The computer will be evens.");
+            break;
+        } else {
+            System.out.println ("You have typed an invalid answer.");
+        }
+
+    } while (true);
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+51953875_51954006_3_26
+51953875_51954304_4_34
+Title: Redirecting the flow of the code for an Error Message 
+----------------------------------------
+
+public static void main (String [] args) {
+    Scanner input = new Scanner (System.in);
+    System.out.println ("Let’s play a game called “Odds and Evens”");
+    System.out.println ("What is your name?");
+    String name = input.next ();
+    boolean errorFlag = true;
+    while (errorFlag) {
+        System.out.println ("Hello " + name + " which one do you choose? (O)dds or (E)vens?");
+        String oe = input.next ();
+        switch (oe.toLowerCase ()) {
+            case "e" :
+                System.out.println (name + " has picked evens! The computer will be odds.");
+                errorFlag = false;
+                break;
+            case "o" :
+                System.out.println (name + " has picked odds! The computer will be evens.");
+                errorFlag = false;
+                break;
+            default :
+                System.out.println ("You have typed an invalid answer.");
+                errorFlag = true;
+        }
+    }
+}
+----------------------------------------
+
+public static void main (String [] args) {
+    Scanner input = new Scanner (System.in);
+    System.out.println ("Let’s play a game called “Odds and Evens”");
+    System.out.println ("What is your name?");
+    String name = input.next ();
+    while (true) {
+        System.out.println ("Hello " + name + " which one do you choose? (O)dds or (E)vens?");
+        String oe = input.next ();
+        if (oe.equalsIgnoreCase ("e")) {
+            System.out.println (name + " has picked evens! The computer will be odds.");
+            break;
+        }
+        if (oe.equalsIgnoreCase ("o")) {
+            System.out.println (name + " has picked odds! The computer will be evens.");
+            break;
+        } else {
+            System.out.println ("You have typed an invalid answer, lets try again");
+        }
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+51953875_51954215_5_26
+51953875_51954304_4_34
+Title: Redirecting the flow of the code for an Error Message 
+----------------------------------------
+
+public static void main (String [] args) {
+    Scanner input = new Scanner (System.in);
+    System.out.println ("Let’s play a game called “Odds and Evens”");
+    System.out.println ("What is your name?");
+    String name = input.next ();
+    do {
+        System.out.println ("Hello " + name + " which one do you choose? (O)dds or (E)vens?");
+        String oe = input.next ();
+        if (oe.equalsIgnoreCase ("e")) {
+            System.out.println (name + " has picked evens! The computer will be odds.");
+            break;
+        } else if (oe.equalsIgnoreCase ("o")) {
+            System.out.println (name + " has picked odds! The computer will be evens.");
+            break;
+        } else {
+            System.out.println ("You have typed an invalid answer.");
+        }
+
+    } while (true);
+}
+----------------------------------------
+
+public static void main (String [] args) {
+    Scanner input = new Scanner (System.in);
+    System.out.println ("Let’s play a game called “Odds and Evens”");
+    System.out.println ("What is your name?");
+    String name = input.next ();
+    while (true) {
+        System.out.println ("Hello " + name + " which one do you choose? (O)dds or (E)vens?");
+        String oe = input.next ();
+        if (oe.equalsIgnoreCase ("e")) {
+            System.out.println (name + " has picked evens! The computer will be odds.");
+            break;
+        }
+        if (oe.equalsIgnoreCase ("o")) {
+            System.out.println (name + " has picked odds! The computer will be evens.");
+            break;
+        } else {
+            System.out.println ("You have typed an invalid answer, lets try again");
+        }
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+51959035_51959101_13_24
+51959035_51960361_8_22
+Title: Removing LinkedList elements using startsWith method in java 
+----------------------------------------
+
+public static void main (String [] args) {
+    String [] inpArray = {"red", "green", "blue", "ivory"};
+    LinkedList < String > upList = new LinkedList (Arrays.asList (inpArray));
+    System.out.println ("Actual " + upList + " " + upList.size ());
+    upList.removeIf (element -> {
+        return element.startsWith ("r") || element.startsWith ("g");
+    });
+    System.out.println ("Actual " + upList + " " + upList.size ());
+}
+----------------------------------------
+
+public static void main (String [] args) {
+    String [] inpArray = {"red", "green", "blue", "ivory"};
+    LinkedList < String > upList = new LinkedList < String > (Arrays.asList (inpArray));
+    System.out.println ("Actual " + upList + " " + upList.size ());
+    Predicate < String > p = e -> e.startsWith ("r") || e.startsWith ("g");
+    System.out.println (upList.stream ().filter (p.negate ()).collect (Collectors.toList ()));
+    upList.removeIf (p);
+    System.out.println (upList);
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+51971735_51979002_1_10
+51971735_51979156_1_10
+Title: Getting rid of a Null Pointer Exception in a RecyclerView when my app loads for the first Time 
+----------------------------------------
+
+@Override
+public int getItemCount () {
+    if (rssObject == null) {
+        Toast.makeText (context, "rssObject is NUll", Toast.LENGTH_SHORT).show ();
+        return 0;
+    } else {
+        return (rssObject != null && rssObject.items != null) ? rssObject.items.size () : 0;
+    }
+}
+----------------------------------------
+
+@Override
+public int getItemCount () {
+    if (rssObject == null) {
+        Toast.makeText (context, "rssObject is NUll", Toast.LENGTH_SHORT).show ();
+        return 0;
+    } else {
+        return (rssObject != null && rssObject.items != null) ? rssObject.items.size () : 0;
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+52000063_52000217_1_10
+52000063_52001273_1_16
+Title: Java - Checking ArrayList for Duplicates 
+----------------------------------------
+
+public void generatePin () {
+    String pin;
+    Set < String > generatedPins = new HashSet < > ();
+    for (int i = 0;
+    i < createdStudents.size (); i ++) {
+        do {
+            pin = generatePinCode ();
+        } while (! generatedPins.add (pin));
+        createdStudents.get (i).setPin (pin);
+    }
+}
+----------------------------------------
+
+public String generatePin () {
+    String pin;
+    Random r = new Random ();
+    int rand = r.nextInt ((3998 - 1) + 1) + 1;
+    if (rand < 10) {
+        pin = "000" + rand;
+    } else if (rand < 100) {
+        pin = "00" + rand;
+    } else if (rand < 1000) {
+        pin = "0" + rand;
+    } else {
+        pin = "" + rand;
+    }
+
+    return pin;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+5201579_21494416_5_42
+5201579_5201603_4_43
+Title: How do I determine the highest and lowest value in user-entered input? 
+----------------------------------------
+
+public static void main (String [] args) {
+    BufferedReader dataIn = new BufferedReader (new InputStreamReader (System.in));
+    int high = 0;
+    int lowest = 0;
+    int num = 0;
+    boolean test = true;
+    System.out.println ("Enter number");
+    for (int a = 0;
+    a < 10; a ++) {
+        try {
+            num = Integer.parseInt (dataIn.readLine ());
+        } catch (IOException e) {
+            System.out.println ("error");
+        }
+        if (num > high) {
+            high = num;
+        }
+        if (test) lowest = num;
+
+        test = false;
+        if (num < lowest) {
+            lowest = num;
+        }
+    }
+    System.out.println ("highest is:" + high);
+    System.out.println ("lowest is: " + lowest);
+}
+----------------------------------------
+
+public static void main (String [] args) {
+    BufferedReader dataIn = new BufferedReader (new InputStreamReader (System.in));
+    int high;
+    int lowest;
+    int num;
+    System.out.println ("Enter number");
+    num = Integer.parseInt (dataIn.readLine ());
+    lowest = highest = num;
+    for (int a = 0;
+    a < 10; a ++) {
+        try {
+            num = Integer.parseInt (dataIn.readLine ());
+        } catch (IOException e) {
+            System.out.println ("error");
+        }
+        if (num > high) {
+            high = num;
+        }
+        if (num < lowest) {
+            lowest = num;
+        }
+    }
+    System.out.println ("highest is:" + high);
+    System.out.println ("lowest is: " + lowest);
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+52024389_52024513_1_24
+52024389_52024539_1_16
+Title: Understanding Math in Java: Method that returns the power of 2 of a passed Integer w/o using Java's Math class 
+----------------------------------------
+
+private static int powerOf2 (int aNumber) {
+    int power = 0;
+    if (aNumber % 2 != 0) {
+        return - 1;
+    } else {
+        System.out.print (aNumber + " is 2 raised to ");
+        while (true) {
+            if (aNumber % 2 == 0) {
+                aNumber /= 2;
+                power ++;
+                if (aNumber == 1) return power;
+
+            } else {
+                return - 1;
+            }
+        }
+    }
+}
+----------------------------------------
+
+private static int powerOf2 (int aNumber) {
+    int cnt = 0;
+    System.out.println (aNumber + " is 2 raised to ");
+    while ((((aNumber % 2) == 0) && aNumber > 0)) {
+        aNumber /= 2;
+        cnt ++;
+    }
+    if (aNumber == 1) return cnt;
+    else return - 1;
+
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+52024389_52024513_1_24
+52024389_52024616_1_17
+Title: Understanding Math in Java: Method that returns the power of 2 of a passed Integer w/o using Java's Math class 
+----------------------------------------
+
+private static int powerOf2 (int aNumber) {
+    int power = 0;
+    if (aNumber % 2 != 0) {
+        return - 1;
+    } else {
+        System.out.print (aNumber + " is 2 raised to ");
+        while (true) {
+            if (aNumber % 2 == 0) {
+                aNumber /= 2;
+                power ++;
+                if (aNumber == 1) return power;
+
+            } else {
+                return - 1;
+            }
+        }
+    }
+}
+----------------------------------------
+
+private static int powerOf2 (int aNumber) {
+    if (aNumber == 0) return 0;
+
+    if (aNumber < 0) return - 1;
+
+    int count = 0;
+    while (aNumber != 0) {
+        int shifted = aNumber>> 1;
+        if (shifted * 2 != aNumber) return - 1;
+
+        aNumber = shifted;
+        count ++;
+        if (aNumber == 1) {
+            return count;
+        }
+    }
+    return - 1;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+52024389_52024539_1_16
+52024389_52024616_1_17
+Title: Understanding Math in Java: Method that returns the power of 2 of a passed Integer w/o using Java's Math class 
+----------------------------------------
+
+private static int powerOf2 (int aNumber) {
+    int cnt = 0;
+    System.out.println (aNumber + " is 2 raised to ");
+    while ((((aNumber % 2) == 0) && aNumber > 0)) {
+        aNumber /= 2;
+        cnt ++;
+    }
+    if (aNumber == 1) return cnt;
+    else return - 1;
+
+}
+----------------------------------------
+
+private static int powerOf2 (int aNumber) {
+    if (aNumber == 0) return 0;
+
+    if (aNumber < 0) return - 1;
+
+    int count = 0;
+    while (aNumber != 0) {
+        int shifted = aNumber>> 1;
+        if (shifted * 2 != aNumber) return - 1;
+
+        aNumber = shifted;
+        count ++;
+        if (aNumber == 1) {
+            return count;
+        }
+    }
+    return - 1;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+52025051_52025229_30_38
+52025051_52026175_1_10
+Title: Using a delimiter in scanner; ignoring spaces & new lines 
+----------------------------------------
+
+public void Read () {
+    s.useDelimiter ("\n");
+    for (int i = 0;
+    i < 8; i ++) {
+        char [] chars = s.next ().toCharArray ();
+        for (int j = 0;
+        j < 8; j ++) {
+            board [i] [j] = chars [j];
+        }
+    }
+}
+----------------------------------------
+
+public void Read () {
+    s.useDelimiter ("");
+    for (int i = 0;
+    i < 8; i ++) {
+        for (int j = 0;
+        j < 8; j ++) {
+            s.skip ("\n*");
+            String a = s.next ();
+            board [i] [j] = a;
+        }
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+52026131_52026277_21_30
+52026131_52026447_10_18
+Title: How to multiply two long values in java 
+----------------------------------------
+
+public static void main (String [] args) {
+    Scanner sc = new Scanner (System.in);
+    int n = sc.nextInt ();
+    Long numbers [] = new Long [n];
+    for (int i = 0;
+    i < n; i ++) numbers [i] = sc.nextLong ();
+
+    System.out.println (sumPairwise (numbers));
+    sc.close ();
+}
+----------------------------------------
+
+public static void main (String [] args) {
+    Scanner sc = new Scanner (System.in);
+    int n = sc.nextInt ();
+    long numbers [] = new long [n];
+    for (int i = 0;
+    i < n; i ++) {
+        numbers [i] = sc.nextLong ();
+    }
+    System.out.println (multiplyLargestTwoNumbers (numbers));
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+52026289_52026324_1_13
+52026289_52026369_1_26
+Title: Storing user input in a string array 
+----------------------------------------
+
+public static void main (String [] args) throws IOException {
+    System.out.println ("Enter sentence: ");
+    Scanner sc = new Scanner (System.in);
+    String input = sc.nextLine ();
+    System.out.println ("Enter the given word to find the index of its first match: ");
+    Scanner wordInput = new Scanner (System.in);
+    String key = wordInput.next ();
+    String [] words = input.split (" ");
+    int occurence = Arrays.asList (words).indexOf (key);
+    if (occurence != - 1) {
+        System.out.println (String.format ("Index of first occurence of the word is %d", occurence));
+    }
+}
+----------------------------------------
+
+public static void main (String [] args) {
+    System.out.println ("Enter Sentence");
+    Scanner sc = new Scanner (System.in);
+    String input = sc.nextLine ();
+    String sentence [] = input.split ("\\s");
+    System.out.println ("Enter Word");
+    Scanner sc2 = new Scanner (System.in);
+    String key = sc2.next ();
+    int index = 0;
+    for (String word : sentence) {
+        if (word.equals (key)) {
+            System.out.println ("The index of the first match of " + key + " is " + index);
+            break;
+        }
+        index ++;
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+52026289_52026324_1_13
+52026289_52026435_3_22
+Title: Storing user input in a string array 
+----------------------------------------
+
+public static void main (String [] args) throws IOException {
+    System.out.println ("Enter sentence: ");
+    Scanner sc = new Scanner (System.in);
+    String input = sc.nextLine ();
+    System.out.println ("Enter the given word to find the index of its first match: ");
+    Scanner wordInput = new Scanner (System.in);
+    String key = wordInput.next ();
+    String [] words = input.split (" ");
+    int occurence = Arrays.asList (words).indexOf (key);
+    if (occurence != - 1) {
+        System.out.println (String.format ("Index of first occurence of the word is %d", occurence));
+    }
+}
+----------------------------------------
+
+public static void main (String [] args) {
+    System.out.println ("Enter sentence: ");
+    Scanner sc = new Scanner (System.in);
+    String input = sc.nextLine ();
+    String [] sentence = input.split (" ");
+    System.out.println ("Enter the given words to find the index of its first match: ");
+    Scanner sc2 = new Scanner (System.in);
+    String key = sc2.next ();
+    for (int i = 0;
+    i < sentence.length; i ++) {
+        if (sentence [i].equals (key)) {
+            System.out.println ("The index of the first match of " + key + " is " + i);
+        }
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+52026289_52026369_1_26
+52026289_52026435_3_22
+Title: Storing user input in a string array 
+----------------------------------------
+
+public static void main (String [] args) {
+    System.out.println ("Enter Sentence");
+    Scanner sc = new Scanner (System.in);
+    String input = sc.nextLine ();
+    String sentence [] = input.split ("\\s");
+    System.out.println ("Enter Word");
+    Scanner sc2 = new Scanner (System.in);
+    String key = sc2.next ();
+    int index = 0;
+    for (String word : sentence) {
+        if (word.equals (key)) {
+            System.out.println ("The index of the first match of " + key + " is " + index);
+            break;
+        }
+        index ++;
+    }
+}
+----------------------------------------
+
+public static void main (String [] args) {
+    System.out.println ("Enter sentence: ");
+    Scanner sc = new Scanner (System.in);
+    String input = sc.nextLine ();
+    String [] sentence = input.split (" ");
+    System.out.println ("Enter the given words to find the index of its first match: ");
+    Scanner sc2 = new Scanner (System.in);
+    String key = sc2.next ();
+    for (int i = 0;
+    i < sentence.length; i ++) {
+        if (sentence [i].equals (key)) {
+            System.out.println ("The index of the first match of " + key + " is " + i);
+        }
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+52028555_52028628_1_14
+52028555_52028720_3_17
+Title: "Java program stuck after ""for"" loop" 
+----------------------------------------
+
+public static void main (String [] args) {
+    String [] command = new String [20];
+    Scanner a = new Scanner (System.in);
+    for (int i = 0;
+    a.hasNext (); i ++) {
+        command [i] = a.next ();
+        System.out.println (i);
+        System.out.println ("Do you want to continue? y/n");
+        if (a.next ().equals ("n")) {
+            break;
+        }
+    }
+    a.close ();
+    System.out.println ("asd");
+}
+----------------------------------------
+
+public static void main (String args []) {
+    String [] command = new String [20];
+    Scanner a = new Scanner (System.in);
+    for (int i = 0;
+    a.hasNext () && ! a.next ().equals ("n"); i ++) {
+        command [i] = a.next ();
+        System.out.println (i);
+        System.out.println ("Do you want to continue? y/n");
+    }
+    a.close ();
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+52029224_52029648_3_19
+52029224_52030194_49_69
+Title: How do I make a CountDown show/start at the same moment my Button gets enabled? 
+----------------------------------------
+
+public void run () {
+    try {
+        int second = 10;
+        for (int i = second;
+        i >= 1; i --) {
+            int finalI = i;
+            yourBtn.post (new Runnable () {
+                @Override
+                public void run () {
+                    yourBtn.setText (String.valueOf (finalI))
+                }}
+
+            );
+            Thread.sleep (1000);
+        }
+    } catch (InterruptedException e) {
+        e.printStackTrace ();
+    }
+}
+----------------------------------------
+
+public void run () {
+    countdownElapsed = countdownElapsed + COUNT_DOWN_TICKS;
+    if (countdownElapsed >= COUNT_DOWN_FINISH) {
+        releaseCountDownHandler ();
+        next_button.setEnabled (true);
+    } else {
+        mCountDownHandler.postDelayed (mCountDownRunnable, COUNT_DOWN_TICKS);
+    }
+    long secFull = countdownElapsed % 1000;
+    if (secFull == 0) {
+        runOnUiThread (new Runnable () {
+            @Override
+            public void run () {
+                displayCountDown ();
+            }}
+
+        );
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+52029224_52029648_3_19
+52029224_52121821_63_85
+Title: How do I make a CountDown show/start at the same moment my Button gets enabled? 
+----------------------------------------
+
+public void run () {
+    try {
+        int second = 10;
+        for (int i = second;
+        i >= 1; i --) {
+            int finalI = i;
+            yourBtn.post (new Runnable () {
+                @Override
+                public void run () {
+                    yourBtn.setText (String.valueOf (finalI))
+                }}
+
+            );
+            Thread.sleep (1000);
+        }
+    } catch (InterruptedException e) {
+        e.printStackTrace ();
+    }
+}
+----------------------------------------
+
+public void run () {
+    countdownElapsed = countdownElapsed + COUNT_DOWN_TICKS;
+    if (countdownElapsed >= COUNT_DOWN_FINISH) {
+        releaseCountDownHandler ();
+        next_button.setEnabled (true);
+        howManyClicks = 0;
+    } else {
+        mCountDownHandler.postDelayed (mCountDownRunnable, COUNT_DOWN_TICKS);
+    }
+    long secFull = countdownElapsed % 1000;
+    if (secFull == 0) {
+        runOnUiThread (new Runnable () {
+            @Override
+            public void run () {
+                displayCountDown ();
+            }}
+
+        );
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+52029224_52030194_15_33
+52029224_52121821_18_47
+Title: How do I make a CountDown show/start at the same moment my Button gets enabled? 
+----------------------------------------
+
+protected void onCreate (Bundle savedInstanceState) {
+    super.onCreate (savedInstanceState);
+    setContentView (R.layout.activity_main);
+    timer = findViewById (R.id.tvTimer);
+    next_button = findViewById (R.id.btnNext);
+    next_button.setOnClickListener (new View.OnClickListener () {
+        @Override
+        public void onClick (View v) {
+            startCountDown ();
+        }}
+
+    );
+}
+----------------------------------------
+
+protected void onCreate (Bundle savedInstanceState) {
+    super.onCreate (savedInstanceState);
+    setContentView (R.layout.activity_main);
+    timer = findViewById (R.id.tvTimer);
+    clicks = findViewById (R.id.tvClicks);
+    next_button = findViewById (R.id.btnNext);
+    next_button.setOnClickListener (new View.OnClickListener () {
+        @Override
+        public void onClick (View v) {
+            howManyClicks ++;
+            if (howManyClicks >= NUMBER_OF_BUTTON_CLICKS) {
+                startCountDown ();
+            }
+            String myClicks = String.valueOf (howManyClicks);
+            clicks.setText (myClicks)
+        }}
+
+    );
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+52029224_52030194_72_81
+52029224_52121821_88_97
+Title: How do I make a CountDown show/start at the same moment my Button gets enabled? 
+----------------------------------------
+
+private void releaseCountDownHandler () {
+    try {
+        if (mCountDownRunnable != null) {
+            mCountDownHandler.removeCallbacks (mCountDownRunnable);
+        }
+    } catch (Exception ex) {
+        Log.e (TAG, ex.getMessage ());
+    }
+}
+----------------------------------------
+
+private void releaseCountDownHandler () {
+    try {
+        if (mCountDownRunnable != null) {
+            mCountDownHandler.removeCallbacks (mCountDownRunnable);
+        }
+    } catch (Exception ex) {
+        Log.e (TAG, ex.getMessage ());
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+52032953_52033366_1_33
+52032953_52033760_7_17
+Title: How to Extract Positive and Negative Integers from a String 
+----------------------------------------
+
+public static void main (String [] args) {
+    String exp = "(x-y)^-2";
+    String arr [] = new String [5];
+    int i = 0;
+    String input1 = "";
+    for (int x = 0;
+    x < exp.length (); x ++) {
+        char ch = exp.charAt (x);
+        if (ch == '-' || (ch >= 48 && ch <= 57)) {
+            input1 += String.valueOf (ch);
+        } else {
+            if ((ch >= 65 && ch <= 90) || (ch >= 97 && ch <= 122) || ch == '^') {
+                if (input1.equals ("")) {
+                    input1 = "0";
+                }
+                if (! input1.equals ("-")) {
+                    arr [i] = input1;
+                    i ++;
+                }
+                input1 = "";
+            }
+        }
+    }
+    if (! input1.equals ("")) {
+        arr [i] = input1;
+    }
+    System.out.println ("Array IS");
+    for (String c : arr) {
+        System.out.println (c);
+    }
+}
+----------------------------------------
+
+public static void main (String [] args) {
+    String exp = "(-22x+43)^2";
+    char [] cr = exp.toCharArray ();
+    for (char c : cr) {
+        doCheck (c);
+    }
+    doCheck ('e');
+    System.out.println (ar);
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+52032953_52033366_1_33
+52032953_52034533_5_16
+Title: How to Extract Positive and Negative Integers from a String 
+----------------------------------------
+
+public static void main (String [] args) {
+    String exp = "(x-y)^-2";
+    String arr [] = new String [5];
+    int i = 0;
+    String input1 = "";
+    for (int x = 0;
+    x < exp.length (); x ++) {
+        char ch = exp.charAt (x);
+        if (ch == '-' || (ch >= 48 && ch <= 57)) {
+            input1 += String.valueOf (ch);
+        } else {
+            if ((ch >= 65 && ch <= 90) || (ch >= 97 && ch <= 122) || ch == '^') {
+                if (input1.equals ("")) {
+                    input1 = "0";
+                }
+                if (! input1.equals ("-")) {
+                    arr [i] = input1;
+                    i ++;
+                }
+                input1 = "";
+            }
+        }
+    }
+    if (! input1.equals ("")) {
+        arr [i] = input1;
+    }
+    System.out.println ("Array IS");
+    for (String c : arr) {
+        System.out.println (c);
+    }
+}
+----------------------------------------
+
+public static void main (String [] args) {
+    String str = "(x-22)^-2";
+    String [] arstr = str.replaceFirst ("\\)", "").split ("[x^]");
+    if (arstr [0].equals ("(")) arstr [0] = "0";
+    else arstr [0] = arstr [0].substring (1);
+
+    if (arstr [1].contains ("+")) arstr [1] = arstr [1].substring (1);
+
+    System.out.println (Arrays.toString (arstr));
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+52032953_52033760_7_17
+52032953_52034533_5_16
+Title: How to Extract Positive and Negative Integers from a String 
+----------------------------------------
+
+public static void main (String [] args) {
+    String exp = "(-22x+43)^2";
+    char [] cr = exp.toCharArray ();
+    for (char c : cr) {
+        doCheck (c);
+    }
+    doCheck ('e');
+    System.out.println (ar);
+}
+----------------------------------------
+
+public static void main (String [] args) {
+    String str = "(x-22)^-2";
+    String [] arstr = str.replaceFirst ("\\)", "").split ("[x^]");
+    if (arstr [0].equals ("(")) arstr [0] = "0";
+    else arstr [0] = arstr [0].substring (1);
+
+    if (arstr [1].contains ("+")) arstr [1] = arstr [1].substring (1);
+
+    System.out.println (Arrays.toString (arstr));
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+52034172_52034555_1_17
+52034172_52034705_1_14
+Title: Sum of decimal digits in java 
+----------------------------------------
+
+public static void main (String [] args) {
+    double sum = 0.0;
+    Scanner sc = new Scanner (System.in);
+    System.out.println ("Enter a 5 digit decimal number:");
+    double num = sc.nextDouble ();
+    String number = String.valueOf (num);
+    for (char c : number.toCharArray ()) {
+        try {
+            sum += Integer.parseInt (String.valueOf (c));
+        } catch (NumberFormatException e) {
+        }
+    }
+    System.out.println ("Sum of digits = " + sum);
+}
+----------------------------------------
+
+public static void main (String [] args) {
+    double sum = 0.0;
+    Scanner sc = new Scanner (System.in);
+    System.out.println ("Enter a 5 digit decimal number:");
+    double num = sc.nextDouble ();
+    String number = String.valueOf (num);
+    for (char c : number.toCharArray ()) {
+        if (c != '.') sum += Integer.parseInt (String.valueOf (c));
+
+    }
+    System.out.println ("Sum of digits = " + sum);
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+5203974_41201834_7_32
+5203974_5204040_9_19
+Title: Converting decimal to binary in Java 
+----------------------------------------
+
+public static void main (String [] args) {
+    Scanner in = new Scanner (System.in);
+    boolean flag = true;
+    while (flag) {
+        menu ();
+        int n = in.nextInt ();
+        switch (n) {
+            case 1 :
+                System.out.println ("enter an integer decimal number : ");
+                int d = in.nextInt ();
+                System.out.print ("the answer is ");
+                DTB (d);
+                System.out.println ();
+                break;
+            case 2 :
+                System.out.println ("enter a binary number : ");
+                int b = in.nextInt ();
+                System.out.print ("the answer is " + BTD (b));
+                System.out.println ();
+                break;
+            case 3 :
+                flag = false;
+                break;
+        }
+    }
+}
+----------------------------------------
+
+public static void main (String [] args) {
+    int a = Integer.parseInt (args [0]);
+    System.out.println (a);
+    int bit = 1;
+    for (int i = 0;
+    i < 32; i ++) {
+        System.out.print ("  " + (((a & bit) == 0) ? 0 : 1));
+        bit *= 2;
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+52045381_52045652_1_18
+52045381_52045655_1_23
+Title: java : how can i use if correctly 
+----------------------------------------
+
+public static void main (String [] args) {
+    int pass = 123;
+    Scanner password = new Scanner (System.in);
+    System.out.println ("Please Enter Your Password : ");
+    String enteredPassword = "";
+    if (password.hasNext () && (enteredPassword = password.next ()) != null) {
+        try {
+            if (Integer.parseInt (enteredPassword) == pass) {
+                System.out.println ("ok");
+            } else {
+                System.out.println ("wrong pass");
+            }
+        } catch (NumberFormatException nfe) {
+            System.out.println ("wrong type");
+        }
+    }
+}
+----------------------------------------
+
+public static void main (String [] args) {
+    int pass = 123;
+    Scanner password = new Scanner (System.in);
+    System.out.println ("Please Enter Your Password : ");
+    if (password.hasNextInt ()) {
+        if (password.nextInt () == pass) {
+            System.out.println ("ok");
+        } else {
+            System.out.println ("Wrong password");
+        }
+    } else {
+        System.out.println ("wrong type");
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+52050017_52051131_1_23
+52050017_52051401_1_30
+Title: Redirect after POST method in spring MVC 
+----------------------------------------
+
+@RequestMapping (value = "/login", method = RequestMethod.POST)
+public ModelAndView loginResult (HttpServletRequest req, HttpServletResponse res, Model model) {
+    String message = "";
+    String response = "";
+    if (uname.equals (inf.getUsername ()) && pwd.equals (inf.getPassword ()) && dept.equals (inf.getDept ())) {
+        req.getSession ().setAttribute ("uname", inf.getName ());
+        message = message1;
+        response = "employeeLoginResult";
+    } else if (uname.equals (inf2.getUsername ()) && pwd.equals (inf2.getPassword ()) && dept.equals (inf2.getDept ())) {
+        req.getSession ().setAttribute ("uname", inf2.getName ());
+        message = message2;
+        response = "adminLoginResult";
+    } else {
+        message = "Sorry Username Password Error";
+        response = "index";
+    }
+
+    model.addAttribute ("message", message);
+    return response;
+}
+----------------------------------------
+
+@RequestMapping (value = "/login", method = RequestMethod.POST)
+public ModelAndView loginResult (HttpServletRequest req, HttpServletResponse res, RedirectAttributes redir, Model model) {
+    InfoEmployee inf = new InfoEmployee ();
+    InfoManager inf2 = new InfoManager ();
+    String pwd = req.getParameter ("pwd");
+    String dept = req.getParameter ("dept");
+    String name1 = inf.getName ();
+    String message1 = "Welcome " + name1;
+    String name2 = inf2.getName ();
+    String message2 = "Welcome " + name2;
+    if (uname.equals (inf.getUsername ()) && pwd.equals (inf.getPassword ()) && dept.equals (inf.getDept ())) {
+        req.getSession ().setAttribute ("uname", inf.getName ());
+        return new ModelAndView ("employeeLoginResult", "message", message1);
+    } else if (uname.equals (inf2.getUsername ()) && pwd.equals (inf2.getPassword ()) && dept.equals (inf2.getDept ())) {
+        req.getSession ().setAttribute ("uname", inf2.getName ());
+        return new ModelAndView ("adminLoginResult", "message", message2);
+    } else {
+        return new ModelAndView ("forward:index.jsp", "message", "Sorry Username Password Error");
+    }
+
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+52062291_52063102_10_44
+52062291_52063102_17_39
+Title: Prevent dialog from going off screen 
+----------------------------------------
+
+public void handle (ActionEvent event) {
+    Alert alert = new Alert (Alert.AlertType.INFORMATION);
+    alert.setHeaderText ("This is an alert!");
+    alert.initOwner (stage);
+    alert.setOnShown (new EventHandler < DialogEvent > () {
+        @Override
+        public void handle (DialogEvent event) {
+            System.out.println (alert.getOwner ().getX ());
+            System.out.println (alert.getOwner ().getY ());
+            int screenMaxX = (int) Screen.getPrimary ().getVisualBounds ().getMaxX ();
+            int screenMaxY = (int) Screen.getPrimary ().getVisualBounds ().getMaxY ();
+            int width = (int) stage.getWidth ();
+            int height = (int) stage.getHeight ();
+            int stageMaxX = (int) stage.getX ();
+            int stageMaxY = (int) stage.getY ();
+            int paneMaxX = screenMaxX - width;
+            int paneMaxY = screenMaxY - height;
+            if (stageMaxX > paneMaxX || stageMaxY > paneMaxY) {
+            }
+        }}
+
+    );
+    alert.showAndWait ();
+}
+----------------------------------------
+
+public void handle (DialogEvent event) {
+    System.out.println (alert.getOwner ().getX ());
+    System.out.println (alert.getOwner ().getY ());
+    int screenMaxX = (int) Screen.getPrimary ().getVisualBounds ().getMaxX ();
+    int screenMaxY = (int) Screen.getPrimary ().getVisualBounds ().getMaxY ();
+    int width = (int) stage.getWidth ();
+    int height = (int) stage.getHeight ();
+    int stageMaxX = (int) stage.getX ();
+    int stageMaxY = (int) stage.getY ();
+    int paneMaxX = screenMaxX - width;
+    int paneMaxY = screenMaxY - height;
+    if (stageMaxX > paneMaxX || stageMaxY > paneMaxY) {
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+5206318_5206812_12_32
+5206318_5211764_12_43
+Title: How can I write a semaphore in Java which prioritizes previous successful applicants? 
+----------------------------------------
+
+public void acquire (int id) throws InterruptedException {
+    boolean idIsFavoured = favoured.contains (id);
+    favouredSemaphore.acquire ();
+    if (! idIsFavoured) {
+        favouredSemaphore.release ();
+    } else {
+        favouredAquired = true;
+    }
+    normalSemaphore.acquire ();
+    if (! idIsFavoured) {
+        if (favouredAquired) {
+            normalSemaphore.release ();
+            acquire ();
+        } else {
+            favoured.add (id);
+        }
+    }
+}
+----------------------------------------
+
+public void acquire (int id) throws InterruptedException {
+    Object lock;
+    boolean favoured = false;
+    synchronized (this) {
+        if (available) {
+            doAcquire (favoured, id);
+            return;
+        }
+        favoured = favouredIDs.contains (id);
+        if (favoured) {
+            lock = favouredLock;
+            ++ favouredWaiting;
+        } else {
+            lock = ordinaryLock;
+        }
+    }
+    while (true) {
+        synchronized (this) {
+            if (available) {
+                doAcquire (favoured, id);
+                return;
+            }
+        }
+        synchronized (lock) {
+            lock.wait ();
+        }
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+52076865_52089725_44_64
+52076865_52089725_7_25
+Title: Firebase LimitToLast crash when trying to load new data 
+----------------------------------------
+
+public void onDataChange (DataSnapshot dataSnapshot) {
+    if (dataSnapshot.exists ()) {
+        mChatList.clear ();
+        for (DataSnapshot readDataSnapshot : dataSnapshot.getChildren ()) {
+            ChatResponse chatModel = readDataSnapshot.getValue (ChatResponse.class);
+            if (chatModel != null) {
+                mChatList.add (chatModel);
+            }
+            if (mChatList.size () == 1) {
+                mLastDataSnapshot = readDataSnapshot;
+            }
+        }
+        mChatList.remove (mChatList.size () - 1);
+        mView.onFetchLoadMoreSuccess (mChatList, mTotalCount);
+    }
+}
+----------------------------------------
+
+public void onDataChange (DataSnapshot dataSnapshot) {
+    mLastDataSnapshot = null;
+    if (dataSnapshot.exists ()) {
+        mChatList.clear ();
+        for (DataSnapshot readDataSnapshot : dataSnapshot.getChildren ()) {
+            ChatResponse chatModel = readDataSnapshot.getValue (ChatResponse.class);
+            if (chatModel != null) {
+                mChatList.add (chatModel);
+            }
+            if (mLastDataSnapshot == null) {
+                mLastDataSnapshot = readDataSnapshot;
+            }
+        }
+        mView.onFetchMessagesSuccess (mChatList);
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+5208163_5208191_3_33
+5208163_5208238_2_26
+Title: String Alternating letters 
+----------------------------------------
+
+public static String merge (String a, String b) {
+    if (a == null || a.length () == 0) {
+        return b;
+    } else if (b == null || b.length () == 0) {
+        return a;
+    } else {
+        StringBuffer merged = new StringBuffer ();
+        int aIndex = 0;
+        int bIndex = 0;
+        while (aIndex < a.length () && bIndex < b.length ()) {
+            merged.append (a.charAt (aIndex));
+            merged.append (b.charAt (bIndex));
+            aIndex ++;
+            bIndex ++;
+        }
+        while (aIndex < a.length ()) {
+            merged.append (a.charAt (aIndex));
+            aIndex ++;
+        }
+        while (bIndex < b.length ()) {
+            merged.append (b.charAt (bIndex));
+            bIndex ++;
+        }
+        return merged.toString ();
+    }
+
+}
+----------------------------------------
+
+public static String merge (final String a, final String b) {
+    if (a == null || a.length () == 0) {
+        return b;
+    } else if (b == null || b.length () == 0) {
+        return a;
+    } else {
+        final int aLength = a.length ();
+        final int bLength = b.length ();
+        final StringBuilder merged = new StringBuilder (aLength + bLength);
+        for (int i = 0, j = 0;
+        i < aLength && j < bLength; i ++, j ++) {
+            merged.append (a.charAt (i)).append (b.charAt (j));
+        }
+        if (aLength != bLength) {
+            if (aLength > bLength) {
+                merged.append (a.substring (bLength));
+            } else {
+                merged.append (b.substring (aLength));
+            }
+        }
+        return merged.toString ();
+    }
+
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+520860_520885_14_23
+520860_520885_27_45
+Title: Passing a work item between threads (Java) 
+----------------------------------------
+
+public void run () {
+    int i = 0;
+    while (true) {
+        i ++;
+        synchronized (oeq) {
+            oeq [0] = "" + i;
+            oeq.notifyAll ();
+        }
+    }
+}
+----------------------------------------
+
+public void run () {
+    String workload = null;
+    while (true) {
+        synchronized (oeq) {
+            try {
+                oeq.wait ();
+            } catch (InterruptedException ie) {
+                ie.printStackTrace ();
+            }
+            if (oeq [0] != null) {
+                workload = oeq [0];
+                oeq [0] = null;
+            }
+        }
+        if (workload != null) {
+            System.out.println (workload);
+        }
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+520860_520885_14_23
+520860_522944_13_29
+Title: Passing a work item between threads (Java) 
+----------------------------------------
+
+public void run () {
+    int i = 0;
+    while (true) {
+        i ++;
+        synchronized (oeq) {
+            oeq [0] = "" + i;
+            oeq.notifyAll ();
+        }
+    }
+}
+----------------------------------------
+
+public void run () {
+    Random rnd = new Random ();
+    try {
+        for (;;) {
+            Thread.sleep (rnd.nextInt (10000));
+            synchronized (mutex) {
+                theString = "" + System.currentTimeMillis ();
+                System.out.println ("Producer: Setting string to " + theString);
+                mutex.notify ();
+            }
+        }
+    } catch (InterruptedException e) {
+        e.printStackTrace ();
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+520860_520885_14_23
+520860_522944_33_58
+Title: Passing a work item between threads (Java) 
+----------------------------------------
+
+public void run () {
+    int i = 0;
+    while (true) {
+        i ++;
+        synchronized (oeq) {
+            oeq [0] = "" + i;
+            oeq.notifyAll ();
+        }
+    }
+}
+----------------------------------------
+
+public void run () {
+    try {
+        String mostRecentValue = null;
+        Random rnd = new Random ();
+        for (;;) {
+            synchronized (mutex) {
+                if (theString == mostRecentValue) {
+                    System.out.println ("Consumer: Waiting for new value");
+                    mutex.wait ();
+                    System.out.println ("Consumer: Producer woke me up!");
+                } else {
+                    System.out.println ("Consumer: There's a new value waiting for me");
+                }
+                mostRecentValue = theString;
+            }
+            System.out.println ("Consumer: processing " + mostRecentValue);
+            Thread.sleep (rnd.nextInt (10000));
+        }
+    } catch (InterruptedException e) {
+        e.printStackTrace ();
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+520860_520885_27_45
+520860_522944_13_29
+Title: Passing a work item between threads (Java) 
+----------------------------------------
+
+public void run () {
+    String workload = null;
+    while (true) {
+        synchronized (oeq) {
+            try {
+                oeq.wait ();
+            } catch (InterruptedException ie) {
+                ie.printStackTrace ();
+            }
+            if (oeq [0] != null) {
+                workload = oeq [0];
+                oeq [0] = null;
+            }
+        }
+        if (workload != null) {
+            System.out.println (workload);
+        }
+    }
+}
+----------------------------------------
+
+public void run () {
+    Random rnd = new Random ();
+    try {
+        for (;;) {
+            Thread.sleep (rnd.nextInt (10000));
+            synchronized (mutex) {
+                theString = "" + System.currentTimeMillis ();
+                System.out.println ("Producer: Setting string to " + theString);
+                mutex.notify ();
+            }
+        }
+    } catch (InterruptedException e) {
+        e.printStackTrace ();
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+520860_520885_27_45
+520860_522944_33_58
+Title: Passing a work item between threads (Java) 
+----------------------------------------
+
+public void run () {
+    String workload = null;
+    while (true) {
+        synchronized (oeq) {
+            try {
+                oeq.wait ();
+            } catch (InterruptedException ie) {
+                ie.printStackTrace ();
+            }
+            if (oeq [0] != null) {
+                workload = oeq [0];
+                oeq [0] = null;
+            }
+        }
+        if (workload != null) {
+            System.out.println (workload);
+        }
+    }
+}
+----------------------------------------
+
+public void run () {
+    try {
+        String mostRecentValue = null;
+        Random rnd = new Random ();
+        for (;;) {
+            synchronized (mutex) {
+                if (theString == mostRecentValue) {
+                    System.out.println ("Consumer: Waiting for new value");
+                    mutex.wait ();
+                    System.out.println ("Consumer: Producer woke me up!");
+                } else {
+                    System.out.println ("Consumer: There's a new value waiting for me");
+                }
+                mostRecentValue = theString;
+            }
+            System.out.println ("Consumer: processing " + mostRecentValue);
+            Thread.sleep (rnd.nextInt (10000));
+        }
+    } catch (InterruptedException e) {
+        e.printStackTrace ();
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+520860_522944_13_29
+520860_522944_33_58
+Title: Passing a work item between threads (Java) 
+----------------------------------------
+
+public void run () {
+    Random rnd = new Random ();
+    try {
+        for (;;) {
+            Thread.sleep (rnd.nextInt (10000));
+            synchronized (mutex) {
+                theString = "" + System.currentTimeMillis ();
+                System.out.println ("Producer: Setting string to " + theString);
+                mutex.notify ();
+            }
+        }
+    } catch (InterruptedException e) {
+        e.printStackTrace ();
+    }
+}
+----------------------------------------
+
+public void run () {
+    try {
+        String mostRecentValue = null;
+        Random rnd = new Random ();
+        for (;;) {
+            synchronized (mutex) {
+                if (theString == mostRecentValue) {
+                    System.out.println ("Consumer: Waiting for new value");
+                    mutex.wait ();
+                    System.out.println ("Consumer: Producer woke me up!");
+                } else {
+                    System.out.println ("Consumer: There's a new value waiting for me");
+                }
+                mostRecentValue = theString;
+            }
+            System.out.println ("Consumer: processing " + mostRecentValue);
+            Thread.sleep (rnd.nextInt (10000));
+        }
+    } catch (InterruptedException e) {
+        e.printStackTrace ();
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+52090990_52091082_2_10
+52090990_52091162_9_17
+Title: Object not being read in another class - Java 
+----------------------------------------
+
+public static void main (String [] args) {
+    Dog dog1 = new Dog ("Big Larry");
+    Dog dog2 = new Dog ("Mr. Cuddles");
+    dog1.bark ();
+    dog2.bark ();
+    dog1.eat ();
+    dog2.sleep ();
+    dog1.sleep ();
+}
+----------------------------------------
+
+public static void main (String [] args) {
+    Dog dog1 = new Dog ("Big Larry");
+    Dog dog2 = new Dog ("Mr. Cuddles");
+    dog1.bark ();
+    dog2.bark ();
+    dog1.eat ();
+    dog2.sleep ();
+    dog1.sleep ();
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+52116917_52117052_1_17
+52116917_52117168_1_17
+Title: Error: Variable declaration not allowed here 
+----------------------------------------
+
+public static int [] expand (int [] a, int n) {
+    if (n == 1) return a;
+
+    if (n <= 0) return new int [0];
+
+    int [] c = new int [0];
+    if (n < 1) {
+        c = new int [a.length * n];
+        for (int i = 0;
+        i < a.length; i ++) {
+            int num = a [i] / n;
+            for (int j = 0;
+            j < n; j ++) {
+                c [i * n + j] = num;
+            }
+        }
+    }
+    return c;
+}
+----------------------------------------
+
+public static int [] expand (int [] a, int n) {
+    int [] c = null;
+    if (n == 1) return a;
+
+    if (n <= 0) return new int [0];
+
+    if (n < 1) {
+        c = new int [a.length * n];
+        for (int i = 0;
+        i < a.length; i ++) {
+            int num = a [i] / n;
+            for (int j = 0;
+            j < n; j ++) {
+                c [i * n + j] = num;
+            }
+        }
+    }
+    return c;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+52125803_52129775_157_166
+52125803_52129775_330_402
+Title: Why the delay in ComboBox responding 
+----------------------------------------
+
+public void handle (MouseEvent event) {
+    if (cbFather.getEditor ().getText () == null) {
+        cbFather.getItems ().clear ();
+        cbFather.setItems (persons);
+        cbFather.setEditable (true);
+        cbFather.setMaxWidth (Double.MAX_VALUE);
+        cbFather.setVisibleRowCount (5);
+    }
+    System.out.println ("MOUSE PRESSED!!! in EDITOR");
+}
+----------------------------------------
+
+public void handle (KeyEvent event) {
+    switch (event.getCode ()) {
+        case UP :
+            if (thisCombo.getEditor ().equals (null)) {
+                thisCombo.getSelectionModel ().selectFirst ();
+                thisCombo.show ();
+            }
+            break;
+        case DOWN :
+            System.out.println ("Processing DOWN arrow");
+            if (thisCombo.getEditor ().equals (null)) {
+                System.out.println ("Editor is NULL");
+                thisCombo.getSelectionModel ().selectFirst ();
+                thisCombo.show ();
+            }
+            if (! thisCombo.isShowing ()) {
+                if (thisCombo.getItems ().size () == 0) {
+                    System.out.println ("Processing DOWN arrow - Combo Box is EMPTY");
+                    thisCombo.setItems (originalData);
+                } else {
+                    System.out.println ("Processing DOWN arrow - Has items.");
+                }
+                thisCombo.getSelectionModel ().selectFirst ();
+                thisCombo.show ();
+            }
+            break;
+        case BACK_SPACE :
+            moveCaretToPos = true;
+            caretPos = thisCombo.getEditor ().getCaretPosition ();
+            break;
+        case DELETE :
+            moveCaretToPos = true;
+            caretPos = thisCombo.getEditor ().getCaretPosition ();
+            break;
+        case ENTER :
+            break;
+        case RIGHT :
+        case LEFT :
+        case SHIFT :
+        case HOME :
+        case END :
+        case TAB :
+        case CONTROL :
+            return;
+        default :
+            if (event.getCode ().ALPHANUMERIC != null) {
+                locateItems ();
+            }
+            break;
+    }
+    APerson waste = (APerson) getComboBoxValue (thisCombo);
+    if (waste != null) {
+        txtValue.setText (waste.getFirstName () + " ID = " + waste.getPersonID ());
+    } else {
+        txtValue.setText ("");
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+52125803_52129775_171_180
+52125803_52129775_330_402
+Title: Why the delay in ComboBox responding 
+----------------------------------------
+
+public void handle (MouseEvent event) {
+    if (cbFather.getEditor ().getText () == null) {
+        cbFather.getItems ().clear ();
+        cbFather.setItems (persons);
+        cbFather.setEditable (true);
+        cbFather.setMaxWidth (Double.MAX_VALUE);
+        cbFather.setVisibleRowCount (5);
+    }
+    System.out.println ("MOUSE PRESSED!!! in CB BUTTON");
+}
+----------------------------------------
+
+public void handle (KeyEvent event) {
+    switch (event.getCode ()) {
+        case UP :
+            if (thisCombo.getEditor ().equals (null)) {
+                thisCombo.getSelectionModel ().selectFirst ();
+                thisCombo.show ();
+            }
+            break;
+        case DOWN :
+            System.out.println ("Processing DOWN arrow");
+            if (thisCombo.getEditor ().equals (null)) {
+                System.out.println ("Editor is NULL");
+                thisCombo.getSelectionModel ().selectFirst ();
+                thisCombo.show ();
+            }
+            if (! thisCombo.isShowing ()) {
+                if (thisCombo.getItems ().size () == 0) {
+                    System.out.println ("Processing DOWN arrow - Combo Box is EMPTY");
+                    thisCombo.setItems (originalData);
+                } else {
+                    System.out.println ("Processing DOWN arrow - Has items.");
+                }
+                thisCombo.getSelectionModel ().selectFirst ();
+                thisCombo.show ();
+            }
+            break;
+        case BACK_SPACE :
+            moveCaretToPos = true;
+            caretPos = thisCombo.getEditor ().getCaretPosition ();
+            break;
+        case DELETE :
+            moveCaretToPos = true;
+            caretPos = thisCombo.getEditor ().getCaretPosition ();
+            break;
+        case ENTER :
+            break;
+        case RIGHT :
+        case LEFT :
+        case SHIFT :
+        case HOME :
+        case END :
+        case TAB :
+        case CONTROL :
+            return;
+        default :
+            if (event.getCode ().ALPHANUMERIC != null) {
+                locateItems ();
+            }
+            break;
+    }
+    APerson waste = (APerson) getComboBoxValue (thisCombo);
+    if (waste != null) {
+        txtValue.setText (waste.getFirstName () + " ID = " + waste.getPersonID ());
+    } else {
+        txtValue.setText ("");
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+52125803_52129775_217_226
+52125803_52129775_274_283
+Title: Why the delay in ComboBox responding 
+----------------------------------------
+
+public APerson fromString (String thisString) {
+    for (APerson pers : cbFather.getItems ()) {
+        if (pers.toString ().equals (thisString)) {
+            APerson person = pers;
+            return person;
+        }
+    }
+    return null;
+}
+----------------------------------------
+
+public APerson fromString (String thisString) {
+    for (APerson pers : cbMother.getItems ()) {
+        if (pers.toString ().equals (thisString)) {
+            APerson person = pers;
+            return person;
+        }
+    }
+    return null;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+52131572_52131647_12_36
+52131572_52131655_1_14
+Title: Why is return executed twice 
+----------------------------------------
+
+public boolean binSearch (int arr [], int low, int high, int val) {
+    int mid = (low + high) / 2;
+    while (low <= high) {
+        if (arr [mid] == val) {
+            return true;
+        } else if (val > arr [mid]) {
+            return binSearch (arr, mid + 1, high, val);
+        } else {
+            return binSearch (arr, low + 1, mid, val);
+        }
+
+    }
+    return false;
+}
+----------------------------------------
+
+public boolean binSearch (int arr [], int low, int high, int val) {
+    if (low <= high) {
+        int mid = (low + high) / 2;
+        if (arr [mid] == val) {
+            return true;
+        } else if (arr [mid] > val) {
+            return binSearch (arr, mid + 1, high, val);
+        } else {
+            return binSearch (arr, low + 1, mid, val);
+        }
+
+    }
+    return false;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+52131572_52131647_12_36
+52131572_52131771_1_13
+Title: Why is return executed twice 
+----------------------------------------
+
+public boolean binSearch (int arr [], int low, int high, int val) {
+    int mid = (low + high) / 2;
+    while (low <= high) {
+        if (arr [mid] == val) {
+            return true;
+        } else if (val > arr [mid]) {
+            return binSearch (arr, mid + 1, high, val);
+        } else {
+            return binSearch (arr, low + 1, mid, val);
+        }
+
+    }
+    return false;
+}
+----------------------------------------
+
+public boolean binSearch (int arr [], int low, int high, int val) {
+    int mid = (low + high) / 2;
+    boolean returnValue = false;
+    if (arr [mid] == val) {
+        return true;
+    } else if (arr [mid] > val) {
+        returnValue = binSearch (arr, mid + 1, high, val);
+    } else {
+        returnValue = binSearch (arr, low + 1, mid, val);
+    }
+
+    return returnValue;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+52131572_52131655_1_14
+52131572_52131771_1_13
+Title: Why is return executed twice 
+----------------------------------------
+
+public boolean binSearch (int arr [], int low, int high, int val) {
+    if (low <= high) {
+        int mid = (low + high) / 2;
+        if (arr [mid] == val) {
+            return true;
+        } else if (arr [mid] > val) {
+            return binSearch (arr, mid + 1, high, val);
+        } else {
+            return binSearch (arr, low + 1, mid, val);
+        }
+
+    }
+    return false;
+}
+----------------------------------------
+
+public boolean binSearch (int arr [], int low, int high, int val) {
+    int mid = (low + high) / 2;
+    boolean returnValue = false;
+    if (arr [mid] == val) {
+        return true;
+    } else if (arr [mid] > val) {
+        returnValue = binSearch (arr, mid + 1, high, val);
+    } else {
+        returnValue = binSearch (arr, low + 1, mid, val);
+    }
+
+    return returnValue;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+52139491_52139586_5_31
+52139491_52139923_1_16
+Title: concatenated sum of two arrays of integer 
+----------------------------------------
+
+public static void main (String [] args) {
+    Scanner s = new Scanner (System.in);
+    int i, j, cc, dd;
+    int m = s.nextInt ();
+    int n = s.nextInt ();
+    String a = "";
+    String b = "";
+    for (i = 0; i < m; i ++) {
+        a += s.next ();
+    }
+    for (j = 0; j < n; j ++) {
+        b += s.next ();
+    }
+    cc = Integer.parseInt (a);
+    dd = Integer.parseInt (b);
+    System.out.print (cc + dd);
+}
+----------------------------------------
+
+public static void main (String [] args) {
+    ArrayList < String > arrays = new ArrayList < > ();
+    Scanner scanner = new Scanner (System.in);
+    String bufferLine;
+    while (scanner.hasNextLine () && ! Objects.equals (bufferLine = scanner.nextLine (), "")) {
+        arrays.add (bufferLine);
+    }
+    int sum = arrays.stream ().map (s -> s.replace (" ", "")).filter (s -> s.matches ("\\d+")).mapToInt (Integer :: valueOf).sum ();
+    System.out.println (sum);
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+52154145_52154286_1_12
+52154145_52154318_1_12
+Title: How to convert List<String> to List<Float> Android 
+----------------------------------------
+
+List < Float > getList (List < String > stringList) {
+    List < Float > floatList = new ArrayList < > ();
+    for (int i = 0;
+    i < stringList.size (); i ++) {
+        Float number = Float.valueOf (stringList.get (i));
+        floatList.add (number);
+    }
+    return floatList;
+}
+----------------------------------------
+
+private List < Float > getList (List < String > stringList) {
+    List < Float > floatList = new ArrayList < > ();
+    for (int i = 0;
+    i < stringList.size (); i ++) {
+        Float number = Float.valueOf (stringList.get (i));
+        floatList.add (number);
+    }
+    return floatList;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+52168924_52169000_25_72
+52168924_52169000_45_70
+Title: why is my third song not playing and how can I make it play? 
+----------------------------------------
+
+public void onCompletion (MediaPlayer mp) {
+    songNum ++;
+    mMediaPlayer = MediaPlayer.create (context, newList.get (songNum));
+    mMediaPlayer.setAudioStreamType (AudioManager.STREAM_MUSIC);
+    mMediaPlayer.setLooping (false);
+    mMediaPlayer.start ();
+    mMediaPlayer.setOnCompletionListener (new MediaPlayer.OnCompletionListener () {
+        @Override
+        public void onCompletion (MediaPlayer mp) {
+            songNum ++;
+            mMediaPlayer = MediaPlayer.create (context, newList.get (songNum));
+            mMediaPlayer.setAudioStreamType (AudioManager.STREAM_MUSIC);
+            mMediaPlayer.setLooping (false);
+            mMediaPlayer.start ();
+            mMediaPlayer.setOnCompletionListener (new MediaPlayer.OnCompletionListener () {
+                @Override
+                public void onCompletion (MediaPlayer mp) {
+                    songNum ++;
+                    mMediaPlayer = MediaPlayer.create (context, newList.get (songNum));
+                    mMediaPlayer.setAudioStreamType (AudioManager.STREAM_MUSIC);
+                    mMediaPlayer.setLooping (false);
+                    mMediaPlayer.start ();
+                }}
+
+            );
+        }}
+
+    );
+}
+----------------------------------------
+
+public void onCompletion (MediaPlayer mp) {
+    songNum ++;
+    mMediaPlayer = MediaPlayer.create (context, newList.get (songNum));
+    mMediaPlayer.setAudioStreamType (AudioManager.STREAM_MUSIC);
+    mMediaPlayer.setLooping (false);
+    mMediaPlayer.start ();
+    mMediaPlayer.setOnCompletionListener (new MediaPlayer.OnCompletionListener () {
+        @Override
+        public void onCompletion (MediaPlayer mp) {
+            songNum ++;
+            mMediaPlayer = MediaPlayer.create (context, newList.get (songNum));
+            mMediaPlayer.setAudioStreamType (AudioManager.STREAM_MUSIC);
+            mMediaPlayer.setLooping (false);
+            mMediaPlayer.start ();
+        }}
+
+    );
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+52171261_52172517_1_11
+52171261_52240666_11_24
+Title: How to iterate a linked hashset and compare each 2 elements in a text file in java? 
+----------------------------------------
+
+public static void main (String [] args) {
+    LinkedHashSet < String > freq = new LinkedHashSet < String > ();
+    freq.add ("pen");
+    freq.add ("pencil");
+    freq.add ("eraser");
+    freq.add ("scale");
+    for (String item : freq) {
+        performeOperation (item, freq);
+    }
+}
+----------------------------------------
+
+public static void main (String [] args) {
+    ArrayList < String > arrayList = new ArrayList < > ();
+    arrayList.add ("Pencil");
+    arrayList.add ("Pencil");
+    arrayList.add ("Bulb");
+    arrayList.add ("Scale");
+    arrayList.add ("Pencil");
+    arrayList.add ("Pencil");
+    arrayList.add ("Scale");
+    arrayList.add ("Eraser");
+    countListItems (arrayList);
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+52181146_52181674_1_29
+52181146_52182243_1_32
+Title: JavaFX TableView filter using TextField 
+----------------------------------------
+
+public void addTextFilter (ObservableList < List < Object > > allData, StringProperty textProperty, TableView < List < Object > > table) {
+    FilteredList < List < Object > > filteredData = new FilteredList < > (allData, p -> true);
+    textProperty.addListener ((observable, oldValue, newValue) -> {
+        filteredData.setPredicate (person -> {
+            if (newValue == null || newValue.isEmpty ()) {
+                return true;
+            }
+            String lowerCaseFilter = newValue.toLowerCase ();
+            if (person.getFirstName ().toLowerCase ().contains (lowerCaseFilter)) {
+                return true;
+            } else if (person.getLastName ().toLowerCase ().contains (lowerCaseFilter)) {
+                return true;
+            }
+
+            return false;
+        });
+    });
+    SortedList < List < Object > > sortedData = new SortedList < > (filteredData);
+    sortedData.comparatorProperty ().bind (table.comparatorProperty ());
+    table.setItems (sortedData);
+}
+----------------------------------------
+
+public static < T > void addTextFilter (ObservableList < T > allData, JFXTextField filterField, TableView < T > table) {
+    final List < TableColumn < T, ? > > columns = table.getColumns ();
+    FilteredList < T > filteredData = new FilteredList < > (allData);
+    filteredData.predicateProperty ().bind (Bindings.createObjectBinding (() -> {
+        String text = filterField.getText ();
+        if (text == null || text.isEmpty ()) {
+            return null;
+        }
+        final String filterText = text.toLowerCase ();
+        return o -> {
+            for (TableColumn < T, ? > col : columns) {
+                ObservableValue < ? > observable = col.getCellObservableValue (o);
+                if (observable != null) {
+                    Object value = observable.getValue ();
+                    if (value != null && value.toString ().toLowerCase ().equals (filterText)) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        };
+    }, filterField.textProperty ()));
+    SortedList < T > sortedData = new SortedList < > (filteredData);
+    sortedData.comparatorProperty ().bind (table.comparatorProperty ());
+    table.setItems (sortedData);
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+52202986_52203178_14_33
+52202986_52210038_1_22
+Title: Java - number in expanded form 
+----------------------------------------
+
+public static String expandedForm (int num) {
+    String [] str = Integer.toString (num).split ("");
+    String result = "";
+    for (int i = 0;
+    i < str.length - 1; i ++) {
+        if (Integer.valueOf (str [i]) > 0) {
+            for (int j = i;
+            j < str.length - 1; j ++) {
+                str [i] += '0';
+            }
+        }
+    }
+    result = Arrays.toString (str);
+    result = result.substring (1, result.length () - 1).replace (",", " +");
+    System.out.println (result);
+    return result;
+}
+----------------------------------------
+
+public static String expandedForm (int num) {
+    String [] str = Integer.toString (num).split ("");
+    String result;
+    List < String > l = new ArrayList < String > ();
+    for (int i = 0;
+    i < str.length; i ++) {
+        if (Integer.valueOf (str [i]) > 0) {
+            String s = str [i];
+            for (int j = i;
+            j < str.length - 1; j ++) {
+                s += '0';
+            }
+            l.add (s);
+        }
+    }
+    result = l.toString ();
+    result = result.substring (1, result.length () - 1).replace (",", " +");
+    System.out.println (result);
+    return result;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+52202986_52203178_14_33
+52202986_52664840_1_20
+Title: Java - number in expanded form 
+----------------------------------------
+
+public static String expandedForm (int num) {
+    String [] str = Integer.toString (num).split ("");
+    String result = "";
+    for (int i = 0;
+    i < str.length - 1; i ++) {
+        if (Integer.valueOf (str [i]) > 0) {
+            for (int j = i;
+            j < str.length - 1; j ++) {
+                str [i] += '0';
+            }
+        }
+    }
+    result = Arrays.toString (str);
+    result = result.substring (1, result.length () - 1).replace (",", " +");
+    System.out.println (result);
+    return result;
+}
+----------------------------------------
+
+public static String expandedForm (int num) {
+    String st = String.valueOf (num);
+    String finalResult = "";
+    for (int i = 0;
+    i < st.length (); i ++) {
+        String s = String.valueOf (st.charAt (i));
+        if (Integer.valueOf (s) > 0) {
+            for (int j = i;
+            j < st.length () - 1; j ++) {
+                s = s.concat ("0");
+            }
+            if (i == st.length () - 1) {
+                finalResult = finalResult.concat (s);
+            } else {
+                finalResult = finalResult.concat (s + " + ");
+            }
+        }
+    }
+    return finalResult;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+52202986_52210038_1_22
+52202986_52664840_1_20
+Title: Java - number in expanded form 
+----------------------------------------
+
+public static String expandedForm (int num) {
+    String [] str = Integer.toString (num).split ("");
+    String result;
+    List < String > l = new ArrayList < String > ();
+    for (int i = 0;
+    i < str.length; i ++) {
+        if (Integer.valueOf (str [i]) > 0) {
+            String s = str [i];
+            for (int j = i;
+            j < str.length - 1; j ++) {
+                s += '0';
+            }
+            l.add (s);
+        }
+    }
+    result = l.toString ();
+    result = result.substring (1, result.length () - 1).replace (",", " +");
+    System.out.println (result);
+    return result;
+}
+----------------------------------------
+
+public static String expandedForm (int num) {
+    String st = String.valueOf (num);
+    String finalResult = "";
+    for (int i = 0;
+    i < st.length (); i ++) {
+        String s = String.valueOf (st.charAt (i));
+        if (Integer.valueOf (s) > 0) {
+            for (int j = i;
+            j < st.length () - 1; j ++) {
+                s = s.concat ("0");
+            }
+            if (i == st.length () - 1) {
+                finalResult = finalResult.concat (s);
+            } else {
+                finalResult = finalResult.concat (s + " + ");
+            }
+        }
+    }
+    return finalResult;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+5220701_5221093_27_42
+5220701_5222370_197_213
+Title: How to get a list of all lists containing exactly one element of each list of a list of lists 
+----------------------------------------
+
+public static void main (String [] args) {
+    List < List < Integer > > inputList = new ArrayList ();
+    inputList.add (new ArrayList < Integer > () {
+
+        {
+            add (1);
+            add (2);
+        }
+
+    }
+
+    );
+    inputList.add (new ArrayList < Integer > () {
+
+        {
+            add (10);
+            add (20);
+            add (30);
+        }
+
+    }
+
+    );
+    inputList.add (new ArrayList < Integer > () {
+
+        {
+            add (100);
+        }
+
+    }
+
+    );
+    System.out.println (combinations (inputList));
+}
+----------------------------------------
+
+public static void main (String [] params) {
+    @SuppressWarnings ("unchecked")
+    List < List < Integer > > factors = Arrays.asList (Arrays.asList (1, 2), Arrays.asList (10, 20, 30), Arrays.asList (100));
+    Iterable < List < Integer > > product = new ProductIterable < Integer > (factors);
+    List < List < Integer > > productList = new ArrayList < List < Integer > > ();
+    for (List < Integer > pEl : product) {
+        productList.add (pEl);
+        System.out.println (pEl);
+    }
+    System.out.println (productList);
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+52209736_52209931_1_18
+52209736_52210013_18_45
+Title: Program stops after getting input from Scanner 
+----------------------------------------
+
+public static void guessTheNumber (int secret) {
+    int guess;
+    for (int chance = 0;
+    chance < 4; chance ++) {
+        guess = Integer.parseInt (JOptionPane.showInputDialog ("Enter a number between 0 and 9. You have three tries."));
+        if (guess == secret) {
+            JOptionPane.showMessageDialog (null, "Correct! You WIN!");
+            System.exit (1);
+        }
+        if (guess < secret) {
+            JOptionPane.showMessageDialog (null, "Too low!");
+        }
+        if (guess > secret) {
+            JOptionPane.showMessageDialog (null, "Too high!");
+        }
+    }
+    JOptionPane.showMessageDialog (null, "Sorry! You LOSE!");
+    System.exit (1);
+}
+----------------------------------------
+
+public static void guessTheNumber (int secret) {
+    Scanner sc = new Scanner (System.in);
+    for (int chance = 0;
+    chance < 3; chance ++) {
+        int a = Integer.valueOf (JOptionPane.showInputDialog ("Enter a number between 0 and 9. You have three tries."));
+        if (a == secret) {
+            JOptionPane.showMessageDialog (null, "Correct! You WIN!");
+            sc.close ();
+            System.exit (1);
+        }
+        if (a < secret) {
+            JOptionPane.showMessageDialog (null, "Too low!");
+        }
+        if (a > secret) {
+            JOptionPane.showMessageDialog (null, "Too high!");
+        }
+    }
+    JOptionPane.showMessageDialog (null, "Sorry! You LOSE!");
+    sc.close ();
+    System.exit (1);
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+52216581_52216921_4_39
+52216581_52217089_1_28
+Title: Java Program is not consistent? 
+----------------------------------------
+
+public static void main (String [] args) {
+    boolean isPODSEnable;
+    ArrayList < String > al = new ArrayList < String > ();
+    al.add ("100");
+    al.add ("111");
+    al.add ("010");
+    String [] array;
+    if (al.size () > 0) {
+        for (int i = 0;
+        i < al.size (); i ++) {
+            array = al.get (i).split ("");
+            System.out.println ("Size of array is" + array.length);
+            for (int j = 0;
+            j < array.length; j ++) {
+                System.out.println ("size at position" + j + " is " + array [j]);
+                if ("1".equals (array [j])) {
+                    switch (j) {
+                        case 1 :
+                            System.out.println ("PODS Enalbe");
+                            break;
+                        case 2 :
+                            System.out.println ("BAM Enalbe");
+                            break;
+                        case 3 :
+                            System.out.println ("PNDE Enalbe");
+                            break;
+                    }
+                }
+            }
+        }
+    } else {
+        System.out.println ("No value found in PTM_TRIGGER Table");
+    }
+}
+----------------------------------------
+
+public static void main (String [] args) {
+    List < String > al = new ArrayList < String > ();
+    al.add ("100");
+    al.add ("111");
+    al.add ("010");
+    al.add ("1000");
+    if (al.size () > 0) {
+        for (String s : al) {
+            if (s.length () != 3) {
+                System.out.println ("String has invalid length");
+                continue;
+            }
+            if (s.charAt (0) == '1') {
+                System.out.println ("PODS Enable");
+            }
+            if (s.charAt (1) == '1') {
+                System.out.println ("BAM Enable");
+            }
+            if (s.charAt (2) == '1') {
+                System.out.println ("PNDE Enable");
+            }
+            System.out.println ();
+        }
+    } else {
+        System.out.println ("No value found in PTM_TRIGGER Table");
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+52216581_52216921_4_39
+52216581_52217252_1_36
+Title: Java Program is not consistent? 
+----------------------------------------
+
+public static void main (String [] args) {
+    boolean isPODSEnable;
+    ArrayList < String > al = new ArrayList < String > ();
+    al.add ("100");
+    al.add ("111");
+    al.add ("010");
+    String [] array;
+    if (al.size () > 0) {
+        for (int i = 0;
+        i < al.size (); i ++) {
+            array = al.get (i).split ("");
+            System.out.println ("Size of array is" + array.length);
+            for (int j = 0;
+            j < array.length; j ++) {
+                System.out.println ("size at position" + j + " is " + array [j]);
+                if ("1".equals (array [j])) {
+                    switch (j) {
+                        case 1 :
+                            System.out.println ("PODS Enalbe");
+                            break;
+                        case 2 :
+                            System.out.println ("BAM Enalbe");
+                            break;
+                        case 3 :
+                            System.out.println ("PNDE Enalbe");
+                            break;
+                    }
+                }
+            }
+        }
+    } else {
+        System.out.println ("No value found in PTM_TRIGGER Table");
+    }
+}
+----------------------------------------
+
+public static void main (String [] args) {
+    boolean isPODSEnable = false;
+    ArrayList < String > al = new ArrayList < String > ();
+    al.add ("100");
+    al.add ("111");
+    al.add ("010");
+    al.add ("0110");
+    al.add ("000");
+    if (al.size () > 0) {
+        for (String s : al) {
+            int index = s.indexOf ("1");
+            switch (index) {
+                case 0 :
+                    System.out.println ("PODS Enalbe");
+                    break;
+                case 1 :
+                    System.out.println ("BAM Enalbe");
+                    break;
+                case 2 :
+                    System.out.println ("PNDE Enalbe");
+                    break;
+                default :
+                    System.out.println ("Not Found");
+                    break;
+            }
+        }
+    } else {
+        System.out.println ("No value found in PTM_TRIGGER Table");
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+52216581_52217089_1_28
+52216581_52217252_1_36
+Title: Java Program is not consistent? 
+----------------------------------------
+
+public static void main (String [] args) {
+    List < String > al = new ArrayList < String > ();
+    al.add ("100");
+    al.add ("111");
+    al.add ("010");
+    al.add ("1000");
+    if (al.size () > 0) {
+        for (String s : al) {
+            if (s.length () != 3) {
+                System.out.println ("String has invalid length");
+                continue;
+            }
+            if (s.charAt (0) == '1') {
+                System.out.println ("PODS Enable");
+            }
+            if (s.charAt (1) == '1') {
+                System.out.println ("BAM Enable");
+            }
+            if (s.charAt (2) == '1') {
+                System.out.println ("PNDE Enable");
+            }
+            System.out.println ();
+        }
+    } else {
+        System.out.println ("No value found in PTM_TRIGGER Table");
+    }
+}
+----------------------------------------
+
+public static void main (String [] args) {
+    boolean isPODSEnable = false;
+    ArrayList < String > al = new ArrayList < String > ();
+    al.add ("100");
+    al.add ("111");
+    al.add ("010");
+    al.add ("0110");
+    al.add ("000");
+    if (al.size () > 0) {
+        for (String s : al) {
+            int index = s.indexOf ("1");
+            switch (index) {
+                case 0 :
+                    System.out.println ("PODS Enalbe");
+                    break;
+                case 1 :
+                    System.out.println ("BAM Enalbe");
+                    break;
+                case 2 :
+                    System.out.println ("PNDE Enalbe");
+                    break;
+                default :
+                    System.out.println ("Not Found");
+                    break;
+            }
+        }
+    } else {
+        System.out.println ("No value found in PTM_TRIGGER Table");
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+52227066_52227215_1_25
+52227066_52228723_1_25
+Title: Calling Storage Procedures from Java 
+----------------------------------------
+
+public void mostrarDatos () {
+    try {
+        Connection con = null;
+        con = getConnection ();
+        CallableStatement cs;
+        cs = con.prepareCall ("{CALL comprobarUsuario(?,?,?)}");
+        cs.setString (1, "Jorge");
+        cs.setString (2, "1627Jorge");
+        cs.registerOutParameter (3, Type.INT);
+        cs.execute ();
+        ResultSet rs2 = cs.getResultSet ();
+        if (rs2.next ()) {
+            System.out.println (true);
+        }
+        int resultado = cs.getInt (3);
+        System.out.println (resultado);
+        con.close ();
+    } catch (Exception e) {
+    }
+}
+----------------------------------------
+
+public void mostrarDatos () {
+    Connection con = null;
+    try {
+        con = getConnection ();
+        CallableStatement cs = con.prepareCall ("{CALL comprobarUsuario(?,?,?)}");
+        cs.setString (1, "Jorge");
+        cs.setString (2, "1627Jorge");
+        cs.registerOutParameter (3, java.sql.Types.INTEGER);
+        cs.executeUpdate ();
+        int resultado = cs.getInt (3);
+        System.out.println (resultado);
+    } catch (Exception e) {
+        System.out.println (e);
+    } finally {
+        if (con != null) {
+            try {
+                con.close ();
+            } catch (SQLException e) {
+                System.out.println (e);
+            }
+        }
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+52235633_52235849_1_24
+52235633_52235984_3_20
+Title: "JAVA GET API - 2D Array Unable to retrieve?" 
+----------------------------------------
+
+public static void main (String [] args) {
+    String [] [] data = {{"2018-09-03", "287.5", "289.8", "286.15", "287.3", "287.65", "1649749.0", "4750.35"}, {"2018-08-31", "286.25", "290.5", "285.0", "285.5", "285.95", "3716997.0", "10691.41"}, {"2018-08-30", "286.45", "290.55", "284.6", "286.05", "285.6", "3861403.0", "11097.03"}};
+    for (int i = 0;
+    i < data.length; i ++) {
+        for (int j = 0;
+        j < data [i].length; j ++) {
+            System.out.print (data [i] [j]);
+        }
+        System.out.println ();
+    }
+    for (int i = 0;
+    i < data.length; i ++) {
+        System.out.println (Arrays.toString (data [i]) + ",");
+    }
+}
+----------------------------------------
+
+public static void main (String [] args) {
+    String [] [] data = {{"2018-09-03", "287.5", "289.8", "286.15", "287.3", "287.65", "1649749.0", "4750.35"}, {"2018-08-31", "286.25", "290.5", "285.0", "285.5", "285.95", "3716997.0", "10691.41"}, {"2018-08-30", "286.45", "290.55", "284.6", "286.05", "285.6", "3861403.0", "11097.03"}};
+    for (int i = 0;
+    i < data.length; i ++) {
+        {
+            for (int j = 0;
+            j < data [i].length; j ++) {
+                System.out.print (data [i] [j] + " ");
+            }
+            System.out.println ();
+        }}
+}
+----------------------------------------

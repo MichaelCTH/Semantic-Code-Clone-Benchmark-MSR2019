@@ -1,0 +1,4905 @@
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+48650378_49087502_5_42
+48650378_50521886_69_227
+Title: python tkinter datepicker 
+----------------------------------------
+
+def __init__(self, root, * cnf, ** kw) :
+INDENT
+    try :
+    INDENT
+        self.levels = kw ["levels"]
+        del kw ["levels"]
+    DEDENT
+    except :
+    INDENT
+        try :
+        INDENT
+            self.levels = kw ["Levels"]
+            del kw ["Levels"]
+        DEDENT
+        except : self.levels = 3
+    DEDENT
+    try :
+    INDENT
+        self.close = kw ["close_action"]
+        del kw ["close_action"]
+    DEDENT
+    except :
+    INDENT
+        try :
+        INDENT
+            self.close = kw ["Close_action"]
+            del kw ["Close_action"]
+        DEDENT
+        except :
+        INDENT
+            try :
+            INDENT
+                self.close = kw ["close_Action"]
+                del kw ["close_Action"]
+            DEDENT
+            except :
+            INDENT
+                try :
+                INDENT
+                    self.close = kw ["Close_Action"]
+                    del kw ["Close_Action"]
+                DEDENT
+                except : self.close = 2
+            DEDENT
+        DEDENT
+    DEDENT
+    self.sup, self.cur, self.root, self.cal, self.year, self.month, self.level, self.added, self.end = super(Calendar, self), [0, 0, 1, datetime.date.today().year, datetime.date.today().month], root, calendar.TextCalendar(), datetime.date.today().year, datetime.date.today().month, 2 if self.levels > 1 else 3, 0, False
+    self.sup.__init__(root, * cnf, ** kw)
+    self.rect = self.create_rectangle(0, 0, 0, 0)
+    self.bind("<Configure>", lambda event : self.__setup())
+    self.root.bind("<Up>", lambda event : self.__upLevel())
+    self.root.bind("<Down>", lambda event : self.__downLevel())
+    self.root.bind("<Right>", lambda event : self.__down())
+    self.root.bind("<Left>", lambda event : self.__up())
+DEDENT
+----------------------------------------
+
+def __init__(self, master,
+start_date = None, state = None, separator = '-',
+locale = 'en', bg = 'white',
+font = DEFAULT_FONT, frame_look = {}, ** look) :
+INDENT
+    args = dict(relief = tk.SUNKEN, border = 1)
+    args.update(frame_look)
+    super(DateEntry, self,).__init__(master, bg = bg, ** args)
+    args = {'relief' : tk.FLAT, 'border' : 0}
+    args.update(look)
+    if babel and locale :
+    INDENT
+        if not isinstance(locale, babel.Locale) :
+        INDENT
+            locale = babel.Locale(locale)
+        DEDENT
+        pattern = locale.date_formats ['short'].pattern
+        for ch in pattern :
+        INDENT
+            if ch.lower() not in ['d', 'm', 'y'] :
+            INDENT
+                separator = ch
+                break
+            DEDENT
+        DEDENT
+        elems = pattern.split(separator)
+        for idx, elem in enumerate(elems) :
+        INDENT
+            if 'y' in elem :
+            INDENT
+                year_column = idx
+            DEDENT
+            elif 'M' in elem :
+            INDENT
+                month_column = idx
+            DEDENT
+            elif 'd' in elem :
+            INDENT
+                day_column = idx
+            DEDENT
+        DEDENT
+    DEDENT
+    else :
+    INDENT
+        day_column = 0
+        month_column = 1
+        year_column = 2
+        separator = separator
+    DEDENT
+    self._locale = locale
+    self._font = tkf.Font(font = font)
+    self.day_entry = None
+    self.month_entry = None
+
+    self.year_entry = None
+    self._year_var = tk.IntVar()
+    self._month_var = tk.IntVar()
+    self._day_var = tk.IntVar()
+    self._time = None
+    self.day_entry = DateIntegerEntry(self, maxvalue = 31,
+        maxlength = 2, textvariable = self._day_var, bg = bg, justify = tk.RIGHT,
+        width = 2,
+        font = self._font, state = state, ** args)
+    self.day_entry.grid(row = 0, column = day_column * 2)
+    self.day_entry.bind('<KeyRelease>', self.checkFocusNext)
+
+    self.month_entry = DateIntegerEntry(self, maxlength = 2, maxvalue = 12,
+        textvariable = self._month_var, bg = bg, justify = tk.RIGHT,
+        width = 2,
+        font = self._font, state = state, ** args)
+    self.month_entry.grid(row = 0, column = month_column * 2)
+    self.month_entry.bind('<KeyRelease>', self.checkFocusNext)
+    '''self.day_entry = ttk.Combobox(self,
+                                       textvariable=self._day_var,
+                                       width=3,
+                                       font=self._font,state=state)
+        self._update_day_values(self.date.year,
+                                self.date.month,
+                                self.date.day)
+        self.day_entry.grid(row=0, column=day_column * 2)
+        self.month_entry = ttk.Combobox(self,
+                                         textvariable=self._month_var,
+                                         width=3,
+                                         font=self._font,state=state)
+        self.month_entry['values'] = ['%d' % (x + 1) for x in range(12)]
+        self._month_var.set('%d' % self.date.month)
+        self.month_entry.grid(row=0, column=month_column * 2)
+        self.month_entry.bind('<<ComboboxSelected>>', self._month_updated)
+        '''
+    self.month_entry.bind('<FocusOut>', self._month_updated)
+    self.year_entry = DateIntegerEntry(self, maxlength = 4, maxvalue = 9999,
+        textvariable = self._year_var, justify = tk.RIGHT,
+        width = 4,
+        font = self._font, bg = bg, state = state, ** args)
+
+    self.year_entry.grid(row = 0, column = year_column * 2)
+    self.year_entry.bind('<KeyRelease>', self.checkFocusNext)
+    self.year_entry.bind('<FocusOut>', self._month_updated)
+    self.lbl1 = tk.Label(self, text = separator, bg = 'white', ** args)
+    self.lbl1.grid(row = 0, column = 1)
+    self.lbl2 = tk.Label(self, text = separator, bg = 'white', ** args)
+    self.lbl2.grid(row = 0, column = 3)
+    self.day_entry.bind('<Return>', self.focusNext)
+    self.month_entry.bind('<Return>', self.focusNext)
+    self.year_entry.bind('<Return>', self.focusNext)
+    self.day_entry.bind('<Right>', self.next1)
+    self.month_entry.bind('<Right>', self.next1)
+    self.year_entry.bind('<Right>', self.next1)
+    self.day_entry.bind('<Left>', self.prev)
+    self.month_entry.bind('<Left>', self.prev)
+    self.year_entry.bind('<Left>', self.prev)
+    self.day_entry.bind('<Up>', self.checkUp)
+    self.day_entry.bind('<Down>', self.checkDown)
+    self.month_entry.bind('<Up>', self.checkUp)
+    self.month_entry.bind('<Down>', self.checkDown)
+    self.year_entry.bind('<Up>', self.checkUp)
+    self.year_entry.bind('<Down>', self.checkDown)
+    self.day_entry.bind('<FocusIn>', self.setFocus)
+    self.month_entry.bind('<FocusIn>', self.setFocus)
+    self.year_entry.bind('<FocusIn>', self.setFocus)
+
+    if platform.system() == 'Linux' :
+    INDENT
+        self.day_entry.bind('<Shift-ISO_Left_Tab>', self.focusPrev)
+        self.month_entry.bind('<Shift-ISO_Left_Tab>', self.focusPrev)
+        self.year_entry.bind('<Shift-ISO_Left_Tab>', self.focusPrev)
+    DEDENT
+    else :
+    INDENT
+        self.day_entry.bind('<Shift-Tab>', self.focusPrev)
+        self.month_entry.bind('<Shift-Tab>', self.focusPrev)
+        self.year_entry.bind('<Shift-Tab>', self.focusPrev)
+    DEDENT
+    self.day_entry.bind('<Tab>', self.focusNext)
+    self.month_entry.bind('<Tab>', self.focusNext)
+    self.year_entry.bind('<Tab>', self.focusNext)
+    self.start_date = start_date
+    if start_date is None :
+    INDENT
+        self.date = datetime.date.today()
+    DEDENT
+    else :
+    INDENT
+        self.date = start_date
+
+    DEDENT
+    for idx in range(5) :
+    INDENT
+        self.columnconfigure(idx, weight = 0)
+
+    DEDENT
+    self.day_entry.bind('<FocusOut>', self.checkDate)
+    self.month_entry.bind('<FocusOut>', self.checkDate)
+    self.year_entry.bind('<FocusOut>', self.checkDate)
+
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+48650378_50521886_522_541
+48650378_50521886_543_574
+Title: python tkinter datepicker 
+----------------------------------------
+
+def date(self) :
+INDENT
+    if self.day_entry is not None :
+    INDENT
+
+        ''''d = datetime.datetime(year=self._year_var.get(),
+                                  month=self._month_var.get(),
+                                  day=self._day_var.get())
+
+            if self._time:
+                d = d.replace(hour=self._time.hour,
+                              minute=self._time.minute,
+                              second=self._time.second)
+            print(self.day_entry.get(),'my value')'''
+        d = self.getDate()
+        return d
+
+    DEDENT
+DEDENT
+----------------------------------------
+
+def date(self, d) :
+INDENT
+    self.day_entry.setMaxvalue(31)
+    self._year_var.set(d.year)
+    self._month_var.set('%d' % d.month)
+    self._day_var.set('%d' % d.day)
+    print (d.year)
+    print (d.month)
+    print (d.day)
+    day = d.day
+    month = d.month
+    if len(str(d.day)) == 1 :
+    INDENT
+        day = '0' + str(d.day)
+    DEDENT
+    if len(str(d.month)) == 1 :
+    INDENT
+        month = '0' + str(d.month)
+    DEDENT
+    if self.day_entry is not None :
+    INDENT
+        self.day_entry.delete(0, tk.END)
+        self.month_entry.delete(0, tk.END)
+        self.year_entry.delete(0, tk.END)
+        self.year_entry.insert(0, d.year)
+        self.month_entry.insert(0, month)
+        self.day_entry.insert(0, day)
+        self._month_updated()
+    DEDENT
+    if isinstance(d, datetime.datetime) :
+    INDENT
+        self._time = d.time()
+    DEDENT
+    else :
+    INDENT
+        self._time = None
+
+    DEDENT
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+48653291_48653349_1_16
+48653291_48653351_1_17
+Title: Programming style & avoiding null values 
+----------------------------------------
+
+def grade(mark) :
+INDENT
+    grds = ['First', 'Upper Second', 'Second', 'Third', 'F1 Supp.', 'F2', 'F3']
+    if mark > = 75.0 :
+    INDENT
+        return ("Your grade is " + grds [0])
+    DEDENT
+    if mark > = 70.0 :
+    INDENT
+        return ("Your grade is " + grds [1])
+    DEDENT
+    if mark > = 60.0 :
+    INDENT
+        return ("Your grade is " + grds [2])
+    DEDENT
+    if mark > = 50.0 :
+    INDENT
+        return ("Your grade is " + grds [3])
+    DEDENT
+    if mark > = 45.0 :
+    INDENT
+        return ("Your grade is " + grds [4])
+    DEDENT
+    if mark > = 40.0 :
+    INDENT
+        return ("Your grade is " + grds [5])
+    DEDENT
+    return ("Your grade is " + grds [6])
+DEDENT
+----------------------------------------
+
+def grade(mark) :
+INDENT
+    grds = ['First', 'Upper Second', 'Second', 'Third', 'F1 Supp.', 'F2', 'F3']
+    if mark > = 75.0 :
+    INDENT
+        return grds [0]
+    DEDENT
+    elif mark > = 70.0 :
+    INDENT
+        return grds [1]
+    DEDENT
+    elif mark > = 60.0 :
+    INDENT
+        return grds [2]
+    DEDENT
+    elif mark > = 50.0 :
+    INDENT
+        return grds [3]
+    DEDENT
+    elif mark > = 45.0 :
+    INDENT
+        return grds [4]
+    DEDENT
+    elif mark > = 40.0 :
+    INDENT
+        return grds [5]
+    DEDENT
+    else :
+    INDENT
+        return grds [6]
+    DEDENT
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+48653291_48653349_1_16
+48653291_48653388_5_15
+Title: Programming style & avoiding null values 
+----------------------------------------
+
+def grade(mark) :
+INDENT
+    grds = ['First', 'Upper Second', 'Second', 'Third', 'F1 Supp.', 'F2', 'F3']
+    if mark > = 75.0 :
+    INDENT
+        return ("Your grade is " + grds [0])
+    DEDENT
+    if mark > = 70.0 :
+    INDENT
+        return ("Your grade is " + grds [1])
+    DEDENT
+    if mark > = 60.0 :
+    INDENT
+        return ("Your grade is " + grds [2])
+    DEDENT
+    if mark > = 50.0 :
+    INDENT
+        return ("Your grade is " + grds [3])
+    DEDENT
+    if mark > = 45.0 :
+    INDENT
+        return ("Your grade is " + grds [4])
+    DEDENT
+    if mark > = 40.0 :
+    INDENT
+        return ("Your grade is " + grds [5])
+    DEDENT
+    return ("Your grade is " + grds [6])
+DEDENT
+----------------------------------------
+
+def grade(mark) :
+INDENT
+    grds = dict_range({(75, 100.1) : 'First',
+            (70, 75) : 'Upper Second',
+            (60, 70) : 'Second',
+            (50, 60) : 'Third',
+            (45, 50) : 'F1 Supp.',
+            (40, 45) : 'F2',
+            (0, 40) : 'F3'})
+    return grds [mark]
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+48653291_48653351_1_17
+48653291_48653388_5_15
+Title: Programming style & avoiding null values 
+----------------------------------------
+
+def grade(mark) :
+INDENT
+    grds = ['First', 'Upper Second', 'Second', 'Third', 'F1 Supp.', 'F2', 'F3']
+    if mark > = 75.0 :
+    INDENT
+        return grds [0]
+    DEDENT
+    elif mark > = 70.0 :
+    INDENT
+        return grds [1]
+    DEDENT
+    elif mark > = 60.0 :
+    INDENT
+        return grds [2]
+    DEDENT
+    elif mark > = 50.0 :
+    INDENT
+        return grds [3]
+    DEDENT
+    elif mark > = 45.0 :
+    INDENT
+        return grds [4]
+    DEDENT
+    elif mark > = 40.0 :
+    INDENT
+        return grds [5]
+    DEDENT
+    else :
+    INDENT
+        return grds [6]
+    DEDENT
+DEDENT
+----------------------------------------
+
+def grade(mark) :
+INDENT
+    grds = dict_range({(75, 100.1) : 'First',
+            (70, 75) : 'Upper Second',
+            (60, 70) : 'Second',
+            (50, 60) : 'Third',
+            (45, 50) : 'F1 Supp.',
+            (40, 45) : 'F2',
+            (0, 40) : 'F3'})
+    return grds [mark]
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+48663788_48666968_6_16
+48663788_48667772_11_24
+Title: python-docx: Insert a paragraph after 
+----------------------------------------
+
+def insert_paragraph_after(paragraph, text = None, style = None) :
+INDENT
+    new_p = OxmlElement("w:p")
+    paragraph._p.addnext(new_p)
+    new_para = Paragraph(new_p, paragraph._parent)
+    if text :
+    INDENT
+        new_para.add_run(text)
+    DEDENT
+    if style is not None :
+    INDENT
+        new_para.style = style
+    DEDENT
+    return new_para
+DEDENT
+----------------------------------------
+
+def insert_paragraph_after(paragraph, text, style = None) :
+INDENT
+    doc = paragraph._parent
+    i = par_index(paragraph) + 1
+    if i < = len(doc.paragraphs) :
+    INDENT
+
+        next_par = doc.paragraphs [i]
+        new_par = next_par.insert_paragraph_before(text, style)
+    DEDENT
+    else :
+    INDENT
+
+        new_par = parent.add_paragraph(text, style)
+    DEDENT
+    return new_par
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+4866587_41689464_4_10
+4866587_4866695_4_12
+Title: """Pythonic"" way to ""reset"" an object's variables?" 
+----------------------------------------
+
+def __init_and_copy__(self, * args, ** kwargs) :
+INDENT
+    f(self, * args, ** kwargs)
+    def reset(o = self) :
+    INDENT
+        o.__dict__ = o.__original_dict__
+        o.__original_dict__ = copy.deepcopy(self.__dict__)
+    DEDENT
+    self.reset = reset
+    self.__original_dict__ = copy.deepcopy(self.__dict__)
+DEDENT
+----------------------------------------
+
+def __init_and_copy__(self, * args, ** kwargs) :
+INDENT
+    f(self, * args)
+    self.__original_dict__ = copy.deepcopy(self.__dict__)
+    def reset(o = self) :
+    INDENT
+        o.__dict__ = o.__original_dict__
+    DEDENT
+    self.reset = reset
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+48680398_48681249_1_12
+48680398_48682243_2_22
+Title: Convert lazy evaluation into decorator (Python) 
+----------------------------------------
+
+def lazy_property(name) :
+INDENT
+    internal_name = "_" + name
+    def method_decorator(method) :
+    INDENT
+        def wrapper(self, * args, ** kwargs) :
+        INDENT
+            if not hasattr(self, internal_name) :
+            INDENT
+                setattr(self, internal_name, method(self, * args, ** kwargs))
+            DEDENT
+            return getattr(self, internal_name)
+        DEDENT
+        return property(wrapper, doc = method.__doc__)
+    DEDENT
+    return method_decorator
+
+DEDENT
+----------------------------------------
+
+def lazy_property(method_or_name = None, * args, ** kwargs) :
+INDENT
+    name = method_or_name
+    is_callable = isinstance(name, Callable)
+    def method_decorator(method) :
+    INDENT
+        if not is_callable : internal_name = ("_%s" % name)
+        else : internal_name = "_" + method.__name__
+        def wrapper(self) :
+        INDENT
+            if not hasattr(self, internal_name) :
+            INDENT
+                setattr(self, internal_name, method(self, * args, ** kwargs))
+            DEDENT
+            return getattr(self, internal_name)
+        DEDENT
+        return property(wrapper, doc = method.__doc__)
+    DEDENT
+    if is_callable : return method_decorator(name)
+    return method_decorator
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+48680398_48681249_4_9
+48680398_48682243_11_20
+Title: Convert lazy evaluation into decorator (Python) 
+----------------------------------------
+
+def method_decorator(method) :
+INDENT
+    def wrapper(self, * args, ** kwargs) :
+    INDENT
+        if not hasattr(self, internal_name) :
+        INDENT
+            setattr(self, internal_name, method(self, * args, ** kwargs))
+        DEDENT
+        return getattr(self, internal_name)
+    DEDENT
+    return property(wrapper, doc = method.__doc__)
+DEDENT
+----------------------------------------
+
+def method_decorator(method) :
+INDENT
+    if not is_callable : internal_name = ("_%s" % name)
+    else : internal_name = "_" + method.__name__
+    def wrapper(self) :
+    INDENT
+        if not hasattr(self, internal_name) :
+        INDENT
+            setattr(self, internal_name, method(self, * args, ** kwargs))
+        DEDENT
+        return getattr(self, internal_name)
+    DEDENT
+    return property(wrapper, doc = method.__doc__)
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+48682011_48684010_29_39
+48682011_48687913_34_61
+Title: tic tac toe with numbers in python 
+----------------------------------------
+
+def winner() :
+INDENT
+    if (board [0] + board [1] + board [2] == 15 or
+        board [0] + board [3] + board [6] == 15 or
+        board [1] + board [4] + board [7] == 15 or
+        board [3] + board [4] + board [5] == 15 or
+        board [2] + board [5] + board [8] == 15 or
+        board [6] + board [7] + board [8] == 15) :
+    INDENT
+        print ('you are the winner')
+        return true
+    DEDENT
+    else : return false
+DEDENT
+----------------------------------------
+
+def winner() :
+INDENT
+    if (boardLog [0] + boardLog [1] + boardLog [2] == 3) :
+    INDENT
+        if (board [0] + board [1] + board [2] == 15) :
+        INDENT
+            print ('you are the winner')
+            return True
+        DEDENT
+    DEDENT
+    if (boardLog [0] + boardLog [3] + boardLog [6] == 3) :
+    INDENT
+        if (board [0] + board [3] + board [6] == 15) :
+        INDENT
+            print ('you are the winner')
+            return True
+        DEDENT
+    DEDENT
+    if (boardLog [1] + boardLog [4] + boardLog [7] == 3) :
+    INDENT
+        if (board [1] + board [4] + board [7] == 15) :
+        INDENT
+            print ('you are the winner')
+            return True
+        DEDENT
+    DEDENT
+    if (boardLog [3] + boardLog [4] + boardLog [5] == 3) :
+    INDENT
+        if (board [3] + board [4] + board [5] == 15) :
+        INDENT
+            print ('you are the winner')
+            return True
+        DEDENT
+    DEDENT
+    if (boardLog [2] + boardLog [5] + boardLog [8] == 3) :
+    INDENT
+        if (board [2] + board [5] + board [8] == 15) :
+        INDENT
+            print ('you are the winner')
+            return True
+        DEDENT
+    DEDENT
+    if (boardLog [6] + boardLog [7] + boardLog [8] == 3) :
+    INDENT
+        if (board [6] + board [7] + board [8] == 15) :
+        INDENT
+            print ('you are the winner')
+            return True
+        DEDENT
+    DEDENT
+    else : return False
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+48700925_48701385_1_14
+48700925_48701970_1_15
+Title: Recursion - Python 
+----------------------------------------
+
+def maze_solution(self, row, col, path) :
+INDENT
+    if (row, col) == (self.end [0], self.end [1]) :
+    INDENT
+        return path
+
+    DEDENT
+    if (self.maze [row] [col] ! = " " or (row, col) in path [: - 1]) :
+    INDENT
+        return
+    DEDENT
+    for nrow, ncol in [(row, col + 1), (row, col - 1),
+        (row + 1, col), (row - 1, col)] :
+    INDENT
+        sol = self.maze_solution(nrow, ncol, path + [(nrow, ncol)])
+        if sol is not None :
+        INDENT
+            return sol
+        DEDENT
+    DEDENT
+DEDENT
+----------------------------------------
+
+def maze_solution(self, row, col) :
+INDENT
+    if row == self.end [0] and col == self.end [1] :
+    INDENT
+        self.maze [row] [col] = '*'
+        return True
+    DEDENT
+    elif self.maze [row] [col] == ' ' :
+    INDENT
+        self.maze [row] [col] = '.'
+        if self.maze_solution(row, col + 1) or self.maze_solution(row + 1, col) or self.maze_solution(row, col - 1) or self.maze_solution(row - 1, col) :
+        INDENT
+            self.maze [row] [col] = '*'
+            return True
+        DEDENT
+        return False
+    DEDENT
+    elif self.maze [row] [col] in '-|+' :
+    INDENT
+        return False
+    DEDENT
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+48737294_48737563_1_10
+48737294_48737872_1_12
+Title: Function with nested for loops and accumulator pattern 
+----------------------------------------
+
+def poker_jackpot(num_players, avg_bet) :
+INDENT
+    total_bet = 0
+    for i in range(avg_bet) :
+    INDENT
+        total_bet += total_bet + avg_bet
+    DEDENT
+    for i in range(num_players, 1, - 1) :
+    INDENT
+        print ("Total jackpot after", str(i), "rounds:" + "$", str(total_bet))
+    DEDENT
+    return total_bet
+DEDENT
+----------------------------------------
+
+def poker_jackpot(num_players, avg_bet) :
+INDENT
+    total_bet = 0
+    rounds = 1
+    while num_players > 0 :
+    INDENT
+        total_bet += num_players * avg_bet
+        print ("Total jackpot after {} rounds: {} $".format(rounds, str(total_bet)))
+        num_players -= 1
+        rounds += 1
+    DEDENT
+    return total_bet
+
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+48737403_48737507_33_45
+48737403_48741590_42_56
+Title: "How to multiprocess multithread a big file by dividing into small chunks based on values of a particular column?" 
+----------------------------------------
+
+def main() :
+INDENT
+    to_file = open('write_multiprocessData.txt', 'w')
+    to_file.write('\t'.join(['chr', 'pos', 'idx', 'vals', '\n']))
+    to_file.close()
+    data = my_data.rstrip('\n').split('\n')
+    for lines in data :
+    INDENT
+        if not lines.startswith('chr') :
+        INDENT
+            lines = lines.split('\t')
+        DEDENT
+        threading.Thread(target = manipulate_lines, args = (lines)).start()
+
+    DEDENT
+DEDENT
+----------------------------------------
+
+def main() :
+INDENT
+    p = Pool(5)
+    to_file = open('write_multiprocessData.txt', 'w')
+    to_file.write('\t'.join(['chr', 'pos', 'idx', 'vals', '\n']))
+    to_file.close()
+    data = my_data.rstrip('\n').split('\n')
+    lines = line_generator(data)
+    results = p.map(manipulate_lines, lines)
+    for result in results :
+    INDENT
+        write_to_file(* result)
+    DEDENT
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+48737929_48738588_18_38
+48737929_48738588_7_15
+Title: Keeping track of label bindings 
+----------------------------------------
+
+def __init__(self) :
+INDENT
+    self.label_list = []
+    self.tweet_text_var = []
+    x = 0
+    for n in range(0, 6, 2) :
+    INDENT
+
+        self.tweet_text_var.append(tk.StringVar())
+        self.tweet_text = ttk.Label(root,
+            textvariable = self.tweet_text_var [x])
+        self.tweet_text.grid(column = 0, row = n)
+        self.label_list.append(object)
+        self.label_list [x] = ttk.Label(text = "Retweet", cursor = "hand2")
+        self.label_list [x].grid(column = 0, row = n + 1)
+        self.label_list [x].bind("<Button-1>", lambda event, ref = x :
+            retweet(ref))
+        x += 1
+
+    DEDENT
+DEDENT
+----------------------------------------
+
+def __init__(self) :
+INDENT
+    self.tweet_list = []
+    self.tweet1 = {"id" : 1, "text" : "tweet1"}
+    self.tweet2 = {"id" : 2, "text" : "tweet2"}
+    self.tweet3 = {"id" : 3, "text" : "tweet3"}
+    self.tweet_list.extend([self.tweet1, self.tweet2, self.tweet3])
+
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+48746076_48746226_1_11
+48746076_48746832_2_13
+Title: Python graph recursion 
+----------------------------------------
+
+def path(d, consider, end, route = '') :
+INDENT
+    if consider == end :
+    INDENT
+        return route
+    DEDENT
+    else :
+    INDENT
+        for e in d [consider] :
+        INDENT
+            print (e)
+            route = path(d, e, end, route)
+            route = str(e) + route
+            print (route)
+        DEDENT
+        return route
+    DEDENT
+DEDENT
+----------------------------------------
+
+def path(d, consider, end) :
+INDENT
+    queue = collections.deque([consider])
+    seen = []
+    flag = False
+    while queue :
+    INDENT
+        val = queue.popleft()
+        if val == end :
+        INDENT
+            return seen
+        DEDENT
+        seen.append(val)
+        queue.extend([i for i in d [val] if i not in seen])
+    DEDENT
+    return flag
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+48754190_48754399_2_19
+48754190_48754846_7_38
+Title: How to replace an existing image instead of adding additional images? 
+----------------------------------------
+
+def __init__(self, master) :
+INDENT
+    frame = Frame(master)
+    frame.pack()
+    self.WelcomeLabel = Label(root, text = "Welcome to the game!",
+        bg = "Black", fg = "White")
+    self.WelcomeLabel.pack(fill = X)
+    self.FirstButton = Button(root, text = "Start", bg = "RED", fg = "White",
+        command = self.FirstClick)
+    self.FirstButton.pack(side = LEFT, fill = X)
+    self.SecondButton = Button(root, text = "N/A", bg = "Blue", fg = "White",
+        command = self.SecondClick)
+    self.SecondButton.pack(side = LEFT, fill = X)
+    self.FirstPhoto = None
+DEDENT
+----------------------------------------
+
+def __init__(self, master) :
+INDENT
+    self.master = master
+    self.frame = Frame(master)
+
+    self.WelcomeLabel = Label(root, text = "Welcome to the game!",
+        bg = "Black", fg = "White")
+    self.WelcomeLabel.pack(fill = X)
+    self.FirstButton = Button(root, text = "Start", bg = "RED", fg = "White",
+        command = self.FirstClick)
+    self.FirstButton.pack(side = LEFT, fill = X)
+    self.SecondButton = Button(root, text = "N/A", bg = "Blue", fg = "White",
+        command = self.SecondClick)
+    self.SecondButton.pack(side = LEFT, fill = X)
+    self.ToggleButtonText = "Show image"
+    self.ToggleButton = Button(root, text = self.ToggleButtonText, bg = "Grey", fg = "White",
+        command = self.ToggleClick)
+    self.ToggleButton.pack(side = LEFT, fill = X)
+    self.FirstPhoto = None
+    self.FiLabel = None
+    self.SecondPhoto = None
+    self.SecondPhotoLabel = None
+    self.ToggleButtonPhoto = None
+    self.ToggleButtonPhotoLabel = None
+    self.frame.pack()
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+48785822_48785969_3_18
+48785822_48789243_4_13
+Title: Python: Defining class with dependent attributes 
+----------------------------------------
+
+def __init__(self, a = None, b = None, c = None) :
+INDENT
+    self._a = a
+    self._b = b
+    self._c = c
+    count = 0
+    if self._a is None :
+    INDENT
+        count += 1
+    DEDENT
+    if self._b is None :
+    INDENT
+        count += 1
+    DEDENT
+    if self._c is None :
+    INDENT
+        count += 1
+    DEDENT
+    if count > 1 :
+    INDENT
+        raise Exception("More than one of the values are None.")
+    DEDENT
+DEDENT
+----------------------------------------
+
+def __init__(self, a = np.NaN, b = np.NaN, c = np.NaN) :
+INDENT
+    df = pd.DataFrame({
+            'sides' : [a, b, c],
+            'equation' : [np.sqrt(c ** 2 - b ** 2), np.sqrt(c ** 2 - a ** 2), np.sqrt(a ** 2 + b ** 2)]})
+    df.loc [df.sides.isnull(), 'sides'] = df [df.sides.isnull()] ['equation']
+    self.a = df.sides [0]
+    self.b = df.sides [1]
+    self.c = df.sides [2]
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+487971_46721794_6_26
+487971_489649_5_12
+Title: Is there a standard way to list names of Python modules in a package? 
+----------------------------------------
+
+def package_contents(package_name) :
+INDENT
+    spec = importlib.util.find_spec(package_name)
+    if spec is None :
+    INDENT
+        return set()
+    DEDENT
+    pathname = Path(spec.origin).parent
+    ret = set()
+    with os.scandir(pathname) as entries :
+    INDENT
+        for entry in entries :
+        INDENT
+            if entry.name.startswith('__') :
+            INDENT
+                continue
+            DEDENT
+            current = '.'.join((package_name, entry.name.partition('.') [0]))
+            if entry.is_file() :
+            INDENT
+                if entry.name.endswith(MODULE_EXTENSIONS) :
+                INDENT
+                    ret.add(current)
+                DEDENT
+            DEDENT
+            elif entry.is_dir() :
+            INDENT
+                ret.add(current)
+                ret |= package_contents(current)
+
+            DEDENT
+        DEDENT
+    DEDENT
+    return ret
+DEDENT
+----------------------------------------
+
+def package_contents(package_name) :
+INDENT
+    file, pathname, description = imp.find_module(package_name)
+    if file :
+    INDENT
+        raise ImportError('Not a package: %r', package_name)
+    DEDENT
+    return set([os.path.splitext(module) [0] for module in os.listdir(pathname)
+            if module.endswith(MODULE_EXTENSIONS)])
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+48808420_48812382_125_168
+48808420_48813655_17_33
+Title: "How do I make an interactive tkinter text box then entry box then text box as a response to the entry" 
+----------------------------------------
+
+def answer2() :
+INDENT
+    answer2 = e.get()
+    T.insert(END, "You: " + answer2)
+    e.delete(0, END)
+    if answer2 == "0" :
+    INDENT
+        T.insert(END, "Support:")
+        T.insert(END, "    Have a good day.")
+        send.config(text = "OK", command = root.destroy)
+        root.bind("<Return>", lambda event : root.destroy())
+        e.pack_forget()
+    DEDENT
+    elif answer2 == "1" :
+    INDENT
+        T.insert(END, "Support:")
+        T.insert(END, "    Take it as your earliest convience.")
+        T.insert(END, "    Do Not Take two doses at once!")
+        root.bind("<Return>", lambda event : root.destroy())
+        send.config(text = "OK", command = root.destroy)
+        e.pack_forget()
+    DEDENT
+    elif answer2 == "2" :
+    INDENT
+        T.insert(END, "Support:")
+        T.insert(END, "    Please contact your doctor or")
+        T.insert(END, "    pharmacy for refills.\n")
+        root.bind("<Return>", lambda event : root.destroy())
+        send.config(text = "OK", command = root.destroy)
+        e.pack_forget()
+    DEDENT
+    elif answer2 == "3" :
+    INDENT
+        T.insert(END, "Support:")
+        T.insert(END, "    Please contact your doctor about")
+        T.insert(END, "    changing your medications or")
+        T.insert(END, "    dealing with your symptoms.")
+        root.bind("<Return>", lambda event : root.destroy())
+        send.config(text = "OK", command = root.destroy)
+        e.pack_forget()
+    DEDENT
+    else :
+    INDENT
+        T.insert(END, "Support:")
+        T.insert(END, "    I did not understand your response.")
+    DEDENT
+    return answer2
+DEDENT
+----------------------------------------
+
+def answer2() :
+INDENT
+    if e2.get() == str(0) :
+    INDENT
+        T3.replace(1.0, tk.END, "Have a good day.")
+    DEDENT
+    elif e2.get() == str(1) :
+    INDENT
+        T3.replace(1.0, tk.END, "Take it as your earliest convience.\n"
+            "Do Not Take two doses at once!\n")
+    DEDENT
+    elif e2.get() == str(2) :
+    INDENT
+        T3.replace(1.0, tk.END, "Please contact your doctor or\n"
+            "pharmacy for refills.\n")
+    DEDENT
+    elif e2.get() == str(3) :
+    INDENT
+        T3.replace(1.0, tk.END, "Please contact your doctor about\n"
+            "changing your medications or\n"
+            "dealing with your symptoms.\n")
+
+    DEDENT
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+48808420_48812382_30_55
+48808420_48813655_7_16
+Title: "How do I make an interactive tkinter text box then entry box then text box as a response to the entry" 
+----------------------------------------
+
+def answer1() :
+INDENT
+    answer1 = e.get()
+    T.insert(END, "You: " + answer1)
+    e.delete(0, END)
+    if answer1 == "1" :
+    INDENT
+        T.insert(END, "Support:")
+        T.insert(END, "    Good Job! Text 0 to end conversation")
+        send.config(command = answer2)
+        root.bind("<Return>", lambda event : answer2())
+    DEDENT
+    elif answer1 == "2" :
+    INDENT
+        T.insert(END, "Support:")
+        T.insert(END, "    1= Did you forget?")
+        T.insert(END, "    2= Did you run out of medicine?")
+        T.insert(END, "    3= Did it have bad side effects?")
+        send.config(command = answer2)
+        root.bind("<Return>", lambda event : answer2())
+    DEDENT
+    else :
+    INDENT
+        T.insert(END, "Support:")
+        T.insert(END, "    I did not understand your response.")
+    DEDENT
+    return answer1
+
+DEDENT
+----------------------------------------
+
+def answer1() :
+INDENT
+    if e1.get() == str(1) :
+    INDENT
+        T2.replace(1.0, tk.END, "Good Job! Text 0 to end conversation")
+    DEDENT
+    elif e1.get() == str(2) :
+    INDENT
+        T2.replace(1.0, tk.END, "1= Did you forget?\n"
+            "2= Did you run out of medicine?\n"
+            "3= Did it have bad side effects?\n")
+    DEDENT
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+48808420_48812382_66_113
+48808420_48813655_17_33
+Title: "How do I make an interactive tkinter text box then entry box then text box as a response to the entry" 
+----------------------------------------
+
+def answer2() :
+INDENT
+    answer2 = e.get()
+    T.insert(END, "You: " + answer2)
+    e.delete(0, END)
+    if answer2 == "0" :
+    INDENT
+        T.insert(END, "Support:")
+        T.insert(END, "    Have a good day.")
+        send.config(text = "OK", command = root.destroy)
+        root.bind("<Return>", lambda event : root.destroy())
+        save()
+        e.pack_forget()
+    DEDENT
+    elif answer2 == "1" :
+    INDENT
+        T.insert(END, "Support:")
+        T.insert(END, "    Take it as your earliest convience.")
+        T.insert(END, "    Do Not Take two doses at once!")
+        root.bind("<Return>", lambda event : root.destroy())
+        send.config(text = "OK", command = root.destroy)
+        save()
+        e.pack_forget()
+    DEDENT
+    elif answer2 == "2" :
+    INDENT
+        T.insert(END, "Support:")
+        T.insert(END, "    Please contact your doctor or")
+        T.insert(END, "    pharmacy for refills.\n")
+        root.bind("<Return>", lambda event : root.destroy())
+        send.config(text = "OK", command = root.destroy)
+        save()
+        e.pack_forget()
+    DEDENT
+    elif answer2 == "3" :
+    INDENT
+        T.insert(END, "Support:")
+        T.insert(END, "    Please contact your doctor about")
+        T.insert(END, "    changing your medications or")
+        T.insert(END, "    dealing with your symptoms.")
+        root.bind("<Return>", lambda event : root.destroy())
+        send.config(text = "OK", command = root.destroy)
+        save()
+        e.pack_forget()
+    DEDENT
+    else :
+    INDENT
+        T.insert(END, "Support:")
+        T.insert(END, "    I did not understand your response.")
+    DEDENT
+    return answer2
+DEDENT
+----------------------------------------
+
+def answer2() :
+INDENT
+    if e2.get() == str(0) :
+    INDENT
+        T3.replace(1.0, tk.END, "Have a good day.")
+    DEDENT
+    elif e2.get() == str(1) :
+    INDENT
+        T3.replace(1.0, tk.END, "Take it as your earliest convience.\n"
+            "Do Not Take two doses at once!\n")
+    DEDENT
+    elif e2.get() == str(2) :
+    INDENT
+        T3.replace(1.0, tk.END, "Please contact your doctor or\n"
+            "pharmacy for refills.\n")
+    DEDENT
+    elif e2.get() == str(3) :
+    INDENT
+        T3.replace(1.0, tk.END, "Please contact your doctor about\n"
+            "changing your medications or\n"
+            "dealing with your symptoms.\n")
+
+    DEDENT
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+48812097_48847105_6_10
+48812097_48850306_4_10
+Title: Mocking a imported function with pytest 
+----------------------------------------
+
+def test_email_payload_formatting(config, test_input, expected_output) :
+INDENT
+    emails = CarsEmails(email_client = MagicMock(), config = config)
+    with patch('format_email.send_email') as mocked_send :
+    INDENT
+        emails.send_cars_email(* test_input)
+        mocked_send.assert_called_with(* expected_output)
+    DEDENT
+DEDENT
+----------------------------------------
+
+def test_email_payload_formatting(test_input, expected_output) :
+INDENT
+    emails = CarsEmails(email_client = MagicMock(), config = config())
+    with patch('cars.lib.email.send_email') as mocked_send :
+    INDENT
+        import format_email
+        reload(format_email)
+        emails.send_cars_email(* test_input)
+        mocked_send.assert_called_with(* expected_output)
+    DEDENT
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+48831227_48831329_1_13
+48831227_48831460_1_23
+Title: print and return python 
+----------------------------------------
+
+def collatz_number(n) :
+INDENT
+    if n < = 0 :
+    INDENT
+        raise ValueError("Only positive integers please")
+    DEDENT
+    if n == 1 :
+    INDENT
+        rv = 1
+    DEDENT
+    elif n % 2 == 0 :
+    INDENT
+        rv = n / / 2
+    DEDENT
+    else :
+    INDENT
+        rv = 3 * n + 1
+
+    DEDENT
+    return rv
+DEDENT
+----------------------------------------
+
+def collatz_number(n) :
+INDENT
+    if n < = 0 :
+    INDENT
+        print "Only positive integers please"
+        return - 1
+
+    DEDENT
+    elif n % 2 == 0 :
+    INDENT
+        print str(n / / 2)
+        return n / / 2
+
+    DEDENT
+    elif n == 1 :
+    INDENT
+        print str(1)
+        return 1
+
+    DEDENT
+    elif n % 2 == 1 :
+    INDENT
+        print str(3 * n + 1)
+        return 3 * n + 1
+    DEDENT
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+48831595_48997475_1_25
+48831595_49003568_40_52
+Title: Django app : unit tests fails because of django.db.utils.IntegrityError 
+----------------------------------------
+
+def __call__(self, result = None) :
+INDENT
+    testMethod = getattr(self, self._testMethodName)
+    skipped = (
+        getattr(self.__class__, "__unittest_skip__", False) or
+        getattr(testMethod, "__unittest_skip__", False))
+    if not skipped :
+    INDENT
+        try :
+        INDENT
+            self._pre_setup()
+        DEDENT
+        except Exception :
+        INDENT
+            result.addError(self, sys.exc_info())
+            return
+        DEDENT
+    DEDENT
+    super().__call__(result)
+    if not skipped :
+    INDENT
+        try :
+        INDENT
+            self._post_teardown()
+        DEDENT
+        except Exception :
+        INDENT
+            result.addError(self, sys.exc_info())
+            return
+        DEDENT
+    DEDENT
+DEDENT
+----------------------------------------
+
+def __call__(self, request) :
+INDENT
+    RequestManager().set_request(request)
+    response = self.get_response(request)
+
+    RequestManager().set_request(None)
+
+    return response
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+48837953_48838093_1_17
+48837953_48838128_1_14
+Title: Power of a number tail recursion 
+----------------------------------------
+
+def power_of(num, power, value = 1) :
+INDENT
+    print ("power_of({},{},{})".format(num, power, value))
+    if power == 0 :
+    INDENT
+        return 1
+    DEDENT
+    elif power == 1 :
+    INDENT
+        return num if value == 1 else value
+    DEDENT
+    elif power % 2 ! = 0 :
+    INDENT
+        for a in range(1, power - power / / 2) :
+        INDENT
+            value *= num
+        DEDENT
+        return power_of(num, power / / 2, value)
+    DEDENT
+    else :
+    INDENT
+        for a in range(1, power - power / / 2) :
+        INDENT
+            value *= num
+        DEDENT
+        return power_of(num, power / / 2, value * num * num)
+    DEDENT
+DEDENT
+----------------------------------------
+
+def power_of(num, power, value = 1) :
+INDENT
+    if power == 0 :
+    INDENT
+        return value
+    DEDENT
+    if power == 1 :
+    INDENT
+        return value * num
+    DEDENT
+    elif power % 2 ! = 0 :
+    INDENT
+        return power_of(num * num, (power - 1) / / 2, value * num)
+    DEDENT
+    else :
+    INDENT
+        return power_of(num * num, power / / 2, value)
+    DEDENT
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+48837953_48838093_1_17
+48837953_48838705_3_12
+Title: Power of a number tail recursion 
+----------------------------------------
+
+def power_of(num, power, value = 1) :
+INDENT
+    print ("power_of({},{},{})".format(num, power, value))
+    if power == 0 :
+    INDENT
+        return 1
+    DEDENT
+    elif power == 1 :
+    INDENT
+        return num if value == 1 else value
+    DEDENT
+    elif power % 2 ! = 0 :
+    INDENT
+        for a in range(1, power - power / / 2) :
+        INDENT
+            value *= num
+        DEDENT
+        return power_of(num, power / / 2, value)
+    DEDENT
+    else :
+    INDENT
+        for a in range(1, power - power / / 2) :
+        INDENT
+            value *= num
+        DEDENT
+        return power_of(num, power / / 2, value * num * num)
+    DEDENT
+DEDENT
+----------------------------------------
+
+def power_of(num, power) :
+INDENT
+    if power == 0 :
+    INDENT
+        return 1
+    DEDENT
+    elif power == 1 :
+    INDENT
+        return num
+    DEDENT
+    elif power % 2 ! = 0 :
+    INDENT
+        return num * power_of(num * num, power / / 2)
+    DEDENT
+    else :
+    INDENT
+        return power_of(num * num, power / / 2)
+    DEDENT
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+48837953_48838128_1_14
+48837953_48838705_3_12
+Title: Power of a number tail recursion 
+----------------------------------------
+
+def power_of(num, power, value = 1) :
+INDENT
+    if power == 0 :
+    INDENT
+        return value
+    DEDENT
+    if power == 1 :
+    INDENT
+        return value * num
+    DEDENT
+    elif power % 2 ! = 0 :
+    INDENT
+        return power_of(num * num, (power - 1) / / 2, value * num)
+    DEDENT
+    else :
+    INDENT
+        return power_of(num * num, power / / 2, value)
+    DEDENT
+DEDENT
+----------------------------------------
+
+def power_of(num, power) :
+INDENT
+    if power == 0 :
+    INDENT
+        return 1
+    DEDENT
+    elif power == 1 :
+    INDENT
+        return num
+    DEDENT
+    elif power % 2 ! = 0 :
+    INDENT
+        return num * power_of(num * num, power / / 2)
+    DEDENT
+    else :
+    INDENT
+        return power_of(num * num, power / / 2)
+    DEDENT
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+48838050_48838120_7_18
+48838050_48838235_9_20
+Title: Python while loop not breaking 
+----------------------------------------
+
+def genpass(n) :
+INDENT
+    x = 0
+    password = []
+    if n < 100 :
+    INDENT
+        while n > x :
+        INDENT
+            password.append(random.choice(l2))
+            x += 1
+        DEDENT
+        return ''.join(password)
+    DEDENT
+    else :
+    INDENT
+        return ('Sorry, too long')
+
+    DEDENT
+DEDENT
+----------------------------------------
+
+def genpass(n) :
+INDENT
+    x = 0
+    if x == 0 :
+    INDENT
+        password = ''
+    DEDENT
+    if n < 100 :
+    INDENT
+        while n > x :
+        INDENT
+            password = password + random.choice(all)
+            x = x + 1
+        DEDENT
+        print (password)
+    DEDENT
+    else :
+    INDENT
+        print ('Sorry, too long')
+    DEDENT
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+48847593_48860962_17_30
+48847593_48860962_8_15
+Title: PyQt QHboxLayout with resizing widgets no left align 
+----------------------------------------
+
+def __init__(self, parent = None) :
+INDENT
+    super(TestHbox, self).__init__(parent)
+    layout = QtGui.QHBoxLayout()
+    layout.setSpacing(0)
+    layout.setMargin(0)
+    self.b1 = DynButton()
+    layout.addWidget(self.b1)
+    self.b2 = DynButton()
+    layout.addWidget(self.b2)
+    self.b3 = DynButton()
+    layout.addWidget(self.b3)
+    layout.setAlignment(QtCore.Qt.AlignLeft)
+    self.setLayout(layout)
+DEDENT
+----------------------------------------
+
+def __init__(self, parent = None) :
+INDENT
+    super(DynButton, self).__init__(parent)
+    layout = QVBoxLayout()
+    self.button = QtGui.QPushButton('Bouton', self)
+    self.button.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Preferred)
+    layout.addWidget(self.button)
+    self.setLayout(layout)
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+48848869_48850029_1_22
+48848869_48850275_5_24
+Title: what is going wrong here in Python Code while doing find and replace mechanism on a file 
+----------------------------------------
+
+def find_and_replace(path) :
+INDENT
+    fnames = [
+        fname for fname in os.listdir(path)
+        if os.path.isfile(os.path.join(path, fname))
+        ]
+    pattern = 'hello'
+    os.chdir(path)
+    for fname in fnames :
+    INDENT
+        with open(fname) as f :
+        INDENT
+            for line in f :
+            INDENT
+                if pattern in line :
+                INDENT
+                    name, ext = os.path.splitext(fname)
+                    first_string = line.split(name) [0]
+                    second_string = first_string.split('.') [0]
+                    final_string = second_string.rsplit(' ', 1) [1]
+                DEDENT
+            DEDENT
+            for newline in fi.FileInput(fname, inplace = 1) :
+            INDENT
+                newline = newline.replace(final_string, "Mayank")
+                print (newline.rstrip())
+            DEDENT
+        DEDENT
+    DEDENT
+DEDENT
+----------------------------------------
+
+def find_and_replace(path) :
+INDENT
+    print (path)
+    onlyfiles = [f for f in listdir(path) if isfile(join(path, f))]
+    os.chdir(path)
+    pattern = 'Salma'
+    final_string = 'haris'
+    for i in onlyfiles :
+    INDENT
+        with open(i, 'r') as file :
+        INDENT
+            filedata = file.read()
+
+        DEDENT
+        filedata = filedata.replace(pattern, final_string)
+
+        with open(i, 'w') as file :
+        INDENT
+            file.write(filedata)
+        DEDENT
+    DEDENT
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+48873244_48907505_2_27
+48873244_48907505_85_92
+Title: Persistent sorted selection QCombobox-QCompleter popup 
+----------------------------------------
+
+def __init__(self, parent = None) :
+INDENT
+    super(MyCombobox, self).__init__(parent)
+    self.setFocusPolicy(Qt.StrongFocus)
+    self.setEditable(True)
+    self.filter = QSortFilterProxyModel(self)
+    self.filter.setFilterCaseSensitivity(Qt.CaseInsensitive)
+    self.completer = QCompleter(self.filter, self)
+    self.completer.setCompletionMode(QCompleter.UnfilteredPopupCompletion)
+    self.completer.setModelSorting(QCompleter.CaseInsensitivelySortedModel)
+    self.setCompleter(self.completer)
+
+    self.activated.connect(self._comboActivated)
+    self.lineEdit().textEdited [unicode].connect(self.filter.setFilterFixedString)
+    self.lineEdit().textEdited [unicode].connect(self._sort)
+    self.completer.activated ['QModelIndex'].connect(self._completerActivated)
+    mlview = MyListView(self)
+    mlview.setEditTriggers(self.view().editTriggers())
+    self.completer.setPopup(mlview)
+    self._pressed = True
+DEDENT
+----------------------------------------
+
+def __init__(self, widget, parent = None) :
+INDENT
+    super(MyListView, self).__init__(parent)
+    self._widget = widget
+    self.setSelectionMode(QListView.SingleSelection)
+    self.setFocusPolicy(Qt.StrongFocus)
+    self.setSelectionBehavior(QListView.SelectItems)
+
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+48908102_48909382_3_11
+48908102_48930944_3_11
+Title: Is it possible to disable a field in Django admin? 
+----------------------------------------
+
+def get_form(self, request, obj = None, ** kwargs) :
+INDENT
+    form = super(StepModelAdmin, self).get_form(request, obj, ** kwargs)
+    if Step.objects.count() > 1 :
+    INDENT
+
+        form.base_fields ['parent'].empty_label = None
+    DEDENT
+    return form
+DEDENT
+----------------------------------------
+
+def get_form(self, request, obj = None, ** kwargs) :
+INDENT
+    form = super(StepAdmin, self).get_form(request, obj, ** kwargs)
+    if Step.objects.filter(parent__isnull = True).count() > 1 :
+    INDENT
+
+        form.base_fields ['parent'].empty_label = None
+    DEDENT
+    return form
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+48913319_53310579_13_33
+48913319_53310579_2_12
+Title: Towers of Hanoi non-recursive function 
+----------------------------------------
+
+def tower(numRings) :
+INDENT
+    result = []
+    stk = []
+    def tower1(numRings) :
+    INDENT
+        In, To = 0, 1
+        stk.append((In, numRings, 0, 1, 2))
+        while stk :
+        INDENT
+            state, numRings, fromPeg, toPeg, usePeg = stk.pop()
+            if state == In :
+            INDENT
+                if numRings ! = 0 :
+                INDENT
+                    stk.append((To, numRings, fromPeg, toPeg, usePeg))
+                    stk.append((In, numRings - 1, fromPeg, usePeg, toPeg))
+                DEDENT
+            DEDENT
+            elif state == To :
+            INDENT
+                result.append((fromPeg, toPeg))
+                stk.append((In, numRings - 1, usePeg, toPeg, fromPeg))
+            DEDENT
+            else :
+            INDENT
+                print 'Error: logic'
+                return result
+            DEDENT
+        DEDENT
+    DEDENT
+    tower1(numRings)
+    return result
+DEDENT
+----------------------------------------
+
+def tower(numRings) :
+INDENT
+    def tower1(numRings, fromPeg, toPeg, usePeg) :
+    INDENT
+        if numRings > 0 :
+        INDENT
+            tower1(numRings - 1, fromPeg, usePeg, toPeg)
+            result.append((fromPeg, toPeg))
+            tower1(numRings - 1, usePeg, toPeg, fromPeg)
+        DEDENT
+    DEDENT
+    result = []
+    tower1(numRings, 0, 1, 2)
+    return result
+
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+48913319_53310579_16_30
+48913319_53310579_3_7
+Title: Towers of Hanoi non-recursive function 
+----------------------------------------
+
+def tower1(numRings) :
+INDENT
+    In, To = 0, 1
+    stk.append((In, numRings, 0, 1, 2))
+    while stk :
+    INDENT
+        state, numRings, fromPeg, toPeg, usePeg = stk.pop()
+        if state == In :
+        INDENT
+            if numRings ! = 0 :
+            INDENT
+                stk.append((To, numRings, fromPeg, toPeg, usePeg))
+                stk.append((In, numRings - 1, fromPeg, usePeg, toPeg))
+            DEDENT
+        DEDENT
+        elif state == To :
+        INDENT
+            result.append((fromPeg, toPeg))
+            stk.append((In, numRings - 1, usePeg, toPeg, fromPeg))
+        DEDENT
+        else :
+        INDENT
+            print 'Error: logic'
+            return result
+        DEDENT
+    DEDENT
+DEDENT
+----------------------------------------
+
+def tower1(numRings, fromPeg, toPeg, usePeg) :
+INDENT
+    if numRings > 0 :
+    INDENT
+        tower1(numRings - 1, fromPeg, usePeg, toPeg)
+        result.append((fromPeg, toPeg))
+        tower1(numRings - 1, usePeg, toPeg, fromPeg)
+    DEDENT
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+48927466_48927810_3_10
+48927466_48927833_4_14
+Title: Get the week numbers between two dates with python 
+----------------------------------------
+
+def find_weeks(start, end) :
+INDENT
+    l = []
+    for i in range((end - start).days + 1) :
+    INDENT
+        d = (start + datetime.timedelta(days = i)).isocalendar() [: 2]
+        yearweek = '{}{:02}'.format(* d)
+        l.append(yearweek)
+    DEDENT
+    return sorted(set(l))
+DEDENT
+----------------------------------------
+
+def find_weeks(start_date, end_date) :
+INDENT
+    subtract_days = start_date.isocalendar() [2] - 1
+    current_date = start_date + datetime.timedelta(days = 7 - subtract_days)
+    weeks_between = []
+    while current_date < = end_date :
+    INDENT
+        weeks_between.append(
+            '{}{:02d}'.format(* current_date.isocalendar() [: 2]))
+        current_date += datetime.timedelta(days = 7)
+    DEDENT
+    return weeks_between
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+48930284_48930515_1_19
+48930284_48930580_1_15
+Title: A procedure that tells how many Stamps I can buy with the pences I have 
+----------------------------------------
+
+def stamps(p) :
+INDENT
+    a = 0
+    b = 0
+    c = 0
+    while p > = 5 :
+    INDENT
+        p = p - 5
+        a = a + 1
+    DEDENT
+    else :
+    INDENT
+        while p > = 2 :
+        INDENT
+            p = p - 2
+            b = b + 1
+        DEDENT
+        else :
+        INDENT
+            while p > = 1 :
+            INDENT
+                p = p - 1
+                c = c + 1
+            DEDENT
+        DEDENT
+    DEDENT
+    return (a, b, c)
+DEDENT
+----------------------------------------
+
+def stamps(p) :
+INDENT
+    price_a = 5
+    price_b = 2
+    price_c = 1
+    a = p / / price_a
+    p = p % price_a
+    b = p / / price_b
+    p = p % price_b
+    c = p / / price_c
+    return (a, b, c)
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+4893506_4893659_7_12
+4893506_4893862_5_11
+Title: Fastest Python method for search and replace on a large string 
+----------------------------------------
+
+def findall_replace(text, reg, rep) :
+INDENT
+    for match in reg.findall(text) :
+    INDENT
+        text = text.replace(match, rep)
+        print id(text)
+    DEDENT
+    return text
+DEDENT
+----------------------------------------
+
+def findall_replace(text, reg, rep) :
+INDENT
+    for gr in reg.findall(text) :
+    INDENT
+        text = text.replace(gr, rep)
+        print 'group==', gr
+        print 'text==', text
+    DEDENT
+    return '\nresult is : ' + text
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+48935921_48936152_31_57
+48935921_48936152_4_19
+Title: matplotlib + PyQt5: How to transfer parameters? 
+----------------------------------------
+
+def __init__(self) :
+INDENT
+    QtWidgets.QMainWindow.__init__(self)
+    self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
+    self.setWindowTitle("application main window")
+    self.file_menu = QtWidgets.QMenu('&File', self)
+    self.file_menu.addAction('&Quit', self.fileQuit,
+        QtCore.Qt.CTRL + QtCore.Qt.Key_Q)
+    self.menuBar().addMenu(self.file_menu)
+    self.help_menu = QtWidgets.QMenu('&Help', self)
+    self.menuBar().addSeparator()
+    self.menuBar().addMenu(self.help_menu)
+    self.main_widget = QtWidgets.QWidget(self)
+    input_List = [0, 1, 2]
+    l = QtWidgets.QVBoxLayout(self.main_widget)
+    sc = MyStaticMplCanvas(self.main_widget, width = 5, height = 4, dpi = 100)
+    l.addWidget(sc)
+    sc.compute_initial_figure(input_List)
+    self.main_widget.setFocus()
+    self.setCentralWidget(self.main_widget)
+    self.statusBar().showMessage("All hail matplotlib!", 2000)
+DEDENT
+----------------------------------------
+
+def __init__(self, parent = None, width = 5, height = 4, dpi = 100) :
+INDENT
+    fig = Figure(figsize = (width, height), dpi = dpi)
+    self.axes = fig.add_subplot(111)
+    self.axes.hold(False)
+
+    FigureCanvas.__init__(self, fig)
+    self.setParent(parent)
+    FigureCanvas.setSizePolicy(self,
+        QtWidgets.QSizePolicy.Expanding,
+        QtWidgets.QSizePolicy.Expanding)
+    FigureCanvas.updateGeometry(self)
+
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+48936548_48936738_7_25
+48936548_48936986_3_34
+Title: Qlabel in front of a QGridLayout 
+----------------------------------------
+
+def __init__(self) :
+INDENT
+    super().__init__()
+    grid_layout = QGridLayout(self)
+    rect1 = QLabel('RECT1')
+    rect1.setStyleSheet("color: green;")
+    grid_layout.addWidget(rect1, 0, 1)
+    rect2 = QLabel('RECT2')
+    rect2.setStyleSheet("color: blue;")
+    grid_layout.addWidget(rect2, 0, 2)
+    red_label = QLabel('red', self)
+    red_label.setAlignment(Qt.AlignCenter)
+    red_label.setStyleSheet("font-size: 20pt; color: red;")
+    self.sizeChanged.connect(red_label.resize)
+    self.show()
+DEDENT
+----------------------------------------
+
+def __init__(self) :
+INDENT
+    super().__init__()
+
+    grid_layout = QGridLayout()
+    rect1 = QLabel('RECT1')
+    rect1.setStyleSheet("color: green;")
+    grid_layout.addWidget(rect1, 0, 0)
+    rect2 = QLabel('RECT2')
+    rect2.setStyleSheet("color: blue;")
+    grid_layout.addWidget(rect2, 0, 2)
+
+    grid_layout_two = QGridLayout()
+    blank_label = QLabel()
+    red_label = QLabel('red')
+    red_label.setStyleSheet("font-size:20pt; color: red;")
+    grid_layout_two.addWidget(blank_label, 0, 0)
+    grid_layout_two.addWidget(red_label, 0, 1)
+    grid_layout_two.addWidget(blank_label, 0, 2)
+    grid_layout_three = QGridLayout()
+    grid_layout_three.addItem(grid_layout, 0, 0)
+    grid_layout_three.addItem(grid_layout_two, 0, 0)
+    self.setLayout(grid_layout_three)
+    self.show()
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+4893972_4894004_1_10
+4893972_4894064_1_10
+Title: How do I return this as a list 
+----------------------------------------
+
+def get_items(cheapness) :
+INDENT
+    if cheapness == 'CHEAP' :
+    INDENT
+        return [(item, (price, count)) for (item, (price, count)) in inventory.items() if price < 20]
+    DEDENT
+    elif cheapness == 'MODERATE' :
+    INDENT
+        return [(item, (price, count)) for (item, (price, count)) in inventory.items() if price > 20 and price < 100]
+    DEDENT
+    elif cheapness == 'EXPENSIVE' :
+    INDENT
+        return [(item, (price, count)) for (item, (price, count)) in inventory.items() if price > 100]
+    DEDENT
+DEDENT
+----------------------------------------
+
+def get_items(cheapness) :
+INDENT
+    def a(value) :
+    INDENT
+        if cheapness == 'CHEAP' :
+        INDENT
+            return value < 20
+        DEDENT
+        if cheapness == 'MODERATE' :
+        INDENT
+            return value > = 20 and value < 100
+        DEDENT
+        if cheapness == 'EXPENSIVE' :
+        INDENT
+            return value > = 100
+        DEDENT
+        return False
+    DEDENT
+    return filter(lambda x : a(x [1] [0]), inventory.items())
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+48951591_52660479_1_13
+48951591_53338459_1_10
+Title: Python: Find longest binary gap in binary representation of an integer number 
+----------------------------------------
+
+def solution(N) :
+INDENT
+    bin_num = str(bin(N) [2 :])
+    list1 = bin_num.split('1')
+    max_gap = 0
+    if bin_num.endswith('0') :
+    INDENT
+        len1 = len(list1) - 1
+    DEDENT
+    else :
+    INDENT
+        len1 = len(list1)
+    DEDENT
+    if len1 ! = 0 :
+    INDENT
+        for i in range(len1) :
+        INDENT
+            if max_gap < len(list1 [i]) :
+            INDENT
+                max_gap = len(list1 [i])
+            DEDENT
+        DEDENT
+    DEDENT
+    return max_gap
+DEDENT
+----------------------------------------
+
+def solution(N) :
+INDENT
+    res = 0
+    st = - 1
+    for i in range(N.bit_length()) :
+    INDENT
+        if N & (1 < < i) :
+        INDENT
+            if st ! = - 1 :
+            INDENT
+                res = max(res, i - st - 1)
+            DEDENT
+            st = i
+        DEDENT
+    DEDENT
+    return res
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+48964977_48966438_35_49
+48964977_48966438_62_69
+Title: "I have an issue with restarting my game called ""Bounce""" 
+----------------------------------------
+
+def draw(self) :
+INDENT
+    self.canvas.move(self.id, self.x, self.y)
+    pos = self.canvas.coords(self.id)
+    if pos [1] < = 0 :
+    INDENT
+        self.y = 3
+    DEDENT
+    if pos [3] > = self.canvas_height :
+    INDENT
+        self.hit_bottom = True
+    DEDENT
+    if self.hit_paddle(pos) == True :
+    INDENT
+        self.y = - 3
+    DEDENT
+    if pos [0] < = 0 :
+    INDENT
+        self.x = 3
+    DEDENT
+    if pos [2] > = self.canvas_width :
+    INDENT
+        self.x = - 3
+
+    DEDENT
+DEDENT
+----------------------------------------
+
+def draw(self) :
+INDENT
+    self.canvas.move(self.id, self.x, 0)
+    pos = self.canvas.coords(self.id)
+    if pos [0] < = 0 :
+    INDENT
+        self.x = 0
+    DEDENT
+    elif pos [2] > = self.canvas_width :
+    INDENT
+        self.x = 0
+    DEDENT
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+48964977_48966438_51_61
+48964977_48966438_7_20
+Title: "I have an issue with restarting my game called ""Bounce""" 
+----------------------------------------
+
+def __init__(self, canvas, color) :
+INDENT
+    self.canvas = canvas
+    self.id = canvas.create_rectangle(0, 0, 100, 10, fill = color)
+    self.canvas.move(self.id, 200, 300)
+    self.started = False
+    self.x = 0
+    self.canvas_width = self.canvas.winfo_width()
+    self.canvas.bind_all('<KeyPress-Left>', self.turn_left)
+    self.canvas.bind_all('<KeyPress-Right>', self.turn_right)
+    self.canvas.bind_all('<Button-1>', self.start_game)
+DEDENT
+----------------------------------------
+
+def __init__(self, canvas, paddle, score, color) :
+INDENT
+    self.canvas = canvas
+    self.paddle = paddle
+    self.score = score
+    self.id = canvas.create_oval(10, 10, 25, 25, fill = color)
+    self.canvas.move(self.id, 200, 100)
+    starts = [- 3, - 2, - 1, 1, 2, 3]
+    random.shuffle(starts)
+    self.x = starts [0]
+    self.y = - 3
+    self.canvas_height = self.canvas.winfo_height()
+    self.canvas_width = self.canvas.winfo_width()
+    self.hit_bottom = False
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+48972758_48973212_13_22
+48972758_48973245_2_28
+Title: How can I add items array by user on python 
+----------------------------------------
+
+def add(self) :
+INDENT
+    studentDict = {}
+    for key, value in self.inputMessage.items() :
+    INDENT
+        userInput = input(value)
+        if key == self.no :
+        INDENT
+            userInput = int(userInput)
+        DEDENT
+        studentDict [key] = userInput
+    DEDENT
+    self.studentList.append(studentDict)
+DEDENT
+----------------------------------------
+
+def add(self) :
+INDENT
+    array = []
+    n = int(input('Enter the number of students to add: '))
+
+    for i in range(n) :
+    INDENT
+        no = int(input('Enter the no: '))
+        name = input('Enter the name: ')
+        department = input('Enter the department: ')
+        values = [no, name, department]
+        print ("\n", i + 1, "th entry:", "no:", no, "name:", name, "department:", department)
+        array.append(values)
+        print (array)
+    DEDENT
+    print ('\nExit...')
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+48981651_48982173_4_12
+48981651_48985763_5_22
+Title: Add the same index of a list if they are similar in another specific index 
+----------------------------------------
+
+def merge(data) :
+INDENT
+    out_data = []
+    for _, group in groupby(data, key = itemgetter(0, 2)) :
+    INDENT
+        key_num, to_sum, key_name, to_max = next(group)
+        for _, sum_val, _, max_val in group :
+        INDENT
+            to_sum += sum_val
+            to_max = max(to_max, max_val)
+        DEDENT
+        out_data.append([key_num, to_sum, key_name, to_max])
+    DEDENT
+    return out_data
+DEDENT
+----------------------------------------
+
+def merge(data) :
+INDENT
+    out_data = []
+    for key, group in groupby(data, key = itemgetter('name', 'time')) :
+    INDENT
+        id_temp = 0
+        dep_temp = 0
+        dict_temp = {}
+        for t in group :
+        INDENT
+            dict_temp = t
+            if t ["deposit_id"] < id_temp :
+            INDENT
+                dict_temp ['deposit_id'] = id_temp
+            DEDENT
+            else :
+            INDENT
+                id_temp = dict_temp ['deposit_id']
+            DEDENT
+            dep_temp += dict_temp ['deposit']
+        DEDENT
+        dict_temp ['deposit'], dict_temp ['deposit_id'] = dep_temp, id_temp
+        out_data.append(dict_temp)
+    DEDENT
+    return out_data
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+4899176_4962649_13_27
+4899176_4962649_44_59
+Title: Qt4 + mplot3d of matplotlib 
+----------------------------------------
+
+def __init__(self, parent = None, width = 6.5, height = 5.5, dpi = 100, sharex = None, sharey = None, fig = None) :
+INDENT
+    if fig == None :
+    INDENT
+        self.fig = Figure(figsize = (width, height), dpi = dpi, facecolor = '#FFFFFF')
+        self.ax = self.fig.add_subplot(111, projection = '3d')
+        self.fig.subplots_adjust(left = 0.1, bottom = 0.1, right = 0.9, top = 0.9)
+        self.ax.hold(True)
+    DEDENT
+    else :
+    INDENT
+        self.fig = fig
+    DEDENT
+    FigureCanvas.__init__(self, self.fig)
+    FigureCanvas.setSizePolicy(self,
+        QtGui.QSizePolicy.Expanding,
+        QtGui.QSizePolicy.Expanding)
+    FigureCanvas.updateGeometry(self)
+DEDENT
+----------------------------------------
+
+def __init__(self, parent, canvas, direction = 'h') :
+INDENT
+    self.canvas = canvas
+    QWidget.__init__(self, parent)
+    if direction == 'h' :
+    INDENT
+        self.layout = QHBoxLayout(self)
+    DEDENT
+    else :
+    INDENT
+        self.layout = QVBoxLayout(self)
+    DEDENT
+    self.layout.setMargin(2)
+    self.layout.setSpacing(0)
+    NavigationToolbar2.__init__(self, canvas)
+
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+4899176_4962649_13_27
+4899176_4962649_65_85
+Title: Qt4 + mplot3d of matplotlib 
+----------------------------------------
+
+def __init__(self, parent = None, width = 6.5, height = 5.5, dpi = 100, sharex = None, sharey = None, fig = None) :
+INDENT
+    if fig == None :
+    INDENT
+        self.fig = Figure(figsize = (width, height), dpi = dpi, facecolor = '#FFFFFF')
+        self.ax = self.fig.add_subplot(111, projection = '3d')
+        self.fig.subplots_adjust(left = 0.1, bottom = 0.1, right = 0.9, top = 0.9)
+        self.ax.hold(True)
+    DEDENT
+    else :
+    INDENT
+        self.fig = fig
+    DEDENT
+    FigureCanvas.__init__(self, self.fig)
+    FigureCanvas.setSizePolicy(self,
+        QtGui.QSizePolicy.Expanding,
+        QtGui.QSizePolicy.Expanding)
+    FigureCanvas.updateGeometry(self)
+DEDENT
+----------------------------------------
+
+def __init__(self, parent = None, enableAutoScale = False, enableCSV = False, enableEdit = False, fig = None) :
+INDENT
+    QtGui.QWidget.__init__(self, parent)
+    self.canvas = QtMplCanvas(fig)
+    self.canvas.ax.mouse_init()
+    self.toolbar = NavigationToolbar(self.canvas, self.canvas)
+    self.vbox = QtGui.QVBoxLayout()
+    self.vbox.addWidget(self.canvas)
+    self.vbox.addWidget(self.toolbar)
+    self.setLayout(self.vbox)
+
+    self.cb = None
+    self.tempPath = getHomeDir()
+    self.tempPath = os.path.join(self.tempPath, 'tempMPL.png')
+    self.mpl2ClipAction = QtGui.QAction("Save to Clipboard", self)
+    self.mpl2ClipAction.setShortcut("Ctrl+C")
+    self.addAction(self.mpl2ClipAction)
+    QtCore.QObject.connect(self.mpl2ClipAction, QtCore.SIGNAL("triggered()"), self.mpl2Clip)
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+4899176_4962649_44_59
+4899176_4962649_65_85
+Title: Qt4 + mplot3d of matplotlib 
+----------------------------------------
+
+def __init__(self, parent, canvas, direction = 'h') :
+INDENT
+    self.canvas = canvas
+    QWidget.__init__(self, parent)
+    if direction == 'h' :
+    INDENT
+        self.layout = QHBoxLayout(self)
+    DEDENT
+    else :
+    INDENT
+        self.layout = QVBoxLayout(self)
+    DEDENT
+    self.layout.setMargin(2)
+    self.layout.setSpacing(0)
+    NavigationToolbar2.__init__(self, canvas)
+
+DEDENT
+----------------------------------------
+
+def __init__(self, parent = None, enableAutoScale = False, enableCSV = False, enableEdit = False, fig = None) :
+INDENT
+    QtGui.QWidget.__init__(self, parent)
+    self.canvas = QtMplCanvas(fig)
+    self.canvas.ax.mouse_init()
+    self.toolbar = NavigationToolbar(self.canvas, self.canvas)
+    self.vbox = QtGui.QVBoxLayout()
+    self.vbox.addWidget(self.canvas)
+    self.vbox.addWidget(self.toolbar)
+    self.setLayout(self.vbox)
+
+    self.cb = None
+    self.tempPath = getHomeDir()
+    self.tempPath = os.path.join(self.tempPath, 'tempMPL.png')
+    self.mpl2ClipAction = QtGui.QAction("Save to Clipboard", self)
+    self.mpl2ClipAction.setShortcut("Ctrl+C")
+    self.addAction(self.mpl2ClipAction)
+    QtCore.QObject.connect(self.mpl2ClipAction, QtCore.SIGNAL("triggered()"), self.mpl2Clip)
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+48994256_49012593_3_18
+48994256_49181556_3_13
+Title: "Python: create a dictionary with elements consist of file path and the content" 
+----------------------------------------
+
+def getFileContent(path_dir, dict_In) :
+INDENT
+    for path, dirs, files in os.walk(path_dir) :
+    INDENT
+        folders = path.split(os.sep)
+        for dir in dirs :
+        INDENT
+            inner_path = path + '/' + dir
+            getFileContent(inner_path, dict_In)
+        DEDENT
+        for file in files :
+        INDENT
+            if file.endswith(".txt") :
+            INDENT
+                f = open(os.path.join(path, file), 'r')
+                content = f.read()
+                dict_In [f.name] = content
+
+            DEDENT
+        DEDENT
+    DEDENT
+DEDENT
+----------------------------------------
+
+def getFileContent(path_dir) :
+INDENT
+    return_Dict = {}
+    for root, dirs, files in os.walk(path_dir) :
+    INDENT
+        for file in files :
+        INDENT
+            if file.endswith(".txt") :
+            INDENT
+                if root in path_dir :
+                INDENT
+                    f = open(os.path.join(root, file), 'r')
+                    content = (f.read())
+                    f.close()
+                    return_Dict [f.name] = content
+                DEDENT
+            DEDENT
+        DEDENT
+    DEDENT
+    return return_Dict
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+48994256_49012593_3_18
+48994256_49263690_3_12
+Title: "Python: create a dictionary with elements consist of file path and the content" 
+----------------------------------------
+
+def getFileContent(path_dir, dict_In) :
+INDENT
+    for path, dirs, files in os.walk(path_dir) :
+    INDENT
+        folders = path.split(os.sep)
+        for dir in dirs :
+        INDENT
+            inner_path = path + '/' + dir
+            getFileContent(inner_path, dict_In)
+        DEDENT
+        for file in files :
+        INDENT
+            if file.endswith(".txt") :
+            INDENT
+                f = open(os.path.join(path, file), 'r')
+                content = f.read()
+                dict_In [f.name] = content
+
+            DEDENT
+        DEDENT
+    DEDENT
+DEDENT
+----------------------------------------
+
+def getFileContent(path_dir) :
+INDENT
+    return_Dict = {}
+    for root, dirs, files in os.walk(path_dir) :
+    INDENT
+        for file in files :
+        INDENT
+            if file.endswith(".txt") :
+            INDENT
+                f = open(os.path.join(root, file), 'r')
+                content = (f.read())
+                f.close()
+                return_Dict ["\\\\".join(f.name [3 :].split("\\"))] = content
+            DEDENT
+        DEDENT
+    DEDENT
+    return ('{%s}' % ', '.join(['"%s": "%s"' % (k, v) for k, v in return_Dict.items()]))
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+49010207_49010269_1_15
+49010207_49010359_2_11
+Title: Reading from string the Number in Python 
+----------------------------------------
+
+def StringToNumber(Period) :
+INDENT
+    if Period [- 1] == "D" :
+    INDENT
+        period_unit = int(Period [: - 1])
+    DEDENT
+    elif Period [- 1] == 'M' :
+    INDENT
+        period_unit = int(Period [: - 1])
+    DEDENT
+    elif Period [- 1] == 'W' :
+    INDENT
+        period_unit = int(Period [: - 1])
+    DEDENT
+    elif Period [- 1] == 'Y' :
+    INDENT
+        period_unit = int(Period [: - 1])
+    DEDENT
+    elif Period == '' :
+    INDENT
+        period_unit = int(0)
+    DEDENT
+    else :
+    INDENT
+        raise Exception('Problems')
+    DEDENT
+    return period_unit
+DEDENT
+----------------------------------------
+
+def StringToNumber(Period) :
+INDENT
+    if Period [- 1 :] in intervals :
+    INDENT
+        period_unit = int(Period [: - 1])
+    DEDENT
+    elif Period == '' :
+    INDENT
+        period_unit = int(0)
+    DEDENT
+    else :
+    INDENT
+        raise Exception('Problems')
+    DEDENT
+    return period_unit
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+49035753_49036760_11_21
+49035753_49039052_8_34
+Title: Getting variable out of Tkinter 
+----------------------------------------
+
+def __init__(self, master) :
+INDENT
+    self.master = master
+    self.entry_contents = None
+    self.e = tk.Entry(master)
+    self.e.grid(row = 0, column = 0)
+    self.e.focus_set()
+
+    tk.Button(master, text = "get", width = 10, bg = "yellow",
+        command = self.callback).grid(row = 10, column = 0)
+DEDENT
+----------------------------------------
+
+def __init__(self, master) :
+INDENT
+    self.master = master
+    self.master.title('Input Dialog Box')
+    self.entry_contents = None
+
+    self.point1 = ttk.Entry(master)
+    self.point1.grid(row = 0, column = 1)
+    self.point1.focus_set()
+
+    self.point2 = ttk.Entry(master)
+    self.point2.grid(row = 1, column = 1)
+    self.point2.focus_set()
+
+    ttk.Label(text = 'First Point').grid(row = 0, column = 0)
+    ttk.Label(text = 'Second Point').grid(row = 1, column = 0)
+    ttk.Button(master, text = "Done", width = 10, command = self.callback).grid(row = 5, column = 2)
+
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+49055790_49066615_16_26
+49055790_49066615_5_14
+Title: Insert a Widget into another Window 
+----------------------------------------
+
+def __init__(self, parent = None) :
+INDENT
+    super(Window, self).__init__(parent)
+    button = QPushButton('add')
+    button.clicked.connect(self.add)
+    self.vLayout = QVBoxLayout(self)
+    self.vLayout.addWidget(button)
+    centralWidget = QWidget()
+    centralWidget.setLayout(self.vLayout)
+    self.setCentralWidget(centralWidget)
+DEDENT
+----------------------------------------
+
+def __init__(self, parent = None) :
+INDENT
+    super(SubWidget, self).__init__(parent)
+    button = QPushButton('toggle')
+    checkbox = QCheckBox('check')
+    button.clicked.connect(checkbox.toggle)
+    hLayout = QHBoxLayout(self)
+    hLayout.addWidget(button)
+    hLayout.addWidget(checkbox)
+    self.setLayout(hLayout)
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+49099719_49099881_28_40
+49099719_49099881_51_58
+Title: How do you use a tkinter button to restart the python program? 
+----------------------------------------
+
+def draw(self) :
+INDENT
+    self.canvas.move(self.id, self.x, self.y)
+    pos = self.canvas.coords(self.id)
+    if pos [1] < = 0 :
+    INDENT
+        self.y = 3
+    DEDENT
+    if pos [3] > = self.canvas_height :
+    INDENT
+        self.hit_bottom = True
+    DEDENT
+    if self.hit_paddle(pos) == True :
+    INDENT
+        self.y = - 3
+    DEDENT
+    if pos [0] < = 0 :
+    INDENT
+        self.x = 3
+    DEDENT
+    if pos [2] > = self.canvas_width :
+    INDENT
+        self.x = - 3
+    DEDENT
+DEDENT
+----------------------------------------
+
+def draw(self) :
+INDENT
+    self.canvas.move(self.id, self.x, 0)
+    pos = self.canvas.coords(self.id)
+    if pos [0] < = 0 :
+    INDENT
+        self.x = 0
+    DEDENT
+    elif pos [2] > = self.canvas_width :
+    INDENT
+        self.x = 0
+    DEDENT
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+49099719_49099881_42_50
+49099719_49099881_8_20
+Title: How do you use a tkinter button to restart the python program? 
+----------------------------------------
+
+def __init__(self, canvas, color) :
+INDENT
+    self.canvas = canvas
+    self.id = canvas.create_rectangle(0, 0, 100, 10, fill = color)
+    self.canvas.move(self.id, 450, 750)
+    self.x = 0
+    self.canvas_width = self.canvas.winfo_width()
+    self.canvas.bind_all('<KeyPress-Left>', self.turn_left)
+    self.canvas.bind_all('<KeyPress-Right>', self.turn_right)
+DEDENT
+----------------------------------------
+
+def __init__(self, canvas, paddle, color) :
+INDENT
+    self.canvas = canvas
+    self.paddle = paddle
+    self.id = canvas.create_oval(10, 10, 25, 25, fill = color)
+    self.canvas.move(self.id, 245, 100)
+    starts = [- 3, - 2, - 1, 1, 2, 3]
+    random.shuffle(starts)
+    self.x = starts [0]
+    self.y = - 3
+    self.canvas_height = self.canvas.winfo_height()
+    self.canvas_width = self.canvas.winfo_width()
+    self.hit_bottom = False
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+49121895_49122333_23_30
+49121895_49122333_69_79
+Title: "should these functions be marked @staticmethod is so what value does this provide -- python" 
+----------------------------------------
+
+def get_major(self) :
+INDENT
+    return "Major Chord: {} {} {} or {} {} {}".format(self.major [0],
+        self.major [1],
+        self.major [2],
+        self.major [0],
+        self.major [2],
+        self.major [1])
+DEDENT
+----------------------------------------
+
+def get_major(root, notes) :
+INDENT
+    index = notes.index(root)
+    major = [notes [index], notes [(index + 4) % 12],
+        notes [(index + 7) % 12]]
+    return "Major Chord: {} {} {} or {} {} {}".format(major [0],
+        major [1],
+        major [2],
+        major [0],
+        major [2],
+        major [1])
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+49121895_49122333_31_38
+49121895_49122333_81_91
+Title: "should these functions be marked @staticmethod is so what value does this provide -- python" 
+----------------------------------------
+
+def get_minor(self) :
+INDENT
+    return "Minor Chord: {} {} {} or {} {} {}".format(self.minor [0],
+        self.minor [1],
+        self.minor [2],
+        self.minor [0],
+        self.minor [2],
+        self.minor [1])
+DEDENT
+----------------------------------------
+
+def get_minor(root, notes) :
+INDENT
+    index = notes.index(root)
+    minor = [notes [index], notes [(index + 3) % 12],
+        notes [(index + 7) % 12]]
+    return "Minor Chord: {} {} {} or {} {} {}".format(minor [0],
+        minor [1],
+        minor [2],
+        minor [0],
+        minor [2],
+        minor [1])
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+4913349_43960736_4_26
+4913349_45395941_7_20
+Title: Haversine Formula in Python (Bearing and Distance between two GPS points) 
+----------------------------------------
+
+def haversine(pointA, pointB) :
+INDENT
+    if (type(pointA) ! = tuple) or (type(pointB) ! = tuple) :
+    INDENT
+        raise TypeError("Only tuples are supported as arguments")
+    DEDENT
+    lat1 = pointA [0]
+    lon1 = pointA [1]
+    lat2 = pointB [0]
+    lon2 = pointB [1]
+
+    lat1, lon1, lat2, lon2 = map(radians, [lat1, lon1, lat2, lon2])
+
+    dlon = lon2 - lon1
+    dlat = lat2 - lat1
+    a = sin(dlat / 2) ** 2 + cos(lat1) * cos(lat2) * sin(dlon / 2) ** 2
+    c = 2 * asin(sqrt(a))
+    r = 6371
+    return c * r
+
+DEDENT
+----------------------------------------
+
+def haversine(lat1, lon1, lat2, lon2) :
+INDENT
+    R = 3959.87433
+    dLat = radians(lat2 - lat1)
+    dLon = radians(lon2 - lon1)
+    lat1 = radians(lat1)
+    lat2 = radians(lat2)
+    a = sin(dLat / 2) ** 2 + cos(lat1) * cos(lat2) * sin(dLon / 2) ** 2
+    c = 2 * asin(sqrt(a))
+    return R * c
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+4913349_43960736_4_26
+4913349_4913653_3_17
+Title: Haversine Formula in Python (Bearing and Distance between two GPS points) 
+----------------------------------------
+
+def haversine(pointA, pointB) :
+INDENT
+    if (type(pointA) ! = tuple) or (type(pointB) ! = tuple) :
+    INDENT
+        raise TypeError("Only tuples are supported as arguments")
+    DEDENT
+    lat1 = pointA [0]
+    lon1 = pointA [1]
+    lat2 = pointB [0]
+    lon2 = pointB [1]
+
+    lat1, lon1, lat2, lon2 = map(radians, [lat1, lon1, lat2, lon2])
+
+    dlon = lon2 - lon1
+    dlat = lat2 - lat1
+    a = sin(dlat / 2) ** 2 + cos(lat1) * cos(lat2) * sin(dlon / 2) ** 2
+    c = 2 * asin(sqrt(a))
+    r = 6371
+    return c * r
+
+DEDENT
+----------------------------------------
+
+def haversine(lon1, lat1, lon2, lat2) :
+INDENT
+    lon1, lat1, lon2, lat2 = map(radians, [lon1, lat1, lon2, lat2])
+
+    dlon = lon2 - lon1
+    dlat = lat2 - lat1
+    a = sin(dlat / 2) ** 2 + cos(lat1) * cos(lat2) * sin(dlon / 2) ** 2
+    c = 2 * asin(sqrt(a))
+    r = 6371
+    return c * r
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+4913349_43960736_4_26
+4913349_51431891_3_26
+Title: Haversine Formula in Python (Bearing and Distance between two GPS points) 
+----------------------------------------
+
+def haversine(pointA, pointB) :
+INDENT
+    if (type(pointA) ! = tuple) or (type(pointB) ! = tuple) :
+    INDENT
+        raise TypeError("Only tuples are supported as arguments")
+    DEDENT
+    lat1 = pointA [0]
+    lon1 = pointA [1]
+    lat2 = pointB [0]
+    lon2 = pointB [1]
+
+    lat1, lon1, lat2, lon2 = map(radians, [lat1, lon1, lat2, lon2])
+
+    dlon = lon2 - lon1
+    dlat = lat2 - lat1
+    a = sin(dlat / 2) ** 2 + cos(lat1) * cos(lat2) * sin(dlon / 2) ** 2
+    c = 2 * asin(sqrt(a))
+    r = 6371
+    return c * r
+
+DEDENT
+----------------------------------------
+
+def haversine(lon1, lat1, lon2, lat2) :
+INDENT
+    lon1 = np.radians(lon1.values)
+    lat1 = np.radians(lat1.values)
+    lon2 = np.radians(lon2.values)
+    lat2 = np.radians(lat2.values)
+
+    dlon = np.subtract(lon2, lon1)
+    dlat = np.subtract(lat2, lat1)
+    a = np.add(np.power(np.sin(np.divide(dlat, 2)), 2),
+        np.multiply(np.cos(lat1),
+            np.multiply(np.cos(lat2),
+                np.power(np.sin(np.divide(dlon, 2)), 2))))
+    c = np.multiply(2, np.arcsin(np.sqrt(a)))
+    r = 6371
+    return c * r
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+4913349_45395941_7_20
+4913349_4913653_3_17
+Title: Haversine Formula in Python (Bearing and Distance between two GPS points) 
+----------------------------------------
+
+def haversine(lat1, lon1, lat2, lon2) :
+INDENT
+    R = 3959.87433
+    dLat = radians(lat2 - lat1)
+    dLon = radians(lon2 - lon1)
+    lat1 = radians(lat1)
+    lat2 = radians(lat2)
+    a = sin(dLat / 2) ** 2 + cos(lat1) * cos(lat2) * sin(dLon / 2) ** 2
+    c = 2 * asin(sqrt(a))
+    return R * c
+DEDENT
+----------------------------------------
+
+def haversine(lon1, lat1, lon2, lat2) :
+INDENT
+    lon1, lat1, lon2, lat2 = map(radians, [lon1, lat1, lon2, lat2])
+
+    dlon = lon2 - lon1
+    dlat = lat2 - lat1
+    a = sin(dlat / 2) ** 2 + cos(lat1) * cos(lat2) * sin(dlon / 2) ** 2
+    c = 2 * asin(sqrt(a))
+    r = 6371
+    return c * r
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+4913349_45395941_7_20
+4913349_51431891_3_26
+Title: Haversine Formula in Python (Bearing and Distance between two GPS points) 
+----------------------------------------
+
+def haversine(lat1, lon1, lat2, lon2) :
+INDENT
+    R = 3959.87433
+    dLat = radians(lat2 - lat1)
+    dLon = radians(lon2 - lon1)
+    lat1 = radians(lat1)
+    lat2 = radians(lat2)
+    a = sin(dLat / 2) ** 2 + cos(lat1) * cos(lat2) * sin(dLon / 2) ** 2
+    c = 2 * asin(sqrt(a))
+    return R * c
+DEDENT
+----------------------------------------
+
+def haversine(lon1, lat1, lon2, lat2) :
+INDENT
+    lon1 = np.radians(lon1.values)
+    lat1 = np.radians(lat1.values)
+    lon2 = np.radians(lon2.values)
+    lat2 = np.radians(lat2.values)
+
+    dlon = np.subtract(lon2, lon1)
+    dlat = np.subtract(lat2, lat1)
+    a = np.add(np.power(np.sin(np.divide(dlat, 2)), 2),
+        np.multiply(np.cos(lat1),
+            np.multiply(np.cos(lat2),
+                np.power(np.sin(np.divide(dlon, 2)), 2))))
+    c = np.multiply(2, np.arcsin(np.sqrt(a)))
+    r = 6371
+    return c * r
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+4913349_4913653_3_17
+4913349_51431891_3_26
+Title: Haversine Formula in Python (Bearing and Distance between two GPS points) 
+----------------------------------------
+
+def haversine(lon1, lat1, lon2, lat2) :
+INDENT
+    lon1, lat1, lon2, lat2 = map(radians, [lon1, lat1, lon2, lat2])
+
+    dlon = lon2 - lon1
+    dlat = lat2 - lat1
+    a = sin(dlat / 2) ** 2 + cos(lat1) * cos(lat2) * sin(dlon / 2) ** 2
+    c = 2 * asin(sqrt(a))
+    r = 6371
+    return c * r
+DEDENT
+----------------------------------------
+
+def haversine(lon1, lat1, lon2, lat2) :
+INDENT
+    lon1 = np.radians(lon1.values)
+    lat1 = np.radians(lat1.values)
+    lon2 = np.radians(lon2.values)
+    lat2 = np.radians(lat2.values)
+
+    dlon = np.subtract(lon2, lon1)
+    dlat = np.subtract(lat2, lat1)
+    a = np.add(np.power(np.sin(np.divide(dlat, 2)), 2),
+        np.multiply(np.cos(lat1),
+            np.multiply(np.cos(lat2),
+                np.power(np.sin(np.divide(dlon, 2)), 2))))
+    c = np.multiply(2, np.arcsin(np.sqrt(a)))
+    r = 6371
+    return c * r
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+49139315_49139472_122_131
+49139315_49139472_12_20
+Title: "attribute error in tkinter I can't use my method linked to a button" 
+----------------------------------------
+
+def __init__(self, parent, controller) :
+INDENT
+    tk.Frame.__init__(self, parent)
+    self.controller = controller
+    label = ttk.Label(self, text = "This is page 1", font = LARGE_FONT)
+    label.grid(column = 0, row = 0)
+    button = ttk.Button(self, text = "Go to the start page",
+        command = lambda : controller.show_frame("StartPage"))
+    button.grid(column = 0, row = 0)
+
+DEDENT
+----------------------------------------
+
+def __init__(self, name, birthday, sex, age, diet, smoker, physical_activity_frequency) :
+INDENT
+    self.name = name
+    self.birthday = birthday
+    self.sex = sex
+    self.age = age
+    self.diet = diet
+    self.smoker = smoker
+    self.physical_activity_frequency = physical_activity_frequency
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+49139315_49139472_122_131
+49139315_49139472_30_52
+Title: "attribute error in tkinter I can't use my method linked to a button" 
+----------------------------------------
+
+def __init__(self, parent, controller) :
+INDENT
+    tk.Frame.__init__(self, parent)
+    self.controller = controller
+    label = ttk.Label(self, text = "This is page 1", font = LARGE_FONT)
+    label.grid(column = 0, row = 0)
+    button = ttk.Button(self, text = "Go to the start page",
+        command = lambda : controller.show_frame("StartPage"))
+    button.grid(column = 0, row = 0)
+
+DEDENT
+----------------------------------------
+
+def __init__(self, * args, ** kwargs) :
+INDENT
+    tk.Tk.__init__(self, * args, ** kwargs)
+    tk.Tk.wm_title(self, "age calculator app")
+    container = tk.Frame(self)
+    container.pack(side = "top", fill = "both", expand = True)
+    container.grid_rowconfigure(0, weight = 1)
+    container.grid_columnconfigure(0, weight = 1)
+    self.frames = {}
+    for F in (StartPage, PageOne, PageTwo) :
+    INDENT
+        page_name = F.__name__
+        frame = F(parent = container, controller = self)
+        self.frames [page_name] = frame
+
+        frame.grid(row = 0, column = 0, sticky = "nsew")
+    DEDENT
+    self.show_frame("StartPage")
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+49139315_49139472_122_131
+49139315_49139472_66_119
+Title: "attribute error in tkinter I can't use my method linked to a button" 
+----------------------------------------
+
+def __init__(self, parent, controller) :
+INDENT
+    tk.Frame.__init__(self, parent)
+    self.controller = controller
+    label = ttk.Label(self, text = "This is page 1", font = LARGE_FONT)
+    label.grid(column = 0, row = 0)
+    button = ttk.Button(self, text = "Go to the start page",
+        command = lambda : controller.show_frame("StartPage"))
+    button.grid(column = 0, row = 0)
+
+DEDENT
+----------------------------------------
+
+def __init__(self, parent, controller) :
+INDENT
+    tk.Frame.__init__(self, parent)
+    self.controller = controller
+
+    label = ttk.Label(self, text = "deathcalculatorapp", font = LARGE_FONT)
+    label.grid(column = 1, row = 0)
+    first_label = ttk.Label(self, text = "insert your data")
+    year_label = tk.Label(self, text = "year", bg = "lightblue", padx = 9)
+    month_label = tk.Label(self, text = "month", bg = "lightblue", padx = 3)
+    day_label = tk.Label(self, text = "day", bg = "lightblue", padx = 11)
+    first_label.grid(column = 1, row = 3)
+    year_label.grid(column = 0, row = 4)
+    month_label.grid(column = 0, row = 5)
+    day_label.grid(column = 0, row = 6)
+    year_entry = tk.Entry(self, text = "", bg = "lightblue")
+    month_entry = tk.Entry(self, text = "", bg = "lightblue")
+    day_entry = tk.Entry(self, text = "", bg = "lightblue")
+    year_entry.grid(column = 1, row = 4)
+    month_entry.grid(column = 1, row = 5)
+    day_entry.grid(column = 1, row = 6)
+    sex = tk.IntVar()
+    female = ttk.Radiobutton(self, text = "female", variable = sex, value = "female")
+    male = ttk.Radiobutton(self, text = "male", variable = sex, value = "male")
+    female.grid(column = 2, row = 4)
+    male.grid(column = 2, row = 5)
+    calculate_button = ttk.Button(self, text = "calculate your lifespawn",
+        command = lambda : controller.calculate())
+    calculate_button.grid(column = 1, row = 7)
+    button1 = ttk.Button(self, text = "Go to Page One",
+        command = lambda : controller.show_frame("PageOne"))
+    button2 = ttk.Button(self, text = "Go to Page Two",
+        command = lambda : controller.show_frame("PageTwo"))
+    button1.grid(column = 0, row = 0)
+    button2.grid(column = 0, row = 1)
+    image = Image.open(r"/"
+        r"Users/tommasomasaracchio/Documents/pythonfolder/kushina4.jpg")
+    image.thumbnail((500, 300), Image.ANTIALIAS)
+    photo = ImageTk.PhotoImage(image)
+    Photo_label = ttk.Label(self, image = photo)
+    Photo_label.image = photo
+    Photo_label.grid(row = 2, column = 1)
+
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+49139315_49139472_12_20
+49139315_49139472_134_143
+Title: "attribute error in tkinter I can't use my method linked to a button" 
+----------------------------------------
+
+def __init__(self, name, birthday, sex, age, diet, smoker, physical_activity_frequency) :
+INDENT
+    self.name = name
+    self.birthday = birthday
+    self.sex = sex
+    self.age = age
+    self.diet = diet
+    self.smoker = smoker
+    self.physical_activity_frequency = physical_activity_frequency
+DEDENT
+----------------------------------------
+
+def __init__(self, parent, controller) :
+INDENT
+    tk.Frame.__init__(self, parent)
+    self.controller = controller
+    label = ttk.Label(self, text = "This is page 2", font = LARGE_FONT)
+    label.grid(column = 0, row = 0)
+    button = ttk.Button(self, text = "Go to the start page",
+        command = lambda : controller.show_frame("StartPage"))
+    button.grid(column = 0, row = 0)
+
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+49139315_49139472_12_20
+49139315_49139472_30_52
+Title: "attribute error in tkinter I can't use my method linked to a button" 
+----------------------------------------
+
+def __init__(self, name, birthday, sex, age, diet, smoker, physical_activity_frequency) :
+INDENT
+    self.name = name
+    self.birthday = birthday
+    self.sex = sex
+    self.age = age
+    self.diet = diet
+    self.smoker = smoker
+    self.physical_activity_frequency = physical_activity_frequency
+DEDENT
+----------------------------------------
+
+def __init__(self, * args, ** kwargs) :
+INDENT
+    tk.Tk.__init__(self, * args, ** kwargs)
+    tk.Tk.wm_title(self, "age calculator app")
+    container = tk.Frame(self)
+    container.pack(side = "top", fill = "both", expand = True)
+    container.grid_rowconfigure(0, weight = 1)
+    container.grid_columnconfigure(0, weight = 1)
+    self.frames = {}
+    for F in (StartPage, PageOne, PageTwo) :
+    INDENT
+        page_name = F.__name__
+        frame = F(parent = container, controller = self)
+        self.frames [page_name] = frame
+
+        frame.grid(row = 0, column = 0, sticky = "nsew")
+    DEDENT
+    self.show_frame("StartPage")
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+49139315_49139472_12_20
+49139315_49139472_66_119
+Title: "attribute error in tkinter I can't use my method linked to a button" 
+----------------------------------------
+
+def __init__(self, name, birthday, sex, age, diet, smoker, physical_activity_frequency) :
+INDENT
+    self.name = name
+    self.birthday = birthday
+    self.sex = sex
+    self.age = age
+    self.diet = diet
+    self.smoker = smoker
+    self.physical_activity_frequency = physical_activity_frequency
+DEDENT
+----------------------------------------
+
+def __init__(self, parent, controller) :
+INDENT
+    tk.Frame.__init__(self, parent)
+    self.controller = controller
+
+    label = ttk.Label(self, text = "deathcalculatorapp", font = LARGE_FONT)
+    label.grid(column = 1, row = 0)
+    first_label = ttk.Label(self, text = "insert your data")
+    year_label = tk.Label(self, text = "year", bg = "lightblue", padx = 9)
+    month_label = tk.Label(self, text = "month", bg = "lightblue", padx = 3)
+    day_label = tk.Label(self, text = "day", bg = "lightblue", padx = 11)
+    first_label.grid(column = 1, row = 3)
+    year_label.grid(column = 0, row = 4)
+    month_label.grid(column = 0, row = 5)
+    day_label.grid(column = 0, row = 6)
+    year_entry = tk.Entry(self, text = "", bg = "lightblue")
+    month_entry = tk.Entry(self, text = "", bg = "lightblue")
+    day_entry = tk.Entry(self, text = "", bg = "lightblue")
+    year_entry.grid(column = 1, row = 4)
+    month_entry.grid(column = 1, row = 5)
+    day_entry.grid(column = 1, row = 6)
+    sex = tk.IntVar()
+    female = ttk.Radiobutton(self, text = "female", variable = sex, value = "female")
+    male = ttk.Radiobutton(self, text = "male", variable = sex, value = "male")
+    female.grid(column = 2, row = 4)
+    male.grid(column = 2, row = 5)
+    calculate_button = ttk.Button(self, text = "calculate your lifespawn",
+        command = lambda : controller.calculate())
+    calculate_button.grid(column = 1, row = 7)
+    button1 = ttk.Button(self, text = "Go to Page One",
+        command = lambda : controller.show_frame("PageOne"))
+    button2 = ttk.Button(self, text = "Go to Page Two",
+        command = lambda : controller.show_frame("PageTwo"))
+    button1.grid(column = 0, row = 0)
+    button2.grid(column = 0, row = 1)
+    image = Image.open(r"/"
+        r"Users/tommasomasaracchio/Documents/pythonfolder/kushina4.jpg")
+    image.thumbnail((500, 300), Image.ANTIALIAS)
+    photo = ImageTk.PhotoImage(image)
+    Photo_label = ttk.Label(self, image = photo)
+    Photo_label.image = photo
+    Photo_label.grid(row = 2, column = 1)
+
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+49139315_49139472_134_143
+49139315_49139472_30_52
+Title: "attribute error in tkinter I can't use my method linked to a button" 
+----------------------------------------
+
+def __init__(self, parent, controller) :
+INDENT
+    tk.Frame.__init__(self, parent)
+    self.controller = controller
+    label = ttk.Label(self, text = "This is page 2", font = LARGE_FONT)
+    label.grid(column = 0, row = 0)
+    button = ttk.Button(self, text = "Go to the start page",
+        command = lambda : controller.show_frame("StartPage"))
+    button.grid(column = 0, row = 0)
+
+DEDENT
+----------------------------------------
+
+def __init__(self, * args, ** kwargs) :
+INDENT
+    tk.Tk.__init__(self, * args, ** kwargs)
+    tk.Tk.wm_title(self, "age calculator app")
+    container = tk.Frame(self)
+    container.pack(side = "top", fill = "both", expand = True)
+    container.grid_rowconfigure(0, weight = 1)
+    container.grid_columnconfigure(0, weight = 1)
+    self.frames = {}
+    for F in (StartPage, PageOne, PageTwo) :
+    INDENT
+        page_name = F.__name__
+        frame = F(parent = container, controller = self)
+        self.frames [page_name] = frame
+
+        frame.grid(row = 0, column = 0, sticky = "nsew")
+    DEDENT
+    self.show_frame("StartPage")
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+49139315_49139472_134_143
+49139315_49139472_66_119
+Title: "attribute error in tkinter I can't use my method linked to a button" 
+----------------------------------------
+
+def __init__(self, parent, controller) :
+INDENT
+    tk.Frame.__init__(self, parent)
+    self.controller = controller
+    label = ttk.Label(self, text = "This is page 2", font = LARGE_FONT)
+    label.grid(column = 0, row = 0)
+    button = ttk.Button(self, text = "Go to the start page",
+        command = lambda : controller.show_frame("StartPage"))
+    button.grid(column = 0, row = 0)
+
+DEDENT
+----------------------------------------
+
+def __init__(self, parent, controller) :
+INDENT
+    tk.Frame.__init__(self, parent)
+    self.controller = controller
+
+    label = ttk.Label(self, text = "deathcalculatorapp", font = LARGE_FONT)
+    label.grid(column = 1, row = 0)
+    first_label = ttk.Label(self, text = "insert your data")
+    year_label = tk.Label(self, text = "year", bg = "lightblue", padx = 9)
+    month_label = tk.Label(self, text = "month", bg = "lightblue", padx = 3)
+    day_label = tk.Label(self, text = "day", bg = "lightblue", padx = 11)
+    first_label.grid(column = 1, row = 3)
+    year_label.grid(column = 0, row = 4)
+    month_label.grid(column = 0, row = 5)
+    day_label.grid(column = 0, row = 6)
+    year_entry = tk.Entry(self, text = "", bg = "lightblue")
+    month_entry = tk.Entry(self, text = "", bg = "lightblue")
+    day_entry = tk.Entry(self, text = "", bg = "lightblue")
+    year_entry.grid(column = 1, row = 4)
+    month_entry.grid(column = 1, row = 5)
+    day_entry.grid(column = 1, row = 6)
+    sex = tk.IntVar()
+    female = ttk.Radiobutton(self, text = "female", variable = sex, value = "female")
+    male = ttk.Radiobutton(self, text = "male", variable = sex, value = "male")
+    female.grid(column = 2, row = 4)
+    male.grid(column = 2, row = 5)
+    calculate_button = ttk.Button(self, text = "calculate your lifespawn",
+        command = lambda : controller.calculate())
+    calculate_button.grid(column = 1, row = 7)
+    button1 = ttk.Button(self, text = "Go to Page One",
+        command = lambda : controller.show_frame("PageOne"))
+    button2 = ttk.Button(self, text = "Go to Page Two",
+        command = lambda : controller.show_frame("PageTwo"))
+    button1.grid(column = 0, row = 0)
+    button2.grid(column = 0, row = 1)
+    image = Image.open(r"/"
+        r"Users/tommasomasaracchio/Documents/pythonfolder/kushina4.jpg")
+    image.thumbnail((500, 300), Image.ANTIALIAS)
+    photo = ImageTk.PhotoImage(image)
+    Photo_label = ttk.Label(self, image = photo)
+    Photo_label.image = photo
+    Photo_label.grid(row = 2, column = 1)
+
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+49139315_49139472_30_52
+49139315_49139472_66_119
+Title: "attribute error in tkinter I can't use my method linked to a button" 
+----------------------------------------
+
+def __init__(self, * args, ** kwargs) :
+INDENT
+    tk.Tk.__init__(self, * args, ** kwargs)
+    tk.Tk.wm_title(self, "age calculator app")
+    container = tk.Frame(self)
+    container.pack(side = "top", fill = "both", expand = True)
+    container.grid_rowconfigure(0, weight = 1)
+    container.grid_columnconfigure(0, weight = 1)
+    self.frames = {}
+    for F in (StartPage, PageOne, PageTwo) :
+    INDENT
+        page_name = F.__name__
+        frame = F(parent = container, controller = self)
+        self.frames [page_name] = frame
+
+        frame.grid(row = 0, column = 0, sticky = "nsew")
+    DEDENT
+    self.show_frame("StartPage")
+DEDENT
+----------------------------------------
+
+def __init__(self, parent, controller) :
+INDENT
+    tk.Frame.__init__(self, parent)
+    self.controller = controller
+
+    label = ttk.Label(self, text = "deathcalculatorapp", font = LARGE_FONT)
+    label.grid(column = 1, row = 0)
+    first_label = ttk.Label(self, text = "insert your data")
+    year_label = tk.Label(self, text = "year", bg = "lightblue", padx = 9)
+    month_label = tk.Label(self, text = "month", bg = "lightblue", padx = 3)
+    day_label = tk.Label(self, text = "day", bg = "lightblue", padx = 11)
+    first_label.grid(column = 1, row = 3)
+    year_label.grid(column = 0, row = 4)
+    month_label.grid(column = 0, row = 5)
+    day_label.grid(column = 0, row = 6)
+    year_entry = tk.Entry(self, text = "", bg = "lightblue")
+    month_entry = tk.Entry(self, text = "", bg = "lightblue")
+    day_entry = tk.Entry(self, text = "", bg = "lightblue")
+    year_entry.grid(column = 1, row = 4)
+    month_entry.grid(column = 1, row = 5)
+    day_entry.grid(column = 1, row = 6)
+    sex = tk.IntVar()
+    female = ttk.Radiobutton(self, text = "female", variable = sex, value = "female")
+    male = ttk.Radiobutton(self, text = "male", variable = sex, value = "male")
+    female.grid(column = 2, row = 4)
+    male.grid(column = 2, row = 5)
+    calculate_button = ttk.Button(self, text = "calculate your lifespawn",
+        command = lambda : controller.calculate())
+    calculate_button.grid(column = 1, row = 7)
+    button1 = ttk.Button(self, text = "Go to Page One",
+        command = lambda : controller.show_frame("PageOne"))
+    button2 = ttk.Button(self, text = "Go to Page Two",
+        command = lambda : controller.show_frame("PageTwo"))
+    button1.grid(column = 0, row = 0)
+    button2.grid(column = 0, row = 1)
+    image = Image.open(r"/"
+        r"Users/tommasomasaracchio/Documents/pythonfolder/kushina4.jpg")
+    image.thumbnail((500, 300), Image.ANTIALIAS)
+    photo = ImageTk.PhotoImage(image)
+    Photo_label = ttk.Label(self, image = photo)
+    Photo_label.image = photo
+    Photo_label.grid(row = 2, column = 1)
+
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+49163895_49174218_5_23
+49163895_49191160_19_34
+Title: Splitting bottom window in wxpython vertically 
+----------------------------------------
+
+def __init__(self) :
+INDENT
+    wx.Frame.__init__(self, parent = None, size = (750, 500))
+    self.Centre()
+    topPanel = TopPanel(self)
+    hLeftPanel = LeftPanel(self)
+    hRightPanel = RightPanel(self)
+    hBoxSizer = wx.BoxSizer(wx.HORIZONTAL)
+    hBoxSizer.Add(hLeftPanel, 1, wx.EXPAND)
+    hBoxSizer.Add(hRightPanel, 1, wx.EXPAND)
+    vBoxSizer = wx.BoxSizer(wx.VERTICAL)
+    vBoxSizer.Add(topPanel, 1, wx.EXPAND)
+    vBoxSizer.Add(hBoxSizer, 1, wx.EXPAND)
+    self.SetSizer(vBoxSizer)
+
+DEDENT
+----------------------------------------
+
+def __init__(self, parent) :
+INDENT
+    wx.Panel.__init__(self, parent = parent)
+    Text = wx.StaticText(self, - 1, "Bottom Left")
+    self.figure = Figure()
+    self.axes = self.figure.add_subplot(111, aspect = 'equal')
+    self.canvas = FigureCanvas(self, - 1, self.figure)
+    t = [0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0]
+    s = [0.0, 1.0, 0.0, 1.0, 0.0, 2.0, 1.0, 2.0, 1.0, 0.0]
+    self.axes.plot(t, s)
+    self.sizer = wx.BoxSizer(wx.HORIZONTAL)
+    self.sizer.Add(Text, 0, 0, 0, 0)
+    self.sizer.Add(self.canvas, 1, wx.LEFT | wx.TOP | wx.GROW)
+    self.SetSizer(self.sizer)
+    self.Fit()
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+49163895_49174218_5_23
+49163895_49191160_36_51
+Title: Splitting bottom window in wxpython vertically 
+----------------------------------------
+
+def __init__(self) :
+INDENT
+    wx.Frame.__init__(self, parent = None, size = (750, 500))
+    self.Centre()
+    topPanel = TopPanel(self)
+    hLeftPanel = LeftPanel(self)
+    hRightPanel = RightPanel(self)
+    hBoxSizer = wx.BoxSizer(wx.HORIZONTAL)
+    hBoxSizer.Add(hLeftPanel, 1, wx.EXPAND)
+    hBoxSizer.Add(hRightPanel, 1, wx.EXPAND)
+    vBoxSizer = wx.BoxSizer(wx.VERTICAL)
+    vBoxSizer.Add(topPanel, 1, wx.EXPAND)
+    vBoxSizer.Add(hBoxSizer, 1, wx.EXPAND)
+    self.SetSizer(vBoxSizer)
+
+DEDENT
+----------------------------------------
+
+def __init__(self) :
+INDENT
+    self.main = wx.Frame.__init__(self, None, wx.ID_ANY, "myGUI", size = (750, 500))
+    self.splitWin = wx.SplitterWindow(self)
+    topP = topPanel(self)
+    bottomPLeft = bottomLeft(self.splitWin)
+    bottomPRight = bottomRight(self.splitWin)
+    self.splitWin.SplitVertically(bottomPLeft, bottomPRight)
+    self.splitWin.SetMinimumPaneSize(350)
+    sizer = wx.BoxSizer(wx.VERTICAL)
+    sizer.Add(topP, 1, wx.EXPAND)
+    sizer.Add(self.splitWin, 1, wx.EXPAND)
+    self.SetSizer(sizer)
+
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+49163895_49191160_19_34
+49163895_49191160_36_51
+Title: Splitting bottom window in wxpython vertically 
+----------------------------------------
+
+def __init__(self, parent) :
+INDENT
+    wx.Panel.__init__(self, parent = parent)
+    Text = wx.StaticText(self, - 1, "Bottom Left")
+    self.figure = Figure()
+    self.axes = self.figure.add_subplot(111, aspect = 'equal')
+    self.canvas = FigureCanvas(self, - 1, self.figure)
+    t = [0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0]
+    s = [0.0, 1.0, 0.0, 1.0, 0.0, 2.0, 1.0, 2.0, 1.0, 0.0]
+    self.axes.plot(t, s)
+    self.sizer = wx.BoxSizer(wx.HORIZONTAL)
+    self.sizer.Add(Text, 0, 0, 0, 0)
+    self.sizer.Add(self.canvas, 1, wx.LEFT | wx.TOP | wx.GROW)
+    self.SetSizer(self.sizer)
+    self.Fit()
+DEDENT
+----------------------------------------
+
+def __init__(self) :
+INDENT
+    self.main = wx.Frame.__init__(self, None, wx.ID_ANY, "myGUI", size = (750, 500))
+    self.splitWin = wx.SplitterWindow(self)
+    topP = topPanel(self)
+    bottomPLeft = bottomLeft(self.splitWin)
+    bottomPRight = bottomRight(self.splitWin)
+    self.splitWin.SplitVertically(bottomPLeft, bottomPRight)
+    self.splitWin.SetMinimumPaneSize(350)
+    sizer = wx.BoxSizer(wx.VERTICAL)
+    sizer.Add(topP, 1, wx.EXPAND)
+    sizer.Add(self.splitWin, 1, wx.EXPAND)
+    self.SetSizer(sizer)
+
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+49163929_49164876_3_11
+49163929_49164904_1_11
+Title: "Django search ""DoesNotExist""" 
+----------------------------------------
+
+def search(request) :
+INDENT
+    results = []
+    query = request.GET.get('q', None)
+    if query :
+    INDENT
+        try :
+        INDENT
+            results = Articulo.objects.filter(Q(titulo__icontains = query) | Q(cuerpo_icontains = query))
+        DEDENT
+        except Articulo.DoesNotExist :
+        INDENT
+            pass
+        DEDENT
+    DEDENT
+    return render_to_response('web/buscar.html', {"results" : results, "query" : query})
+DEDENT
+----------------------------------------
+
+def search(request) :
+INDENT
+    query = request.GET.get('q', '')
+    if query :
+    INDENT
+        try :
+        INDENT
+            qset = Articulo.objects.filter(Q(titulo__icontains = query) | cuerpo_icontains = query)
+            results = Articulo.objects.filter(some_field = some_value).distinct()
+        DEDENT
+        except Articulo.DoesNotExist :
+        INDENT
+            results = None
+        DEDENT
+    DEDENT
+    else :
+    INDENT
+        results = []
+    DEDENT
+    return render_to_response('web/buscar.html', {"results" : results, "query" : query})
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+49163929_49164876_3_11
+49163929_49258087_3_11
+Title: "Django search ""DoesNotExist""" 
+----------------------------------------
+
+def search(request) :
+INDENT
+    results = []
+    query = request.GET.get('q', None)
+    if query :
+    INDENT
+        try :
+        INDENT
+            results = Articulo.objects.filter(Q(titulo__icontains = query) | Q(cuerpo_icontains = query))
+        DEDENT
+        except Articulo.DoesNotExist :
+        INDENT
+            pass
+        DEDENT
+    DEDENT
+    return render_to_response('web/buscar.html', {"results" : results, "query" : query})
+DEDENT
+----------------------------------------
+
+def search(request) :
+INDENT
+    results = []
+    query = request.GET.get('q', '')
+    if query :
+    INDENT
+        qset = Q(titulo__icontains = query) | Q(cuerpo__icontains = query)
+        results = Articulo.objects.filter(qset).distinct()
+    DEDENT
+    ctx = {"results" : results, "query" : query}
+    return render_to_response('web/buscar.html', ctx)
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+49163929_49164904_1_11
+49163929_49258087_3_11
+Title: "Django search ""DoesNotExist""" 
+----------------------------------------
+
+def search(request) :
+INDENT
+    query = request.GET.get('q', '')
+    if query :
+    INDENT
+        try :
+        INDENT
+            qset = Articulo.objects.filter(Q(titulo__icontains = query) | cuerpo_icontains = query)
+            results = Articulo.objects.filter(some_field = some_value).distinct()
+        DEDENT
+        except Articulo.DoesNotExist :
+        INDENT
+            results = None
+        DEDENT
+    DEDENT
+    else :
+    INDENT
+        results = []
+    DEDENT
+    return render_to_response('web/buscar.html', {"results" : results, "query" : query})
+DEDENT
+----------------------------------------
+
+def search(request) :
+INDENT
+    results = []
+    query = request.GET.get('q', '')
+    if query :
+    INDENT
+        qset = Q(titulo__icontains = query) | Q(cuerpo__icontains = query)
+        results = Articulo.objects.filter(qset).distinct()
+    DEDENT
+    ctx = {"results" : results, "query" : query}
+    return render_to_response('web/buscar.html', ctx)
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+49179377_49179510_1_8
+49179377_49179527_1_8
+Title: How do I use one object of a function in another function in the same class (Python) 
+----------------------------------------
+
+def browse_file(self, MainWindow) :
+INDENT
+    file = str(QtGui.QFileDialog.getOpenFileName(self, "Select Directory"))
+    img = envi.open(file)
+    band_info = str(img.read_band)
+    band_count = int((band_info.split(start)) [1].split(end) [0])
+    view = imshow(img, (1, 0, 0))
+    self.img = img
+DEDENT
+----------------------------------------
+
+def browse_file(self, MainWindow) :
+INDENT
+    file = str(QtGui.QFileDialog.getOpenFileName(self, "Select Directory"))
+    img = envi.open(file)
+    band_info = str(img.read_band)
+    band_count = int((band_info.split(start)) [1].split(end) [0])
+    view = imshow(img, (1, 0, 0))
+    return img
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+49186419_49186596_1_10
+49186419_49186673_1_8
+Title: reading and manipulating data from a text file in python 
+----------------------------------------
+
+def mi_func(file_name) :
+INDENT
+    with open(file_name) as f :
+    INDENT
+        lines = f.readlines()
+        float_list = [
+            float(float_str) for line in lines [1 :]
+            for float_str in line.strip().split(',')
+            if float_str ! = None
+            ]
+        return lines [0].strip(), float_list
+    DEDENT
+DEDENT
+----------------------------------------
+
+def mi_func(P) :
+INDENT
+    f = open(P, 'r')
+    first = f.readline()
+    restlines = f.readlines()
+    f.close()
+    return first, restlines
+
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+49188432_49188780_13_23
+49188432_49189234_4_19
+Title: Counting maximum k-mer repetition frequency 
+----------------------------------------
+
+def simple(s, n) :
+INDENT
+    snip_counts = collections.defaultdict(int)
+    for chunk in walk_seq(s, n) :
+    INDENT
+        for snip_tuple in itertools.product(ACIDS, repeat = n) :
+        INDENT
+            snip = ''.join(snip_tuple)
+            if chunk == snip :
+            INDENT
+                snip_counts [snip] += 1
+            DEDENT
+        DEDENT
+    DEDENT
+    total_matches = sum(snip_counts.values())
+    maxi = max(snip_counts.values())
+    return float(maxi) / total_matches
+DEDENT
+----------------------------------------
+
+def simple(s, n) :
+INDENT
+    dictionary = {}
+    total = 0
+    for i in range(len(s) - (n - 1)) :
+    INDENT
+        k = i + n
+        if s [i : k] in dictionary :
+        INDENT
+            dictionary [s [i : k]] += 1
+        DEDENT
+        else :
+        INDENT
+            dictionary.update({s [i : k] : 1})
+        DEDENT
+        total += 1
+    DEDENT
+    for key, value in dictionary.items() :
+    INDENT
+        dictionary [key] = value / total
+    DEDENT
+    print (dictionary)
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+49188607_49188738_1_9
+49188607_49188969_5_12
+Title: construct dictionary from lists 
+----------------------------------------
+
+def construct_dictionary_from_lists(names_list, ages_list, scores_list) :
+INDENT
+    dic = {}
+    for name, age, score in zip(names_list, ages_list, scores_list) :
+    INDENT
+        res = 'Fail'
+        if score > = 60 :
+        INDENT
+            res = 'Pass'
+        DEDENT
+        dic [name] = [age, score, res]
+    DEDENT
+    return dic
+DEDENT
+----------------------------------------
+
+def construct_dictionary_from_lists(scores_list) :
+INDENT
+    dict_result = {}
+    for item in score_list :
+    INDENT
+        result = "pass" if item [2] > 60 else "fail"
+        dict_result [item [0]] = [item [1], item [2], result]
+    DEDENT
+    return dict_result
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+49193872_49198922_10_28
+49193872_49214367_48_72
+Title: Completion with QLineEdit and QItemDelegate 
+----------------------------------------
+
+def keyPressEvent(self, event) :
+INDENT
+    QtWidgets.QLineEdit.keyPressEvent(self, event)
+    if not self.multipleCompleter :
+    INDENT
+        return
+    DEDENT
+    c = self.multipleCompleter
+    if self.text() == "" :
+    INDENT
+        return
+    DEDENT
+    c.setCompletionPrefix(self.cursorWord(self.text()))
+    if len(c.completionPrefix()) < 1 :
+    INDENT
+        c.popup().hide()
+        return
+    DEDENT
+    c.complete()
+DEDENT
+----------------------------------------
+
+def keyPressEvent(self, event) :
+INDENT
+    print ('>>> keyPressEvent')
+    if self.completer and self.completer.popup().isVisible() :
+    INDENT
+        if event.key() in (Qt.Key_Return, Qt.Key_Enter,
+            Qt.Key_Tab, Qt.Key_Backtab, Qt.Key_Escape) :
+        INDENT
+            event.ignore()
+            return
+        DEDENT
+    DEDENT
+    else :
+    INDENT
+        if event.key() in (Qt.Key_Return, Qt.Key_Enter) :
+        INDENT
+            self.returnPressed.emit()
+            return
+        DEDENT
+    DEDENT
+    super().keyPressEvent(event)
+    if not self.toPlainText() :
+    INDENT
+        self.completer.popup().hide()
+        return
+    DEDENT
+    self.completer.setCompletionPrefix(self.toPlainText())
+    self.completer.popup().setCurrentIndex(
+        self.completer.completionModel().index(0, 0))
+    self.completer.complete()
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+49193872_49198922_35_41
+49193872_49214367_35_41
+Title: Completion with QLineEdit and QItemDelegate 
+----------------------------------------
+
+def insertCompletion(self, text) :
+INDENT
+    p = self.text().rfind(" ")
+    if p == - 1 :
+    INDENT
+        self.setText(text)
+    DEDENT
+    else :
+    INDENT
+        self.setText(self.text() [: p + 1] + text)
+    DEDENT
+DEDENT
+----------------------------------------
+
+def insertCompletion(self, completion) :
+INDENT
+    print ('>>> insertCompletion')
+    if self.completer and self.completer.widget() == self :
+    INDENT
+        self.completer.widget().setPlainText(completion)
+        self.completer.widget().moveCursor(QTextCursor.EndOfLine)
+        self.completer.widget().ensureCursorVisible()
+    DEDENT
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+49193872_49214367_13_23
+49193872_49214367_152_159
+Title: Completion with QLineEdit and QItemDelegate 
+----------------------------------------
+
+def __init__(self, parent = None) :
+INDENT
+    super().__init__(parent)
+    self.setAcceptRichText(False)
+    self.setWordWrapMode(QTextOption.NoWrap)
+    self.setUndoRedoEnabled(False)
+    self.setTabChangesFocus(True)
+    self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+    self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+    self.completer = None
+    self.textChanged.connect(self.textHasChanged)
+DEDENT
+----------------------------------------
+
+def __init__(self) :
+INDENT
+    super().__init__()
+    self.model = Model()
+    self.table = QTableView()
+    self.table.setModel(self.model)
+    delegate = MyDelegate(self.table)
+    self.table.setItemDelegateForColumn(0, delegate)
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+49211084_49222917_24_32
+49211084_49222917_43_59
+Title: "Generate single random number from Pygame Sprite Collision currently multiple numbers generated" 
+----------------------------------------
+
+def __init__(self, pos) :
+INDENT
+    super().__init__()
+    self.image = BULLET_IMG
+    self.rect = self.image.get_rect(center = pos)
+    self.pos = pg.math.Vector2(pos)
+    self.vel = pg.math.Vector2(0, - 450)
+    self.live = True if random.randrange(100) < 70 else False
+DEDENT
+----------------------------------------
+
+def __init__(self) :
+INDENT
+    self.clock = pg.time.Clock()
+    self.screen = pg.display.set_mode((800, 600))
+    self.all_sprites = pg.sprite.Group()
+    self.enemies = pg.sprite.Group()
+    self.bullets = pg.sprite.Group()
+    for i in range(15) :
+    INDENT
+        pos = (random.randrange(30, 750), random.randrange(500))
+        enemy = Enemy(pos)
+        self.enemies.add(enemy)
+        self.all_sprites.add(enemy)
+    DEDENT
+    self.bullet_timer =.1
+    self.done = False
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+49219328_49219371_1_11
+49219328_49219499_1_15
+Title: Word with most 'o' characters 
+----------------------------------------
+
+def get_most_ooo_word(words) :
+INDENT
+    if type(words) == list and len(words) > 0 :
+    INDENT
+        words = words [0].split()
+    DEDENT
+    else :
+    INDENT
+        words = words.split()
+    DEDENT
+    k = words [0]
+    for i in range(1, len(words) - 1) :
+    INDENT
+        if words [i].count('o') > words [i - 1].count('o') :
+        INDENT
+            k = words [i]
+        DEDENT
+    DEDENT
+    return (k)
+DEDENT
+----------------------------------------
+
+def get_most_ooo_word(lines) :
+INDENT
+    k = - 1
+    most_o = []
+    for line in lines :
+    INDENT
+        phrase_words = line.split()
+        for word in phrase_words :
+        INDENT
+            c = word.count('o')
+            if c > k :
+            INDENT
+                k = c
+                most_o = [word]
+            DEDENT
+            elif c == k :
+            INDENT
+                most_o.append(word)
+            DEDENT
+        DEDENT
+    DEDENT
+    return most_o
+
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+49219328_49219371_1_11
+49219328_49223250_4_21
+Title: Word with most 'o' characters 
+----------------------------------------
+
+def get_most_ooo_word(words) :
+INDENT
+    if type(words) == list and len(words) > 0 :
+    INDENT
+        words = words [0].split()
+    DEDENT
+    else :
+    INDENT
+        words = words.split()
+    DEDENT
+    k = words [0]
+    for i in range(1, len(words) - 1) :
+    INDENT
+        if words [i].count('o') > words [i - 1].count('o') :
+        INDENT
+            k = words [i]
+        DEDENT
+    DEDENT
+    return (k)
+DEDENT
+----------------------------------------
+
+def get_most_ooo_word(words) :
+INDENT
+    words = ' '.join(words)
+    words = re.sub(' +', ' ', words)
+    words = words.split(' ')
+
+    count = [None] * len(words)
+
+    for i, word in enumerate(words) :
+    INDENT
+        count [i] = len(word) - len(word.replace('o', ''))
+
+    DEDENT
+    count_max = max(count)
+
+    return itemgetter(* [i for i, elem in enumerate(count) if elem == count_max])(words)
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+49219328_49219499_1_15
+49219328_49223250_4_21
+Title: Word with most 'o' characters 
+----------------------------------------
+
+def get_most_ooo_word(lines) :
+INDENT
+    k = - 1
+    most_o = []
+    for line in lines :
+    INDENT
+        phrase_words = line.split()
+        for word in phrase_words :
+        INDENT
+            c = word.count('o')
+            if c > k :
+            INDENT
+                k = c
+                most_o = [word]
+            DEDENT
+            elif c == k :
+            INDENT
+                most_o.append(word)
+            DEDENT
+        DEDENT
+    DEDENT
+    return most_o
+
+DEDENT
+----------------------------------------
+
+def get_most_ooo_word(words) :
+INDENT
+    words = ' '.join(words)
+    words = re.sub(' +', ' ', words)
+    words = words.split(' ')
+
+    count = [None] * len(words)
+
+    for i, word in enumerate(words) :
+    INDENT
+        count [i] = len(word) - len(word.replace('o', ''))
+
+    DEDENT
+    count_max = max(count)
+
+    return itemgetter(* [i for i, elem in enumerate(count) if elem == count_max])(words)
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+49220815_49220854_1_13
+49220815_49220946_1_17
+Title: IndexError: list index out of range when using variabel to indexing 
+----------------------------------------
+
+def adjacentElementsProduct(inputArray) :
+INDENT
+    i = 0
+    n = []
+    t = 0
+    b = 1
+    while i < len(inputArray) - 1 :
+    INDENT
+        noob = inputArray [t] * inputArray [b]
+        t += 1
+        b += 1
+        i += 1
+        n.append(noob)
+    DEDENT
+    return n
+DEDENT
+----------------------------------------
+
+def adjacentElementsProduct(inputArray) :
+INDENT
+    i = 0
+    n = []
+    t = int(0)
+    b = int(1)
+    for i in range(len(inputArray)) :
+    INDENT
+        try :
+        INDENT
+            noob = inputArray [t] * inputArray [b]
+            t += 1
+            b += 1
+            i += 1
+            n.append(noob)
+        DEDENT
+        except IndexError :
+        INDENT
+            return n
+        DEDENT
+    DEDENT
+    return n
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+49230658_49231797_13_30
+49230658_49231797_72_82
+Title: tkinter: How to apply customized ttk stylename that is defined in one class to other classes 
+----------------------------------------
+
+def __init__(self, parent = None, * args, ** options) :
+INDENT
+    self.style = options.pop('style', ttk.Style())
+    self.bg0 = options.pop('background1', 'light grey')
+    self.bg1 = options.pop('background2', 'grey')
+    self.fg0 = options.pop('fg_link', 'black')
+    self.fg1 = options.pop('fg_text', 'white')
+    self.font = options.pop('font', tkFont.Font(family = 'Nimbus Roman No9 L',
+            size = '10', weight = 'normal'))
+
+    ttk.Frame.__init__(self, parent, style = 'self.TFrame')
+    self.__setFont()
+    self.__setStyle()
+    self.__createPages(parent)
+
+DEDENT
+----------------------------------------
+
+def __init__(self, parent, style) :
+INDENT
+    ttk.Frame.__init__(self, parent, style = 'page.TFrame')
+    b1 = ttk.Button(self, text = 'Page 1', style = 'press.TButton')
+    b1.grid(row = 0, column = 0, sticky = 'nsew')
+    b2 = ttk.Button(self, text = 'Goto Page 2?',
+        command = lambda : parent.showFrame("Page2"))
+    b2.grid(row = 1, column = 0, sticky = 'nsew')
+
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+49230658_49231797_13_30
+49230658_49231797_85_95
+Title: tkinter: How to apply customized ttk stylename that is defined in one class to other classes 
+----------------------------------------
+
+def __init__(self, parent = None, * args, ** options) :
+INDENT
+    self.style = options.pop('style', ttk.Style())
+    self.bg0 = options.pop('background1', 'light grey')
+    self.bg1 = options.pop('background2', 'grey')
+    self.fg0 = options.pop('fg_link', 'black')
+    self.fg1 = options.pop('fg_text', 'white')
+    self.font = options.pop('font', tkFont.Font(family = 'Nimbus Roman No9 L',
+            size = '10', weight = 'normal'))
+
+    ttk.Frame.__init__(self, parent, style = 'self.TFrame')
+    self.__setFont()
+    self.__setStyle()
+    self.__createPages(parent)
+
+DEDENT
+----------------------------------------
+
+def __init__(self, parent, style) :
+INDENT
+    ttk.Frame.__init__(self, parent, style = 'page.TFrame')
+    b1 = ttk.Button(self, text = 'Page 2', style = 'press.TButton')
+    b1.grid(row = 0, column = 0, sticky = 'nsew')
+    b2 = ttk.Button(self, text = 'Goto Page 1?',
+        command = lambda : parent.showFrame("Page1"))
+    b2.grid(row = 1, column = 0, sticky = 'nsew')
+
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+49230658_49231797_72_82
+49230658_49231797_85_95
+Title: tkinter: How to apply customized ttk stylename that is defined in one class to other classes 
+----------------------------------------
+
+def __init__(self, parent, style) :
+INDENT
+    ttk.Frame.__init__(self, parent, style = 'page.TFrame')
+    b1 = ttk.Button(self, text = 'Page 1', style = 'press.TButton')
+    b1.grid(row = 0, column = 0, sticky = 'nsew')
+    b2 = ttk.Button(self, text = 'Goto Page 2?',
+        command = lambda : parent.showFrame("Page2"))
+    b2.grid(row = 1, column = 0, sticky = 'nsew')
+
+DEDENT
+----------------------------------------
+
+def __init__(self, parent, style) :
+INDENT
+    ttk.Frame.__init__(self, parent, style = 'page.TFrame')
+    b1 = ttk.Button(self, text = 'Page 2', style = 'press.TButton')
+    b1.grid(row = 0, column = 0, sticky = 'nsew')
+    b2 = ttk.Button(self, text = 'Goto Page 1?',
+        command = lambda : parent.showFrame("Page1"))
+    b2.grid(row = 1, column = 0, sticky = 'nsew')
+
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+4923706_4924048_8_17
+4923706_4924258_13_19
+Title: Decorating a class method after @property 
+----------------------------------------
+
+def my_decorator(func) :
+INDENT
+    def _wrapped(* args, ** kwargs) :
+    INDENT
+        print "Calling decorated function %s" % func
+        return func(* args, ** kwargs)
+    DEDENT
+    if isinstance(func, Lazy) :
+    INDENT
+        lazy = func
+        func = lazy.method
+        return lazy.decorator(_wrapped)
+    DEDENT
+    return _wrapped
+DEDENT
+----------------------------------------
+
+def my_decorator(func) :
+INDENT
+    def _wrapped(* args, ** kwargs) :
+    INDENT
+        print "Calling decorated function %s" % func
+        return func(* args, ** kwargs)
+    DEDENT
+    return _wrapped
+
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+49239437_49239620_3_10
+49239437_49239862_4_26
+Title: Two Sum Test at Testdome for Python - How to Pass the Performance Test? 
+----------------------------------------
+
+def find_two_sum(numbers, target_sum) :
+INDENT
+    seen = {}
+    for i, num in enumerate(numbers) :
+    INDENT
+        try :
+        INDENT
+            return (seen [num], i)
+        DEDENT
+        except KeyError :
+        INDENT
+            seen [target_sum - num] = i
+        DEDENT
+    DEDENT
+    return (- 1, - 1)
+DEDENT
+----------------------------------------
+
+def find_two_sum(numbers, target_sum) :
+INDENT
+    numbers, idx = map(list, zip(* sorted(zip(numbers, range(len(numbers))))))
+    if len(numbers) < 2 :
+    INDENT
+        return (- 1, - 1)
+    DEDENT
+    i = 0
+    j = len(numbers) - 1
+    while i < j :
+    INDENT
+        s = numbers [i] + numbers [j]
+        if s == target_sum :
+        INDENT
+            return (idx [i], idx [j])
+        DEDENT
+        elif s < target_sum :
+        INDENT
+            i += 1
+        DEDENT
+        elif s > target_sum :
+        INDENT
+            j -= 1
+        DEDENT
+    DEDENT
+    return (- 1, - 1)
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+49243321_49252550_12_26
+49243321_49252550_49_54
+Title: How do you make the button have focus in wxPython ScrolledMessageDialog? 
+----------------------------------------
+
+def OnButton(self, event) :
+INDENT
+    msg = "Please select one of the options below\n"
+    msg += "Help is available if you have encountered this issue\n"
+    dlg = MessageDialog(self.panel, msg, "Message Dialog Heading")
+    dlg.ShowModal()
+    if dlg.result == wx.ID_HELP :
+    INDENT
+        print ("Help text was displayed")
+    DEDENT
+    elif dlg.result == wx.ID_OK :
+    INDENT
+        print ("Ok was Selected")
+    DEDENT
+    elif dlg.result == wx.ID_CANCEL :
+    INDENT
+        print ("Cancel was Selected")
+    DEDENT
+    else :
+    INDENT
+        print ("Dialog Exited")
+    DEDENT
+    dlg.Destroy()
+DEDENT
+----------------------------------------
+
+def OnButton(self, event) :
+INDENT
+    self.result = event.GetId()
+    if event.GetId() == wx.ID_HELP :
+    INDENT
+        wx.MessageBox('This is my help text dialog', 'Help', wx.OK | wx.ICON_INFORMATION)
+    DEDENT
+    self.Destroy()
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+49243321_49252550_28_48
+49243321_49252550_3_11
+Title: How do you make the button have focus in wxPython ScrolledMessageDialog? 
+----------------------------------------
+
+def __init__(self, parent, message, title) :
+INDENT
+    wx.Dialog.__init__(self, None, - 1, title)
+    ok = wx.Button(self, wx.ID_OK)
+    no = wx.Button(self, wx.ID_CANCEL)
+    help = wx.Button(self, wx.ID_HELP)
+    self.text = wx.StaticText(self, - 1, message)
+    hbox = wx.BoxSizer(wx.HORIZONTAL)
+    hbox.Add(self.text, 1, 0, 0)
+    hbox2 = wx.BoxSizer(wx.HORIZONTAL)
+    hbox2.Add(ok, 0, 0, 0)
+    hbox2.Add(no, 0, 0, 0)
+    hbox2.Add(help, 0, 0, 0)
+    vbox = wx.BoxSizer(wx.VERTICAL)
+    vbox.Add(hbox, 0, wx.ALIGN_CENTER)
+    vbox.Add(hbox2, 0, wx.ALIGN_CENTER)
+    self.SetSizer(vbox)
+    self.Bind(wx.EVT_BUTTON, self.OnButton)
+    self.Bind(wx.EVT_CLOSE, self.OnExit)
+    self.result = None
+    help.SetFocus()
+DEDENT
+----------------------------------------
+
+def __init__(self, parent) :
+INDENT
+    wx.Frame.__init__(self, parent, - 1, "Custom Dialog", size = (200, 100))
+    self.panel = wx.Panel(self)
+    sizer = wx.BoxSizer(wx.VERTICAL)
+    self.button = wx.Button(self.panel, label = "Dialog")
+    sizer.Add(self.button, 0, wx.EXPAND | wx.ALL, 10)
+    self.panel.SetSizer(sizer)
+    self.Bind(wx.EVT_BUTTON, self.OnButton)
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+49266218_49266364_1_10
+49266218_49266717_1_12
+Title: input in a function and remove lines from a file 
+----------------------------------------
+
+def delete_usr(usr) :
+INDENT
+    with open("Username.txt", "r") as myfile :
+    INDENT
+        lines = myfile.readlines()
+        for idx, l in enumerate(lines) :
+        INDENT
+            if usr == l.split(':') [0] :
+            INDENT
+                lines [idx] = ''
+                break
+            DEDENT
+        DEDENT
+    DEDENT
+    with open("Username.txt", "w") as myfile :
+    INDENT
+        [myfile.write(i) for i in lines]
+    DEDENT
+DEDENT
+----------------------------------------
+
+def delete_usr(usr) :
+INDENT
+    file = open("Username.txt", "r+")
+    count = 0
+    userfound = False
+    for user in file.readlines() :
+    INDENT
+
+        count += 1
+        if usr == user.strip() :
+        INDENT
+            userfound = True
+
+        DEDENT
+    DEDENT
+    file.close()
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+49266871_49267035_1_11
+49266871_49267404_9_14
+Title: Modify specific cell in Python CSV 
+----------------------------------------
+
+def GET_STOCK_COUNT() :
+INDENT
+    stock = {}
+    with open('stock.csv', 'r') as STOCK_READ :
+    INDENT
+        reader = csv.reader(STOCK_READ)
+        for line in reader :
+        INDENT
+            stock [line [0]] = {
+                'name' : line [1],
+                'stock' : line [2],
+                }
+        DEDENT
+    DEDENT
+    return stock
+DEDENT
+----------------------------------------
+
+def GET_STOCK_COUNT() :
+INDENT
+    with open('stock.csv', 'r') as STOCK_READ :
+    INDENT
+        reader = csv.reader(STOCK_READ)
+        for line in reader :
+        INDENT
+            print ("{0} - {1} - {2} in stock".format(line [0], line [1], line [2]))
+        DEDENT
+    DEDENT
+DEDENT
+----------------------------------------

@@ -1,0 +1,4552 @@
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+34684663_34710748_29_38
+34684663_34831978_5_15
+Title: Both sequential and parallel processing 
+----------------------------------------
+
+public void run () {
+    while (! stopped) {
+        try {
+            Task task = tasks.take ();
+            task.run ();
+        } catch (InterruptedException ie) {
+        }
+    }
+}
+----------------------------------------
+
+public void run () {
+    Token token = null;
+    while ((token = queue.take ()) != null) {
+        if (inProcess.putIfAbsent (token.getValue (), token) != null) {
+            queue.put (token);
+            continue;
+        }
+        processToken (token);
+        inProcess.remove (token.getValue ());
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+34684663_34755762_1_16
+34684663_34758861_6_114
+Title: Both sequential and parallel processing 
+----------------------------------------
+
+public static void main (String args []) {
+    ArrayList < Token > sameValues = new ArrayList < Token > ();
+    ArrayList < Token > distinctValues = new ArrayList < Token > ();
+    Random random = new Random ();
+    for (int i = 0;
+    i < 100; i ++) {
+        int next = random.nextInt (100);
+        Token n = new Token (i, String.valueOf (next));
+        if (next == i) {
+            sameValues.add (n);
+        } else {
+            distinctValues.add (n);
+        }
+    }
+    distinctValues.stream ().parallel ().forEach (token -> System.out.println ("Distinct: " + token.value));
+    sameValues.stream ().forEach (token -> System.out.println ("Same: " + token.value));
+}
+----------------------------------------
+
+public static void main (String [] args) {
+    final ConcurrentHashMap < String, Controller > queues = new ConcurrentHashMap < String, Controller > ();
+    final CountDownLatch latch = new CountDownLatch (NUMBER_OF_CONSUMER_THREADS);
+    final AtomicBoolean done = new AtomicBoolean (false);
+    new Thread () {
+
+        {
+            this.setDaemon (true);
+            this.setName ("Producer");
+            this.start ();
+        }
+
+        public void run () {
+            Random rand = new Random ();
+            for (int i = 0;
+            i < 1000; i ++) {
+                int order = rand.nextInt (20);
+                String key = String.valueOf (order);
+                String value = String.valueOf (rand.nextInt ());
+                Controller controller = queues.get (key);
+                if (controller == null) {
+                    controller = new Controller ();
+                    queues.put (key, controller);
+                }
+                controller.add (new Token (order, value));
+                Main.sync ++;
+            }
+            done.set (true);
+        }}
+
+    ;
+    while (queues.size () < 10) {
+        try {
+            Thread.sleep (5000);
+        } catch (InterruptedException e1) {
+            e1.printStackTrace ();
+        }
+    }
+    ExecutorService consumers = Executors.newFixedThreadPool (NUMBER_OF_CONSUMER_THREADS);
+    for (int i = 0;
+    i < NUMBER_OF_CONSUMER_THREADS; i ++) {
+        consumers.submit (new Runnable () {
+            private Random rand = new Random ();
+            public void run () {
+                String name = Thread.currentThread ().getName ();
+                try {
+                    boolean one_last_time = false;
+                    while (true) {
+                        for (Map.Entry < String, Controller > entry : queues.entrySet ()) {
+                            Controller controller = entry.getValue ();
+                            if (controller.lock (this)) {
+                                ConcurrentLinkedQueue < Token > list = controller.getList ();
+                                Token token;
+                                while ((token = list.poll ()) != null) {
+                                    try {
+                                        System.out.println (name + " processing order: " + token.getOrder () + " value: " + token.getValue ());
+                                        Thread.sleep (rand.nextInt (200));
+                                    } catch (InterruptedException e) {
+                                    }
+                                }
+                                int last = Main.sync;
+                                queues.remove (entry.getKey ());
+                                while (done.get () == false && last == Main.sync) {
+                                    Thread.yield ();
+                                }
+                                while ((token = list.poll ()) != null) {
+                                    try {
+                                        System.out.println (name + " processing order: " + token.getOrder () + " value: " + token.getValue ());
+                                        Thread.sleep (200);
+                                    } catch (InterruptedException e) {
+                                    }
+                                }
+                                controller.unlock (this);
+                            }
+                        }
+                        if (one_last_time) {
+                            return;
+                        }
+                        if (done.get ()) {
+                            one_last_time = true;
+                        }
+                    }
+                } finally {
+                    latch.countDown ();
+                }
+            }}
+
+        );
+    }
+    try {
+        latch.await ();
+    } catch (InterruptedException e) {
+        e.printStackTrace ();
+    }
+    consumers.shutdown ();
+    System.out.println ("Exiting.. remaining number of entries: " + queues.size ());
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+34684663_34758861_19_36
+34684663_34758861_58_104
+Title: Both sequential and parallel processing 
+----------------------------------------
+
+public void run () {
+    Random rand = new Random ();
+    for (int i = 0;
+    i < 1000; i ++) {
+        int order = rand.nextInt (20);
+        String key = String.valueOf (order);
+        String value = String.valueOf (rand.nextInt ());
+        Controller controller = queues.get (key);
+        if (controller == null) {
+            controller = new Controller ();
+            queues.put (key, controller);
+        }
+        controller.add (new Token (order, value));
+        Main.sync ++;
+    }
+    done.set (true);
+}
+----------------------------------------
+
+public void run () {
+    String name = Thread.currentThread ().getName ();
+    try {
+        boolean one_last_time = false;
+        while (true) {
+            for (Map.Entry < String, Controller > entry : queues.entrySet ()) {
+                Controller controller = entry.getValue ();
+                if (controller.lock (this)) {
+                    ConcurrentLinkedQueue < Token > list = controller.getList ();
+                    Token token;
+                    while ((token = list.poll ()) != null) {
+                        try {
+                            System.out.println (name + " processing order: " + token.getOrder () + " value: " + token.getValue ());
+                            Thread.sleep (rand.nextInt (200));
+                        } catch (InterruptedException e) {
+                        }
+                    }
+                    int last = Main.sync;
+                    queues.remove (entry.getKey ());
+                    while (done.get () == false && last == Main.sync) {
+                        Thread.yield ();
+                    }
+                    while ((token = list.poll ()) != null) {
+                        try {
+                            System.out.println (name + " processing order: " + token.getOrder () + " value: " + token.getValue ());
+                            Thread.sleep (200);
+                        } catch (InterruptedException e) {
+                        }
+                    }
+                    controller.unlock (this);
+                }
+            }
+            if (one_last_time) {
+                return;
+            }
+            if (done.get ()) {
+                one_last_time = true;
+            }
+        }
+    } finally {
+        latch.countDown ();
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+34684663_34758861_19_36
+34684663_34826053_12_36
+Title: Both sequential and parallel processing 
+----------------------------------------
+
+public void run () {
+    Random rand = new Random ();
+    for (int i = 0;
+    i < 1000; i ++) {
+        int order = rand.nextInt (20);
+        String key = String.valueOf (order);
+        String value = String.valueOf (rand.nextInt ());
+        Controller controller = queues.get (key);
+        if (controller == null) {
+            controller = new Controller ();
+            queues.put (key, controller);
+        }
+        controller.add (new Token (order, value));
+        Main.sync ++;
+    }
+    done.set (true);
+}
+----------------------------------------
+
+public void run () {
+    try {
+        while (true) {
+            Token t = tokenList.take ();
+            System.out.println ("consumed- " + t.orderid + " element");
+            if (t.orderid % 7 == 0) {
+                consumerForSequence.submit (new ConsumerForSequenceProcess (t));
+            } else {
+                ConsumerForParallel.submit (new ConsumerForParallelProcess (t));
+            }
+        }
+    } catch (InterruptedException e) {
+        e.printStackTrace ();
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+34684663_34758861_19_36
+34684663_34831978_5_15
+Title: Both sequential and parallel processing 
+----------------------------------------
+
+public void run () {
+    Random rand = new Random ();
+    for (int i = 0;
+    i < 1000; i ++) {
+        int order = rand.nextInt (20);
+        String key = String.valueOf (order);
+        String value = String.valueOf (rand.nextInt ());
+        Controller controller = queues.get (key);
+        if (controller == null) {
+            controller = new Controller ();
+            queues.put (key, controller);
+        }
+        controller.add (new Token (order, value));
+        Main.sync ++;
+    }
+    done.set (true);
+}
+----------------------------------------
+
+public void run () {
+    Token token = null;
+    while ((token = queue.take ()) != null) {
+        if (inProcess.putIfAbsent (token.getValue (), token) != null) {
+            queue.put (token);
+            continue;
+        }
+        processToken (token);
+        inProcess.remove (token.getValue ());
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+34684663_34758861_58_104
+34684663_34826053_12_36
+Title: Both sequential and parallel processing 
+----------------------------------------
+
+public void run () {
+    String name = Thread.currentThread ().getName ();
+    try {
+        boolean one_last_time = false;
+        while (true) {
+            for (Map.Entry < String, Controller > entry : queues.entrySet ()) {
+                Controller controller = entry.getValue ();
+                if (controller.lock (this)) {
+                    ConcurrentLinkedQueue < Token > list = controller.getList ();
+                    Token token;
+                    while ((token = list.poll ()) != null) {
+                        try {
+                            System.out.println (name + " processing order: " + token.getOrder () + " value: " + token.getValue ());
+                            Thread.sleep (rand.nextInt (200));
+                        } catch (InterruptedException e) {
+                        }
+                    }
+                    int last = Main.sync;
+                    queues.remove (entry.getKey ());
+                    while (done.get () == false && last == Main.sync) {
+                        Thread.yield ();
+                    }
+                    while ((token = list.poll ()) != null) {
+                        try {
+                            System.out.println (name + " processing order: " + token.getOrder () + " value: " + token.getValue ());
+                            Thread.sleep (200);
+                        } catch (InterruptedException e) {
+                        }
+                    }
+                    controller.unlock (this);
+                }
+            }
+            if (one_last_time) {
+                return;
+            }
+            if (done.get ()) {
+                one_last_time = true;
+            }
+        }
+    } finally {
+        latch.countDown ();
+    }
+}
+----------------------------------------
+
+public void run () {
+    try {
+        while (true) {
+            Token t = tokenList.take ();
+            System.out.println ("consumed- " + t.orderid + " element");
+            if (t.orderid % 7 == 0) {
+                consumerForSequence.submit (new ConsumerForSequenceProcess (t));
+            } else {
+                ConsumerForParallel.submit (new ConsumerForParallelProcess (t));
+            }
+        }
+    } catch (InterruptedException e) {
+        e.printStackTrace ();
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+34684663_34758861_58_104
+34684663_34831978_5_15
+Title: Both sequential and parallel processing 
+----------------------------------------
+
+public void run () {
+    String name = Thread.currentThread ().getName ();
+    try {
+        boolean one_last_time = false;
+        while (true) {
+            for (Map.Entry < String, Controller > entry : queues.entrySet ()) {
+                Controller controller = entry.getValue ();
+                if (controller.lock (this)) {
+                    ConcurrentLinkedQueue < Token > list = controller.getList ();
+                    Token token;
+                    while ((token = list.poll ()) != null) {
+                        try {
+                            System.out.println (name + " processing order: " + token.getOrder () + " value: " + token.getValue ());
+                            Thread.sleep (rand.nextInt (200));
+                        } catch (InterruptedException e) {
+                        }
+                    }
+                    int last = Main.sync;
+                    queues.remove (entry.getKey ());
+                    while (done.get () == false && last == Main.sync) {
+                        Thread.yield ();
+                    }
+                    while ((token = list.poll ()) != null) {
+                        try {
+                            System.out.println (name + " processing order: " + token.getOrder () + " value: " + token.getValue ());
+                            Thread.sleep (200);
+                        } catch (InterruptedException e) {
+                        }
+                    }
+                    controller.unlock (this);
+                }
+            }
+            if (one_last_time) {
+                return;
+            }
+            if (done.get ()) {
+                one_last_time = true;
+            }
+        }
+    } finally {
+        latch.countDown ();
+    }
+}
+----------------------------------------
+
+public void run () {
+    Token token = null;
+    while ((token = queue.take ()) != null) {
+        if (inProcess.putIfAbsent (token.getValue (), token) != null) {
+            queue.put (token);
+            continue;
+        }
+        processToken (token);
+        inProcess.remove (token.getValue ());
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+34684663_34826053_12_36
+34684663_34831978_5_15
+Title: Both sequential and parallel processing 
+----------------------------------------
+
+public void run () {
+    try {
+        while (true) {
+            Token t = tokenList.take ();
+            System.out.println ("consumed- " + t.orderid + " element");
+            if (t.orderid % 7 == 0) {
+                consumerForSequence.submit (new ConsumerForSequenceProcess (t));
+            } else {
+                ConsumerForParallel.submit (new ConsumerForParallelProcess (t));
+            }
+        }
+    } catch (InterruptedException e) {
+        e.printStackTrace ();
+    }
+}
+----------------------------------------
+
+public void run () {
+    Token token = null;
+    while ((token = queue.take ()) != null) {
+        if (inProcess.putIfAbsent (token.getValue (), token) != null) {
+            queue.put (token);
+            continue;
+        }
+        processToken (token);
+        inProcess.remove (token.getValue ());
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+34686778_34687010_1_12
+34686778_34687111_1_21
+Title: Trying to split long string and use its data for a list 
+----------------------------------------
+
+public static void main (String [] s) throws ParseException {
+    String t = "Mark.Labinson/11051985/Chicago Michael.Louis/25081972/NewYork Gabriel.Vitton/05051988/SanDiego";
+    String [] items = t.split ("/");
+    String [] nameSurname = items [0].split ("\\.");
+    String [] places = items [2].split (" ");
+    SimpleDateFormat format = new SimpleDateFormat ("ddMMyyyy");
+    System.out.println ("Name: " + nameSurname [0]);
+    System.out.println ("Surname: " + nameSurname [1]);
+    System.out.println ("Birthday: " + format.parse (items [1]));
+    System.out.println ("Birthplace: " + places [0]);
+}
+----------------------------------------
+
+public static void main (String [] args) throws ParseException {
+    String t = "Mark.Labinson/11051985/Chicago Michael.Louis/25081972/NewYork Gabriel.Vitton/05051988/SanDiego";
+    String [] userInputs = t.split (" ");
+    for (String input : userInputs) {
+        SimpleDateFormat dateInputFormat = new SimpleDateFormat ("ddMMyyyy");
+        SimpleDateFormat dateOutputFormat = new SimpleDateFormat ("dd MMM yyyy");
+        String [] fields = input.split ("/");
+        String firstName = fields [0].substring (0, fields [0].indexOf ("."));
+        String lastName = fields [0].substring (fields [0].indexOf (".") + 1);
+        Date birthdate = dateInputFormat.parse (fields [1]);
+        String birthplace = fields [2];
+        System.out.println ("Name:\t\t" + firstName);
+        System.out.println ("Surname:\t" + lastName);
+        System.out.println ("Birthday:\t" + dateOutputFormat.format (birthdate));
+        System.out.println ("Birthplace:\t" + birthplace + "\n");
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+3468987_3469086_5_24
+3468987_43464825_122_146
+Title: Executing another application from Java 
+----------------------------------------
+
+public static void main (String args []) throws InterruptedException, IOException {
+    List < String > command = new ArrayList < String > ();
+    command.add (args [0]);
+    ProcessBuilder builder = new ProcessBuilder (command);
+    Map < String, String > environ = builder.environment ();
+    final Process process = builder.start ();
+    InputStream is = process.getInputStream ();
+    InputStreamReader isr = new InputStreamReader (is);
+    BufferedReader br = new BufferedReader (isr);
+    String line;
+    while ((line = br.readLine ()) != null) {
+        System.out.println (line);
+    }
+    System.out.println ("Program terminated!");
+}
+----------------------------------------
+
+public static void main (String [] args) {
+    final String USERNAME = "abc";
+    final String PASSWORD = "abc";
+    final String host = "3.98.22.10";
+    final int port = 22;
+    HashMap < String, List < String > > result = new HashMap < String, List < String > > ();
+    exec_linux_cmd ex = new exec_linux_cmd ();
+    result = ex.exec_cmd (USERNAME, PASSWORD, host, port, cmd);
+    System.out.println ("Result ---> " + result.get ("result"));
+    System.out.println ("Error Msg ---> " + result.get ("error"));
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+34691577_34691848_1_19
+34691577_34691917_1_12
+Title: Conditionally Adding String in StringTokenizer 
+----------------------------------------
+
+private String getPartialIssueList () {
+    String listFromProperties = getPropertyValue ("propagateList");
+    StringTokenizer token = new StringTokenizer (listFromProperties, ",");
+    StringBuilder partialListString = new StringBuilder ();
+    partialListString.append (" AND ");
+    partialListString.append ("(");
+    StringBuilder orKeys = new StringBuilder ();
+    while (token.hasMoreElements ()) {
+        orKeys.append ("key=" + token.nextToken () + " OR ");
+    }
+    partialListString.append (orKeys.toString ().replaceAll (" OR $", ""));
+    partialListString.append (")");
+    return partialListString.toString ();
+}
+----------------------------------------
+
+private String getPartialIssueList () {
+    String listFromProperties = getPropertyValue ("propagateList");
+    StringTokenizer token = new StringTokenizer (listFromProperties, ",");
+    StringBuilder partialListString = new StringBuilder ();
+    partialListString.append (" AND (key=");
+    while (token.hasMoreTokens ()) {
+        partialListString.append (token.nextToken () + " OR key=" + token.nextElement ());
+    }
+    partialListString.append (")");
+    return partialListString.toString ();
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+34691577_34691848_1_19
+34691577_34692044_1_17
+Title: Conditionally Adding String in StringTokenizer 
+----------------------------------------
+
+private String getPartialIssueList () {
+    String listFromProperties = getPropertyValue ("propagateList");
+    StringTokenizer token = new StringTokenizer (listFromProperties, ",");
+    StringBuilder partialListString = new StringBuilder ();
+    partialListString.append (" AND ");
+    partialListString.append ("(");
+    StringBuilder orKeys = new StringBuilder ();
+    while (token.hasMoreElements ()) {
+        orKeys.append ("key=" + token.nextToken () + " OR ");
+    }
+    partialListString.append (orKeys.toString ().replaceAll (" OR $", ""));
+    partialListString.append (")");
+    return partialListString.toString ();
+}
+----------------------------------------
+
+private static String getPartialIssueList () {
+    String listFromProperties = "NN-09876, NN-65432, NN-65430";
+    StringTokenizer token = new StringTokenizer (listFromProperties, ",");
+    StringBuilder partialListString = new StringBuilder ();
+    partialListString.append (" AND key=");
+    while (token.hasMoreTokens ()) {
+        partialListString.append (token.nextToken ());
+        if (token.hasMoreTokens ()) {
+            partialListString.append (" OR key=");
+        } else {
+            break;
+        }
+    }
+    return partialListString.toString ();
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+34691577_34691917_1_12
+34691577_34692044_1_17
+Title: Conditionally Adding String in StringTokenizer 
+----------------------------------------
+
+private String getPartialIssueList () {
+    String listFromProperties = getPropertyValue ("propagateList");
+    StringTokenizer token = new StringTokenizer (listFromProperties, ",");
+    StringBuilder partialListString = new StringBuilder ();
+    partialListString.append (" AND (key=");
+    while (token.hasMoreTokens ()) {
+        partialListString.append (token.nextToken () + " OR key=" + token.nextElement ());
+    }
+    partialListString.append (")");
+    return partialListString.toString ();
+}
+----------------------------------------
+
+private static String getPartialIssueList () {
+    String listFromProperties = "NN-09876, NN-65432, NN-65430";
+    StringTokenizer token = new StringTokenizer (listFromProperties, ",");
+    StringBuilder partialListString = new StringBuilder ();
+    partialListString.append (" AND key=");
+    while (token.hasMoreTokens ()) {
+        partialListString.append (token.nextToken ());
+        if (token.hasMoreTokens ()) {
+            partialListString.append (" OR key=");
+        } else {
+            break;
+        }
+    }
+    return partialListString.toString ();
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+34694104_34694556_3_25
+34694104_34695124_1_29
+Title: Calculate the total number of country names in the queue that begins with the same letter 
+----------------------------------------
+
+public static void main (String [] args) {
+    Queue myQueue = new Queue (10);
+    ArrayList < String > myList = new ArrayList < String > ();
+    while (! myQueue.isEmpty ()) {
+        myList.add ((String) myQueue.dequeue ());
+    }
+    TreeMap < Character, Integer > counts = new TreeMap < Character, Integer > ();
+    for (int i = 0;
+    i < myList.size (); i ++) {
+        String country = myList.get (i);
+        Character first = Character.toUpperCase (country.charAt (0));
+        if (counts.get (first) == null) {
+            counts.put (first, 0);
+        }
+        counts.put (first, counts.get (first) + 1);
+    }
+    TreeSet < Character > keySet = new TreeSet < Character > (counts.keySet ());
+    Iterator < Character > iterator = keySet.iterator ();
+    while (iterator.hasNext ()) {
+        Character key = iterator.next ();
+        System.out.println ("Total number of countries start with " + key + " : " + counts.get (key));
+    }
+}
+----------------------------------------
+
+public static void main (String [] args) {
+    List < String > listNames = new ArrayList < > ();
+    listNames.add ("Austria");
+    listNames.add ("Russia");
+    listNames.add ("Brasil");
+    listNames.add ("Argentina");
+    listNames.add ("Ukraine");
+    listNames.add ("Belarus");
+    listNames.add ("Litvia");
+    listNames.add ("Livia");
+    listNames.add ("Italia");
+    Map < String, Integer > nameCount = new HashMap < > ();
+    for (int i = 0;
+    i < listNames.size (); i ++) {
+        int count = 0;
+        for (int j = 0;
+        j < listNames.size (); j ++) {
+            if (listNames.get (i).substring (0, 1).equals (listNames.get (j).substring (0, 1))) {
+                ++ count;
+            }
+        }
+        nameCount.put (listNames.get (i).substring (0, 1), count);
+    }
+    for (Map.Entry < String, Integer > set : nameCount.entrySet ()) {
+        System.out.println (set.getKey () + " : " + set.getValue ());
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+34694206_34694299_1_17
+34694206_34694300_3_19
+Title: Why this piece of code does not work? 
+----------------------------------------
+
+public static void main (String [] args) throws Exception {
+    File f = new File ("abc.txt");
+    FileReader fr = new FileReader (f);
+    int count = 0;
+    while (fr.read () != - 1) {
+        count ++;
+    }
+    fr.close ();
+    FileWriter fw = new FileWriter (f);
+    while (count -- > 0) {
+        fw.write ('*');
+    }
+    fw.flush ();
+    fw.close ();
+}
+----------------------------------------
+
+public static void main (String [] args) throws Exception {
+    File f = new File ("/Users/abafna/coding/src/abc.txt");
+    FileReader fr = new FileReader (f);
+    int count = 0;
+    while (fr.read () != - 1) {
+        count ++;
+    }
+    fr.close ();
+    System.out.println (count);
+    FileWriter fw = new FileWriter (f);
+    while (count -- > 0) {
+        fw.write ('*');
+    }
+    fw.flush ();
+    fw.close ();
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+34695542_34695801_3_34
+34695542_34695812_2_16
+Title: "Array initialization Java" 
+----------------------------------------
+
+public static void main (String [] args) {
+    int i;
+    double [] alpha = new double [50];
+    for (i = 0; i < 50; i ++) {
+        if (i <= 24) {
+            alpha [i] = i * i;
+        }
+        if (i > 24) {
+            alpha [i] = 3 * i;
+        }
+    }
+    for (int j = 0;
+    j < 50; j ++) {
+        do {
+            System.out.print (alpha [j]);
+        } while (j < 10);
+        System.out.print ("\n");
+        do {
+            System.out.print (alpha [j]);
+        } while (j >= 10 && j < 20);
+        System.out.print ("\n");
+    }
+}
+----------------------------------------
+
+public static void main (String [] args) {
+    double [] alpha = new double [50];
+    for (int i = 0;
+    i < alpha.length; i ++) {
+        if (i <= 24) {
+            alpha [i] = i * i;
+        } else if (i >= 25) {
+            alpha [i] = 3 * i;
+        }
+
+        System.out.print ("Index: " + i + " value: " + alpha [i] + "\n");
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+34698874_34699065_14_30
+34698874_34699065_32_48
+Title: Expression results in the default case when called directly from object versus passed in as a parameter 
+----------------------------------------
+
+public static CardGame create (final int gameId, final GameConnection connection, final GameSettings settings, List < Card > cards) {
+    switch (gameId) {
+        case THIRTEEN :
+            System.out.println ("Method Type 1, GameId=[" + gameId + "] - THIRTEEN");
+            return new ThirteenCardGame (connection, (ThirteenGameSettings) settings, cards);
+        case HEARTS :
+            System.out.println ("Method Type 1, GameId=[" + gameId + "] - HEARTS");
+            return new HeartsCardGame (connection, (HeartsGameSettings) settings, cards);
+        default :
+            System.out.println ("Method Type 1, GameId=[" + gameId + "] - (DEFAULT)");
+            return null;
+    }
+}
+----------------------------------------
+
+public static CardGame create (final Deal deal, final GameConnection connection, final GameSettings settings) {
+    switch (deal.getGameId ()) {
+        case THIRTEEN :
+            System.out.println ("Method Type 2, GameId=[" + deal.getGameId () + "] - THIRTEEN");
+            ThirteenDeal thirteenDeal = (ThirteenDeal) deal;
+            return new ThirteenCardGame (connection, (ThirteenGameSettings) settings, thirteenDeal.getCards ());
+        case HEARTS :
+            System.out.println ("Method Type 2, GameId=[" + deal.getGameId () + "] - HEARTS");
+            return new HeartsCardGame (connection, (HeartsGameSettings) settings, deal.getCards ());
+        default :
+            System.out.println ("Method Type 2, GameId=[" + deal.getGameId () + "] - (DEFAULT)");
+            return null;
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+34713184_34713265_1_14
+34713184_34713748_1_20
+Title: "How to check if one value in a 1-D array is at least one and all others are zero?" 
+----------------------------------------
+
+public boolean winningConditions () {
+    int noPlayersWithMoney = 0;
+    for (int i = 0;
+    i < playerCount.length; i ++) {
+        if (playerCount [i] > 0) {
+            noPlayersWithMoney ++;
+        }
+    }
+    if (noPlayersWithMoney == 1) return true;
+    else return false;
+
+}
+----------------------------------------
+
+public boolean winningConditions () {
+    int noPlayersWithMoney = 0;
+    int winner = 0;
+    for (int i = 0;
+    i < playerCount.length; i ++) {
+        if (playerCount [i] > 0) {
+            noPlayersWithMoney ++;
+            winner = playerCount [i];
+        }
+    }
+    if (noPlayersWithMoney == 1) {
+        System.out.println ("Player " + winner + " has won the game!");
+        return true;
+    } else return false;
+
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+34716587_34731453_36_83
+34716587_34734496_46_84
+Title: Draw PieChart with triangle in the middle of PieChart slice 
+----------------------------------------
+
+protected void paintComponent (Graphics g) {
+    Graphics2D g2d = (Graphics2D) g;
+    super.paintComponent (g2d);
+    this.setBackground (Color.WHITE);
+    g2d.setRenderingHint (RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+    int upperLeftX = 20;
+    int upperLeftY = 20;
+    int r = 100;
+    int startAngle = 0;
+    double curValue = 0.0;
+    for (int i = 0;
+    i < slices.length; i ++) {
+        startAngle = (int) curValue;
+        int arcAngle = (int) slices [i].value;
+        g2d.setColor (slices [i].color);
+        g2d.fillArc (upperLeftX, upperLeftY, r * 2, r * 2, startAngle, arcAngle);
+        g2d.setPaint (Color.BLACK);
+        double qi = curValue + slices [i].value / 2;
+        int x = upperLeftX + r + (int) (Math.cos (qi * Math.PI / 180) * r);
+        int y = upperLeftY + r - (int) (Math.sin (qi * Math.PI / 180) * r);
+        int x1 = x - (int) (7 * Math.sin (qi * Math.PI / 180));
+        int y1 = y - (int) (7 * Math.cos (qi * Math.PI / 180));
+        int x2 = x + (int) (7 * Math.sin (qi * Math.PI / 180));
+        int y2 = y + (int) (7 * Math.cos (qi * Math.PI / 180));
+        int x3 = upperLeftX + r + (int) (Math.cos (qi * Math.PI / 180) * (r + 12));
+        int y3 = upperLeftY + r - (int) (Math.sin (qi * Math.PI / 180) * (r + 12));
+        Polygon p = new Polygon (new int [] {x1, x2, x3}, new int [] {y1, y2, y3}, 3);
+        g2d.draw (p);
+        g2d.fill (p);
+        curValue += slices [i].value;
+    }
+}
+----------------------------------------
+
+protected void paintComponent (Graphics g) {
+    Graphics2D g2d = (Graphics2D) g;
+    super.paintComponent (g2d);
+    g2d.setRenderingHint (RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+    g2d.setColor (Color.LIGHT_GRAY);
+    g2d.fillRect (START, START, SIZE, SIZE);
+    double total = 0d;
+    for (Slice slice : slices) {
+        total += slice.getValue ();
+    }
+    double startAngle = START_DEG;
+    double arcAngle, centerAngle;
+    double x, y;
+    for (Slice slice : slices) {
+        arcAngle = (slice.getValue () * 360 / total);
+        g2d.setColor (slice.getColor ());
+        g2d.fill (new Arc2D.Double (START, START, SIZE, SIZE, startAngle, arcAngle, Arc2D.PIE));
+        centerAngle = Math.toRadians (((startAngle - START_DEG) + arcAngle / 2));
+        x = (START + SIZE / 2 * (1 - Math.sin (centerAngle)));
+        y = (START + SIZE / 2 * (1 - Math.cos (centerAngle)));
+        AffineTransform trans = AffineTransform.getTranslateInstance (x - x0, y - y0);
+        AffineTransform rot = AffineTransform.getRotateInstance (- centerAngle, x, y);
+        Shape s = trans.createTransformedShape (poly);
+        s = rot.createTransformedShape (s);
+        g2d.setColor (slice.getColor ().darker ());
+        g2d.fill (s);
+        startAngle += arcAngle;
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+34720037_34720434_1_11
+34720037_34721164_1_11
+Title: Handle success request return with Android Async Http 
+----------------------------------------
+
+@Override
+public void onSuccess (JSONObject jsonObject) {
+    String token = "";
+    if (jsonObject.has ("token")) {
+        token = jsonObject.optString ("token");
+        Intent i = new Intent (context, LoggedActivity.class);
+        context.startActivity (i);
+    }
+}
+----------------------------------------
+
+@Override
+public void onSuccess (JSONObject jsonObject) {
+    String token = "";
+    if (jsonObject.has ("token")) {
+        token = jsonObject.optString ("token");
+        Intent i = new Intent (context, LoggedActivity.class);
+        i.putExtra ("token", token);
+        startActivity (i);
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+34721351_34721487_1_16
+34721351_34721659_4_20
+Title: Creating java code to prompt user for password and allow only 3 attempts then quit the programme 
+----------------------------------------
+
+public static void main (String [] args) {
+    final String PASSWORD = "Test";
+    Scanner sc = new Scanner (System.in);
+    int attempts = 3;
+    String password = "";
+    while (attempts -- > 0 && ! PASSWORD.equals (password)) {
+        System.out.print ("Enter your password: ");
+        password = sc.nextLine ();
+        if (password.equals (PASSWORD)) System.out.println ("Welcome");
+        else System.out.println ("Incorrect. Number of attempts remaining: " + attempts);
+
+    }
+}
+----------------------------------------
+
+public static void main (String [] args) {
+    final String PASSWORD = "Test";
+    boolean wrongPass = true;
+    for (int passAttempts = 0;
+    passAttempts < 3 && wrongPass; passAttempts ++) {
+        System.out.print ("\nEnter Your Password: ");
+        Scanner input = new Scanner (System.in);
+        String inputPass = input.nextLine ();
+        if (! (inputPass.equals (PASSWORD))) {
+            System.out.println ("\nWrong Password Try Again");
+        } else {
+            System.out.println ("\nWelcome!");
+            wrongPass = false;
+        }
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+3472699_3496294_23_31
+3472699_8674009_24_48
+Title: "JSTL fmt library throws 500 error requires sessions enabled?" 
+----------------------------------------
+
+public void init (FilterConfig config) throws ServletException {
+    ServletContext ctx = config.getServletContext ();
+    for (String param : JSTL_CONFIG_PARAMS) {
+        String value = ctx.getInitParameter (param);
+        if (value != null) {
+            this.jstlConfig.put (param, value);
+        }
+    }
+}
+----------------------------------------
+
+public void init (FilterConfig config) throws ServletException {
+    if (logger ().isDebugEnabled ()) {
+        logger ().debug ("init() called");
+    }
+    this.config = config;
+    if (logger ().isInfoEnabled ()) {
+        Enumeration < String > initParamNames = config.getInitParameterNames ();
+        while (initParamNames.hasMoreElements ()) {
+            logger ().info ("init(): attributes defined in the filter configuration...");
+            String paramName = initParamNames.nextElement ();
+            String paramValue = config.getInitParameter (paramName);
+            logger ().info ("init(): " + paramName + " = " + paramValue);
+        }
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+34733460_34733630_1_12
+34733460_34733671_1_12
+Title: How do I verify the validity of a Sudoku grid in Java? 
+----------------------------------------
+
+public static boolean isValidSquare (int [] [] grid, int i, int j) {
+    int [] [] square = new int [3] [3];
+    int row = 0;
+    int column = 0;
+    for (int x = i;
+    x < i + 3; x ++) {
+        for (int y = j;
+        y < j + 3; y ++) {
+            square [row] [column] = grid [x] [j];
+            column ++;
+        }
+        row ++;
+    }
+    return true;
+}
+----------------------------------------
+
+public static boolean isValidSquare (int [] [] grid, int i, int j) {
+    int [] [] square = new int [3] [3];
+    int row = 0;
+    int column = 0;
+    for (int x = i;
+    x < i + 3; x ++) {
+        for (int y = j;
+        y < j + 3; y ++) {
+            square [row] [column] = grid [x] [j];
+            column ++;
+        }
+        row ++;
+    }
+    return true;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+34748101_34761131_10_28
+34748101_50089034_1_23
+Title: Showing NatTable context menu 
+----------------------------------------
+
+public void run (NatTable natTable, MouseEvent event) {
+    int columnPosition = natTable.getColumnPositionByX (event.x);
+    int rowPosition = natTable.getRowPositionByY (event.y);
+    ILayerCell cell = natTable.getCellByPosition (columnPosition, rowPosition);
+    if (! cell.getDisplayMode ().equals (DisplayMode.SELECT)) {
+        natTable.doCommand (new SelectCellCommand (natTable, columnPosition, rowPosition, false, false));
+    }
+    menu.setData (MenuItemProviders.NAT_EVENT_DATA_KEY, event.data);
+    menu.setVisible (true);
+}
+----------------------------------------
+
+@Override
+public void run (NatTable natTable, MouseEvent event) {
+    if (selectionLayer.getSelectedRowCount () <= 1) {
+        int colPosition = LayerUtil.convertColumnPosition (natTable, natTable.getColumnPositionByX (event.x), selectionLayer);
+        int rowPosition = LayerUtil.convertRowPosition (natTable, natTable.getRowPositionByY (event.y), selectionLayer);
+        natTable.doCommand (new SelectCellCommand (selectionLayer, colPosition, rowPosition, false, false));
+    }
+    Display.getDefault ().asyncExec (new Runnable () {
+        public void run () {
+            menu.setData (event.data);
+            menu.setVisible (true);
+        }}
+
+    );
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+34748495_34751497_64_73
+34748495_34751497_84_93
+Title: Service times directly proportional to number of threads 
+----------------------------------------
+
+public Long call () {
+    long time = System.nanoTime ();
+    long x = 0;
+    for (int i = 0;
+    i < 15_000_000; i ++) x ^= ThreadLocalRandom.current ().nextLong ();
+
+    if (x == 0) throw new IllegalStateException ();
+
+    return System.nanoTime () - time;
+}
+----------------------------------------
+
+public Long call () {
+    long time = System.nanoTime ();
+    String s = "";
+    for (int i = 0;
+    i < 10_000; i ++) s += (int) (ThreadLocalRandom.current ().nextDouble () * 13);
+
+    if (s.length () == 10_000) throw new IllegalStateException ();
+
+    return System.nanoTime () - time;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+34779735_34782121_27_111
+34779735_34830994_23_111
+Title: Linking JavaFX 8 TableView selections 
+----------------------------------------
+
+public void start (Stage primaryStage) throws Exception {
+    ObservableList < Item > data1 = FXCollections.observableArrayList ();
+    ObservableList < Item > data2 = FXCollections.observableArrayList ();
+    String [] names = new String [] {"Wood", "Paper", "Scissors"};
+    for (int i = 1;
+    i < 15; i ++) {
+        Item j = new Item ();
+        j.setName (names [(int) (Math.random () * names.length)]);
+        j.setNn ((int) (Math.random () * 100));
+        if (i < 5) data1.add (j);
+        else data2.add (j);
+
+    }
+    TableColumn < Item, String > nameCol = new TableColumn < > ("Name");
+    TableColumn < Item, Integer > nnCol = new TableColumn < > ("nn");
+    nameCol.setCellValueFactory (new PropertyValueFactory < Item, String > ("Name"));
+    nnCol.setCellValueFactory (new PropertyValueFactory < Item, Integer > ("nn"));
+    TableColumn < Item, String > nameCol2 = new TableColumn < > ("Name");
+    TableColumn < Item, Integer > nnCol2 = new TableColumn < > ("nn");
+    nameCol2.setCellValueFactory (new PropertyValueFactory < Item, String > ("Name"));
+    nnCol2.setCellValueFactory (new PropertyValueFactory < Item, Integer > ("nn"));
+    table1.itemsProperty ().setValue (data1);
+    table1.getColumns ().addAll (nameCol, nnCol);
+    table2.itemsProperty ().setValue (data2);
+    table2.getColumns ().addAll (nameCol2, nnCol2);
+    table1.getSelectionModel ().setSelectionMode (SelectionMode.MULTIPLE);
+    table2.getSelectionModel ().setSelectionMode (SelectionMode.MULTIPLE);
+    table2.getSelectionModel ().selectedItemProperty ().addListener ((ChangeListener < Item >) (observable, oldValue, newValue) -> {
+        if (adapting) return;
+
+        try {
+            adapting = true;
+            selectCurrent (table2);
+            selectOthers (table2, table1);
+        } finally {
+            adapting = false;
+        }
+    });
+    table1.getSelectionModel ().selectedItemProperty ().addListener ((ChangeListener < Item >) (observable, oldValue, newValue) -> {
+        if (adapting) return;
+
+        try {
+            adapting = true;
+            selectCurrent (table1);
+            selectOthers (table1, table2);
+        } finally {
+            adapting = false;
+        }
+    });
+    VBox myPane = new VBox ();
+    myPane.setAlignment (Pos.CENTER);
+    myPane.setPadding (new Insets (12));
+    myPane.setSpacing (12);
+    myPane.setMaxHeight (500);
+    myPane.getChildren ().addAll (table1, table2);
+    Scene myScene = new Scene (myPane);
+    primaryStage.setScene (myScene);
+    primaryStage.show ();
+}
+----------------------------------------
+
+public void start (Stage primaryStage) throws Exception {
+    ObservableList < Item > data1 = FXCollections.observableArrayList ();
+    ObservableList < Item > data2 = FXCollections.observableArrayList ();
+    String [] names = new String [] {"Wood", "Paper", "Scissors"};
+    for (int i = 1;
+    i < 15; i ++) {
+        Item j = new Item ();
+        j.setName (names [(int) (Math.random () * names.length)]);
+        j.setNn ((int) (Math.random () * 100));
+        if (i < 5) data1.add (j);
+        else data2.add (j);
+
+    }
+    TableColumn < Item, String > nameCol = new TableColumn < > ("Name");
+    TableColumn < Item, Integer > nnCol = new TableColumn < > ("nn");
+    nameCol.setCellValueFactory (new PropertyValueFactory < Item, String > ("Name"));
+    nnCol.setCellValueFactory (new PropertyValueFactory < Item, Integer > ("nn"));
+    TableColumn < Item, String > nameCol2 = new TableColumn < > ("Name");
+    TableColumn < Item, Integer > nnCol2 = new TableColumn < > ("nn");
+    nameCol2.setCellValueFactory (new PropertyValueFactory < Item, String > ("Name"));
+    nameCol2.setCellFactory (column -> {
+        return new TableCell < Item, String > () {
+            protected void updateItem (String n, boolean empty) {
+                super.updateItem (n, empty);
+                System.out.println ("string : " + n);
+                if (n == null || empty) {
+                    setText (null);
+                    setStyle ("");
+                } else {
+                    setText (n);
+                    if (n.equals (selectedName)) {
+                        setStyle ("-fx-background-color: yellow");
+                    }
+                }
+            }}
+
+        ;
+    });
+    nnCol2.setCellValueFactory (new PropertyValueFactory < Item, Integer > ("nn"));
+    TableView < Item > table1 = new TableView < > ();
+    table1.itemsProperty ().setValue (data1);
+    table1.getColumns ().addAll (nameCol, nnCol);
+    TableView < Item > table2 = new TableView < > ();
+    table2.itemsProperty ().setValue (data2);
+    table2.getColumns ().addAll (nameCol2, nnCol2);
+    table1.getSelectionModel ().selectedItemProperty ().addListener (new ChangeListener < Item > () {
+        @Override
+        public void changed (ObservableValue < ? extends Item > observable, Item oldValue, Item newValue) {
+            selectedName = newValue.getName ().toString ();
+            System.out.println (selectedName);
+        }}
+
+    );
+    table2.getSelectionModel ().selectedItemProperty ().addListener (new ChangeListener < Item > () {
+        @Override
+        public void changed (ObservableValue < ? extends Item > observable, Item oldValue, Item newValue) {
+            selectedName = newValue.getName ().toString ();
+            System.out.println (selectedName);
+        }}
+
+    );
+    VBox myPane = new VBox ();
+    myPane.setAlignment (Pos.CENTER);
+    myPane.setPadding (new Insets (12));
+    myPane.setSpacing (12);
+    myPane.setMaxHeight (500);
+    myPane.getChildren ().addAll (table1, table2);
+    Scene myScene = new Scene (myPane);
+    primaryStage.setScene (myScene);
+    primaryStage.show ();
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+34782562_34782724_20_29
+34782562_34782791_26_35
+Title: Cannot find the error with my 2D array java code 
+----------------------------------------
+
+public String toString () {
+    String output = " ";
+    for (int row = 0;
+    row < songList.length; row ++) {
+        for (int col = 0;
+        col < songList [row].length; col ++) {
+            output += (songList [row] [col]);
+        }
+        output += "\n";
+    }
+    return output;
+}
+----------------------------------------
+
+public String toString () {
+    String output = " ";
+    for (int row = 0;
+    row < songList.length; row ++) {
+        for (int col = 0;
+        col < songList [row].length; col ++) {
+            output += (songList [row] [col]);
+        }
+        output += "\n";
+    }
+    return output;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+34782562_34782724_5_18
+34782562_34782791_5_23
+Title: Cannot find the error with my 2D array java code 
+----------------------------------------
+
+public Jukebox () {
+    songList [0] [0] = new Song ("Jet Airliner", 5);
+    songList [0] [1] = new Song ("Slide", 4);
+    songList [0] [2] = new Song ("Tom Sawyer", 3);
+    songList [0] [3] = new Song ("Purple Rain", 2);
+    songList [1] [0] = new Song ("Sing a Song", 1);
+    songList [1] [1] = new Song ("Baba O'Riley", 5);
+    songList [1] [2] = new Song ("Jumper", 4);
+    songList [1] [3] = new Song ("Car Wash", 3);
+    songList [2] [0] = new Song ("Kung Fu Fighting", 2);
+    songList [2] [1] = new Song ("Right as Rain", 4);
+    songList [2] [2] = new Song ("Beat It", 5);
+    songList [2] [3] = new Song ("Bust a Move", 4);
+}
+----------------------------------------
+
+public Jukebox () {
+    songList = new Song [3] [4];
+    songList [0] [0] = new Song ("Jet Airliner", 5);
+    songList [0] [1] = new Song ("Slide", 4);
+    songList [0] [2] = new Song ("Tom Sawyer", 3);
+    songList [0] [3] = new Song ("Purple Rain", 2);
+    songList [1] [0] = new Song ("Sing a Song", 1);
+    songList [1] [1] = new Song ("Baba O'Riley", 5);
+    songList [1] [2] = new Song ("Jumper", 4);
+    songList [1] [3] = new Song ("Car Wash", 3);
+    songList [2] [0] = new Song ("Kung Fu Fighting", 2);
+    songList [2] [1] = new Song ("Right as Rain", 4);
+    songList [2] [2] = new Song ("Beat It", 5);
+    songList [2] [3] = new Song ("Bust a Move", 4);
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+34783350_34783554_1_18
+34783350_34783604_1_10
+Title: Java Algorithm regarding taking array of String and Integers to 
+----------------------------------------
+
+public static String [] stringHeads (int [] p, String s) {
+    String [] rad = new String [p.length];
+    int e = 0;
+    for (int index = 0;
+    index < p.length; index ++) {
+        e = p [index];
+        if (e > s.length ()) {
+            rad [index] = s;
+        } else {
+            rad [index] = s.substring (0, e);
+        }
+    }
+    return rad;
+}
+----------------------------------------
+
+public static String [] stringHeads (int [] p, String s) {
+    String [] rad = new String [p.length];
+    for (int de = 0;
+    de < p.length; de ++) {
+        if (p [de] < s.length ()) rad [de] = s.substring (0, p [de]);
+        else rad [de] = s;
+
+    }
+    return rad;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+34783350_34783554_1_18
+34783350_34783971_1_14
+Title: Java Algorithm regarding taking array of String and Integers to 
+----------------------------------------
+
+public static String [] stringHeads (int [] p, String s) {
+    String [] rad = new String [p.length];
+    int e = 0;
+    for (int index = 0;
+    index < p.length; index ++) {
+        e = p [index];
+        if (e > s.length ()) {
+            rad [index] = s;
+        } else {
+            rad [index] = s.substring (0, e);
+        }
+    }
+    return rad;
+}
+----------------------------------------
+
+public static String [] stringHeads (int [] p, String s) {
+    String [] rad = new String [p.length];
+    int e = 0;
+    for (int b : p) {
+        if (b <= s.length ()) {
+            rad [e] = s.substring (0, b);
+        }
+        e ++;
+    }
+    return rad;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+34783350_34783604_1_10
+34783350_34783971_1_14
+Title: Java Algorithm regarding taking array of String and Integers to 
+----------------------------------------
+
+public static String [] stringHeads (int [] p, String s) {
+    String [] rad = new String [p.length];
+    for (int de = 0;
+    de < p.length; de ++) {
+        if (p [de] < s.length ()) rad [de] = s.substring (0, p [de]);
+        else rad [de] = s;
+
+    }
+    return rad;
+}
+----------------------------------------
+
+public static String [] stringHeads (int [] p, String s) {
+    String [] rad = new String [p.length];
+    int e = 0;
+    for (int b : p) {
+        if (b <= s.length ()) {
+            rad [e] = s.substring (0, b);
+        }
+        e ++;
+    }
+    return rad;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+34783815_34825244_6_18
+34783815_34898294_1_32
+Title: Java Recursive MergeSort for ArrayLists 
+----------------------------------------
+
+private LinkedList < Comparable > merge (final Deque < Comparable > left, final Deque < Comparable > right) {
+    final LinkedList < Comparable > merged = new LinkedList < > ();
+    while (! left.isEmpty () && ! right.isEmpty ()) {
+        if (left.peek ().compareTo (right.peek ()) <= 0) {
+            merged.add (left.pop ());
+        } else {
+            merged.add (right.pop ());
+        }
+    }
+    merged.addAll (left);
+    merged.addAll (right);
+    return merged;
+}
+----------------------------------------
+
+private static void merge (ArrayList < Comparable > a) {
+    if (a.size () <= 1) return;
+
+    int mid = a.size () / 2;
+    ArrayList < Comparable > left = new ArrayList < Comparable > ();
+    ArrayList < Comparable > right = new ArrayList < Comparable > ();
+    for (int i = 0;
+    i < mid; i ++) left.add (a.remove (0));
+
+    while (a.size () != 0) right.add (a.remove (0));
+
+    merge (left);
+    merge (right);
+    while (left.size () != 0 && right.size () != 0) {
+        if (left.get (0).compareTo (right.get (0)) < 0) a.add (left.remove (0));
+        else a.add (right.remove (0));
+
+    }
+    while (left.size () != 0) a.add (left.remove (0));
+
+    while (right.size () != 0) a.add (right.remove (0));
+
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+34783815_34825244_6_18
+34783815_53138071_1_15
+Title: Java Recursive MergeSort for ArrayLists 
+----------------------------------------
+
+private LinkedList < Comparable > merge (final Deque < Comparable > left, final Deque < Comparable > right) {
+    final LinkedList < Comparable > merged = new LinkedList < > ();
+    while (! left.isEmpty () && ! right.isEmpty ()) {
+        if (left.peek ().compareTo (right.peek ()) <= 0) {
+            merged.add (left.pop ());
+        } else {
+            merged.add (right.pop ());
+        }
+    }
+    merged.addAll (left);
+    merged.addAll (right);
+    return merged;
+}
+----------------------------------------
+
+private static List < Object > merge (final List < Object > left, final List < Object > right) {
+    printArr ("left", left);
+    printArr ("Right", right);
+    final List < Object > merged = new ArrayList < > ();
+    while (! left.isEmpty () && ! right.isEmpty ()) {
+        if (left.get (0).getValue () - right.get (0).getValue () <= 0) {
+            merged.add (left.remove (0));
+        } else {
+            merged.add (right.remove (0));
+        }
+    }
+    merged.addAll (left);
+    merged.addAll (right);
+    return merged;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+34783815_34898294_1_32
+34783815_53138071_1_15
+Title: Java Recursive MergeSort for ArrayLists 
+----------------------------------------
+
+private static void merge (ArrayList < Comparable > a) {
+    if (a.size () <= 1) return;
+
+    int mid = a.size () / 2;
+    ArrayList < Comparable > left = new ArrayList < Comparable > ();
+    ArrayList < Comparable > right = new ArrayList < Comparable > ();
+    for (int i = 0;
+    i < mid; i ++) left.add (a.remove (0));
+
+    while (a.size () != 0) right.add (a.remove (0));
+
+    merge (left);
+    merge (right);
+    while (left.size () != 0 && right.size () != 0) {
+        if (left.get (0).compareTo (right.get (0)) < 0) a.add (left.remove (0));
+        else a.add (right.remove (0));
+
+    }
+    while (left.size () != 0) a.add (left.remove (0));
+
+    while (right.size () != 0) a.add (right.remove (0));
+
+}
+----------------------------------------
+
+private static List < Object > merge (final List < Object > left, final List < Object > right) {
+    printArr ("left", left);
+    printArr ("Right", right);
+    final List < Object > merged = new ArrayList < > ();
+    while (! left.isEmpty () && ! right.isEmpty ()) {
+        if (left.get (0).getValue () - right.get (0).getValue () <= 0) {
+            merged.add (left.remove (0));
+        } else {
+            merged.add (right.remove (0));
+        }
+    }
+    merged.addAll (left);
+    merged.addAll (right);
+    return merged;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+34783887_34783972_4_22
+34783887_34784039_1_19
+Title: How to get the maximum and minimum number in Java? 
+----------------------------------------
+
+public static void main (String [] args) {
+    Scanner in = new Scanner (System.in);
+    int [] inputtedNumber = new int [20];
+    for (int num = 0;
+    num < 20; num += 1) {
+        inputtedNumber [num] = in.nextInt ();
+    }
+    int maxNum = Integer.MIN_VALUE, minNum = Integer.MAX_VALUE;
+    for (int checkNum = 0;
+    checkNum < 20; checkNum += 1) {
+        maxNum = Math.max (inputtedNumber [checkNum], maxNum);
+        minNum = Math.min (inputtedNumber [checkNum], minNum);
+    }
+    System.out.println ("The maximum number: " + maxNum);
+    System.out.println ("The minimum number: " + minNum);
+}
+----------------------------------------
+
+public static void main (String [] args) {
+    Scanner in = new Scanner (System.in);
+    int [] inputtedNumber = new int [20];
+    for (int num = 0;
+    num < 20; num += 1) {
+        inputtedNumber [num] = in.nextInt ();
+    }
+    int maxNum = inputtedNumber [0], minNum = inputtedNumber [0];
+    for (int checkNum = 0;
+    checkNum < 20; checkNum += 1) {
+        maxNum = Math.max (maxNum, inputtedNumber [checkNum]);
+        minNum = Math.min (minNum, inputtedNumber [checkNum]);
+    }
+    System.out.println ("The maximum number: " + maxNum);
+    System.out.println ("The minimum number: " + minNum);
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+34783887_34783972_4_22
+34783887_37162230_5_18
+Title: How to get the maximum and minimum number in Java? 
+----------------------------------------
+
+public static void main (String [] args) {
+    Scanner in = new Scanner (System.in);
+    int [] inputtedNumber = new int [20];
+    for (int num = 0;
+    num < 20; num += 1) {
+        inputtedNumber [num] = in.nextInt ();
+    }
+    int maxNum = Integer.MIN_VALUE, minNum = Integer.MAX_VALUE;
+    for (int checkNum = 0;
+    checkNum < 20; checkNum += 1) {
+        maxNum = Math.max (inputtedNumber [checkNum], maxNum);
+        minNum = Math.min (inputtedNumber [checkNum], minNum);
+    }
+    System.out.println ("The maximum number: " + maxNum);
+    System.out.println ("The minimum number: " + minNum);
+}
+----------------------------------------
+
+public static void main (String [] args) {
+    MinMax mm = new MinMax ();
+    Scanner scanner = new Scanner (System.in);
+    for (int i = 0;
+    i < 5; i ++) {
+        System.out.printf ("Geef getal %d: ", i + 1);
+        int getal = Integer.parseInt (scanner.nextLine ());
+        mm.evalueerGetal (getal);
+    }
+    System.out.printf ("Het grootste getal was %d.\n", mm.getMaximum ());
+    System.out.printf ("Het kleinste getal was %d.\n", mm.getMinimum ());
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+34783887_34784039_1_19
+34783887_37162230_5_18
+Title: How to get the maximum and minimum number in Java? 
+----------------------------------------
+
+public static void main (String [] args) {
+    Scanner in = new Scanner (System.in);
+    int [] inputtedNumber = new int [20];
+    for (int num = 0;
+    num < 20; num += 1) {
+        inputtedNumber [num] = in.nextInt ();
+    }
+    int maxNum = inputtedNumber [0], minNum = inputtedNumber [0];
+    for (int checkNum = 0;
+    checkNum < 20; checkNum += 1) {
+        maxNum = Math.max (maxNum, inputtedNumber [checkNum]);
+        minNum = Math.min (minNum, inputtedNumber [checkNum]);
+    }
+    System.out.println ("The maximum number: " + maxNum);
+    System.out.println ("The minimum number: " + minNum);
+}
+----------------------------------------
+
+public static void main (String [] args) {
+    MinMax mm = new MinMax ();
+    Scanner scanner = new Scanner (System.in);
+    for (int i = 0;
+    i < 5; i ++) {
+        System.out.printf ("Geef getal %d: ", i + 1);
+        int getal = Integer.parseInt (scanner.nextLine ());
+        mm.evalueerGetal (getal);
+    }
+    System.out.printf ("Het grootste getal was %d.\n", mm.getMaximum ());
+    System.out.printf ("Het kleinste getal was %d.\n", mm.getMinimum ());
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+34788310_34788496_1_15
+34788310_34789223_1_19
+Title: Storing values in different variables by reading a file 
+----------------------------------------
+
+public static void main (String [] args) {
+    String myVar1 = null;
+    String myVar2 = null;
+    Properties prop = new Properties ();
+    InputStream input = null;
+    try (FileInputStream input = new FileInputStream ("pathToYourFile")) {
+        prop.load (input);
+        myVar1 = prop.getProperty ("Directory_path");
+        myVar2 = prop.getProperty ("school_name");
+    } catch (IOException ex) {
+    }
+}
+----------------------------------------
+
+public static void main (String [] args) throws IOException {
+    try {
+        BufferedReader br = new BufferedReader (new FileReader ("C:\\foo.txt"));
+        String strLine = null;
+        HashMap < String, String > map = new HashMap < String, String > ();
+        while ((strLine = br.readLine ()) != null) {
+            String [] parts = strLine.split ("=");
+            map.put (parts [0], parts [1]);
+        }
+        for (Entry < String, String > entry : map.entrySet ()) {
+            String key = entry.getKey ();
+            String value = entry.getValue ();
+            System.out.println (key + " = " + value);
+        }
+    } catch (IOException e) {
+        e.printStackTrace ();
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+3479112_3479154_1_24
+3479112_3479320_1_14
+Title: Java String from InputStream 
+----------------------------------------
+
+public String convertStreamToString (InputStream is) throws IOException {
+    if (is != null) {
+        StringBuilder sb = new StringBuilder ();
+        String line;
+        try {
+            BufferedReader reader = new BufferedReader (new InputStreamReader (is, "UTF-8"));
+            while ((line = reader.readLine ()) != null) {
+                sb.append (line).append ("\n");
+            }
+        } finally {
+            is.close ();
+        }
+        return sb.toString ();
+    } else {
+        return "";
+    }
+}
+----------------------------------------
+
+public static String convertStreamToString (InputStream is, String ecoding) throws IOException {
+    StringBuilder sb = new StringBuilder (Math.max (16, is.available ()));
+    char [] tmp = new char [4096];
+    try {
+        InputStreamReader reader = new InputStreamReader (is, ecoding);
+        for (int cnt;
+        (cnt = reader.read (tmp)) > 0;) sb.append (tmp, 0, cnt);
+
+    } finally {
+        is.close ();
+    }
+    return sb.toString ();
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+34803066_34803241_2_12
+34803066_34803744_1_14
+Title: "unreachable statement recursion (java)" 
+----------------------------------------
+
+public static String rev (String a) {
+    String result = "";
+    if (a.contains (' ')) {
+        int i = a.lastIndexOf (' ') + 1;
+        result = a.substring (i) + " " + rev (a.substring (0, i - 1));
+    } else {
+        result = a;
+    }
+    return result;
+}
+----------------------------------------
+
+public static String rev (String a) {
+    int firstSpace = a.indexOf (' ');
+    boolean multipleWords = (firstSpace != - 1);
+    if (! multipleWords) {
+        return a;
+    } else {
+        String firstWord = a.substring (0, firstSpace);
+        String remainingWords = a.substring (firstSpace + 1, a.length ());
+        String reversedRemainingWords = rev (remainingWords);
+        String reversedWords = reversedRemainingWords + " " + firstWord;
+        return reversedWords;
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+34819367_34820115_17_58
+34819367_34830553_19_50
+Title: "Cannot delete a wav file after it has been opened java" 
+----------------------------------------
+
+public void run () {
+    synchronized (this) {
+        System.out.println ("play sound: " + soundFile.getName ());
+        AudioFormat format;
+        DataLine.Info info;
+        try {
+            stream = AudioSystem.getAudioInputStream (soundFile);
+            format = stream.getFormat ();
+            info = new DataLine.Info (Clip.class, format);
+            clip = (Clip) AudioSystem.getLine (info);
+            clip.open (stream);
+            clip.start ();
+        } catch (Exception ex) {
+            ex.printStackTrace ();
+        }
+        while (clip.getMicrosecondLength () != clip.getMicrosecondPosition ()) {
+        }
+        try {
+            stream.close ();
+        } catch (IOException e) {
+            e.printStackTrace ();
+        }
+        clip.addLineListener (new LineListener () {
+            public void update (LineEvent myLineEvent) {
+                if (myLineEvent.getType () == LineEvent.Type.STOP) clip.close ();
+
+            }}
+
+        );
+        soundFile = null;
+        clip = null;
+        stream = null;
+        notify ();
+    }
+}
+----------------------------------------
+
+public void run () {
+    synchronized (this) {
+        AudioFormat format;
+        DataLine.Info info;
+        try {
+            stream = AudioSystem.getAudioInputStream (soundFile);
+            format = stream.getFormat ();
+            info = new DataLine.Info (Clip.class, format);
+            clip = (Clip) AudioSystem.getLine (info);
+            clip.open (stream);
+            clip.start ();
+            while (clip.getMicrosecondLength () != clip.getMicrosecondPosition ()) {
+            }
+            clip.close ();
+            stream.close ();
+            soundFile.close ();
+        } catch (Exception ex) {
+            ex.printStackTrace ();
+        }
+        soundFile = null;
+        clip = null;
+        stream = null;
+        notifyAll ();
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+34832201_34832230_4_21
+34832201_34832385_3_14
+Title: Beginner Java Program - All Numbers Entered Showing as Odd 
+----------------------------------------
+
+public static void main (String [] args) {
+    Scanner scan = new Scanner (System.in);
+    int input, result;
+    System.out.print ("Enter an integer number: ");
+    input = Integer.valueOf (scan.nextLine ());
+    result = input % 2;
+    if (result == 0) {
+        System.out.println ("\n\n Number " + input + " is even.");
+    } else if (result != 0) {
+        System.out.println ("\n\n Number " + input + " is odd.");
+    }
+
+}
+----------------------------------------
+
+public static void main (String [] args) {
+    Scanner scan = new Scanner (System.in);
+    int input, result;
+    System.out.print ("Enter an integer number: ");
+    input = scan.nextInt ();
+    result = input % 2;
+    if (result == 0) System.out.println ("\n\n Number " + input + " is even.");
+    else System.out.println ("\n\n Number " + input + " is odd.");
+
+    scan.close ();
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+34833158_34833236_1_16
+34833158_34833308_1_18
+Title: Array with loops Java 
+----------------------------------------
+
+public static void exactlytwice (int [] x) {
+    Map < Integer, Integer > counter = new HashMap < > ();
+    for (int i = 0;
+    i < x.length; i ++) {
+        if (counter.contains (i)) {
+            counter.put (i, 1);
+        } else {
+            counter.put (i, counter.get (i) + 1);
+        }
+    }
+    for (Integer i : counter.keyset ()) {
+        if (counter.get (i) == 2) {
+            System.out.println (i);
+        }
+    }
+}
+----------------------------------------
+
+public static void exactlytwice (int [] x) {
+    int count, j;
+    TOP : for (int i = 0;
+    i < x.length; i ++) {
+        count = 0;
+        for (j = 0; j < i; j ++) {
+            if (x [j] == x [i]) continue TOP;
+
+        }
+        for (j = i + 1; j < x.length; j ++) {
+            if (i != j && x [i] == x [j]) count ++;
+
+        }
+        if (count == 1) System.out.print (x [i] + " ");
+
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+34837896_34842009_30_52
+34837896_34842009_32_50
+Title: How to show chats by collecting messages in the custom list view adapter itself? 
+----------------------------------------
+
+public void run () {
+    handler.post (new Runnable () {
+        public void run () {
+            try {
+                resultChatObject = new HttpTask (getBaseContext ()).doInBackground ("sendMessages", c_id.toString (), String.valueOf (cr_id));
+                if (resultChatObject.get ("status").toString ().equals ("true")) {
+                    messages = resultChatObject.getJSONArray ("messages");
+                    Log.d ("Messages: ", messages.toString ());
+                    for (int i = 0;
+                    i <= messages.length (); i ++) {
+                        list.add (messages.getJSONObject (i).get ("reply_text").toString ());
+                        if (cr_id < Integer.parseInt (messages.getJSONObject (i).get ("cr_id").toString ())) cr_id = Integer.parseInt (messages.getJSONObject (i).get ("cr_id").toString ());
+
+                    }
+                }
+            } catch (JSONException e) {
+            }
+            myAdapter.add (list);
+        }}
+
+    );
+}
+----------------------------------------
+
+public void run () {
+    try {
+        resultChatObject = new HttpTask (getBaseContext ()).doInBackground ("sendMessages", c_id.toString (), String.valueOf (cr_id));
+        if (resultChatObject.get ("status").toString ().equals ("true")) {
+            messages = resultChatObject.getJSONArray ("messages");
+            Log.d ("Messages: ", messages.toString ());
+            for (int i = 0;
+            i <= messages.length (); i ++) {
+                list.add (messages.getJSONObject (i).get ("reply_text").toString ());
+                if (cr_id < Integer.parseInt (messages.getJSONObject (i).get ("cr_id").toString ())) cr_id = Integer.parseInt (messages.getJSONObject (i).get ("cr_id").toString ());
+
+            }
+        }
+    } catch (JSONException e) {
+    }
+    myAdapter.add (list);
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+3484100_3484137_1_19
+3484100_3484296_1_16
+Title: Initializing Java Swing in the background 
+----------------------------------------
+
+public static void main (String [] args) {
+    Runnable goVisible = new Runnable () {
+        public void run () {
+            JFrame mainFrame = new JFrame ();
+            mainFrame.setVisible ();
+        }}
+
+    ;
+    SwingUtilities.invokeLater (goVisible);
+    Class.forName ("com.yourcompany.view.Dialog1");
+    Class.forName ("com.yourcompany.view.WizardGUI");
+    Class.forName ("com.yourcompany.view.SecondaryFrame");
+}
+----------------------------------------
+
+public static void main (String [] args) {
+    Thread thread = new Thread () {
+        public void run () {
+            new com.yourcompany.view.Dialog1 ();
+            new com.yourcompany.view.WizardGUI ();
+            new com.yourcompany.view.SecondaryFrame ();
+        }}
+
+    ;
+    JFrame mainFrame = new JFrame ();
+    mainFrame.setVisible ();
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+34841897_34842099_1_13
+34841897_34842217_1_22
+Title: Not sorting right in ascending order when last element is the biggest in Java 
+----------------------------------------
+
+private static ArrayList < Human > sortArrayList (ArrayList < Human > arr) {
+    ArrayList < Human > result = new ArrayList < Human > ();
+    Map < Double, Human > map = new HashMap < Double, Human > ();
+    for (Human human : arr) map.put (human.salary, human);
+
+    List < Double > salaries = new ArrayList < Double > ();
+    for (double salary : map.keySet ()) salaries.add (salary);
+
+    Collections.sort (salaries);
+    for (int i = 0;
+    i < salaries.size (); i ++) result.add (map.get (salaries.get (i)));
+
+    return result;
+}
+----------------------------------------
+
+private static ArrayList < Human > sortArrayList (ArrayList < Human > arr) {
+    if (arr.size () == 0) {
+        return null;
+    } else {
+        ArrayList < Human > result = new ArrayList < Human > ();
+        for (Human h : arr) {
+            result.add (h);
+        }
+        Human temp;
+        for (int i = 0;
+        i < result.size () - 1; i ++) {
+            for (int j = i + 1;
+            j < result.size (); j ++) {
+                if (result.get (j).salary < result.get (i).salary) {
+                    temp = result.get (j);
+                    result.remove (j);
+                    result.add (i, temp);
+                }
+            }
+        }
+        return result;
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+34846566_34846612_4_20
+34846566_34846615_5_31
+Title: How to print 2D Arrays to look like a grid/matrix? 
+----------------------------------------
+
+public static void main (String [] args) {
+    int [] [] easyGrid = {{2, 3, 5, 9, 7, 1, 8, 4, 6}, {4, 7, 1, 2, 8, 6, 9, 3, 5}, {8, 9, 6, 4, 3, 5, 2, 7, 1}, {1, 6, 8, 7, 4, 9, 5, 2, 3}, {7, 4, 9, 5, 2, 3, 1, 6, 8}, {3, 5, 2, 1, 6, 8, 4, 9, 7}, {6, 2, 4, 8, 1, 7, 3, 5, 9}, {9, 1, 3, 6, 5, 2, 7, 8, 4}, {5, 8, 7, 3, 9, 4, 6, 1, 2}};
+    for (int [] arr : easyGrid) {
+        for (int number : arr) {
+            System.out.print (number + " ");
+        }
+        System.out.println ();
+    }
+}
+----------------------------------------
+
+public static void main (String [] args) {
+    int [] [] easyGrid = {{2, 3, 5, 9, 7, 1, 8, 4, 6}, {4, 7, 1, 2, 8, 6, 9, 3, 5}, {8, 9, 6, 4, 3, 5, 2, 7, 1}, {1, 6, 8, 7, 4, 9, 5, 2, 3}, {7, 4, 9, 5, 2, 3, 1, 6, 8}, {3, 5, 2, 1, 6, 8, 4, 9, 7}, {6, 2, 4, 8, 1, 7, 3, 5, 9}, {9, 1, 3, 6, 5, 2, 7, 8, 4}, {5, 8, 7, 3, 9, 4, 6, 1, 2}};
+    String lineSplit = "";
+    StringJoiner splitJoiner = new StringJoiner ("+", "|", "|");
+    for (int index = 0;
+    index < easyGrid [0].length; index ++) {
+        splitJoiner.add (String.format ("%4s", "").replace (" ", "-"));
+    }
+    lineSplit = splitJoiner.toString ();
+    for (int [] row : easyGrid) {
+        StringJoiner sj = new StringJoiner (" | ", "| ", " |");
+        for (int col : row) {
+            sj.add (String.format ("%02d", col));
+        }
+        System.out.println (lineSplit);
+        System.out.println (sj.toString ());
+    }
+    System.out.println (lineSplit);
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+34847877_34848103_4_25
+34847877_34848167_3_15
+Title: Java Scanner and errors 
+----------------------------------------
+
+public static void main (String args []) {
+    String a [] = {"a1", "a2", "a3", "a4", "a5"};
+    int b [] = {100, 220, 200, 230, 500};
+    Scanner sc = new Scanner (System.in);
+    System.out.println ("Type in a number.");
+    String input = sc.nextLine ();
+    int i;
+    try {
+        i = Integer.parseInt (input);
+    } catch (NumberFormatException e) {
+        System.out.println ("NaN");
+        System.exit (- 1);
+    }
+    try {
+        System.out.println (a [i] + " " + b [i]);
+    } catch (ArrayIndexOutOfBoundsException e) {
+        System.out.println ("Index out of range: " + i);
+        System.exit (- 1);
+    }
+}
+----------------------------------------
+
+public static void main (String args []) {
+    String [] a = {"a1", "a2", "a3", "a4", "a5"};
+    int [] b = {100, 220, 200, 230, 500};
+    Scanner scanner = new Scanner (System.in);
+    while (scanner.hasNext ()) {
+        if (choice < 0 || choice > Math.min (a.length, b.length)) {
+            System.out.println ("out of range...");
+        } else {
+            System.out.println (a [choice] + "\t" + b [choice]);
+        }
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+34853084_34853357_3_10
+34853084_34853358_4_15
+Title: How to loop in cyclic order? 
+----------------------------------------
+
+public static void main (String [] args) throws Exception {
+    int id = 2;
+    for (int i = id;
+    i < 4; i ++) System.out.println (i);
+
+    for (int i = 0;
+    i < id; i ++) System.out.println (i);
+
+}
+----------------------------------------
+
+public static void main (String [] args) throws Exception {
+    int [] indexArray = {2, 3, 0, 1};
+    int id = 2;
+    for (int i = 0;
+    i < indexArray.length; i ++) {
+        int j = indexArray [i];
+        if (j == id) {
+            System.out.println (j);
+        } else {
+            System.out.println (j);
+        }
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+34853084_34853357_3_10
+34853084_34853744_5_20
+Title: How to loop in cyclic order? 
+----------------------------------------
+
+public static void main (String [] args) throws Exception {
+    int id = 2;
+    for (int i = id;
+    i < 4; i ++) System.out.println (i);
+
+    for (int i = 0;
+    i < id; i ++) System.out.println (i);
+
+}
+----------------------------------------
+
+public static void main (String [] args) throws Exception {
+    int id = 2;
+    int limit = 4;
+    for (int i = id;
+    i < limit; i ++) {
+        System.out.println (i);
+        if (i == 3) {
+            i = - 1;
+            limit = 2;
+        }
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+34853084_34853358_4_15
+34853084_34853744_5_20
+Title: How to loop in cyclic order? 
+----------------------------------------
+
+public static void main (String [] args) throws Exception {
+    int [] indexArray = {2, 3, 0, 1};
+    int id = 2;
+    for (int i = 0;
+    i < indexArray.length; i ++) {
+        int j = indexArray [i];
+        if (j == id) {
+            System.out.println (j);
+        } else {
+            System.out.println (j);
+        }
+    }
+}
+----------------------------------------
+
+public static void main (String [] args) throws Exception {
+    int id = 2;
+    int limit = 4;
+    for (int i = id;
+    i < limit; i ++) {
+        System.out.println (i);
+        if (i == 3) {
+            i = - 1;
+            limit = 2;
+        }
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+34853392_34853661_1_11
+34853392_34856748_11_20
+Title: Determine clicked button in javafx 
+----------------------------------------
+
+@FXML
+private void copyToClipboard (ActionEvent event) {
+    Button button = (Button) event.getSource ();
+    String type = button.getUserData ();
+    if ("html".equals (type)) {
+    } else if ("raw".equals (type)) {
+    }
+
+}
+----------------------------------------
+
+private void copyToClipboard (TextField source) {
+    if (code == null || code.isEmpty ()) {
+        nothingToCopyAlert ();
+    } else {
+        Clipboard clipboard = Clipboard.getSystemClipboard ();
+        ClipboardContent content = new ClipboardContent ();
+        content.putString (source.getText ());
+        clipboard.setContent (content);
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+34870369_34871821_8_23
+34870369_34872877_3_16
+Title: JAVA console app to calculate the duration between two user specified dates in MM/DD/YYYY format 
+----------------------------------------
+
+public static void main (String [] args) throws java.lang.Exception {
+    SimpleDateFormat format = new SimpleDateFormat ("MM/dd/yyyy");
+    Scanner scanner = new Scanner (System.in);
+    Date date1 = format.parse (scanner.nextLine ());
+    Date date2 = format.parse (scanner.nextLine ());
+    scanner.close ();
+    long diff = date1.getTime () - date2.getTime ();
+    long diffDays = TimeUnit.DAYS.convert (diff, TimeUnit.MILLISECONDS);
+    diffDays = Math.abs (diffDays);
+    System.out.println (diffDays);
+}
+----------------------------------------
+
+public static void main (String [] args) {
+    Scanner sc = new Scanner (System.in);
+    System.out.println ("Enter first date in this format YYYY/MM/DD: ");
+    String [] date1Array = sc.nextLine ().split ("/");
+    GregorianCalendar cal = new GregorianCalendar (Integer.parseInt (date1Array [0]), Integer.parseInt (date1Array [1]) - 1, Integer.parseInt (date1Array [2]));
+    Date date1 = cal.getTime ();
+    System.out.println ("Enter second date in this format  YYYY/MM/DD: ");
+    String [] date2Array = sc.nextLine ().split ("/");
+    cal = new GregorianCalendar (Integer.parseInt (date2Array [0]), Integer.parseInt (date2Array [1]) - 1, Integer.parseInt (date2Array [2]));
+    Date date2 = cal.getTime ();
+    double difference = (date2.getTime () - date1.getTime ()) / 3600000;
+    if (difference < 0) difference = - difference;
+
+    System.out.println ("The difference is " + difference + " hours and " + difference / 24 + " days");
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+34871580_34871703_19_31
+34871580_34871703_1_46
+Title: Android how to group async tasks together like in iOS 
+----------------------------------------
+
+public void onResponse (JSONArray response) {
+    taskFinished [0] ++;
+    try {
+        for (int j = 0;
+        j < response.length (); j ++) {
+            JSONObject reply = response.getJSONObject (j);
+            outUserIds.addAll (helperParseRelaventUserIdsFromEntity (reply));
+            outReplies.get (finalI).add (reply);
+        }
+    } catch (JSONException ex) {
+    }
+    if (taskFinished [0] == taskTotal) {
+        success.run ();
+    }
+}
+----------------------------------------
+
+public void onResponse (JSONArray response) {
+    try {
+        final int [] taskFinished = {0};
+        final int taskTotal = response.length ();
+        for (int i = 0;
+        i < response.length (); i ++) {
+            JSONObject comment = response.getJSONObject (i);
+            outComments.add (comment);
+            outUserIds.addAll (helperParseRelaventUserIdsFromEntity (comment));
+            outReplies.add (new ArrayList < JSONObject > ());
+            String id = comment.getString ("_id");
+            HashMap < String, String > replyParams = new HashMap < > ();
+            replyParams.put (API.article.commentId, id);
+            final int finalI = i;
+            JsonArrayRequest replyRequest = new JsonArrayRequest (Request.Method.GET, API.baseUrl + API.article.listCreateReply, new JSONObject (replyParams), new Response.Listener < JSONArray > () {
+                @Override
+                public void onResponse (JSONArray response) {
+                    taskFinished [0] ++;
+                    try {
+                        for (int j = 0;
+                        j < response.length (); j ++) {
+                            JSONObject reply = response.getJSONObject (j);
+                            outUserIds.addAll (helperParseRelaventUserIdsFromEntity (reply));
+                            outReplies.get (finalI).add (reply);
+                        }
+                    } catch (JSONException ex) {
+                    }
+                    if (taskFinished [0] == taskTotal) {
+                        success.run ();
+                    }
+                }}
+
+            , new Response.ErrorListener () {
+                @Override
+                public void onErrorResponse (VolleyError error) {
+                    taskFinished [0] ++;
+                    if (taskFinished [0] == taskTotal) {
+                        success.run ();
+                    }
+                }}
+
+            );
+            queue.add (replyRequest);
+        }
+    } catch (JSONException ex) {
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+34876710_34877366_17_83
+34876710_34904927_21_79
+Title: "Using Javafx trying to resize boxes for a calculator" 
+----------------------------------------
+
+public void start (Stage primaryStage) throws Exception {
+    TextField tf = new TextField ();
+    BorderPane root = new BorderPane ();
+    GridPane gp = new GridPane ();
+    gp.setAlignment (Pos.CENTER);
+    gp.setHgap (10.0);
+    gp.setVgap (10.0);
+    root.setTop (tf);
+    Button button1 = new Button ("1");
+    Button button2 = new Button ("2");
+    Button button3 = new Button ("3");
+    Button button4 = new Button ("4");
+    Button button5 = new Button ("5");
+    Button button6 = new Button ("6");
+    Button button7 = new Button ("7");
+    Button button8 = new Button ("8");
+    Button button9 = new Button ("9");
+    Button button0 = new Button ("0");
+    Button buttonDOT = new Button (".");
+    Button buttonDIV = new Button ("/");
+    Button buttonMUL = new Button ("*");
+    Button buttonSUB = new Button ("-");
+    Button buttonADD = new Button ("+");
+    Button buttonEQU = new Button ("=");
+    setButtonSize (button1);
+    setButtonSize (button2);
+    setButtonSize (button3);
+    setButtonSize (button4);
+    setButtonSize (button5);
+    setButtonSize (button6);
+    setButtonSize (button7);
+    setButtonSize (button8);
+    setButtonSize (button9);
+    setButtonSize (button0);
+    setButtonSize (buttonDOT);
+    setButtonSize (buttonDIV);
+    setButtonSize (buttonMUL);
+    setButtonSize (buttonSUB);
+    setButtonSize (buttonADD);
+    setButtonSize (buttonEQU);
+    gp.add (button7, 0, 0);
+    gp.add (button8, 1, 0);
+    gp.add (button9, 2, 0);
+    gp.add (buttonDIV, 3, 0);
+    gp.add (button4, 0, 1);
+    gp.add (button5, 1, 1);
+    gp.add (button6, 2, 1);
+    gp.add (buttonMUL, 3, 1);
+    gp.add (button1, 0, 2);
+    gp.add (button2, 1, 2);
+    gp.add (button3, 2, 2);
+    gp.add (buttonSUB, 3, 2);
+    gp.add (button0, 0, 3);
+    gp.add (buttonDOT, 1, 3);
+    gp.add (buttonEQU, 2, 3);
+    gp.add (buttonADD, 3, 3);
+    root.setCenter (gp);
+    primaryStage.setScene (new Scene (root, 300, 250));
+    primaryStage.show ();
+}
+----------------------------------------
+
+public void start (Stage primaryStage) throws Exception {
+    TextField tf = new TextField ();
+    BorderPane root = new BorderPane ();
+    GridPane gp = new GridPane ();
+    Button btn;
+    root.setTop (tf);
+    RowConstraints rc = new RowConstraints ();
+    rc.setVgrow (Priority.ALWAYS);
+    rc.setFillHeight (true);
+    gp.getRowConstraints ().addAll (rc, rc, rc, rc);
+    ColumnConstraints cc = new ColumnConstraints ();
+    cc.setHgrow (Priority.ALWAYS);
+    cc.setFillWidth (true);
+    gp.getColumnConstraints ().addAll (cc, cc, cc, cc);
+    gp.add (btn = new Button ("7"), 0, 0);
+    btn.setMaxSize (Double.MAX_VALUE, Double.MAX_VALUE);
+    gp.add (btn = new Button ("8"), 1, 0);
+    btn.setMaxSize (Double.MAX_VALUE, Double.MAX_VALUE);
+    gp.add (btn = new Button ("9"), 2, 0);
+    btn.setMaxSize (Double.MAX_VALUE, Double.MAX_VALUE);
+    gp.add (btn = new Button ("/"), 3, 0);
+    btn.setMaxSize (Double.MAX_VALUE, Double.MAX_VALUE);
+    gp.add (btn = new Button ("4"), 0, 1);
+    btn.setMaxSize (Double.MAX_VALUE, Double.MAX_VALUE);
+    gp.add (btn = new Button ("5"), 1, 1);
+    btn.setMaxSize (Double.MAX_VALUE, Double.MAX_VALUE);
+    gp.add (btn = new Button ("6"), 2, 1);
+    btn.setMaxSize (Double.MAX_VALUE, Double.MAX_VALUE);
+    gp.add (btn = new Button ("*"), 3, 1);
+    btn.setMaxSize (Double.MAX_VALUE, Double.MAX_VALUE);
+    gp.add (btn = new Button ("1"), 0, 2);
+    btn.setMaxSize (Double.MAX_VALUE, Double.MAX_VALUE);
+    gp.add (btn = new Button ("2"), 1, 2);
+    btn.setMaxSize (Double.MAX_VALUE, Double.MAX_VALUE);
+    gp.add (btn = new Button ("3"), 2, 2);
+    btn.setMaxSize (Double.MAX_VALUE, Double.MAX_VALUE);
+    gp.add (btn = new Button ("-"), 3, 2);
+    btn.setMaxSize (Double.MAX_VALUE, Double.MAX_VALUE);
+    gp.add (btn = new Button ("0"), 0, 3);
+    btn.setMaxSize (Double.MAX_VALUE, Double.MAX_VALUE);
+    gp.add (btn = new Button ("."), 1, 3);
+    btn.setMaxSize (Double.MAX_VALUE, Double.MAX_VALUE);
+    gp.add (btn = new Button ("="), 2, 3);
+    btn.setMaxSize (Double.MAX_VALUE, Double.MAX_VALUE);
+    gp.add (btn = new Button ("+"), 3, 3);
+    btn.setMaxSize (Double.MAX_VALUE, Double.MAX_VALUE);
+    root.setCenter (gp);
+    primaryStage.setScene (new Scene (root, 300, 250));
+    primaryStage.show ();
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+34881005_34881371_2_64
+34881005_34882504_1_21
+Title: Algorithms - Find duration of overlapping intervals in a cyclic world (24 hours) 
+----------------------------------------
+
+public static int findOverlappingInterval (int startTime1, int endTime1, int startTime2, int endTime2) {
+    int overlappingTime = 0;
+    int time1Length = 0;
+    if (endTime1 < startTime1) {
+        time1Length = 24 - startTime1;
+        time1Length += endTime1;
+    }
+    int [] time1;
+    if (time1Length == 0) {
+        time1 = new int [Math.abs (endTime1 - startTime1)];
+        for (int i1 = startTime1;
+        i1 < endTime1; i1 ++) {
+            time1 [i1 - startTime1] = i1;
+        }
+    } else {
+        time1 = new int [time1Length];
+        int count = 0;
+        for (int i1 = 0;
+        i1 < endTime1; i1 ++) {
+            time1 [count] = i1;
+            count ++;
+        }
+        for (int i1 = startTime1;
+        i1 < 24; i1 ++) {
+            time1 [count] = i1;
+            count ++;
+        }
+    }
+    int time2Length = 0;
+    if (endTime2 < startTime2) {
+        time2Length = 24 - startTime2;
+        time2Length += endTime2;
+    }
+    int [] time2;
+    if (time2Length == 0) {
+        time2 = new int [Math.abs (endTime2 - startTime2)];
+        for (int i2 = startTime2;
+        i2 < endTime2; i2 ++) {
+            time2 [i2 - startTime2] = i2;
+        }
+    } else {
+        time2 = new int [time2Length];
+        int count = 0;
+        for (int i2 = 0;
+        i2 < endTime2; i2 ++) {
+            time2 [count] = i2;
+            count ++;
+        }
+        for (int i2 = startTime2;
+        i2 < 24; i2 ++) {
+            time2 [count] = i2;
+            count ++;
+        }
+    }
+    for (int i = 0;
+    i < time1.length; i ++) {
+        for (int j = 0;
+        j < time2.length; j ++) {
+            if (time1 [i] == time2 [j]) {
+                overlappingTime ++;
+            }
+        }
+    }
+    return overlappingTime;
+}
+----------------------------------------
+
+public static Long findOverlappingInterval (Long startTime1, Long endTime1, Long startTime2, Long endTime2) {
+    if (startTime1 < endTime1 && startTime2 < endTime2) return Math.max (0, Math.min (endTime2, endTime1) - Math.max (startTime1, startTime2) + 1);
+    else {
+        if (startTime1 < endTime1) return findOverlappingInterval (startTime1, endTime1, 0L, endTime2) + findOverlappingInterval (startTime1, endTime1, startTime2, 23L);
+        else if (startTime2 < endTime2) return findOverlappingInterval (0L, endTime1, startTime2, endTime2) + findOverlappingInterval (startTime1, 23L, startTime2, endTime2);
+        else {
+            return findOverlappingInterval (0L, endTime1, 0L, endTime2) + findOverlappingInterval (0L, endTime1, startTime2, 23L) + findOverlappingInterval (startTime1, 23L, 0L, endTime2) + findOverlappingInterval (startTime1, 23L, startTime2, 23L);
+        }
+
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+34892688_34892831_1_16
+34892688_34894606_1_11
+Title: Most time efficient way to remove stop words in Java from an array of strings 
+----------------------------------------
+
+public static List < String > removedText (List < String > S) {
+    Iterator < String > text = S.iterator ();
+    while (text.hasNext ()) {
+        String token = text.next ();
+        if (hs.contains (token)) {
+            S.remove (token);
+        }
+    }
+    return S;
+}
+----------------------------------------
+
+public static List < String > removedText (List < String > s) {
+    Iterator < String > text = s.iterator ();
+    while (text.hasNext ()) {
+        String token = text.next ();
+        if (hs.contains (token)) {
+            text.remove ();
+        }
+    }
+    return s;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+34894271_34894378_1_14
+34894271_34896786_5_15
+Title: Java - Multiply Array Values into another Array 
+----------------------------------------
+
+public static int [] multiplyArrayValues (int [] values) {
+    int [] a = new int [values.length];
+    int p = 1;
+    for (int i = values.length - 1;
+    i >= 0; i --) {
+        a [i] = p;
+        p *= values [i];
+    }
+    p = 1;
+    for (int i = 0;
+    i < values.length; i ++) {
+        a [i] *= p;
+        p *= values [i];
+    }
+    return a;
+}
+----------------------------------------
+
+static int [] multiplyArrayValues (int [] values) {
+    int product = 1;
+    for (int i = 0;
+    i < values.length; i ++) {
+        product *= values [i];
+    }
+    int [] result = new int [values.length];
+    for (int i = 0;
+    i < result.length; i ++) {
+        result [i] = product / values [i];
+    }
+    return result;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+34909365_34924528_3_37
+34909365_35897207_14_49
+Title: Javafx Gridpanes content exceeds size 
+----------------------------------------
+
+public void start (Stage primaryStage) {
+    try {
+        GridPane gp = new GridPane ();
+        gp.setGridLinesVisible (true);
+        int minHeight = 50;
+        int preferredHeight = 100;
+        int maxHeight = 110;
+        gp.setVgap (10);
+        gp.add (new Pane (new Rectangle (100, 100, Color.rgb (255, 0, 0, 0.5))), 0, 0);
+        gp.add (new Pane (new Rectangle (100, 200, Color.rgb (0, 255, 0, 0.5))), 0, 1);
+        gp.getRowConstraints ().add (new RowConstraints (minHeight, preferredHeight, maxHeight));
+        gp.getRowConstraints ().add (new RowConstraints (minHeight, preferredHeight, maxHeight));
+        for (Node node : gp.getChildren ()) {
+            Integer rowIndex = GridPane.getRowIndex (node);
+            if (rowIndex != null) {
+                RowConstraints rowConstraints = gp.getRowConstraints ().get (rowIndex);
+                if (node.getBoundsInLocal ().getHeight () > rowConstraints.getPrefHeight ()) {
+                    node.setClip (new Rectangle (100, rowConstraints.getMaxHeight ()));
+                    GridPane.setVgrow (node, Priority.SOMETIMES);
+                }
+            }
+        }
+        Scene scene = new Scene (gp, 400, 400);
+        primaryStage.setScene (scene);
+        primaryStage.show ();
+    } catch (Exception e) {
+        e.printStackTrace ();
+    }
+}
+----------------------------------------
+
+public void start (Stage primaryStage) {
+    try {
+        GridPane gp = new GridPane ();
+        gp.setGridLinesVisible (true);
+        gp.setVgap (10);
+        gp.getRowConstraints ().add (new RowConstraints (50, 100, 110));
+        gp.getRowConstraints ().add (new RowConstraints (50, 100, 110));
+        Pane pane1 = new Pane (new Rectangle (100, 100, Color.rgb (255, 0, 0, 0.5)));
+        Pane pane2 = new Pane (new Rectangle (100, 200, Color.rgb (0, 255, 0, 0.5)));
+        Rectangle clipRectangle1 = new Rectangle ();
+        pane1.setClip (clipRectangle1);
+        pane1.layoutBoundsProperty ().addListener ((observable, oldValue, newValue) -> {
+            clipRectangle1.setWidth (newValue.getWidth ());
+            clipRectangle1.setHeight (newValue.getHeight ());
+        });
+        Rectangle clipRectangle2 = new Rectangle ();
+        pane2.setClip (clipRectangle2);
+        pane2.layoutBoundsProperty ().addListener ((observable, oldValue, newValue) -> {
+            clipRectangle2.setWidth (newValue.getWidth ());
+            clipRectangle2.setHeight (newValue.getHeight ());
+        });
+        gp.add (pane1, 0, 0);
+        gp.add (pane2, 0, 1);
+        Scene scene = new Scene (gp, 400, 400);
+        primaryStage.setScene (scene);
+        primaryStage.show ();
+    } catch (Exception e) {
+        e.printStackTrace ();
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+3491027_3491277_3_22
+3491027_3491293_3_35
+Title: Java console code for StopWatch/Timer? 
+----------------------------------------
+
+public static void main (String [] args) {
+    for (j = 0; j >= 0; j ++) {
+        for (i = 0; i < 60; i ++) {
+            System.out.println (j + ":" + i);
+            try {
+                Thread.sleep (1000);
+            } catch (InterruptedException ie) {
+                System.out.println (ie.getMessage ());
+            }
+        }
+    }
+}
+----------------------------------------
+
+public static void main (String [] args) throws InterruptedException {
+    int charsWritten = 0;
+    long start = System.currentTimeMillis ();
+    while (1 > 0) {
+        Thread.sleep (1000);
+        long elapsedTime = System.currentTimeMillis () - start;
+        elapsedTime = elapsedTime / 1000;
+        String seconds = Integer.toString ((int) (elapsedTime % 60));
+        String minutes = Integer.toString ((int) ((elapsedTime % 3600) / 60));
+        String hours = Integer.toString ((int) (elapsedTime / 3600));
+        if (seconds.length () < 2) {
+            seconds = "0" + seconds;
+        }
+        if (minutes.length () < 2) {
+            minutes = "0" + minutes;
+        }
+        if (hours.length () < 2) {
+            hours = "0" + hours;
+        }
+        String writeThis = hours + ":" + minutes + ":" + seconds;
+        for (int i = 0;
+        i < charsWritten; i ++) {
+            System.out.print ("\b");
+        }
+        System.out.print (writeThis);
+        charsWritten = writeThis.length ();
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+34918330_34918624_1_22
+34918330_34918642_1_16
+Title: Java- Builiding a recursion that replace even digits with zero 
+----------------------------------------
+
+public static int replaceEvenDigitsWithZero (int number, int position) {
+    if (number < 10 * position) {
+        return number;
+    }
+    if (position > 0) {
+        int currentNumber = number / (10 * position);
+    } else {
+        currentNumber = number;
+    }
+    if (currentNumber % 2 == 0) {
+        int multiplyValue = currentNumber % 10;
+        number = number - (multiplyValue * (10 * position));
+    }
+    return replaceEvenDigitsWithZero (number, position + 1);
+}
+----------------------------------------
+
+public static int replaceEvenDigitsWithZero (int number) {
+    if (number < 0) {
+        return - replaceEvenDigitsWithZero (- number);
+    }
+    if (number < 10) {
+        return replaceOneDigit (number);
+    }
+    int lastDigit = number % 10;
+    int remainder = number / 10;
+    return replaceEvenDigitsWithZero (remainder) * 10 + replaceOneDigit (lastDigit);
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+34930022_34932688_25_36
+34930022_34936030_27_59
+Title: Thread is pausing but not resuming 
+----------------------------------------
+
+public void run () {
+    while (running) {
+        long sleepTime = solved ? 500L : 5L;
+        while (! solved) {
+            String elapsedTimeString = model.getElapsedTime (System.currentTimeMillis ());
+            updateControlPanel (elapsedTimeString);
+            sleep (50L);
+        }
+        sleep (sleepTime);
+    }
+}
+----------------------------------------
+
+public void run () {
+    if (Thread.currentThread () != this) return;
+
+    log ("starting");
+    int i = 0;
+    while (true) {
+        System.out.println (i ++);
+        if (i == 20) break;
+
+        try {
+            Thread.sleep (sleepTime);
+        } catch (InterruptedException e) {
+        }
+        if (paused) {
+            log ("pausing");
+            while (true) {
+                try {
+                    synchronized (this) {
+                        wait ();
+                    }
+                } catch (IllegalMonitorStateException e) {
+                    log (e.toString ());
+                } catch (InterruptedException e) {
+                    log (e.toString ());
+                }
+                if (! paused) {
+                    log ("resuming");
+                    break;
+                }
+                log ("falsely notified");
+            }
+        }
+    }
+    log ("exiting");
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+34935522_34935825_1_12
+34935522_34936497_21_41
+Title: Issue with password protected notepad in Java 
+----------------------------------------
+
+public static void main (String args []) {
+    JFrame box = new JFrame ("Password");
+    box.setVisible (true);
+    box.setDefaultCloseOperation (JFrame.EXIT_ON_CLOSE);
+    box.setSize (400, 100);
+    JPasswordField pass = new JPasswordField (10);
+    pass.addActionListener (new AL ());
+    box.add (pass);
+}
+----------------------------------------
+
+public static void main (String args []) {
+    SwingUtilities.invokeLater (new Runnable () {
+        public void run () {
+            try {
+                UIManager.setLookAndFeel ("javax.swing.plaf.nimbus.NimbusLookAndFeel");
+            } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException e) {
+                e.printStackTrace ();
+            }
+            new Notepad ();
+        }}
+
+    );
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+34943953_34944934_16_25
+34943953_34945138_14_25
+Title: Error when trying to change the color of background and the absolute position of elements in Java GUI 
+----------------------------------------
+
+public Back () {
+    super ("title");
+    setLayout (null);
+    r = new JButton ("ROLL");
+    r.setBounds (20, 20, 70, 30);
+    add (r);
+    Thehandler hand = new Thehandler (this);
+    r.addActionListener (hand);
+}
+----------------------------------------
+
+public Back () {
+    super ("title");
+    ran = new Random ();
+    int value = ran.nextInt ();
+    r = new JButton ("ROLL");
+    thehandler hand = new thehandler (this);
+    r.addActionListener (hand);
+    this.change ();
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+34949170_34949513_1_25
+34949170_45366953_4_27
+Title: Convert String into Title Case 
+----------------------------------------
+
+public static void main (String args []) {
+    Scanner in = new Scanner (System.in);
+    System.out.println ("ent");
+    String s = in.nextLine ();
+    String str = "";
+    char a;
+    for (int i = 0;
+    i < s.length (); i ++) {
+        a = s.charAt (i);
+        if (a == ' ') {
+            str = str + Character.toLowerCase (a) + (Character.toUpperCase (s.charAt (i + 1)));
+            i ++;
+        } else {
+            str = str + (Character.toLowerCase (a));
+        }
+    }
+    System.out.println (str);
+}
+----------------------------------------
+
+public static void main (String [] args) {
+    System.out.println ("please enter the string");
+    Scanner sc1 = new Scanner (System.in);
+    String str = sc1.nextLine ();
+    str = str.toLowerCase ();
+    char ch [] = str.toCharArray ();
+    System.out.println ("===============");
+    System.out.println (str);
+    System.out.println ("===============");
+    System.out.print ((char) (ch [0] - 32));
+    for (int i = 1;
+    i < ch.length; i ++) {
+        if (ch [i] == ' ') {
+            System.out.print (" " + (char) (ch [i + 1] - 32));
+            i ++;
+            continue;
+        }
+        System.out.print (ch [i]);
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+34950311_34962309_43_51
+34950311_34962309_82_92
+Title: Producer - consumer Scenerio. I have one producer and multiple consumer 
+----------------------------------------
+
+public void run () {
+    while (true) {
+        try {
+            produce ();
+        } catch (InterruptedException e) {
+            e.printStackTrace ();
+        }
+    }
+}
+----------------------------------------
+
+public void run () {
+    totalConsumersCount.incrementAndGet ();
+    while (true) {
+        try {
+            consume ();
+        } catch (InterruptedException e) {
+            e.printStackTrace ();
+            totalConsumersCount.decrementAndGet ();
+        }
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+34955109_34994785_1_19
+34955109_37378359_1_17
+Title: Throttle onQueryTextChange in SearchView 
+----------------------------------------
+
+public boolean onQueryTextChange (final String newText) {
+    if (newText.length () > 3) {
+        if (canRun) {
+            canRun = false;
+            handler.postDelayed (new Runnable () {
+                @Override
+                public void run () {
+                    canRun = true;
+                    handleLocationSearch (newText);
+                }}
+
+            , 500);
+        }
+    }
+    return false;
+}
+----------------------------------------
+
+@Override
+public boolean onQueryTextChange (final String newText) {
+    searchText = newText;
+    handler.removeCallbacks (runnable);
+    runnable = new Runnable () {
+        @Override
+        public void run () {
+        }}
+
+    ;
+    handler.postDelayed (runnable, 500);
+    return false;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+34965270_34965463_1_14
+34965270_34965488_3_26
+Title: Return all possible sums that can be formed by using numbers in array JAVA 
+----------------------------------------
+
+public static void getSum (int [] numbersArray, int starting, int sum) {
+    if (numbersArray.length == starting) {
+        System.out.println (sum);
+        return;
+    }
+    int value = sum + numbersArray [starting];
+    getSum (numbersArray, starting + 1, value);
+    getSum (numbersArray, starting + 1, sum);
+}
+----------------------------------------
+
+public static Set getSum (int [] numbersArray, int starting) {
+    if (numbersArray.length == starting) {
+        return new HashSet ();
+    }
+    Set recursiveSet = getSum (numbersArray, starting + 1);
+    Set newSet = new HashSet ();
+    int value = numbersArray [starting];
+    for (Object object : recursiveSet) {
+        int element = (int) object;
+        newSet.add (element);
+        newSet.add (element + value);
+    }
+    newSet.add (value);
+    return newSet;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+34975780_34975996_5_41
+34975780_34976154_3_46
+Title: Java: How do I replace a string element from an array 
+----------------------------------------
+
+public static void main (String args []) {
+    int length;
+    Scanner sc = new Scanner (System.in);
+    System.out.print ("How many words are you going to enter? ");
+    length = sc.nextInt ();
+    String [] sEnterWord = new String [length];
+    for (int nCtr = 0;
+    nCtr < length; nCtr ++) {
+        System.out.print ("Enter word " + (nCtr + 1) + ":");
+        sEnterWord [nCtr] = sc.next ();
+    }
+    System.out.println ("Your words are: ");
+    Arrays.sort (sEnterWord);
+    for (int nCtr = 0;
+    nCtr < length; nCtr ++) {
+        System.out.println (sEnterWord [nCtr]);
+    }
+    System.out.println ("Which word would you like to change?");
+    int sWordToChange = sc.nextInt ();
+    sc.nextLine ();
+    System.out.println ("You have chosen to change the word : " + sWordToChange);
+    System.out.println ("Enter the new word: ");
+    String sNewWord = sc.nextLine ();
+    sEnterWord [sWordToChange - 1] = sNewWord;
+    System.out.println ("Your words are: ");
+    for (int nCtr = 0;
+    nCtr < length; nCtr ++) {
+        System.out.println (sEnterWord [nCtr]);
+    }
+}
+----------------------------------------
+
+public static void main (String args []) throws IOException {
+    int length;
+    BufferedReader br = new BufferedReader (new InputStreamReader (System.in));
+    System.out.print ("How many words are you going to enter? ");
+    length = Integer.parseInt (br.readLine ());
+    String [] sEnterWord = new String [length];
+    for (int nCtr = 0;
+    nCtr < length; nCtr ++) {
+        System.out.println ("Enter word " + (nCtr + 1) + ":");
+        sEnterWord [nCtr] = br.readLine ();
+    }
+    System.out.println ("Your words are: ");
+    Arrays.sort (sEnterWord);
+    for (int nCtr = 0;
+    nCtr < length; nCtr ++) {
+        System.out.println (sEnterWord [nCtr]);
+    }
+    System.out.println ("Which word would you like to change?");
+    String sWordToChange = br.readLine ();
+    System.out.print ("Enter the new word: ");
+    String sNewWord = br.readLine ();
+    for (int i = 0;
+    i < sEnterWord.length; i ++) {
+        if (sEnterWord [i].equals (sWordToChange)) {
+            sEnterWord [i] = sNewWord;
+        }
+    }
+    System.out.println ("Your words are: ");
+    for (int nCtr = 0;
+    nCtr < length; nCtr ++) {
+        System.out.println (sEnterWord [nCtr]);
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+34975780_34975996_5_41
+34975780_34976374_6_14
+Title: Java: How do I replace a string element from an array 
+----------------------------------------
+
+public static void main (String args []) {
+    int length;
+    Scanner sc = new Scanner (System.in);
+    System.out.print ("How many words are you going to enter? ");
+    length = sc.nextInt ();
+    String [] sEnterWord = new String [length];
+    for (int nCtr = 0;
+    nCtr < length; nCtr ++) {
+        System.out.print ("Enter word " + (nCtr + 1) + ":");
+        sEnterWord [nCtr] = sc.next ();
+    }
+    System.out.println ("Your words are: ");
+    Arrays.sort (sEnterWord);
+    for (int nCtr = 0;
+    nCtr < length; nCtr ++) {
+        System.out.println (sEnterWord [nCtr]);
+    }
+    System.out.println ("Which word would you like to change?");
+    int sWordToChange = sc.nextInt ();
+    sc.nextLine ();
+    System.out.println ("You have chosen to change the word : " + sWordToChange);
+    System.out.println ("Enter the new word: ");
+    String sNewWord = sc.nextLine ();
+    sEnterWord [sWordToChange - 1] = sNewWord;
+    System.out.println ("Your words are: ");
+    for (int nCtr = 0;
+    nCtr < length; nCtr ++) {
+        System.out.println (sEnterWord [nCtr]);
+    }
+}
+----------------------------------------
+
+public static void main (String args []) {
+    String [] sEnterWord = getSortedWordArr ();
+    showWordlist (sEnterWord);
+    String sWordToChange = getInputFromKeyboard ("Which word would you like to change? ");
+    System.out.println ("You have chosen to change the word : " + sWordToChange);
+    changeWordInArray (sWordToChange, sEnterWord);
+    Arrays.sort (sEnterWord);
+    showWordlist (sEnterWord);
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+34975780_34976154_3_46
+34975780_34976374_6_14
+Title: Java: How do I replace a string element from an array 
+----------------------------------------
+
+public static void main (String args []) throws IOException {
+    int length;
+    BufferedReader br = new BufferedReader (new InputStreamReader (System.in));
+    System.out.print ("How many words are you going to enter? ");
+    length = Integer.parseInt (br.readLine ());
+    String [] sEnterWord = new String [length];
+    for (int nCtr = 0;
+    nCtr < length; nCtr ++) {
+        System.out.println ("Enter word " + (nCtr + 1) + ":");
+        sEnterWord [nCtr] = br.readLine ();
+    }
+    System.out.println ("Your words are: ");
+    Arrays.sort (sEnterWord);
+    for (int nCtr = 0;
+    nCtr < length; nCtr ++) {
+        System.out.println (sEnterWord [nCtr]);
+    }
+    System.out.println ("Which word would you like to change?");
+    String sWordToChange = br.readLine ();
+    System.out.print ("Enter the new word: ");
+    String sNewWord = br.readLine ();
+    for (int i = 0;
+    i < sEnterWord.length; i ++) {
+        if (sEnterWord [i].equals (sWordToChange)) {
+            sEnterWord [i] = sNewWord;
+        }
+    }
+    System.out.println ("Your words are: ");
+    for (int nCtr = 0;
+    nCtr < length; nCtr ++) {
+        System.out.println (sEnterWord [nCtr]);
+    }
+}
+----------------------------------------
+
+public static void main (String args []) {
+    String [] sEnterWord = getSortedWordArr ();
+    showWordlist (sEnterWord);
+    String sWordToChange = getInputFromKeyboard ("Which word would you like to change? ");
+    System.out.println ("You have chosen to change the word : " + sWordToChange);
+    changeWordInArray (sWordToChange, sEnterWord);
+    Arrays.sort (sEnterWord);
+    showWordlist (sEnterWord);
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+34985713_34985920_12_28
+34985713_35008829_9_34
+Title: How to perform Undo and Redo Operations on Strings? 
+----------------------------------------
+
+public static void main (String arg []) {
+    Scanner in = new Scanner (System.in);
+    System.out.println ("Numer of string you need");
+    int n = in.nextInt ();
+    System.out.println ("Enter Strings");
+    for (int i = 0;
+    i < n; i ++) {
+        size ++;
+        m.put (i, in.next ());
+    }
+    size = size - 1;
+    System.out.println ("orignal : " + m);
+    undo ();
+    undo ();
+    redo ();
+    redo ();
+}
+----------------------------------------
+
+public static void main (String arg []) {
+    Scanner in = new Scanner (System.in);
+    while (true) {
+        System.out.println ("press 1:enter new  2:undo  3:redo");
+        switch (in.nextInt ()) {
+            case 1 :
+                System.out.println ("enter it:");
+                stack1.push (in.next ());
+                break;
+            case 2 :
+                stack2.push (stack1.pop ());
+                break;
+            case 3 :
+                stack1.push (stack2.pop ());
+                break;
+        }
+        System.out.println ("current data:" + Arrays.toString (stack1.toArray ()));
+        System.out.println ("data for redo:" + Arrays.toString (stack2.toArray ()));
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+34989393_35002242_272_283
+34989393_35002242_291_317
+Title: Writing a large Excel sheet with 60+ columns using Apache POI 
+----------------------------------------
+
+private Worksheet addCell (String value, String formatting, boolean number, int mergeRight) {
+    String ref = addCell (value, formatting, number);
+    if (mergeRight > 0) {
+        String right = null;
+        for (int i = 1;
+        i <= mergeRight; i ++) right = addCell ("", formatting, false);
+
+        merged.add (ref + ":" + right);
+    }
+    return this;
+}
+----------------------------------------
+
+private String addCell (String value, String formatting, boolean number) {
+    String ref = new CellReference (lastRow - 1, lastCell).formatAsString ();
+    data.append ("<c ");
+    if (formatting != null && styles.containsKey (formatting)) {
+        XSSFCellStyle style = styles.get (formatting);
+        data.append ("s=\"");
+        data.append (style.getIndex ());
+        data.append ("\" ");
+    } else if (formatting != null) logger.debug ("could not find style " + formatting);
+
+    data.append ("r=\"");
+    data.append (ref);
+    data.append ((number) ? "\"><![CDATA[" : "\" t=\"inlineStr\"><![CDATA[");
+    data.append ((number) ? "<v>" : "<is><t>");
+    data.append (value);
+    data.append ((number) ? "</v>" : "</t></is>");
+    data.append ("</c>");
+    lastCell ++;
+    return ref;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+34989886_35037008_1_18
+34989886_49645880_3_26
+Title: Quick sort imlpementation in Java-wrong output 
+----------------------------------------
+
+public static int partition (int p, int r) {
+    if (p < r) {
+        int pivot = arr [p];
+        int i = p;
+        for (int j = (p + 1);
+        j <= r; j ++) {
+            if (arr [j] < pivot) {
+                temp = arr [j];
+                arr [j] = arr [i + 1];
+                arr [i + 1] = arr [i];
+                arr [i] = temp;
+                i ++;
+            }
+        }
+        temp = i;
+    }
+    return temp;
+}
+----------------------------------------
+
+int partition (int arrNum [], int low, int high) {
+    int pivot = arrNum [high];
+    int a = (low - 1);
+    for (int b = low;
+    b < high; b ++) {
+        if (arrNum [b] <= pivot) {
+            a ++;
+            int temp = arrNum [a];
+            arrNum [a] = arrNum [b];
+            arrNum [b] = temp;
+        }
+    }
+    int temp = arrNum [a + 1];
+    arrNum [a + 1] = arrNum [high];
+    arrNum [high] = temp;
+    return a + 1;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+35013004_35013132_1_16
+35013004_44351117_1_37
+Title: Create a program that calculates the square root of a number without using Math.sqrt 
+----------------------------------------
+
+public static double sqrt (double ans) {
+    if (ans < 1) return 1.0 / sqrt (1.0 / ans);
+
+    double guess = 1;
+    double add = ans / 2;
+    while (add >= Math.ulp (guess)) {
+        double guess2 = guess + add;
+        double result = guess2 * guess2;
+        if (result < ans) guess = guess2;
+        else if (result == ans) return guess2;
+
+        add /= 2;
+    }
+    return guess;
+}
+----------------------------------------
+
+public static double sqrt (double number) {
+    double dd = number, sqi, sqrt = 0;
+    long i, b = 0, e = 0, c = 1, z, d = (long) number, r = 0, j;
+    for (i = 1l, sqi = 1;; i *= 100l, sqi *= 10) {
+        if (i > dd) {
+            i /= 100;
+            sqi /= 10;
+            j = i;
+            break;
+        }
+    }
+    for (z = 0l; z < 16; dd = (dd - (double) (r * i)) * 100, j /= 100l, sqi /= 10, z ++) {
+        r = (long) (dd / i);
+        d = (e * 100l) + r;
+        int a = 9;
+        for (c = ((b * 10l) + a) * a;; a --) {
+            c = ((b * 10l) + a) * a;
+            if (c <= d) break;
+
+        }
+        e = d - c;
+        sqrt += a * sqi;
+        if (number == sqrt * sqrt && j == 1) break;
+
+        b = b * 10l + 2l * (a);
+    }
+    return sqrt;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+35013383_35013727_18_26
+35013383_48340808_31_43
+Title: ItemDecoration based on viewtype in recyclerview 
+----------------------------------------
+
+public void getItemOffsets (Rect outRect, View view, RecyclerView parent, RecyclerView.State state) {
+    int position = parent.getChildAdapterPosition (view);
+    int viewType = parent.getAdapter ().getItemViewType (position);
+    if (viewType == MY_VIEW_TYPE) {
+        outRect.set (0, 0, 0, mHeightDp);
+    } else {
+        outRect.setEmpty ();
+    }
+}
+----------------------------------------
+
+public void getItemOffsets (Rect outRect, View view, RecyclerView parent, RecyclerView.State state) {
+    super.getItemOffsets (outRect, view, parent, state);
+    int position = parent.getChildAdapterPosition (view);
+    if (- 1 >= position) return;
+
+    int viewType = parent.getAdapter ().getItemViewType (position);
+    if (MRecyclerListItem.TYPE_NORMAL == viewType) {
+        outRect.bottom = dividerHeight;
+    } else outRect.setEmpty ();
+
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+35013383_35013727_29_38
+35013383_48340808_46_76
+Title: ItemDecoration based on viewtype in recyclerview 
+----------------------------------------
+
+public void onDraw (Canvas c, RecyclerView parent, RecyclerView.State state) {
+    for (int i = 0;
+    i < parent.getChildCount (); i ++) {
+        View view = parent.getChildAt (i);
+        int position = parent.getChildAdapterPosition (view);
+        int viewType = parent.getAdapter ().getItemViewType (position);
+        if (viewType == MY_VIEW_TYPE) {
+            c.drawRect (view.getLeft (), view.getBottom (), view.getRight (), view.getBottom () + mHeightDp, mPaint);
+        }
+    }
+}
+----------------------------------------
+
+public void onDraw (Canvas c, RecyclerView parent, RecyclerView.State state) {
+    int childCount = parent.getChildCount () - 1;
+    int left = parent.getPaddingLeft ();
+    int right = parent.getWidth () - parent.getPaddingRight ();
+    int top = parent.getPaddingTop ();
+    int bottom = parent.getHeight () - parent.getPaddingBottom ();
+    int itemCount = parent.getAdapter ().getItemCount ();
+    for (int i = 0;
+    i < childCount; i ++) {
+        View view = parent.getChildAt (i);
+        int position = parent.getChildAdapterPosition (view);
+        int viewType = parent.getAdapter ().getItemViewType (position);
+        if (MRecyclerListItem.TYPE_NORMAL == viewType) {
+            int nextItem = position + 1;
+            if (nextItem < itemCount) {
+                int nextViewType = parent.getAdapter ().getItemViewType (nextItem);
+                if (MRecyclerListItem.TYPE_NORMAL != nextViewType) continue;
+
+            }
+            float topDraw = view.getBottom ();
+            float bottomDraw = view.getBottom () + dividerHeight;
+            c.drawRect (left, topDraw, right, bottomDraw, dividerPaint);
+        }
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+35013631_35013978_1_12
+35013631_35014385_22_36
+Title: Keypad Combinations Phone number 
+----------------------------------------
+
+private String givePerm (String givenPerm, char [] [] array, int position, int [] number) {
+    if (array.length != number.length) return null;
+
+    for (char c = array [number [position]] [0];
+    c <= array [number [position]] [array [number [position]].length - 1]; c ++) {
+        String permString;
+        if (position < array.length - 1) permString = givePerm (c + givenPerm, array, position + 1);
+        else permString = "" + c;
+
+        return permString;
+    }
+}
+----------------------------------------
+
+private void givePerm (int position) {
+    String oldSavedPerm = savedPerm;
+    for (char c = array [number [position]] [0];
+    c <= array [number [position]] [array [number [position]].length - 1]; c ++) {
+        savedPerm = c + oldSavedPerm;
+        if (position < array.length - 1) givePerm (position + 1);
+        else System.out.println (savedPerm);
+
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+35013631_35013978_1_12
+35013631_35015416_18_30
+Title: Keypad Combinations Phone number 
+----------------------------------------
+
+private String givePerm (String givenPerm, char [] [] array, int position, int [] number) {
+    if (array.length != number.length) return null;
+
+    for (char c = array [number [position]] [0];
+    c <= array [number [position]] [array [number [position]].length - 1]; c ++) {
+        String permString;
+        if (position < array.length - 1) permString = givePerm (c + givenPerm, array, position + 1);
+        else permString = "" + c;
+
+        return permString;
+    }
+}
+----------------------------------------
+
+private static void givePerm (int position) {
+    for (char c = array [number [position]] [0];
+    c <= array [number [position]] [array [number [position]].length - 1]; c ++) {
+        savedPerm [position] = c;
+        if (position < number.length - 1) givePerm (position + 1);
+        else {
+            for (char text : savedPerm) {
+                System.out.print ("" + text);
+            }
+            System.out.println ();
+        }
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+35013631_35014385_22_36
+35013631_35015416_18_30
+Title: Keypad Combinations Phone number 
+----------------------------------------
+
+private void givePerm (int position) {
+    String oldSavedPerm = savedPerm;
+    for (char c = array [number [position]] [0];
+    c <= array [number [position]] [array [number [position]].length - 1]; c ++) {
+        savedPerm = c + oldSavedPerm;
+        if (position < array.length - 1) givePerm (position + 1);
+        else System.out.println (savedPerm);
+
+    }
+}
+----------------------------------------
+
+private static void givePerm (int position) {
+    for (char c = array [number [position]] [0];
+    c <= array [number [position]] [array [number [position]].length - 1]; c ++) {
+        savedPerm [position] = c;
+        if (position < number.length - 1) givePerm (position + 1);
+        else {
+            for (char text : savedPerm) {
+                System.out.print ("" + text);
+            }
+            System.out.println ();
+        }
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+35022541_35022782_12_28
+35022541_35022805_12_34
+Title: Using user input to perform calculations and store into an arrray 
+----------------------------------------
+
+public static void main (String [] args) {
+    double [] sqNums = new double [25];
+    System.out.println ("Please enter any integer!!");
+    num = console.nextInt ();
+    for (int i = 0;
+    i < 25; i ++) {
+        sqNums [i] = Math.pow (i + num, 2);
+    }
+    arrayList.printArrayDouble (sqNums);
+}
+----------------------------------------
+
+public static void main (String [] args) {
+    double sqNum;
+    double num;
+    double [] sqNums = new double [25];
+    double index = 0;
+    System.out.println ("Please enter any integer!!");
+    num = console.nextInt ();
+    sqNum = num;
+    index = num;
+    for (double i = 0;
+    i < sqNums.length; i ++) {
+        sqNums [(int) i] = Math.pow (num, 2);
+        num ++;
+    }
+    arrayList.printArrayDouble (sqNums, sqNums.length);
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+35022973_35023627_44_57
+35022973_35023627_83_90
+Title: How to get update message/property from second level threads in JavaFX? 
+----------------------------------------
+
+public Void call () throws Exception {
+    int nClients = rng.nextInt (11);
+    for (int i = 1;
+    i <= nClients; i ++) {
+        Thread.sleep (rng.nextInt (2000) + 500);
+        ClientService cs = new ClientService ();
+        String clientID = "Client " + i;
+        updateMessage ("Connected " + clientID);
+        cs.messageProperty ().addListener ((obs, oldMessage, newMessage) -> {
+            messageLookup.put (cs, clientID + ": " + newMessage);
+        });
+        Platform.runLater (cs :: start);
+    }
+    return null;
+}
+----------------------------------------
+
+public Void call () throws InterruptedException {
+    Random rng = new Random ();
+    for (int i = 1;
+    i <= 10; i ++) {
+        Thread.sleep ((rng.nextInt (1000) + 500));
+        updateMessage ("Step " + i);
+    }
+    return null;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+35029367_35029524_1_10
+35029367_35030445_1_40
+Title: How to loop ask if a number is an integer? 
+----------------------------------------
+
+public static void main (String [] args) {
+    System.out.println ("Entered inside the program....");
+    Scanner console = new Scanner (System.in);
+    System.out.println ("Enter an input...");
+    String s = console.next ();
+    if (null == s || ! isInt (s)) {
+        System.out.println ("Entered input is not a valid integer:" + s);
+    }
+    System.out.println ("Entered input is a valid integer");
+}
+----------------------------------------
+
+public static void main (String [] args) {
+    int choose = 0;
+    Scanner sc = new Scanner (System.in);
+    for (;;) {
+        System.out.println ("Enter your choice: ");
+        if (! sc.hasNextInt ()) {
+            System.out.println ("only integers!: ");
+            sc.next ();
+            continue;
+        }
+        choose = sc.nextInt ();
+        if (choose <= 0 || choose > 3) {
+            System.out.println ("Choose a correct gear number");
+            continue;
+        }
+        boolean choiceMade = false;
+        switch (choose) {
+            case 1 :
+                System.out.println ("You're in Gear 1");
+                choiceMade = true;
+                break;
+            case 2 :
+                System.out.println ("Gear 2");
+                choiceMade = true;
+                break;
+            case 3 :
+                System.out.println ("Gear3");
+                choiceMade = true;
+        }
+        if (choiceMade) {
+            break;
+        }
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+35047415_35051489_29_58
+35047415_35064084_34_64
+Title: javafx Tableview cell index/editing bug with duplicated entries 
+----------------------------------------
+
+public void start (Stage primaryStage) throws Exception {
+    AnchorPane parent = new AnchorPane ();
+    Scene scene = new Scene (parent);
+    primaryStage.setScene (scene);
+    TableView < String > table = new TableView < String > ();
+    table.setEditable (true);
+    TableColumn < String, String > column = new TableColumn < String, String > ();
+    column.setCellFactory (new CellFactory ());
+    column.setCellValueFactory (cellData -> new SimpleStringProperty (cellData.getValue ()));
+    column.setOnEditCommit (e -> {
+        int row = e.getTablePosition ().getRow ();
+        table.getItems ().set (row, e.getNewValue ());
+    });
+    for (int i = 0;
+    i < 50; i ++) {
+        table.getItems ().add (new String ("Test"));
+    }
+    table.getColumns ().add (column);
+    parent.getChildren ().add (table);
+    primaryStage.show ();
+}
+----------------------------------------
+
+public void start (Stage primaryStage) throws Exception {
+    AnchorPane parent = new AnchorPane ();
+    Scene scene = new Scene (parent);
+    primaryStage.setScene (scene);
+    for (int i = 0;
+    i < 50; i ++) exampleList.add (new SimpleObjectProperty < SimpleStringProperty > (new SimpleStringProperty ("Hello Test")));
+
+    TableView < ObservableValue < SimpleStringProperty > > listView = new TableView < ObservableValue < SimpleStringProperty > > ();
+    listView.setEditable (true);
+    TableColumn < ObservableValue < SimpleStringProperty >, SimpleStringProperty > column = new TableColumn < ObservableValue < SimpleStringProperty >, SimpleStringProperty > ();
+    column.setCellFactory (E -> new TableCellTest < ObservableValue < SimpleStringProperty >, SimpleStringProperty > ());
+    column.setCellValueFactory (E -> E.getValue ());
+    column.setEditable (true);
+    listView.setItems (exampleList);
+    listView.getColumns ().clear ();
+    listView.getColumns ().add (column);
+    parent.getChildren ().add (listView);
+    primaryStage.show ();
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+35047415_35051489_82_97
+35047415_35064084_106_140
+Title: javafx Tableview cell index/editing bug with duplicated entries 
+----------------------------------------
+
+protected void updateItem (String item, boolean empty) {
+    super.updateItem (item, empty);
+    if (getIndex () != - 1 && getIndex () == editingIndex) {
+        setContentDisplay (ContentDisplay.GRAPHIC_ONLY);
+    } else {
+        setText (empty ? null : item);
+        setContentDisplay (ContentDisplay.TEXT_ONLY);
+    }
+    if (this.getIndex () >= 0 && getIndex () < 12) this.setStyle ("-fx-background-color: rgba(253, 255, 150, 0.4);");
+    else this.setStyle ("");
+
+}
+----------------------------------------
+
+protected void updateItem (T item, boolean empty) {
+    super.updateItem (item, empty);
+    if (this.getIndex () < 12) this.setStyle ("-fx-background-color: rgba(253, 255, 150, 0.4);");
+    else this.setStyle ("");
+
+    if (empty || item == null) {
+        this.setText (null);
+        this.setGraphic (null);
+    } else {
+        if (this.isEditing () && this.getTableView ().getEditingCell () != null && this.getTableView ().getEditingCell ().getTableColumn ().getCellData (this.getTableView ().getEditingCell ().getRow ()).equals (this.getItem ())) {
+            this.setText (null);
+            this.setGraphic (textField);
+        } else {
+            this.setText (((SimpleStringProperty) this.getItem ()).get ());
+            this.setGraphic (null);
+        }
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+35052315_35052403_1_12
+35052315_35062400_15_24
+Title: Boolean Array Value Comparison 
+----------------------------------------
+
+public Boolean isPalindrome () {
+    Boolean result = true;
+    for (int i = 0;
+    i < bits.length; i ++) {
+        int a = bits [i];
+        int b = bits [bits.length - i - 1];
+        if (a != b) return false;
+
+    }
+    return true;
+}
+----------------------------------------
+
+public static Boolean isPalindrome (Boolean [] bits) {
+    Boolean result = true;
+    for (int i = 0;
+    i < bits.length; i ++) {
+        Boolean a = bits [i];
+        Boolean b = bits [bits.length - i - 1];
+        if (a != b) result = false;
+
+    }
+    return result;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+35052423_35052840_185_203
+35052423_35052840_60_69
+Title: android client-java server communication 
+----------------------------------------
+
+public synchronized void run () {
+    if (client == null) {
+        try {
+            System.out.println (" trying new Client");
+            client = new ChatClient ("192.168.1.111", 6668);
+        } catch (Exception e) {
+            e.printStackTrace ();
+        }
+    }
+    if (client != null) {
+        if (client != null && ChatClient.isconnected) {
+            client.recieve ();
+        }
+    }
+}
+----------------------------------------
+
+public void run () {
+    while (true) {
+        setTextMitte ();
+        try {
+            thread.sleep (1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace ();
+        }
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+35054414_35054947_1_13
+35054414_35054959_1_15
+Title: Decisions without if statements 
+----------------------------------------
+
+public static boolean isGameOver (int score, int lives, int level) {
+    while (level == 1 && lives > 0) return score < 1000;
+
+    while (level == 2 && lives > 0) return score < 2000;
+
+    while (level >= 3 && lives > 0) return score < 3000;
+
+    return true;
+}
+----------------------------------------
+
+public static boolean isGameOver (int score, int lives, int level) {
+    while (lives > 0) {
+        switch (level) {
+            case 1 :
+                return (score > 1000) ? false : true;
+            case 2 :
+                return (score > 2000) ? false : true;
+            case 3 :
+                return (score > 3000) ? false : true;
+        }
+        return false;
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+35054414_35054947_1_13
+35054414_35057289_15_22
+Title: Decisions without if statements 
+----------------------------------------
+
+public static boolean isGameOver (int score, int lives, int level) {
+    while (level == 1 && lives > 0) return score < 1000;
+
+    while (level == 2 && lives > 0) return score < 2000;
+
+    while (level >= 3 && lives > 0) return score < 3000;
+
+    return true;
+}
+----------------------------------------
+
+public static boolean isGameOver (int score, int lives, int level) {
+    if (lives < 1) return true;
+
+    HashMap < Integer, Integer > levelScores = new HashMap ();
+    levelScores.put (1, 1000);
+    levelScores.put (2, 2000);
+    levelScores.put (3, 3000);
+    return (levelScores.get (level) > score) ? true : false;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+35054414_35054959_1_15
+35054414_35057289_15_22
+Title: Decisions without if statements 
+----------------------------------------
+
+public static boolean isGameOver (int score, int lives, int level) {
+    while (lives > 0) {
+        switch (level) {
+            case 1 :
+                return (score > 1000) ? false : true;
+            case 2 :
+                return (score > 2000) ? false : true;
+            case 3 :
+                return (score > 3000) ? false : true;
+        }
+        return false;
+    }
+}
+----------------------------------------
+
+public static boolean isGameOver (int score, int lives, int level) {
+    if (lives < 1) return true;
+
+    HashMap < Integer, Integer > levelScores = new HashMap ();
+    levelScores.put (1, 1000);
+    levelScores.put (2, 2000);
+    levelScores.put (3, 3000);
+    return (levelScores.get (level) > score) ? true : false;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+35055579_35055932_2_19
+35055579_35056148_12_24
+Title: How to get a range of DateTime-Elements in LinkedList between the given start and end datetime 
+----------------------------------------
+
+public static void main (String [] args) throws ParseException {
+    DateFormat dateFormat = new SimpleDateFormat ("dd.MM.yyyy HH:mm:ss");
+    List < Element > list = new LinkedList < > ();
+    list.add (new Element (dateFormat.parse ("28.01.2016 08:43:00 ")));
+    list.add (new Element (dateFormat.parse ("28.01.2016 08:43:05 ")));
+    list.add (new Element (dateFormat.parse ("28.01.2016 08:44:00 ")));
+    list.add (new Element (dateFormat.parse ("28.01.2016 08:44:30 ")));
+    list.add (new Element (dateFormat.parse ("28.01.2016 08:44:35 ")));
+    list.add (new Element (dateFormat.parse ("28.01.2016 08:44:38 ")));
+    list.add (new Element (dateFormat.parse ("28.01.2016 08:45:00 ")));
+    list.add (new Element (dateFormat.parse ("28.01.2016 08:46:00 ")));
+    Date leftLimit = dateFormat.parse ("28.01.2016 08:44:00");
+    Date rightLimit = dateFormat.parse ("28.01.2016 08:45:00");
+    System.out.println (list.stream ().filter (element -> element.date.after (leftLimit) && element.date.before (rightLimit)).collect (Collectors.toList ()));
+}
+----------------------------------------
+
+public static void main (String [] args) {
+    LinkedList < Map.Entry < String, LocalDateTime > > data = new LinkedList < > ();
+    LocalDateTime start = LocalDateTime.parse ("2016-01-28T08:43:50", DATE_TIME_FORMATTER);
+    for (int i = 0;
+    i < 10; i ++) {
+        data.add (wrap (String.valueOf (i), start.plusSeconds (i * 11)));
+    }
+    System.out.println ("Full list:");
+    print (data);
+    String from = "2016-01-28T08:44:00";
+    String to = "2016-01-28T08:45:00";
+    System.out.println (String.format ("Values between [%s, %s]:", from, to));
+    print (filter (data, from, to));
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+3507740_3507846_25_38
+3507740_3507846_41_54
+Title: Java newbie needs help in database connection 
+----------------------------------------
+
+public static void close (Connection connection) {
+    try {
+        if (connection != null) {
+            connection.close ();
+        }
+    } catch (SQLException e) {
+        e.printStackTrace ();
+    }
+}
+----------------------------------------
+
+public static void close (Statement st) {
+    try {
+        if (st != null) {
+            st.close ();
+        }
+    } catch (SQLException e) {
+        e.printStackTrace ();
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+3507740_3507846_25_38
+3507740_3507846_56_69
+Title: Java newbie needs help in database connection 
+----------------------------------------
+
+public static void close (Connection connection) {
+    try {
+        if (connection != null) {
+            connection.close ();
+        }
+    } catch (SQLException e) {
+        e.printStackTrace ();
+    }
+}
+----------------------------------------
+
+public static void close (ResultSet rs) {
+    try {
+        if (rs != null) {
+            rs.close ();
+        }
+    } catch (SQLException e) {
+        e.printStackTrace ();
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+3507740_3507846_41_54
+3507740_3507846_56_69
+Title: Java newbie needs help in database connection 
+----------------------------------------
+
+public static void close (Statement st) {
+    try {
+        if (st != null) {
+            st.close ();
+        }
+    } catch (SQLException e) {
+        e.printStackTrace ();
+    }
+}
+----------------------------------------
+
+public static void close (ResultSet rs) {
+    try {
+        if (rs != null) {
+            rs.close ();
+        }
+    } catch (SQLException e) {
+        e.printStackTrace ();
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+35089991_45026697_1_9
+35089991_45026697_24_32
+Title: How to use spring transaction manager in case of dynamic data source? 
+----------------------------------------
+
+@Bean (name = "mysqldatasource1")
+public DataSource dataSource () {
+    BasicDataSource dataSource = new BasicDataSource ();
+    dataSource.setDriverClassName (classname);
+    dataSource.setUrl (url);
+    dataSource.setUsername (usernmae);
+    dataSource.setPassword (password);
+    return dataSource;
+}
+----------------------------------------
+
+@Bean (name = "mysqldatasource2")
+public DataSource dataSource () {
+    BasicDataSource dataSource = new BasicDataSource ();
+    dataSource.setDriverClassName (classname);
+    dataSource.setUrl (url);
+    dataSource.setUsername (usernmae);
+    dataSource.setPassword (password);
+    return dataSource;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+350914_350955_1_24
+350914_350958_23_59
+Title: Proper synchronization of Java threads using wait/notifyAll? 
+----------------------------------------
+
+public synchronized void dowork () {
+    Worker a = new Worker (this);
+    Worker b = new Worker (this);
+    while ((line = reader.readLine ()) != null) {
+        workersDone = 0;
+        a.setData (line);
+        b.setData (line);
+        while (workersDone < totalWorkers) {
+            wait ();
+        }
+    }
+}
+----------------------------------------
+
+public synchronized void dowork () throws IOException {
+    final Worker worker = new Worker ();
+    for (String line : new String [] {"Line 1", "Line 2", "Line 3"}) {
+        System.out.println ("Read line: " + line);
+        for (int c = 0;
+        c < this.totalWorkers; c ++) {
+            final String curLine = line;
+            this.executor.submit (new Runnable () {
+                public void run () {
+                    worker.doWork (curLine);
+                }}
+
+            );
+        }
+        try {
+            System.out.println ("Waiting for work to be complete on line: " + line);
+            this.barrier.await ();
+        } catch (InterruptedException e) {
+            e.printStackTrace ();
+        } catch (BrokenBarrierException e) {
+            e.printStackTrace ();
+        }
+    }
+    System.out.println ("All work complete!");
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+35105344_44967881_7_44
+35105344_44969027_11_52
+Title: Removing all spaces in an ArrayList. Java 
+----------------------------------------
+
+public static void main (String [] args) {
+    String total = "";
+    List list = new ArrayList ();
+    list.add ("3______3");
+    list.add ("_3 _4");
+    list.add ("__ 1_______2_ 3");
+    list.add ("3 ");
+    list.add (" ___4 _5 _6");
+    list.add (" 7_ 8 _9");
+    list.add (" 1_ 2_ 3_ 4");
+    list.add (" 5 _6_ 7_ 8");
+    list.add (" 9 _10_ 11_ 12");
+    String firstname1 = list.toString ();
+    String regex = "[0-9]+";
+    firstname1 = firstname1.replaceAll ("_", ",");
+    firstname1 = firstname1.replace (",", ",");
+    String str = firstname1.toString ().replaceAll ("\\s+", ",").replace ("[", "").replace ("]", "");
+    String arr [] = str.split (",");
+    for (int i = 0;
+    i < arr.length; i ++) {
+        if (arr [i].matches (regex)) {
+            total += arr [i] + ",";
+        }
+    }
+    total = total.substring (0, total.length () - 1);
+    List finalList = Arrays.asList (total);
+    System.out.println (finalList);
+}
+----------------------------------------
+
+public static void main (String [] args) throws FileNotFoundException, IOException {
+    String total = "";
+    List list = new ArrayList ();
+    try {
+        BufferedReader br = new BufferedReader (new FileReader ("filename.txt"));
+        while ((total = br.readLine ()) != null) {
+            list.add (total);
+        }
+        br.close ();
+    } catch (FileNotFoundException e) {
+        System.err.println ("Unable to find the file: fileName");
+    }
+    String firstname1 = list.toString ();
+    String regex = "[0-9]+";
+    firstname1 = firstname1.replaceAll ("_", ",");
+    firstname1 = firstname1.replace (",", ",");
+    String str = firstname1.toString ().replaceAll ("\\s+", ",").replace ("[", "").replace ("]", "");
+    String arr [] = str.split (",");
+    String sum = "";
+    for (int i = 0;
+    i < arr.length; i ++) {
+        if (arr [i].matches (regex)) {
+            sum += arr [i] + ",";
+        }
+    }
+    sum = sum.substring (0, sum.length () - 1);
+    List finalList = Arrays.asList (sum);
+    System.out.println ("finallist-->>>" + finalList);
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+35109352_35109488_16_34
+35109352_35109862_15_24
+Title: Java - changing a variable through pass-by-value 
+----------------------------------------
+
+private int calculatePosition (final int targetPosition) {
+    final int localCopy = targetPosition + 6;
+    if (snakeLocations [localCopy] > 0) {
+        return (localCopy - 6);
+    }
+    if (ladderLocations [localCopy] > 0) {
+        return (localCopy + 6);
+    }
+    return localCopy;
+}
+----------------------------------------
+
+private int calculatePosition (int position) {
+    position += 6;
+    if (snakeLocations [position] > 0) {
+        position -= 6;
+    } else if (ladderLocations [position] > 0) {
+        position += 6;
+    }
+
+    return position;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+35122818_35122880_1_12
+35122818_35122929_1_10
+Title: Using IsPrime method in Java 
+----------------------------------------
+
+public static void main (String [] args) {
+    int isPrimeCount = 0;
+    for (i = 0; i < 1000; i ++) {
+        if (Check_Prime (i)) {
+            isPrimeCount ++;
+        }
+        System.out.println (isPrimeCount);
+    }
+}
+----------------------------------------
+
+public static void main (String [] args) {
+    int z = 0;
+    for (i = 1; i <= 1000; i ++) {
+        if (isPrime (i)) {
+            z ++;
+        }
+    }
+    System.out.print (z + "\n");
+}
+----------------------------------------

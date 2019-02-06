@@ -1,0 +1,5382 @@
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+18071559_18071966_8_61
+18071559_18077073_11_113
+Title: Adding elements of an array using shared memory in C 
+----------------------------------------
+
+int main () {
+    int w, h, i, j;
+    scanf ("%d %d", & w, & h);
+    int *arr = malloc (w *h * sizeof (int));
+    for (i = 0; i < w * h; ++i)
+        scanf ("%d", &arr[i]);
+    int shm = shmget (42, h * sizeof (int), IPC_CREAT | 0666);
+    if (shm < 0) {
+        perror ("shmget");
+        return 1;
+    }
+    int *row = shmat (shm, NULL, 0);
+    if (row < (int *) NULL) {
+        perror ("shmat");
+        return 1;
+    }
+    for (i = 0; i < h; ++i)
+        if (!fork ()) {
+            for (j = row[i] = 0; j < w; ++j)
+                row[i] += arr[i * w + j];
+            return 0;
+        }
+    for (i = 0; i < h; ++i)
+        wait (&j);
+    for (i = j = 0; i < h; ++i)
+        j += row[i];
+    printf ("%d\n", j);
+    shmdt (row);
+    shmctl (shm, IPC_RMID, NULL);
+    free (arr);
+    return 0;
+}
+----------------------------------------
+
+int main (int argc, char **argv) {
+    int rows, cols;
+    scanf ("%d %d", & rows, & cols);
+    if (rows <= 0 || cols <= 0) {
+        printf ("invalid input\n");
+        return 1;
+    }
+    int *dataa_user = NULL;
+    int i = 0;
+    int shm_2d = -1;
+    dataa_user = (int *) malloc (rows *cols * sizeof (int));
+    for (i = 0; i < rows * cols; i++)
+        scanf ("%d", &dataa_user[i]);
+    shm_2d = shmget (KEY_2D, rows *cols * sizeof (int), IPC_CREAT | 0666);
+    if (shm_2d < 0) {
+        perror ("shmget");
+        if (dataa_user)
+            free (dataa_user);
+        dataa_user = NULL;
+        return 1;
+    }
+    void *data_2d = shmat (shm_2d, NULL, 0);
+    if (data_2d == (void *) -1) {
+        perror ("shmat");
+        shmctl (shm_2d, IPC_RMID, NULL);
+        if (dataa_user)
+            free (dataa_user);
+        dataa_user = NULL;
+        return 1;
+    }
+    int shm_row = -1;
+    memcpy (data_2d, dataa_user, rows * cols * sizeof (int));
+    free (dataa_user);
+    dataa_user = NULL;
+    shm_row = shmget (KEY_ROW, rows * sizeof (int), IPC_CREAT | 0666);
+    if (shm_row < 0) {
+        perror ("shmget");
+        shmdt (data_2d);
+        shmctl (shm_2d, IPC_RMID, NULL);
+        return 1;
+    }
+    void *data_row = shmat (shm_row, NULL, 0);
+    if (data_row == (void *) -1) {
+        perror ("shmat");
+        shmdt (data_2d);
+        shmctl (shm_2d, IPC_RMID, NULL);
+        shmctl (shm_row, IPC_RMID, NULL);
+        return 1;
+    }
+    memset (data_row, 0, rows * sizeof (int));
+    for (i = 0; i < rows; i++) {
+        if (!fork ()) {
+            int k = 0;
+            int *dataa_2d = (int *) data_2d;
+            int *total_row = (int *) data_row;
+            for (; k < cols; k++)
+                total_row[i] += dataa_2d[i * cols + k];
+            return 0;
+        }
+    }
+    int sts = 0;
+    for (i = 0; i < rows; i++) {
+        wait (& sts);
+    }
+    int total_2d = 0;
+    int *total_row = (int *) data_row;
+    for (i = 0; i < rows; i++) {
+        total_2d += total_row[i];
+    }
+    printf ("%d\n", total_2d);
+    shmdt (data_2d);
+    shmdt (data_row);
+    shmctl (shm_2d, IPC_RMID, NULL);
+    shmctl (shm_row, IPC_RMID, NULL);
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+18082335_18083050_71_83
+18082335_18321463_63_79
+Title: how to postpone a function call in c 
+----------------------------------------
+
+int main () {
+    cout << "Calling delayed function1" << endl;
+    void *params1 = TestFunction1Delayed (TestFunction1, 1, 2, "Hello");
+    cout << "Calling delayed function2" << endl;
+    void *params2 = TestFunction2Delayed (TestFunction2, "World", 3.14192654f);
+    cout << "Delaying a bit..." << endl;
+    cout << "Doing Function2..." << endl;
+    CallDelayedFunction (params2);
+    cout << "Doing Function1..." << endl;
+    CallDelayedFunction (params1);
+    cout << "Done" << endl;
+}
+----------------------------------------
+
+int main () {
+    struct type t1, t2, t3;
+    t1.type = CHAR;
+    t1.value.c = 0x61;
+    t2.type = LONG;
+    t2.value.l = 0xFFFF;
+    t3.type = CHARPTR;
+    t3.value.s = "hello";
+    test_fun (3, t1, t2, t3);
+    test_fun2 (convert (t1), convert (t2), convert (t3));
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+18083984_18084591_4_20
+18083984_47457116_2_19
+Title: how to store and then print a 2d character/string array? 
+----------------------------------------
+
+int main () {
+    char *str [3];
+    int i;
+    int num;
+    for (i = 0; i < 3; i++) {
+        printf ("\n No of charecters in the word : ");
+        scanf ("%d", & num);
+        str[i] = (char *) malloc ((num + 1) * sizeof (char));
+        scanf ("%s", str [i]);
+    }
+    for (i = 0; i < 3; i++) {
+        printf ("\n %s", str [i]);
+    }
+}
+----------------------------------------
+
+int main () {
+    char str [6] [10];
+    int i, j;
+    for (i = 0; i < 6; i++) {
+        scanf ("%s", str [i]);
+    }
+    printf ("\n");
+    for (i = 0; i < 6; i++) {
+        printf ("%s", str [i]);
+        printf ("\n");
+    }
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+18100761_18101149_6_23
+18100761_42171844_55_69
+Title: Obtaining SubnetMask in C 
+----------------------------------------
+
+int main () {
+    struct ifaddrs *ifap, *ifa;
+    struct sockaddr_in *sa;
+    char *addr;
+    getifaddrs (& ifap);
+    for (ifa = ifap; ifa; ifa = ifa->ifa_next) {
+        if (ifa->ifa_addr->sa_family == AF_INET) {
+            sa = (struct sockaddr_in *) ifa->ifa_netmask;
+            addr = inet_ntoa (sa->sin_addr);
+            printf ("Interface: %s\tAddress: %s\n", ifa -> ifa_name, addr);
+        }
+    }
+    freeifaddrs (ifap);
+    return 0;
+}
+----------------------------------------
+
+int main (void) {
+    char *addr = malloc (NI_MAXHOST);
+    char *netmask = malloc (NI_MAXHOST);
+    if (!get_addr_and_netmask_using_ifaddrs ("enp6s0", addr, netmask))
+        printf ("[%s]%s %s\n", __func__, addr, netmask);
+    else
+        printf ("interface error.\n");
+    free (addr);
+    free (netmask);
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+18126872_18127090_3_16
+18126872_18127193_1_17
+Title: strings and pointers manipulation 
+----------------------------------------
+
+int main () {
+    char szStr [] = "India\0Japan\0America\0Australia\0";
+    char *p = szStr;
+    while (*p) {
+        p += printf ("%s", p);
+        p++;
+        fputc ('\n', stdout);
+    }
+    return 0;
+}
+----------------------------------------
+
+int main () {
+    char szStr [] = "India\0Japan\0America\0Australia\0";
+    char *p = szStr;
+    int numOfStrings = 4;
+    for (int i = 0; i < numOfStrings; i++) {
+        while (*p) {
+            printf ("%c", * p);
+            p++;
+        }
+        printf (" ");
+        p++;
+    }
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+18148160_18148218_4_29
+18148160_18148349_1_26
+Title: Insert Element in specific position in one dimentional array in c 
+----------------------------------------
+
+int main () {
+    int arr [100] = {10, 5, 46, 2, 100, 97};
+    int n, max, i = 7;
+    n = 0;
+    clrscr ();
+    if (i > n) {
+        printf ("postion you wanted to insert");
+        scanf ("%d", & n);
+    }
+    printf ("Value for position: \n");
+    scanf ("%d", & max);
+    for (i = 7; i > n - 1; i--) {
+        arr[i + 1] = arr[i];
+        arr[n] = max;
+    }
+    printf ("Array after insertion: \n");
+    for (i = 0; i < 7; i++) {
+        printf ("%d\t", arr [i]);
+    }
+    getch ();
+}
+----------------------------------------
+
+int main () {
+    int arr [100] = {10, 5, 46, 2, 100, 97};
+    int n = 6;
+    int pos = 0;
+    int value = 0;
+    clrscr ();
+    printf ("postion you wanted to insert");
+    scanf ("%d", & pos);
+    printf ("Value for position: \n");
+    scanf ("%d", & value);
+    int i;
+    for (i = n; i > pos; --i)
+        arr[i] = arr[i - 1];
+    arr[pos] = value;
+    ++n;
+    printf ("New array:\n");
+    for (i = 0; i < 0; ++i)
+        printf ("%d ", arr[i]);
+    getch ();
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+18148160_18148218_4_29
+18148160_18149117_3_41
+Title: Insert Element in specific position in one dimentional array in c 
+----------------------------------------
+
+int main () {
+    int arr [100] = {10, 5, 46, 2, 100, 97};
+    int n, max, i = 7;
+    n = 0;
+    clrscr ();
+    if (i > n) {
+        printf ("postion you wanted to insert");
+        scanf ("%d", & n);
+    }
+    printf ("Value for position: \n");
+    scanf ("%d", & max);
+    for (i = 7; i > n - 1; i--) {
+        arr[i + 1] = arr[i];
+        arr[n] = max;
+    }
+    printf ("Array after insertion: \n");
+    for (i = 0; i < 7; i++) {
+        printf ("%d\t", arr [i]);
+    }
+    getch ();
+}
+----------------------------------------
+
+int main () {
+    int arr [MAX_EL] = {10, 5, 46, 2, 100, 97};
+    int n, max, i;
+    int nb_elements = 6;
+    n = 0;
+    i = 0;
+    printf ("postion you wanted to insert :\n");
+    scanf ("%d", & n);
+    printf ("Value for position: \n");
+    scanf ("%d", & max);
+    if (nb_elements >= MAX_EL) {
+        fprintf (stderr, "Tab is full ! \n");
+        return -1;
+    }
+    if (n > nb_elements - 1)
+        n = nb_elements;
+    int arr_tmp [MAX_EL];
+    for (; i < n; i++) {
+        arr_tmp[i] = arr[i];
+    }
+    arr_tmp[n] = max;
+    for (i = n; i < nb_elements + 1; i++)
+        arr_tmp[i + 1] = arr[i];
+    nb_elements++;
+    memcpy (& arr [0], & arr_tmp [0], sizeof (int) * nb_elements);
+    printf ("Array after insertion: \n");
+    for (i = 0;
+    i < nb_elements;
+    i ++) {printf ("%d\t", arr [i]);
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+18148160_18148278_4_28
+18148160_18148349_1_26
+Title: Insert Element in specific position in one dimentional array in c 
+----------------------------------------
+
+int main () {
+    int arr [100] = {10, 5, 46, 2, 100, 97};
+    int n, max, i;
+    n = 0;
+    clrscr ();
+    printf ("postion you wanted to insert");
+    scanf ("%d", & n);
+    printf ("Value for position: \n");
+    scanf ("%d", & max);
+    for (i = 6; i > n - 1; i--) {
+        arr[i + 1] = arr[i];
+        arr[i] = max;
+    }
+    printf ("Array after insertion: \n");
+    for (i = 0; i < 7; i++) {
+        printf ("%d\t", arr [i]);
+    }
+    getch ();
+}
+----------------------------------------
+
+int main () {
+    int arr [100] = {10, 5, 46, 2, 100, 97};
+    int n = 6;
+    int pos = 0;
+    int value = 0;
+    clrscr ();
+    printf ("postion you wanted to insert");
+    scanf ("%d", & pos);
+    printf ("Value for position: \n");
+    scanf ("%d", & value);
+    int i;
+    for (i = n; i > pos; --i)
+        arr[i] = arr[i - 1];
+    arr[pos] = value;
+    ++n;
+    printf ("New array:\n");
+    for (i = 0; i < 0; ++i)
+        printf ("%d ", arr[i]);
+    getch ();
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+18148160_18148278_4_28
+18148160_18149117_3_41
+Title: Insert Element in specific position in one dimentional array in c 
+----------------------------------------
+
+int main () {
+    int arr [100] = {10, 5, 46, 2, 100, 97};
+    int n, max, i;
+    n = 0;
+    clrscr ();
+    printf ("postion you wanted to insert");
+    scanf ("%d", & n);
+    printf ("Value for position: \n");
+    scanf ("%d", & max);
+    for (i = 6; i > n - 1; i--) {
+        arr[i + 1] = arr[i];
+        arr[i] = max;
+    }
+    printf ("Array after insertion: \n");
+    for (i = 0; i < 7; i++) {
+        printf ("%d\t", arr [i]);
+    }
+    getch ();
+}
+----------------------------------------
+
+int main () {
+    int arr [MAX_EL] = {10, 5, 46, 2, 100, 97};
+    int n, max, i;
+    int nb_elements = 6;
+    n = 0;
+    i = 0;
+    printf ("postion you wanted to insert :\n");
+    scanf ("%d", & n);
+    printf ("Value for position: \n");
+    scanf ("%d", & max);
+    if (nb_elements >= MAX_EL) {
+        fprintf (stderr, "Tab is full ! \n");
+        return -1;
+    }
+    if (n > nb_elements - 1)
+        n = nb_elements;
+    int arr_tmp [MAX_EL];
+    for (; i < n; i++) {
+        arr_tmp[i] = arr[i];
+    }
+    arr_tmp[n] = max;
+    for (i = n; i < nb_elements + 1; i++)
+        arr_tmp[i + 1] = arr[i];
+    nb_elements++;
+    memcpy (& arr [0], & arr_tmp [0], sizeof (int) * nb_elements);
+    printf ("Array after insertion: \n");
+    for (i = 0;
+    i < nb_elements;
+    i ++) {printf ("%d\t", arr [i]);
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+18148160_18148349_1_26
+18148160_18149117_3_41
+Title: Insert Element in specific position in one dimentional array in c 
+----------------------------------------
+
+int main () {
+    int arr [100] = {10, 5, 46, 2, 100, 97};
+    int n = 6;
+    int pos = 0;
+    int value = 0;
+    clrscr ();
+    printf ("postion you wanted to insert");
+    scanf ("%d", & pos);
+    printf ("Value for position: \n");
+    scanf ("%d", & value);
+    int i;
+    for (i = n; i > pos; --i)
+        arr[i] = arr[i - 1];
+    arr[pos] = value;
+    ++n;
+    printf ("New array:\n");
+    for (i = 0; i < 0; ++i)
+        printf ("%d ", arr[i]);
+    getch ();
+}
+----------------------------------------
+
+int main () {
+    int arr [MAX_EL] = {10, 5, 46, 2, 100, 97};
+    int n, max, i;
+    int nb_elements = 6;
+    n = 0;
+    i = 0;
+    printf ("postion you wanted to insert :\n");
+    scanf ("%d", & n);
+    printf ("Value for position: \n");
+    scanf ("%d", & max);
+    if (nb_elements >= MAX_EL) {
+        fprintf (stderr, "Tab is full ! \n");
+        return -1;
+    }
+    if (n > nb_elements - 1)
+        n = nb_elements;
+    int arr_tmp [MAX_EL];
+    for (; i < n; i++) {
+        arr_tmp[i] = arr[i];
+    }
+    arr_tmp[n] = max;
+    for (i = n; i < nb_elements + 1; i++)
+        arr_tmp[i + 1] = arr[i];
+    nb_elements++;
+    memcpy (& arr [0], & arr_tmp [0], sizeof (int) * nb_elements);
+    printf ("Array after insertion: \n");
+    for (i = 0;
+    i < nb_elements;
+    i ++) {printf ("%d\t", arr [i]);
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+18152913_18158278_23_73
+18152913_18165269_23_86
+Title: "AES (aes-cbc-128 aes-cbc-192 aes-cbc-256) encryption/decryption with openssl C" 
+----------------------------------------
+
+int main (int argc, char **argv) {
+    int keylength;
+    printf ("Give a key length [only 128 or 192 or 256!]:\n");
+    scanf ("%d", & keylength);
+    unsigned char aes_key [keylength / 8];
+    memset (aes_key, 0, keylength / 8);
+    if (!RAND_bytes (aes_key, keylength / 8))
+        exit (-1);
+    size_t inputslength = 0;
+    printf ("Give an input's length:\n");
+    scanf ("%lu", & inputslength);
+    unsigned char aes_input [inputslength];
+    memset (aes_input, 'X', inputslength);
+    unsigned char iv_enc [AES_BLOCK_SIZE], iv_dec [AES_BLOCK_SIZE];
+    RAND_bytes (iv_enc, AES_BLOCK_SIZE);
+    memcpy (iv_dec, iv_enc, AES_BLOCK_SIZE);
+    const size_t encslength = ((inputslength + AES_BLOCK_SIZE) / AES_BLOCK_SIZE) * AES_BLOCK_SIZE;
+    unsigned char enc_out [encslength];
+    unsigned char dec_out [inputslength];
+    memset (enc_out, 0, sizeof (enc_out));
+    memset (dec_out, 0, sizeof (dec_out));
+    AES_KEY enc_key, dec_key;
+    AES_set_encrypt_key (aes_key, keylength, & enc_key);
+    AES_cbc_encrypt (aes_input, enc_out, inputslength, & enc_key, iv_enc, AES_ENCRYPT);
+    AES_set_decrypt_key (aes_key, keylength, & dec_key);
+    AES_cbc_encrypt (enc_out, dec_out, encslength, & dec_key, iv_dec, AES_DECRYPT);
+    printf ("original:\t");
+    hex_print (aes_input, sizeof (aes_input));
+    printf ("encrypt:\t");
+    hex_print (enc_out, sizeof (enc_out));
+    printf ("decrypt:\t");
+    hex_print (dec_out, sizeof (dec_out));
+    return 0;
+}
+----------------------------------------
+
+int main (int argc, char **argv) {
+    size_t inputslength = 0;
+    printf ("Give an input's length:\n");
+    scanf ("%lu", & inputslength);
+    int keylength;
+    printf ("Give a key length [only 128 or 192 or 256!]:\n");
+    scanf ("%d", & keylength);
+    unsigned char *aes_key = (unsigned char *) malloc (sizeof (unsigned char) * (keylength / 8));
+    memset (aes_key, 0, keylength / 8);
+    RAND_bytes (aes_key, keylength / 8);
+    unsigned char *aes_input = (unsigned char *) malloc (sizeof (unsigned char) * (inputslength));
+    memset (aes_input, 'X', sizeof (aes_input));
+    unsigned char *iv_enc = (unsigned char *) malloc (sizeof (unsigned char) * (AES_BLOCK_SIZE));
+    unsigned char *iv_dec = (unsigned char *) malloc (sizeof (unsigned char) * (AES_BLOCK_SIZE));
+    RAND_bytes (iv_enc, AES_BLOCK_SIZE);
+    memcpy (iv_dec, iv_enc, AES_BLOCK_SIZE);
+    const size_t length = (((inputslength + AES_BLOCK_SIZE) / AES_BLOCK_SIZE) * AES_BLOCK_SIZE);
+    unsigned char *enc_out = (unsigned char *) malloc (sizeof (unsigned char) * (length));
+    unsigned char *dec_out = (unsigned char *) malloc (sizeof (unsigned char) * (inputslength));
+    AES_KEY encKey, decKey;
+    AES_set_encrypt_key (aes_key, keylength, & encKey);
+    AES_cbc_encrypt (aes_input, enc_out, inputslength, & encKey, iv_enc, AES_ENCRYPT);
+    AES_set_decrypt_key (aes_key, keylength, & decKey);
+    AES_cbc_encrypt (enc_out, dec_out, length, & decKey, iv_dec, AES_DECRYPT);
+    printf ("original:\t");
+    hex_print (aes_input, sizeof (aes_input));
+    printf ("encrypt:\t");
+    hex_print (enc_out, sizeof (enc_out));
+    printf ("decrypt:\t");
+    hex_print (dec_out, sizeof (dec_out));
+    free (aes_key);
+    aes_key = NULL;
+    free (aes_input);
+    aes_input = NULL;
+    free (iv_enc);
+    iv_enc = NULL;
+    free (iv_dec);
+    iv_dec = NULL;
+    free (enc_out);
+    enc_out = NULL;
+    free (dec_out);
+    dec_out = NULL;
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+18153244_18153345_13_25
+18153244_30208245_6_14
+Title: Correct use of POSIX' pthread_exit and pthread_join 
+----------------------------------------
+
+int main (void) {
+    foo *ptr = malloc (sizeof (*ptr));
+    assert (ptr);
+    ptr->input1 = 5;
+    ptr->input2 = 3;
+    pthread_t thread;
+    pthread_create (& thread, NULL, doStuff, ptr);
+    pthread_join (thread, NULL);
+    printf ("%d\n", ptr -> result);
+    free (ptr);
+}
+----------------------------------------
+
+int main (void) {
+    pthread_t thread;
+    void *ptr;
+    int a;
+    pthread_create (& thread, NULL, thread_fn, & a);
+    pthread_join (thread, & ptr);
+    a = (intptr_t) ptr;
+    printf ("%d\n", a);
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+18154595_18154633_21_33
+18154595_18156559_21_34
+Title: passing address of variable to a C function 
+----------------------------------------
+
+int main () {
+    member_type b;
+    static char *d1;
+    b = USERNAME;
+    printf ("%p\n", & d1);
+    func (USERNAME, & d1);
+    printf ("Val_1:%s\n", d1);
+    return 0;
+}
+----------------------------------------
+
+int main () {
+    member_type b;
+    static char *d1;
+    b = VAL_1;
+    printf ("%p\n", & d1);
+    func (b, & d1);
+    printf ("Val_1:%s\n", d1);
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+1820144_1820641_6_47
+1820144_53531062_4_38
+Title: Opening gzipped files for reading in C without creating temporary files 
+----------------------------------------
+
+int main (int argc, char *argv []) {
+    const char prefix [] = "zcat ";
+    const char *arg;
+    char *cmd;
+    FILE *in;
+    char buf [4096];
+    if (argc != 2) {
+        fprintf (stderr, "Usage: %s file\n", argv [0]);
+        return 1;
+    }
+    arg = argv[1];
+    cmd = malloc (sizeof (prefix) + strlen (arg) + 1);
+    if (!cmd) {
+        fprintf (stderr, "%s: malloc: %s\n", argv [0], strerror (errno));
+        return 1;
+    }
+    sprintf (cmd, "%s%s", prefix, arg);
+    in = popen (cmd, "r");
+    if (!in) {
+        fprintf (stderr, "%s: popen: %s\n", argv [0], strerror (errno));
+        return 1;
+    }
+    while (fscanf (in, "%s", buf) == 1)
+        printf ("%s: got [%s]\n", argv[0], buf);
+    if (ferror (in)) {
+        fprintf (stderr, "%s: fread: %s\n", argv [0], strerror (errno));
+        return 1;
+    }
+    else if (!feof (in)) {
+        fprintf (stderr, "%s: %s: unconsumed input\n", argv [0], argv [1]);
+        return 1;
+    }
+    return 0;
+}
+----------------------------------------
+
+int main (int argc, char **argv) {
+    char line1 [1024];
+    char line2 [1024];
+    int blob [64];
+    if (argc > 1) {
+        const char *filename = argv[1];
+        gzFile gz_in = gzopen (filename, "rb");
+        if (gz_in != NULL) {
+            if (gzgets (gz_in, line1, sizeof (line1)) != NULL) {
+                if (gzgets (gz_in, line2, sizeof (line2)) != NULL) {
+                    if (gzfread (blob, sizeof (int), 64, gz_in) == 64) {
+                        printf ("Line1: %s", line1);
+                        printf ("Line2: %s", line2);
+                    }
+                }
+            }
+            gzclose (gz_in);
+        }
+        else {
+            printf ("Failed to GZ-open [%s]\n", filename);
+        }
+    }
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+18205095_18205274_1_14
+18205095_18206811_4_15
+Title: Right Justified Zero filled String in C 
+----------------------------------------
+
+int main () {
+    struct {
+        char s [4];
+        int i;
+    } test;
+    test.i = 0x12345678;
+    strcpy (test.s, "PJHA");
+    printf ("Output =%s\nTest =%x", test.s, test.i);
+}
+----------------------------------------
+
+int main () {
+    char s [5] = "PJ";
+    char padding [sizeof (s)] = {0};
+    int width = sizeof (padding) - 1;
+    memset (padding, '0', width);
+    width -= strlen (s);
+    printf ("%.*s%s\n", width, padding, s);
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+18231190_18231279_2_19
+18231190_18231330_2_23
+Title: C - Sum of 1/n numbers 
+----------------------------------------
+
+int main () {
+    int n, prefix;
+    float sum = 0;
+    scanf ("%d", & n);
+    do {
+        if (n % 2 == 0) {
+            prefix = -1;
+        }
+        else {
+            prefix = 1;
+        }
+        sum += (double) prefix / (double) n;
+        n = n - 1;
+    }
+    while (n > 0);
+    printf ("%f", sum);
+}
+----------------------------------------
+
+int main () {
+    int n, n_initial;
+    double sum = 0.0, prefix = 1.0;
+    printf ("enter the value for n:\n");
+    scanf ("%d", & n);
+    if (n < 1) {
+        printf ("n must be > 0!\n");
+        return 1;
+    }
+    n_initial = n;
+    if (n % 2 == 0)
+        prefix = -1.0;
+    else
+        prefix = 1.0;
+    do {
+        sum += prefix / (double) n;
+        prefix *= -1.0;
+        n--;
+    }
+    while (n > 0);
+    printf ("The sum of the series over %d terms is: %lf\n", n_initial, sum);
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+1824363_14079251_4_52
+1824363_20661633_1_21
+Title: dynamic allocation/deallocation of 2D & 3D arrays 
+----------------------------------------
+
+void main () {
+    int x = 4, y = 5, z = 6;
+    int i, j, k;
+    int *allElements = malloc (x *y * z * sizeof (int));
+    int ***array3D = malloc (x * sizeof (int **));
+    for (i = 0; i < x; i++) {
+        array3D[i] = malloc (y * sizeof (int *));
+        for (j = 0; j < y; j++) {
+            array3D[i][j] = allElements + (i * y * z) + (j * z);
+        }
+    }
+    for (i = 0; i < x; i++) {
+        printf ("%d\n", i);
+        for (j = 0; j < y; j++) {
+            printf ("\n");
+            for (k = 0; k < z; k++) {
+                array3D[i][j][k] = (i * y * z) + (j * z) + k;
+                printf ("\t%d", array3D [i] [j] [k]);
+            }
+        }
+        printf ("\n\n");
+    }
+    free (allElements);
+    for (i = 0; i < x; i++) {
+        free (array3D [i]);
+    }
+    free (array3D);
+}
+----------------------------------------
+
+int main (int argc, char *argv []) {
+    int **array, i, j;
+    array = allocate2d (3, 4);
+    for (i = 0; i < 3; i++) {
+        for (j = 0; j < 4; j++) {
+            array[i][j] = j + i + 1;
+        }
+    }
+    for (i = 0; i < 3; i++) {
+        for (j = 0; j < 4; j++) {
+            printf ("array[%d][%d] = %d\n", i, j, array [i] [j]);
+        }
+    }
+    free (array);
+    return EXIT_SUCCESS;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+18251010_18251046_10_26
+18251010_18251195_8_26
+Title: Multiple C pointers 
+----------------------------------------
+
+int main () {
+    int blah = 1;
+    int *blah1 = &blah;
+    int **blah2 = &blah1;
+    int ***blah3 = &blah2;
+    int ****blah4 = &blah3;
+    int *****blah5 = &blah4;
+    int ******blah6 = &blah5;
+    int *******blah7 = &blah6;
+    int ********blah8 = &blah7;
+    int *********blah9 = &blah8;
+    mega_pointer (blah9);
+    return 0;
+}
+----------------------------------------
+
+int main (int argc, char **argv) {
+    int a = 0;
+    int *p1, **p2, ***p3, ****p4, *****p5, ******p6, *******p7, ********p8, *********p9;
+    p1 = &a;
+    p2 = &p1;
+    p3 = &p2;
+    p4 = &p3;
+    p5 = &p4;
+    p6 = &p5;
+    p7 = &p6;
+    p8 = &p7;
+    p9 = &p8;
+    mega_pointer (p9);
+    printf ("a=%d\n", a);
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+18251010_18251046_10_26
+18251010_18251216_8_21
+Title: Multiple C pointers 
+----------------------------------------
+
+int main () {
+    int blah = 1;
+    int *blah1 = &blah;
+    int **blah2 = &blah1;
+    int ***blah3 = &blah2;
+    int ****blah4 = &blah3;
+    int *****blah5 = &blah4;
+    int ******blah6 = &blah5;
+    int *******blah7 = &blah6;
+    int ********blah8 = &blah7;
+    int *********blah9 = &blah8;
+    mega_pointer (blah9);
+    return 0;
+}
+----------------------------------------
+
+int main () {
+    int i = 42;
+    int *p1 = &i;
+    int **p2 = &p1;
+    int ***p3 = &p2;
+    int ****p4 = &p3;
+    int *****p5 = &p4;
+    int ******p6 = &p5;
+    int *******p7 = &p6;
+    int ********p8 = &p7;
+    int *********p9 = &p8;
+    mega_pointer (p9);
+    printf ("%d\n", i);
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+18251010_18251195_8_26
+18251010_18251216_8_21
+Title: Multiple C pointers 
+----------------------------------------
+
+int main (int argc, char **argv) {
+    int a = 0;
+    int *p1, **p2, ***p3, ****p4, *****p5, ******p6, *******p7, ********p8, *********p9;
+    p1 = &a;
+    p2 = &p1;
+    p3 = &p2;
+    p4 = &p3;
+    p5 = &p4;
+    p6 = &p5;
+    p7 = &p6;
+    p8 = &p7;
+    p9 = &p8;
+    mega_pointer (p9);
+    printf ("a=%d\n", a);
+    return 0;
+}
+----------------------------------------
+
+int main () {
+    int i = 42;
+    int *p1 = &i;
+    int **p2 = &p1;
+    int ***p3 = &p2;
+    int ****p4 = &p3;
+    int *****p5 = &p4;
+    int ******p6 = &p5;
+    int *******p7 = &p6;
+    int ********p8 = &p7;
+    int *********p9 = &p8;
+    mega_pointer (p9);
+    printf ("%d\n", i);
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+18251438_18251469_2_21
+18251438_18258205_2_22
+Title: C - Sum and finding largest/smallest 
+----------------------------------------
+
+int main () {
+    int n, largest = 0, smallest = INT_MAX;
+    float sum = 0;
+    scanf ("%d", & n);
+    while (n > 0) {
+        if (n > largest) {
+            largest = n;
+        }
+        if (n < smallest) {
+            smallest = n;
+        }
+        sum += n;
+        scanf ("%d", & n);
+    }
+    sum = sum / largest * smallest;
+    printf ("%f\n", sum);
+    return 0;
+}
+----------------------------------------
+
+int main () {
+    int n, largest = 1, smallest = 0;
+    uint64_t sum = 0;
+    scanf ("%d", & n);
+    while (n > 0) {
+        if (sum > 0) {
+            if (n > largest) {
+                largest = n;
+            }
+            if (n < smallest) {
+                smallest = n;
+            }
+        }
+        else {
+            largest = smallest = n;
+        }
+        sum += n;
+        scanf ("%d", & n);
+    }
+    printf ("%lf\n", ((double) sum) / smallest * largest);
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+18260327_18260587_4_15
+18260327_18261608_37_46
+Title: How to convert literal char hex value into the hex value itself? 
+----------------------------------------
+
+int main () {
+    char szNumbers [] = "2001 60c0c0 -1101110100110100100000 0x6fffff";
+    char *pEnd;
+    long int li1, li2, li3, li4;
+    li1 = strtol (szNumbers, &pEnd, 10);
+    li2 = strtol (pEnd, &pEnd, 16);
+    li3 = strtol (pEnd, &pEnd, 2);
+    li4 = strtol (pEnd, NULL, 0);
+    printf ("The decimal equivalents are: %ld, %ld, %ld and %ld.\n", li1, li2, li3, li4);
+    return 0;
+}
+----------------------------------------
+
+int main () {
+    unsigned char X [64];
+    char S [64 * 2 + 2];
+    char T [64 * 2 + 2];
+    strcpy (S, "12345");
+    BigStringToX (S, X, sizeof (X));
+    BigXToString (X, sizeof (X), T);
+    printf ("'%s'\n", T);
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+18267550_18267639_2_30
+18267550_18267731_2_24
+Title: c programming regarding arrays and minimum? 
+----------------------------------------
+
+int main () {
+    int n = 1, min = 0, count = 0;
+    int number [n];
+    printf ("Enter the size of array you want");
+    scanf ("%i", & n);
+    int x, y;
+    for (y = 0; y < n; y++) {
+        printf ("\nEnter a Integer");
+        scanf ("%i", & number [y]);
+    }
+    min = number[0];
+    for (x = 0; x < n; x++) {
+        if (number[x] < min)
+            min = number[x];
+    }
+    int i;
+    for (i = 0; i < n; i++) {
+        if (min == number[i])
+            count++;
+    }
+    printf ("%s%i", "\nThe smallest Integer you entered was ", min);
+    printf ("%s%i", "\nNumber of times you entered this Integer: ", count);
+    return 0;
+}
+----------------------------------------
+
+int main () {
+    int n = 1, min = 0, count = 0;
+    int *number;
+    printf ("Enter the size of array you want");
+    scanf ("%i", & n);
+    number = (int *) malloc (sizeof (int) * n);
+    int x;
+    for (x = 0; x < n; x++) {
+        int num;
+        printf ("\nEnter a Integer");
+        scanf ("%i", & num);
+        number[x] = num;
+        if (x == 0 || number[x] < min)
+            min = number[x];
+    }
+    int i;
+    for (i = 0;
+    i < n;
+    i ++) {if (min == number [i]) count ++;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+18271782_18271808_4_22
+18271782_20650060_3_18
+Title: Finding minimum and maximum 
+----------------------------------------
+
+int main (void) {
+    int maximum = INT_MIN, minimum = INT_MAX, number;
+    int const inputs_upperbound = 5;
+    for (int i = 0; i < inputs_upperbound; i++) {
+        printf ("Enter number %d: ", i);
+        scanf ("%d", & number);
+        if (number > maximum)
+            maximum = number;
+        if (number < minimum)
+            minimum = number;
+    }
+    printf ("The minimum number was %d, and the maximum number was %d.\n", minimum, maximum);
+    return 0;
+}
+----------------------------------------
+
+int main () {
+    int i, maximum, minimum, number;
+    int count = 0;
+    const int n = 5;
+    for (i = 0; i < n; i++) {
+        printf ("enter number %d :", i + 1);
+        scanf ("%d", & number);
+        maximum = (number > maximum) ? number : maximum;
+        minimum = (number < minimum) ? number : minimum;
+    }
+    printf ("\n maximum is :%d ,& minimum is :%d ", maximum, minimum);
+    getch ();
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+18273136_18273163_4_17
+18273136_18273232_1_14
+Title: how to read memory bytes one by one in hex(so without any format) with printf() 
+----------------------------------------
+
+int main (void) {
+    int64_t i, asz, a = 3;
+    unsigned char *p = (unsigned char *) &a;
+    printf ("a = 0x");
+    for (i = 0, asz = sizeof (a); i < asz; ++i) {
+        printf ("%02x ", p [i]);
+    }
+    printf ("\n");
+    return 0;
+}
+----------------------------------------
+
+int main (void) {
+    int a = 3;
+    unsigned char *p = (unsigned char *) &a;
+    int i;
+    printf ("a =");
+    for (i = 0; i < sizeof (a); ++i) {
+        printf (" %02x", p [i]);
+    }
+    printf ("\n");
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+18283896_18284085_11_51
+18283896_18286490_1_22
+Title: How to read a file until a character in C 
+----------------------------------------
+
+int main (void) {
+    int i = 0;
+    int temp [100];
+    FILE *fp = fopen ("input.txt", "r");
+    if (fp != NULL) {
+        char line [4096];
+        do {
+            i = 0;
+            while (fscanf (fp, "%d", &temp[i]) == 1)
+                i++;
+            if (i > 0)
+                do_something (i, temp);
+        }
+        while (fgets (line, sizeof (line), fp) != 0);
+        fclose (fp);
+    }
+    else {
+        printf ("Cannot open File!\n");
+    }
+    return 0;
+}
+----------------------------------------
+
+int main () {
+    int i = 0, j;
+    int temp [100];
+    char c, buf [20];
+    FILE *fp;
+    fp = fopen ("input.txt", "r");
+    while ((c = getc (fp)) != EOF) {
+        while (1 == fscanf (fp, "%d ", &temp[i])) {
+            i++;
+        }
+    }
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+18290708_18292074_6_79
+18290708_18292437_4_47
+Title: How to save data from a file on arrays 
+----------------------------------------
+
+int main () {
+    uint32_t fileEnded, lineEnded, tokenEnded, val;
+    uint32_t col, row, i, j;
+    uint32_t startSize = 5;
+    uint32_t totalCols = 2;
+    uint32_t totalRows = 2;
+    uint32_t bufLen = 5;
+    uint32_t c;
+    uint32_t **data = (uint32_t **) malloc (totalRows * sizeof (uint32_t *));
+    uint32_t *size = (uint32_t *) malloc (totalRows * sizeof (uint32_t));
+    char *buf = (char *) malloc (bufLen * sizeof (char));
+    FILE *fp = fopen ("path/to/file.data", "r");
+    if (size == NULL || data == NULL || buf == NULL || fp == NULL)
+        return EXIT_FAILURE;
+    for (fileEnded = row = 0; !fileEnded; ++row) {
+        if (row >= totalRows) {
+            data = (uint32_t **) realloc (data, (totalRows *= 2) * sizeof (uint32_t *));
+            size = (uint32_t *) realloc (size, totalRows * sizeof (uint32_t));
+        }
+        data[row] = (uint32_t *) malloc (startSize * sizeof (uint32_t));
+        totalCols = startSize;
+        for (lineEnded = col = 0; !lineEnded;) {
+            for (tokenEnded = i = 0; !tokenEnded;) {
+                c = fgetc (fp);
+                switch (c) {
+                case EOF :
+                    fileEnded = 1;
+                case '\n' :
+                    lineEnded = 1;
+                case '\t' :
+                case '\v' :
+                case ' ' :
+                case '|' :
+                case ',' :
+                case ';' :
+                    tokenEnded = 1;
+                    break;
+                default :
+                    if (isdigit (c)) {
+                        if (i >= bufLen)
+                            buf = (char *) realloc (buf, (bufLen *= 2) * sizeof (char));
+                        buf[i++] = (char) c;
+                    }
+                }
+            }
+            if (i == 0)
+                continue;
+            buf[i] = '\0';
+            sscanf (buf, "%u", & val);
+            if (col >= totalCols)
+                data[row] = (uint32_t *) realloc (data[row], (totalCols *= 2) * sizeof (uint32_t));
+            data[row][col++] = val;
+        }
+        size[row] = col;
+        data[row] = (uint32_t *) realloc (data[row], size[row] * sizeof (uint32_t));
+    }
+    totalRows = row;
+    data = (uint32_t **) realloc (data, totalRows * sizeof (uint32_t *));
+    size = (uint32_t *) realloc (size, totalRows * sizeof (uint32_t));
+    for (i = 0; i < totalRows; ++i) {
+        for (j = 0; j < size[i]; ++j)
+            printf ("%u ", data[i][j]);
+        printf ("\n");
+    }
+    return EXIT_SUCCESS;
+}
+----------------------------------------
+
+void main () {
+    int *x;
+    int *y;
+    int d, sizey;
+    char ch;
+    int sizex = 1;
+    int size = 0;
+    int i = 0;
+    FILE *pFile;
+    pFile = fopen ("text.txt", "r");
+    while (fscanf (pFile, "%d", &d) != EOF) {
+        size++;
+    }
+    rewind (pFile);
+    fscanf (pFile, "%c", & ch);
+    while (ch != '\n') {
+        if (ch == ' ')
+            sizex++;
+        fscanf (pFile, "%c", & ch);
+    }
+    sizey = size - sizex;
+    rewind (pFile);
+    x = (int *) malloc (sizex * sizeof (int));
+    y = (int *) malloc (sizey * sizeof (int));
+    for (i = 0; i < sizex; i++) {
+        fscanf (pFile, "%d", & d);
+        x[i] = d;
+    }
+    for (i = 0; i < sizey; i++) {
+        fscanf (pFile, "%d", & d);
+        y[i] = d;
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+18295091_18295231_5_21
+18295091_18296239_6_22
+Title: Weird behavior in C printf 
+----------------------------------------
+
+int main () {
+    char str [MAXS];
+    int N;
+    int i;
+    gets (str);
+    N = strlen (str);
+    for (i = N / 2 - 1; i >= 0; i--) {
+        printf ("%c", str [i]);
+    }
+    for (i = N - 1; i > N / 2 - 1; i--) {
+        printf ("%c", str [i]);
+    }
+    printf ("\n");
+}
+----------------------------------------
+
+int main (void) {
+    char str [MAXS];
+    while (fgets (str, sizeof (str), stdin) != 0) {
+        int N = strlen (str);
+        if (str[N - 1] == '\n')
+            str[--N] = '\0';
+        for (int i = N / 2 - 1; i >= 0; i--)
+            printf ("%c", str[i]);
+        for (int i = N - 1; i > N / 2 - 1; i--)
+            printf ("%c", str[i]);
+        printf ("\n");
+    }
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+18322906_18322987_8_21
+18322906_42888783_1_26
+Title: Reading multiple user input strings inside a loop 
+----------------------------------------
+
+int main () {
+    int T;
+    int diffX, diffY;
+    char s [SIZE];
+    scanf ("%d\n", & T);
+    while (T--) {
+        fgets (s, SIZE, stdin);
+        printf ("%s\n", s);
+    }
+    return 0;
+}
+----------------------------------------
+
+int main () {
+    int i, numOfStrings;
+    char temp [30];
+    printf ("Enter Number of strings in set ");
+    scanf ("%d", & numOfStrings);
+    char *setOfStrings [numOfStrings];
+    for (i = 0; i < numOfStrings; i++) {
+        printf ("Enter string ");
+        scanf ("%s", temp);
+        setOfStrings[i] = (char *) malloc (sizeof (temp));
+        strcpy (setOfStrings [i], temp);
+    }
+    for (i = 0; i < numOfStrings; i++) {
+        printf ("string = %s \n", setOfStrings [i]);
+    }
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+1833716_1833758_1_11
+1833716_1834240_17_55
+Title: Need help with declarations in C 
+----------------------------------------
+
+void openPasswd (char ***users, char ***names) {
+    *users = malloc (3 * sizeof **users);
+    (*users)[0] = "3";
+    (*users)[1] = "4";
+    (*users)[2] = "7";
+    *names = malloc (3 * sizeof **names);
+    (*names)[0] = "foo";
+    (*names)[1] = "bar";
+    (*names)[2] = "baz";
+}
+----------------------------------------
+
+void openPasswd (char ***users, char ***names, size_t entries) {
+    size_t i;
+    *users = malloc (sizeof **users * entries);
+    *names = malloc (sizeof **names * entries);
+    for (i = 0; i < entries; i++) {
+        (*users)[i] = malloc (sizeof *(*users)[i] * get_user_length (i));
+        if ((*users)[i] != NULL) {
+            strcpy ((* users) [i], get_user (i));
+        }
+        (*names)[i] = malloc (sizeof *(*names)[i] * get_name_length (i));
+        if ((*names)[i] != NULL) {
+            strcpy ((* names) [i], get_name (i));
+        }
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+18350437_18350479_26_37
+18350437_18350747_26_43
+Title: "Like vwait of tcl is there anything in C programming?" 
+----------------------------------------
+
+int main (void) {
+    pthread_t pth;
+    pthread_create (& pth, NULL, threadfunc, "foo");
+    pthread_mutex_lock (& mutex);
+    while (!getout)
+        pthread_cond_wait (&cond, &mutex);
+    pthread_mutex_unlock (& mutex);
+    pthread_cancel (pth);
+}
+----------------------------------------
+
+int main () {
+    pthread_t pth;
+    if (sem_init (&completed, 0, 0)) {
+        printf ("sem_init failed\n");
+        return 1;
+    }
+    pthread_create (& pth, NULL, threadfunc, "foo");
+    sem_wait (& completed);
+    printf ("Wait completed\n");
+    pthread_cancel (pth);
+    sem_destroy (& completed);
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+18350437_18350479_9_24
+18350437_18350747_7_24
+Title: "Like vwait of tcl is there anything in C programming?" 
+----------------------------------------
+
+void *threadfunc (void *parm) {
+    int x = 0;
+    for (;;) {
+        x++;
+        if (x == 500000) {
+            pthread_mutex_lock (& mutex);
+            getout = 1;
+            pthread_cond_signal (& cond);
+            pthread_mutex_unlock (& mutex);
+        }
+    }
+    return NULL;
+}
+----------------------------------------
+
+void *threadfunc (void *parm) {
+    int x = 0;
+    for (;;) {
+        x++;
+        if (x == 500000) {
+            printf ("Posting semaphore\n");
+            sem_post (& completed);
+        }
+        if (!(x % 50000)) {
+            printf ("Yielding\n");
+            pthread_yield ();
+        }
+    }
+    return NULL;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+18352073_18352244_1_14
+18352073_18352352_4_19
+Title: use strcat with strcpy occur problems 
+----------------------------------------
+
+int main () {
+    char *dst;
+    char *a = strdup ("12345");
+    char *b = strdup ("54321");
+    dst = malloc (100);
+    dst = strdup ("hello");
+    strcat (strcpy (dst, a), b);
+    printf ("one==%s\n", dst);
+    strcpy (dst, a);
+    strcat (dst, b);
+    printf ("two==%s\n", dst);
+}
+----------------------------------------
+
+int main () {
+    char dst [15] = "hello";
+    char *a = "12345";
+    char *b = "54321";
+    strcat (strcpy (dst, a), b);
+    printf ("one==%s\n", dst);
+    strcpy (dst, a);
+    strcat (dst, b);
+    printf ("two==%s\n", dst);
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+18378346_18378423_11_33
+18378346_18378659_15_43
+Title: using scanf in pointers to integer array 
+----------------------------------------
+
+main () {
+    printf ("For Student A:\n");
+    grade_input (& student_A [4]);
+    printf ("For Student B:\n");
+    grade_input (& student_B [4]);
+    printf ("For Student C:\n");
+    grade_input (& student_C [4]);
+    do {
+        printf ("Whose average grade do you want to see, a ,b ,c?  ");
+        fflush (stdout);
+        scanf ("%c", & j);
+        if (j == 'a') {
+            printf ("%.2f\n", ave (student_A));
+        }
+        if (j == 'b') {
+            printf ("%.2f\n", ave (student_B));
+        }
+        if (j == 'c') {
+            printf ("%.2f\n", ave (student_C));
+        }
+    }
+    while (j == 'a' || j == 'b' || j == 'c');
+}
+----------------------------------------
+
+main () {
+    printf ("For Student A:\n");
+    grade_input (student_A);
+    printf ("For Student B:\n");
+    grade_input (student_B);
+    printf ("For Student C:\n");
+    grade_input (student_C);
+    do {
+        printf ("Whose average grade do you want to see, a ,b ,c?  ");
+        scanf ("%c", & j);
+        if (j == 'a') {
+            printf ("%.2f\n", ave (student_A));
+        }
+        else if (j == 'b') {
+            printf ("%.2f\n", ave (student_B));
+        }
+        else if (j == 'c') {
+            printf ("%.2f\n", ave (student_C));
+        }
+        else
+            printf ("Enter a, b or c\n");
+    }
+    while (j != 'q');
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+18393525_18394656_11_43
+18393525_31766353_8_50
+Title: Calculator using switch and functions in C 
+----------------------------------------
+
+int main () {
+    int num1, num2, choice;
+    while (1) {
+        printf ("\n[0] Exit\n[1] Add\n[2] Subtract\n[3] Multiply\n[4] Divide\nEnter Your Choice:");
+        scanf ("%d", & choice);
+        switch (choice) {
+        case 0 :
+            return 0;
+        case 1 :
+            getData (&num1, &num2);
+            printf ("%d", add (num1, num2));
+            break;
+        case 2 :
+            getData (&num1, &num2);
+            printf ("%d ", sub (num1, num2));
+            break;
+        case 3 :
+            getData (&num1, &num2);
+            printf ("%d", mul (num1, num2));
+            break;
+        case 4 :
+            getData (&num1, &num2);
+            printf ("%d", div (num1, num2));
+            break;
+        default :
+            printf ("That is not a valid choice.");
+            break;
+        }
+    }
+}
+----------------------------------------
+
+int main () {
+    int num1, num2, choice;
+    printf ("1:addiction\n2:substraction\n3:multiplication\n4:division\n0:exit\nplease enter your choice:");
+    scanf ("%d", & choice);
+    switch (choice) {
+    case 0 :
+        return 0;
+        break;
+    case 1 :
+        printf ("Enter 1st number:\n");
+        scanf ("%d", & num1);
+        printf ("Enter 2nd number:\n");
+        scanf ("%d", & num2);
+        printf ("%d", add (num1, num2));
+        break;
+    case 2 :
+        printf ("Enter 1st number:\n");
+        scanf ("%d", & num1);
+        printf ("Enter 2nd number:\n");
+        scanf ("%d", & num2);
+        printf ("%d ", sub (num1, num2));
+        break;
+    case 3 :
+        printf ("Enter 1st number:\n");
+        scanf ("%d", & num1);
+        printf ("Enter 2nd number:\n");
+        scanf ("%d", & num2);
+        printf ("%d", mul (num1, num2));
+        break;
+    case 4 :
+        printf ("Enter 1st number:\n");
+        scanf ("%d", & num1);
+        printf ("Enter 2nd number:\n");
+        scanf ("%d", & num2);
+        printf ("%f", dib (num1, num2));
+        break;
+    default :
+        printf ("That is not a valid choice.");
+        break;
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+18403722_18404447_1_17
+18403722_18405310_1_30
+Title: Reverse a linked list using recursion technique in C 
+----------------------------------------
+
+S *reverseRecursive (S *headref) {
+    S *firstElement = NULL;
+    S *restOfElements = NULL;
+    S *new_head = NULL;
+    if (headref == NULL) {
+        return;
+    }
+    firstElement = headref;
+    restOfElements = headref->next;
+    if (restOfElements == NULL)
+        return headref;
+    new_head = reverseRecursive (restOfElements);
+    restOfElements->next = new_head;
+    return restOfElements;
+}
+----------------------------------------
+
+S *reverseRecursive (S *headref) {
+    S *firstElement = NULL;
+    S *restOfElements = NULL;
+    if (headref == NULL) {
+        return;
+    }
+    firstElement = headref;
+    if (headref->next == NULL)
+        return headref;
+    else
+        restOfElements = headref->next;
+    reverseRecursive (restOfElements);
+    firstElement->next->next = firstElement;
+    firstElement->next = NULL;
+    if (new_head == NULL)
+        new_head = restOfElements;
+    return new_head;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+18432494_18433266_3_20
+18432494_42082808_3_16
+Title: Can i use pointer in scanf to take input in an array? 
+----------------------------------------
+
+int main (void) {
+    int a [10], i, j = 0;
+    for (i = 0; i < 10; ++i) {
+        printf ("Element no %d = ", i);
+        scanf ("%d", a + i);
+    }
+    printf ("Elements in your array are: ");
+    for (j = 0; j < 10; j++)
+        printf ("%d  ", a[j]);
+    return 0;
+}
+----------------------------------------
+
+int main (void) {
+    int *p, i, j = 0, n;
+    printf ("enter the value of n ");
+    scanf ("%d", & n);
+    for (i = 0; i < n; ++i) {
+        scanf ("%d", p + i);
+    }
+    printf ("Elements in your array are: ");
+    for (j = 0; j < 10; j++)
+        printf ("%d  ", *(p + i));
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+18437050_18437289_5_21
+18437050_18437639_4_12
+Title: struct intitialization notation not working with heap allocated storage 
+----------------------------------------
+
+int main (int argc, char *argv []) {
+    struct B {
+        int i;
+        char ch;
+    };
+    struct B name = {
+        .i = 10,
+        .ch = 'c',
+    };
+    printf ("%d,%c\n", name.i, name.ch);
+    return 0;
+}
+----------------------------------------
+
+int main (void) {
+    struct B {
+        int i;
+        char ch;
+    };
+    struct B *ptr = (struct B *) calloc (1, sizeof (struct B));
+    *ptr = (struct B) {
+    .i = 10,
+    .ch = 'c',};
+    printf ("%d,%c\n", ptr -> i, ptr -> ch);
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+1844733_1844800_1_14
+1844733_1844878_1_10
+Title: Is this C function written in poor form? 
+----------------------------------------
+
+char byte_to_ascii (char value_to_convert, volatile char *converted_value) {
+    if (value_to_convert < 10) {
+        return (value_to_convert + 48);
+    }
+    else {
+        char a = value_to_convert / 10;
+        char b = value_TO_convert % 10;
+        a = a + 48;
+        b = b + 48;
+        *converted_value = a;
+        *(converted_value + 1) = b;
+        return 0;
+    }
+}
+----------------------------------------
+
+char byte_to_ascii (char value_to_convert, volatile char *converted_value) {
+    if (value_to_convert < 10) {
+        return value_to_convert + '0';
+    }
+    else {
+        converted_value[0] = (value_to_convert / 10) + '0';
+        converted_value[1] = (value_to_convert % 10) + '0';
+        return 0;
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+1845474_1845529_1_13
+1845474_1845685_1_20
+Title: Concatenate null-terminated strings recursively 
+----------------------------------------
+
+void mystrcat (char *to, const char *from, bool copy_now) {
+    if (!copy_now && *to) {
+        mystrcat (to + 1, from, false);
+        return;
+    }
+    *to = *from;
+    if (*to)
+        mystrcat (to +1, from +1, true);
+}
+----------------------------------------
+
+void mystrcat (char *to, const char *from) {
+    if (*to) {
+        mystrcat (to + 1, from);
+        return;
+    }
+    if (*from) {
+        to[1] = '\0';
+        mystrcat (to + 1, from + 1);
+        *to = *from;
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+18458064_18458103_4_22
+18458064_18458491_4_13
+Title: How to refresh the screen continuously and update it in real time 
+----------------------------------------
+
+int main (void) {
+    int c = 0;
+    initscr ();
+    curs_set (0);
+    while (c < 1000) {
+        mvprintw (0, 0, "%d", c ++);
+        refresh ();
+        sleep (1);
+    }
+    endwin ();
+    return 0;
+}
+----------------------------------------
+
+int main (void) {
+    int number = 0;
+    while (1) {
+        ++number;
+        printf ("\rThe number is now %d.", number);
+        fflush (stdout);
+        sleep (1);
+    }
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+18458064_18458103_4_22
+18458064_18458507_7_17
+Title: How to refresh the screen continuously and update it in real time 
+----------------------------------------
+
+int main (void) {
+    int c = 0;
+    initscr ();
+    curs_set (0);
+    while (c < 1000) {
+        mvprintw (0, 0, "%d", c ++);
+        refresh ();
+        sleep (1);
+    }
+    endwin ();
+    return 0;
+}
+----------------------------------------
+
+int main (void) {
+    update ();
+    puts ("Hello");
+    puts ("Line 2");
+    sleep (2);
+    gotoxy (0, 0);
+    puts ("Line 1");
+    sleep (2);
+    return (0);
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+18458064_18458491_4_13
+18458064_18458507_7_17
+Title: How to refresh the screen continuously and update it in real time 
+----------------------------------------
+
+int main (void) {
+    int number = 0;
+    while (1) {
+        ++number;
+        printf ("\rThe number is now %d.", number);
+        fflush (stdout);
+        sleep (1);
+    }
+    return 0;
+}
+----------------------------------------
+
+int main (void) {
+    update ();
+    puts ("Hello");
+    puts ("Line 2");
+    sleep (2);
+    gotoxy (0, 0);
+    puts ("Line 1");
+    sleep (2);
+    return (0);
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+18482395_18486162_4_19
+18482395_18488157_4_20
+Title: Initialising a variable 2-D array with a specific value 
+----------------------------------------
+
+int main () {
+    int value_1, value_2;
+    scanf ("%d %d", & value_1, & value_2);
+    int a [value_1] [value_2];
+    for (int i = 0; i < value_1; i++)
+        for (int j = 0; j < value_1; j++)
+            a[i][j] = 0;
+    memset (a, 0, value_1 * value_2 * sizeof (int));
+    return 0;
+}
+----------------------------------------
+
+int main (void) {
+    int limit;
+    printf ("Enter the array limit:- ");
+    scanf ("%d", & limit);
+    int *arr = (int *) malloc (sizeof (int) * limit);
+    arr[0] = 43;
+    arr[1] = 65;
+    scanf ("%d", & arr [2]);
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+1851716_1851782_3_14
+1851716_1851811_20_33
+Title: Algorithm to find the duplicate numbers in an array ---Fastest Way 
+----------------------------------------
+
+int main (int argc, char **argv) {
+    int dups [10] = {0};
+    int i;
+    for (i = 1; i < argc; i++)
+        dups[atoi (argv[i])]++;
+    for (i = 0; i < 10; i++)
+        printf ("%d: %d\n", i, dups[i]);
+    return 0;
+}
+----------------------------------------
+
+int main (void) {
+    arr_t arr [] = {2, 3, 4, 5, 2, 4, 6, 2, 4, 7, 3, 8, 2};
+    size_t arr_len = sizeof (arr) / sizeof (arr[0]);
+    arr_t min = 0, max = 16;
+    dup_t *dup = count_duplicates (arr, min, max, arr_len);
+    printf ("  value count\n");
+    printf ("  -----------\n");
+    for (size_t i = 0; i < (size_t) (max - min + 1); i++) {
+        if (dup[i]) {
+            printf ("%5i %5i\n", (int) (i + min), (int) (dup [i]));
+        }
+    }
+    free (dup);
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+1851716_1851782_3_14
+1851716_1851985_36_50
+Title: Algorithm to find the duplicate numbers in an array ---Fastest Way 
+----------------------------------------
+
+int main (int argc, char **argv) {
+    int dups [10] = {0};
+    int i;
+    for (i = 1; i < argc; i++)
+        dups[atoi (argv[i])]++;
+    for (i = 0; i < 10; i++)
+        printf ("%d: %d\n", i, dups[i]);
+    return 0;
+}
+----------------------------------------
+
+int main (void) {
+    int values [] = {2, 3, 4, 5, 2, 4, 6, 2, 4, 7, 3, 8, 2};
+    size_t occ_nums [sizeof values / sizeof *values];
+    size_t unique_count = make_unique (values, sizeof values / sizeof *values, occ_nums);
+    size_t i = 0;
+    for (; i < unique_count; ++i) {
+        printf ("number %i occurred %u time%s\n", values [i], (unsigned) occ_nums [i], occ_nums [i] > 1 ? "s" : "");
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+1851716_1851811_20_33
+1851716_1851985_36_50
+Title: Algorithm to find the duplicate numbers in an array ---Fastest Way 
+----------------------------------------
+
+int main (void) {
+    arr_t arr [] = {2, 3, 4, 5, 2, 4, 6, 2, 4, 7, 3, 8, 2};
+    size_t arr_len = sizeof (arr) / sizeof (arr[0]);
+    arr_t min = 0, max = 16;
+    dup_t *dup = count_duplicates (arr, min, max, arr_len);
+    printf ("  value count\n");
+    printf ("  -----------\n");
+    for (size_t i = 0; i < (size_t) (max - min + 1); i++) {
+        if (dup[i]) {
+            printf ("%5i %5i\n", (int) (i + min), (int) (dup [i]));
+        }
+    }
+    free (dup);
+}
+----------------------------------------
+
+int main (void) {
+    int values [] = {2, 3, 4, 5, 2, 4, 6, 2, 4, 7, 3, 8, 2};
+    size_t occ_nums [sizeof values / sizeof *values];
+    size_t unique_count = make_unique (values, sizeof values / sizeof *values, occ_nums);
+    size_t i = 0;
+    for (; i < unique_count; ++i) {
+        printf ("number %i occurred %u time%s\n", values [i], (unsigned) occ_nums [i], occ_nums [i] > 1 ? "s" : "");
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+18524644_18524907_1_23
+18524644_18524922_1_29
+Title: Remove last element in list 
+----------------------------------------
+
+struct wifi_info_t *wifilist_remove (struct wifilist_t *list, int user_address) {
+    int i;
+    struct wifi_info_t *ptr;
+    ptr = NULL;
+    for (i = 0; i < wifilist_number_entries (list); i++) {
+        if (list->wlist_ptr[i]->eth_address == user_address) {
+            ptr = list->wlist_ptr[i];
+            if (i != (wifilist_number_entries (list) - 1)) {
+                list->wlist_ptr[i] = list->wlist_ptr[wifilist_number_entries (list) - 1];
+                list->wlist_ptr[wifilist_number_entries (list) - 1] = ptr;
+            }
+            list->wlist_entries--;
+        }
+    }
+    return ptr;
+}
+----------------------------------------
+
+struct wifi_info_t *wifilist_remove (struct wifilist_t *list, int user_address) {
+    int i;
+    int count;
+    struct wifi_info_t *ptr;
+    ptr = NULL;
+    count = wifilist_number_entries (list);
+    for (i = 0; (i < count) && (ptr == NULL); i++) {
+        if (list->wlist_ptr[i]->eth_address == user_address) {
+            ptr = list->wlist_ptr[i];
+            if (i < (count - 1))
+                memmove (&(wlist_ptr[i]), &(wlist_ptr[i + 1]), (count - (i + 1)) * sizeof (wlist_ptr[0]));
+        }
+    }
+    if (ptr != NULL) {
+        list->wlist_entries--;
+    }
+    return ptr;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+18533346_18546134_22_88
+18533346_18548494_21_113
+Title: Soft terminating a simple webserver 
+----------------------------------------
+
+int main () {
+    int nReqSocketId, nReqSize = 1024;
+    nMainSocketId = socket (AF_INET, SOCK_STREAM, 0);
+    char *sRequest = malloc (nReqSize);
+    socklen_t nAddrLen;
+    struct sockaddr_in oAddress;
+    signal (SIGINT, onInt);
+    signal (SIGQUIT, onQuit);
+    oAddress.sin_family = AF_INET;
+    oAddress.sin_addr.s_addr = INADDR_ANY;
+    oAddress.sin_port = htons (SERVER_PORT);
+    nStatus = 1;
+    printf ("\n  W E L C O M E!\n\nPress CTRL-C or CTRL-\\ to quit.\n");
+    if (nMainSocketId == 0) {
+        fprintf (stderr, "Error during the creation of the socket\n");
+        return 1;
+    }
+    if (bind (nMainSocketId, (struct sockaddr *) &oAddress, sizeof (oAddress))) {
+        fprintf (stderr, "The port %d is busy\n", SERVER_PORT);
+        close (nMainSocketId);
+        return 1;
+    }
+    printf ("HTTP server listening on port %d\n", SERVER_PORT);
+    while (nStatus) {
+        if (listen (nMainSocketId, 10) < 0) {
+            perror ("server: listen");
+            close (nMainSocketId);
+            return 1;
+        }
+        nReqSocketId = accept (nMainSocketId, (struct sockaddr *) &oAddress, &nAddrLen);
+        if (nReqSocketId < 0) {
+            perror ("server: accept");
+            close (nMainSocketId);
+            return 1;
+        }
+        recv (nReqSocketId, sRequest, nReqSize, 0);
+        if (nReqSocketId > 0) {
+            printf ("The Client is connected...\n\n%s\n", sRequest);
+        }
+        write (nReqSocketId, "HTTP/1.1 200 OK\n", 16);
+        write (nReqSocketId, "Content-length: 50\n", 19);
+        write (nReqSocketId, "Content-Type: text/html\n\n", 25);
+        write (nReqSocketId, "<html><body><h1>Hello world!!!</h1></body></html>\n", 50);
+        close (nReqSocketId);
+    }
+    printf ("Goodbye!\n");
+    close (nMainSocketId);
+    return 0;
+}
+----------------------------------------
+
+int main () {
+    int nMainSocketId = -1, nReqSocketId = -1;
+    size_t nReqSize = 1024;
+    char *sRequest = malloc (nReqSize);
+    socklen_t nAddrLen;
+    struct sockaddr_in oAddress = {0};
+    signal (SIGINT, onInt);
+    signal (SIGQUIT, onQuit);
+    printf ("\n  W E L C O M E!\n\nPress CTRL-C or CTRL-\\ to quit.\n");
+    oAddress.sin_family = AF_INET;
+    oAddress.sin_addr.s_addr = INADDR_ANY;
+    oAddress.sin_port = htons (SERVER_PORT);
+    nMainSocketId = socket (AF_INET, SOCK_STREAM, 0);
+    if (nMainSocketId < 0) {
+        perror ("server: socket() failed");
+        return 1;
+    }
+    if (bind (nMainSocketId, (struct sockaddr *) &oAddress, sizeof (oAddress))) {
+        perror ("server: bind() failed");
+        close (nMainSocketId);
+        return 1;
+    }
+    printf ("HTTP server listening on port %d\n", SERVER_PORT);
+    while (1) {
+        int result = 0;
+        if (listen (nMainSocketId, 10) < 0) {
+            perror ("server: listen() failed");
+            close (nMainSocketId);
+            return 1;
+        }
+        result = accept (nMainSocketId, (struct sockaddr *) &oAddress, &nAddrLen);
+        if (result < 0) {
+            if (EINTR == errno) {
+                printf ("Shutdown requested. Exiting ...\n");
+                break;
+            }
+            perror ("server: accept failed()");
+            close (nMainSocketId);
+            return 1;
+        }
+        nReqSocketId = result;
+        result = recv (nReqSocketId, sRequest, nReqSize, 0);
+        if (result < 0) {
+            perror ("server: recv() failed");
+            close (nMainSocketId);
+            return 1;
+        }
+        else if (result == 0) {
+            printf ("The client is disconnected. Waiting for another connection ...\n");
+            close (nReqSocketId);
+            nReqSocketId = -1;
+            continue;
+        }
+        printf ("The client is connected...\n\n%s\n", sRequest);
+        write (nReqSocketId, "HTTP/1.1 200 OK\n", 16);
+        write (nReqSocketId, "Content-length: 50\n", 19);
+        write (nReqSocketId, "Content-Type: text/html\n\n", 25);
+        write (nReqSocketId, "<html><body><h1>Hello world!!!</h1></body></html>\n", 50);
+        close (nReqSocketId);
+        nReqSocketId = -1;
+    }
+    printf ("Goodbye!\n");
+    close (nMainSocketId);
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+18533346_18546134_22_88
+18533346_18548943_17_98
+Title: Soft terminating a simple webserver 
+----------------------------------------
+
+int main () {
+    int nReqSocketId, nReqSize = 1024;
+    nMainSocketId = socket (AF_INET, SOCK_STREAM, 0);
+    char *sRequest = malloc (nReqSize);
+    socklen_t nAddrLen;
+    struct sockaddr_in oAddress;
+    signal (SIGINT, onInt);
+    signal (SIGQUIT, onQuit);
+    oAddress.sin_family = AF_INET;
+    oAddress.sin_addr.s_addr = INADDR_ANY;
+    oAddress.sin_port = htons (SERVER_PORT);
+    nStatus = 1;
+    printf ("\n  W E L C O M E!\n\nPress CTRL-C or CTRL-\\ to quit.\n");
+    if (nMainSocketId == 0) {
+        fprintf (stderr, "Error during the creation of the socket\n");
+        return 1;
+    }
+    if (bind (nMainSocketId, (struct sockaddr *) &oAddress, sizeof (oAddress))) {
+        fprintf (stderr, "The port %d is busy\n", SERVER_PORT);
+        close (nMainSocketId);
+        return 1;
+    }
+    printf ("HTTP server listening on port %d\n", SERVER_PORT);
+    while (nStatus) {
+        if (listen (nMainSocketId, 10) < 0) {
+            perror ("server: listen");
+            close (nMainSocketId);
+            return 1;
+        }
+        nReqSocketId = accept (nMainSocketId, (struct sockaddr *) &oAddress, &nAddrLen);
+        if (nReqSocketId < 0) {
+            perror ("server: accept");
+            close (nMainSocketId);
+            return 1;
+        }
+        recv (nReqSocketId, sRequest, nReqSize, 0);
+        if (nReqSocketId > 0) {
+            printf ("The Client is connected...\n\n%s\n", sRequest);
+        }
+        write (nReqSocketId, "HTTP/1.1 200 OK\n", 16);
+        write (nReqSocketId, "Content-length: 50\n", 19);
+        write (nReqSocketId, "Content-Type: text/html\n\n", 25);
+        write (nReqSocketId, "<html><body><h1>Hello world!!!</h1></body></html>\n", 50);
+        close (nReqSocketId);
+    }
+    printf ("Goodbye!\n");
+    close (nMainSocketId);
+    return 0;
+}
+----------------------------------------
+
+int main () {
+    int nRecvResult = -1, nReqSocketId = -1;
+    size_t nReqSize = 1024;
+    char *sRequest = malloc (nReqSize);
+    socklen_t nAddrLen;
+    struct sockaddr_in oAddress = {0};
+    printf ("\n  W E L C O M E!\n\nPress CTRL-C or CTRL-\\ to quit.\n");
+    signal (SIGINT, terminateServer);
+    signal (SIGQUIT, terminateServer);
+    oAddress.sin_family = AF_INET;
+    oAddress.sin_addr.s_addr = INADDR_ANY;
+    oAddress.sin_port = htons (SERVER_PORT);
+    nMainSocketId = socket (AF_INET, SOCK_STREAM, 0);
+    if (nMainSocketId < 0) {
+        perror ("server: socket() failed");
+        return 1;
+    }
+    if (bind (nMainSocketId, (struct sockaddr *) &oAddress, sizeof (oAddress))) {
+        perror ("server: bind() failed");
+        terminateServer ();
+        return 1;
+    }
+    printf ("HTTP server listening on port %d\n", SERVER_PORT);
+    while (bExiting == 0) {
+        if (listen (nMainSocketId, 10) < 0) {
+            perror ("server: listen() failed");
+            terminateServer ();
+            return 1;
+        }
+        nReqSocketId = accept (nMainSocketId, (struct sockaddr *) &oAddress, &nAddrLen);
+        if (bExiting) {
+            break;
+        }
+        if (nReqSocketId < 0) {
+            perror ("server: accept failed()");
+            terminateServer ();
+            return 1;
+        }
+        nRecvResult = recv (nReqSocketId, sRequest, nReqSize, 0);
+        if (nRecvResult < 0) {
+            perror ("server: recv() failed");
+            terminateServer ();
+            return 1;
+        }
+        if (nRecvResult == 0) {
+            printf ("The client is disconnected. Waiting for another connection...\n");
+            close (nReqSocketId);
+            continue;
+        }
+        printf ("The client is connected...\n\n%s\n", sRequest);
+        write (nReqSocketId, "HTTP/1.1 200 OK\n", 16);
+        write (nReqSocketId, "Content-length: 50\n", 19);
+        write (nReqSocketId, "Content-Type: text/html\n\n", 25);
+        write (nReqSocketId, "<html><body><h1>Hello world!!!</h1></body></html>\n", 50);
+        close (nReqSocketId);
+    }
+    free (sRequest);
+    printf ("Goodbye!\n");
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+18533346_18546134_22_88
+18533346_18550644_17_100
+Title: Soft terminating a simple webserver 
+----------------------------------------
+
+int main () {
+    int nReqSocketId, nReqSize = 1024;
+    nMainSocketId = socket (AF_INET, SOCK_STREAM, 0);
+    char *sRequest = malloc (nReqSize);
+    socklen_t nAddrLen;
+    struct sockaddr_in oAddress;
+    signal (SIGINT, onInt);
+    signal (SIGQUIT, onQuit);
+    oAddress.sin_family = AF_INET;
+    oAddress.sin_addr.s_addr = INADDR_ANY;
+    oAddress.sin_port = htons (SERVER_PORT);
+    nStatus = 1;
+    printf ("\n  W E L C O M E!\n\nPress CTRL-C or CTRL-\\ to quit.\n");
+    if (nMainSocketId == 0) {
+        fprintf (stderr, "Error during the creation of the socket\n");
+        return 1;
+    }
+    if (bind (nMainSocketId, (struct sockaddr *) &oAddress, sizeof (oAddress))) {
+        fprintf (stderr, "The port %d is busy\n", SERVER_PORT);
+        close (nMainSocketId);
+        return 1;
+    }
+    printf ("HTTP server listening on port %d\n", SERVER_PORT);
+    while (nStatus) {
+        if (listen (nMainSocketId, 10) < 0) {
+            perror ("server: listen");
+            close (nMainSocketId);
+            return 1;
+        }
+        nReqSocketId = accept (nMainSocketId, (struct sockaddr *) &oAddress, &nAddrLen);
+        if (nReqSocketId < 0) {
+            perror ("server: accept");
+            close (nMainSocketId);
+            return 1;
+        }
+        recv (nReqSocketId, sRequest, nReqSize, 0);
+        if (nReqSocketId > 0) {
+            printf ("The Client is connected...\n\n%s\n", sRequest);
+        }
+        write (nReqSocketId, "HTTP/1.1 200 OK\n", 16);
+        write (nReqSocketId, "Content-length: 50\n", 19);
+        write (nReqSocketId, "Content-Type: text/html\n\n", 25);
+        write (nReqSocketId, "<html><body><h1>Hello world!!!</h1></body></html>\n", 50);
+        close (nReqSocketId);
+    }
+    printf ("Goodbye!\n");
+    close (nMainSocketId);
+    return 0;
+}
+----------------------------------------
+
+int main () {
+    int nRecvResult = -1, nReqSocketId = -1;
+    char sRequest [REQUEST_SIZE];
+    socklen_t nAddrLen;
+    struct sockaddr_in oAddress;
+    FILE *nRespFD;
+    printf ("\n  W E L C O M E!\n\nPress CTRL-C or CTRL-\\ to quit.\n");
+    signal (SIGINT, terminateServer);
+    signal (SIGQUIT, terminateServer);
+    oAddress.sin_family = AF_INET;
+    oAddress.sin_addr.s_addr = INADDR_ANY;
+    oAddress.sin_port = htons (SERVER_PORT);
+    nMainSocketId = socket (AF_INET, SOCK_STREAM, 0);
+    if (nMainSocketId < 0) {
+        perror ("server: socket() failed");
+        return 1;
+    }
+    if (bind (nMainSocketId, (struct sockaddr *) &oAddress, sizeof (oAddress))) {
+        perror ("server: bind() failed");
+        terminateServer ();
+        return 1;
+    }
+    printf ("HTTP server listening on port %d\n", SERVER_PORT);
+    while (bExiting == 0) {
+        if (listen (nMainSocketId, 10) < 0) {
+            perror ("server: listen() failed");
+            terminateServer ();
+            return 1;
+        }
+        nReqSocketId = accept (nMainSocketId, (struct sockaddr *) &oAddress, &nAddrLen);
+        if (bExiting) {
+            break;
+        }
+        if (nReqSocketId < 0) {
+            perror ("server: accept() failed");
+            terminateServer ();
+            return 1;
+        }
+        nRecvResult = recv (nReqSocketId, sRequest, REQUEST_SIZE, 0);
+        if (nRecvResult < 0) {
+            perror ("server: recv() failed");
+            terminateServer ();
+            return 1;
+        }
+        if (nRecvResult == 0) {
+            printf ("The client is disconnected. Waiting for another connection...\n");
+            close (nReqSocketId);
+            continue;
+        }
+        printf ("The client is connected...\n\n%s\n", sRequest);
+        nRespFD = fdopen (nReqSocketId, "a+");
+        fprintf (nRespFD, "HTTP/1.1 200 OK\n");
+        fprintf (nRespFD, "Content-length: 50\n");
+        fprintf (nRespFD, "Content-Type: text/html\n\n");
+        fprintf (nRespFD, "<html><body><h1>Hello world!!!</h1></body></html>\n");
+        fclose (nRespFD);
+        close (nReqSocketId);
+    }
+    printf ("Goodbye!\n");
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+18533346_18546134_22_88
+18533346_18593919_36_152
+Title: Soft terminating a simple webserver 
+----------------------------------------
+
+int main () {
+    int nReqSocketId, nReqSize = 1024;
+    nMainSocketId = socket (AF_INET, SOCK_STREAM, 0);
+    char *sRequest = malloc (nReqSize);
+    socklen_t nAddrLen;
+    struct sockaddr_in oAddress;
+    signal (SIGINT, onInt);
+    signal (SIGQUIT, onQuit);
+    oAddress.sin_family = AF_INET;
+    oAddress.sin_addr.s_addr = INADDR_ANY;
+    oAddress.sin_port = htons (SERVER_PORT);
+    nStatus = 1;
+    printf ("\n  W E L C O M E!\n\nPress CTRL-C or CTRL-\\ to quit.\n");
+    if (nMainSocketId == 0) {
+        fprintf (stderr, "Error during the creation of the socket\n");
+        return 1;
+    }
+    if (bind (nMainSocketId, (struct sockaddr *) &oAddress, sizeof (oAddress))) {
+        fprintf (stderr, "The port %d is busy\n", SERVER_PORT);
+        close (nMainSocketId);
+        return 1;
+    }
+    printf ("HTTP server listening on port %d\n", SERVER_PORT);
+    while (nStatus) {
+        if (listen (nMainSocketId, 10) < 0) {
+            perror ("server: listen");
+            close (nMainSocketId);
+            return 1;
+        }
+        nReqSocketId = accept (nMainSocketId, (struct sockaddr *) &oAddress, &nAddrLen);
+        if (nReqSocketId < 0) {
+            perror ("server: accept");
+            close (nMainSocketId);
+            return 1;
+        }
+        recv (nReqSocketId, sRequest, nReqSize, 0);
+        if (nReqSocketId > 0) {
+            printf ("The Client is connected...\n\n%s\n", sRequest);
+        }
+        write (nReqSocketId, "HTTP/1.1 200 OK\n", 16);
+        write (nReqSocketId, "Content-length: 50\n", 19);
+        write (nReqSocketId, "Content-Type: text/html\n\n", 25);
+        write (nReqSocketId, "<html><body><h1>Hello world!!!</h1></body></html>\n", 50);
+        close (nReqSocketId);
+    }
+    printf ("Goodbye!\n");
+    close (nMainSocketId);
+    return 0;
+}
+----------------------------------------
+
+int main (void) {
+    int nOldReqSock, nNewReqSock, nReqLen, nUninitLen = REQUEST_MAX_SIZE;
+    fd_set oActiveFD, oReadFD;
+    socklen_t nAddrLen;
+    struct sockaddr_in oAddress;
+    oAddress.sin_family = AF_INET;
+    oAddress.sin_addr.s_addr = INADDR_ANY;
+    oAddress.sin_port = htons (SERVER_PORT);
+    nMainSocket = socket (AF_INET, SOCK_STREAM, 0);
+    if (nMainSocket < 0) {
+        perror ("socket");
+        return 1;
+    }
+    if (bind (nMainSocket, (struct sockaddr *) &oAddress, sizeof (oAddress))) {
+        perror ("bind");
+        terminateServer ();
+        return 1;
+    }
+    if (listen (nMainSocket, 10) < 0) {
+        perror ("listen");
+        terminateServer ();
+        return 1;
+    }
+    FD_ZERO (& oActiveFD);
+    FD_SET (STDIN_FILENO, & oActiveFD);
+    FD_SET (nMainSocket, & oActiveFD);
+    printf ("\n  W E L C O M E!\n\nType \"q\" to quit.\n");
+    while (bListening) {
+        oReadFD = oActiveFD;
+        if (select (FD_SETSIZE, &oReadFD, NULL, NULL, NULL) < 0) {
+            perror ("select");
+            terminateServer ();
+            return EXIT_FAILURE;
+        }
+        for (nOldReqSock = 0; bListening && nOldReqSock < FD_SETSIZE; ++nOldReqSock) {
+            if (FD_ISSET (nOldReqSock, &oReadFD)) {
+                if (nOldReqSock == nMainSocket) {
+                    nAddrLen = sizeof (oAddress);
+                    nNewReqSock = accept (nMainSocket, (struct sockaddr *) &oAddress, &nAddrLen);
+                    if (nNewReqSock < 0) {
+                        perror ("accept");
+                        terminateServer ();
+                        return EXIT_FAILURE;
+                    }
+                    FD_SET (nNewReqSock, & oActiveFD);
+                }
+                else {
+                    nReqLen = read (nOldReqSock, sRequest, REQUEST_MAX_SIZE);
+                    if (nReqLen < 0) {
+                        perror ("read");
+                        terminateServer ();
+                        return EXIT_FAILURE;
+                    }
+                    else if (nReqLen == 0) {
+                        printf ("End-of-file\n");
+                        close (nOldReqSock);
+                        FD_CLR (nOldReqSock, & oActiveFD);
+                        continue;
+                    }
+                    else {
+                        if (nUninitLen > nReqLen) {
+                            memset (sRequest + nReqLen, 0, nUninitLen - nReqLen);
+                        }
+                        nUninitLen = nReqLen;
+                    }
+                    if (nOldReqSock == STDIN_FILENO) {
+                        switchStdin (nReqLen);
+                    }
+                    else {
+                        helloWorld (nOldReqSock);
+                    }
+                }
+            }
+        }
+    }
+    printf ("Goodbye\n");
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+18533346_18548494_21_113
+18533346_18548943_17_98
+Title: Soft terminating a simple webserver 
+----------------------------------------
+
+int main () {
+    int nMainSocketId = -1, nReqSocketId = -1;
+    size_t nReqSize = 1024;
+    char *sRequest = malloc (nReqSize);
+    socklen_t nAddrLen;
+    struct sockaddr_in oAddress = {0};
+    signal (SIGINT, onInt);
+    signal (SIGQUIT, onQuit);
+    printf ("\n  W E L C O M E!\n\nPress CTRL-C or CTRL-\\ to quit.\n");
+    oAddress.sin_family = AF_INET;
+    oAddress.sin_addr.s_addr = INADDR_ANY;
+    oAddress.sin_port = htons (SERVER_PORT);
+    nMainSocketId = socket (AF_INET, SOCK_STREAM, 0);
+    if (nMainSocketId < 0) {
+        perror ("server: socket() failed");
+        return 1;
+    }
+    if (bind (nMainSocketId, (struct sockaddr *) &oAddress, sizeof (oAddress))) {
+        perror ("server: bind() failed");
+        close (nMainSocketId);
+        return 1;
+    }
+    printf ("HTTP server listening on port %d\n", SERVER_PORT);
+    while (1) {
+        int result = 0;
+        if (listen (nMainSocketId, 10) < 0) {
+            perror ("server: listen() failed");
+            close (nMainSocketId);
+            return 1;
+        }
+        result = accept (nMainSocketId, (struct sockaddr *) &oAddress, &nAddrLen);
+        if (result < 0) {
+            if (EINTR == errno) {
+                printf ("Shutdown requested. Exiting ...\n");
+                break;
+            }
+            perror ("server: accept failed()");
+            close (nMainSocketId);
+            return 1;
+        }
+        nReqSocketId = result;
+        result = recv (nReqSocketId, sRequest, nReqSize, 0);
+        if (result < 0) {
+            perror ("server: recv() failed");
+            close (nMainSocketId);
+            return 1;
+        }
+        else if (result == 0) {
+            printf ("The client is disconnected. Waiting for another connection ...\n");
+            close (nReqSocketId);
+            nReqSocketId = -1;
+            continue;
+        }
+        printf ("The client is connected...\n\n%s\n", sRequest);
+        write (nReqSocketId, "HTTP/1.1 200 OK\n", 16);
+        write (nReqSocketId, "Content-length: 50\n", 19);
+        write (nReqSocketId, "Content-Type: text/html\n\n", 25);
+        write (nReqSocketId, "<html><body><h1>Hello world!!!</h1></body></html>\n", 50);
+        close (nReqSocketId);
+        nReqSocketId = -1;
+    }
+    printf ("Goodbye!\n");
+    close (nMainSocketId);
+    return 0;
+}
+----------------------------------------
+
+int main () {
+    int nRecvResult = -1, nReqSocketId = -1;
+    size_t nReqSize = 1024;
+    char *sRequest = malloc (nReqSize);
+    socklen_t nAddrLen;
+    struct sockaddr_in oAddress = {0};
+    printf ("\n  W E L C O M E!\n\nPress CTRL-C or CTRL-\\ to quit.\n");
+    signal (SIGINT, terminateServer);
+    signal (SIGQUIT, terminateServer);
+    oAddress.sin_family = AF_INET;
+    oAddress.sin_addr.s_addr = INADDR_ANY;
+    oAddress.sin_port = htons (SERVER_PORT);
+    nMainSocketId = socket (AF_INET, SOCK_STREAM, 0);
+    if (nMainSocketId < 0) {
+        perror ("server: socket() failed");
+        return 1;
+    }
+    if (bind (nMainSocketId, (struct sockaddr *) &oAddress, sizeof (oAddress))) {
+        perror ("server: bind() failed");
+        terminateServer ();
+        return 1;
+    }
+    printf ("HTTP server listening on port %d\n", SERVER_PORT);
+    while (bExiting == 0) {
+        if (listen (nMainSocketId, 10) < 0) {
+            perror ("server: listen() failed");
+            terminateServer ();
+            return 1;
+        }
+        nReqSocketId = accept (nMainSocketId, (struct sockaddr *) &oAddress, &nAddrLen);
+        if (bExiting) {
+            break;
+        }
+        if (nReqSocketId < 0) {
+            perror ("server: accept failed()");
+            terminateServer ();
+            return 1;
+        }
+        nRecvResult = recv (nReqSocketId, sRequest, nReqSize, 0);
+        if (nRecvResult < 0) {
+            perror ("server: recv() failed");
+            terminateServer ();
+            return 1;
+        }
+        if (nRecvResult == 0) {
+            printf ("The client is disconnected. Waiting for another connection...\n");
+            close (nReqSocketId);
+            continue;
+        }
+        printf ("The client is connected...\n\n%s\n", sRequest);
+        write (nReqSocketId, "HTTP/1.1 200 OK\n", 16);
+        write (nReqSocketId, "Content-length: 50\n", 19);
+        write (nReqSocketId, "Content-Type: text/html\n\n", 25);
+        write (nReqSocketId, "<html><body><h1>Hello world!!!</h1></body></html>\n", 50);
+        close (nReqSocketId);
+    }
+    free (sRequest);
+    printf ("Goodbye!\n");
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+18533346_18548494_21_113
+18533346_18550644_17_100
+Title: Soft terminating a simple webserver 
+----------------------------------------
+
+int main () {
+    int nMainSocketId = -1, nReqSocketId = -1;
+    size_t nReqSize = 1024;
+    char *sRequest = malloc (nReqSize);
+    socklen_t nAddrLen;
+    struct sockaddr_in oAddress = {0};
+    signal (SIGINT, onInt);
+    signal (SIGQUIT, onQuit);
+    printf ("\n  W E L C O M E!\n\nPress CTRL-C or CTRL-\\ to quit.\n");
+    oAddress.sin_family = AF_INET;
+    oAddress.sin_addr.s_addr = INADDR_ANY;
+    oAddress.sin_port = htons (SERVER_PORT);
+    nMainSocketId = socket (AF_INET, SOCK_STREAM, 0);
+    if (nMainSocketId < 0) {
+        perror ("server: socket() failed");
+        return 1;
+    }
+    if (bind (nMainSocketId, (struct sockaddr *) &oAddress, sizeof (oAddress))) {
+        perror ("server: bind() failed");
+        close (nMainSocketId);
+        return 1;
+    }
+    printf ("HTTP server listening on port %d\n", SERVER_PORT);
+    while (1) {
+        int result = 0;
+        if (listen (nMainSocketId, 10) < 0) {
+            perror ("server: listen() failed");
+            close (nMainSocketId);
+            return 1;
+        }
+        result = accept (nMainSocketId, (struct sockaddr *) &oAddress, &nAddrLen);
+        if (result < 0) {
+            if (EINTR == errno) {
+                printf ("Shutdown requested. Exiting ...\n");
+                break;
+            }
+            perror ("server: accept failed()");
+            close (nMainSocketId);
+            return 1;
+        }
+        nReqSocketId = result;
+        result = recv (nReqSocketId, sRequest, nReqSize, 0);
+        if (result < 0) {
+            perror ("server: recv() failed");
+            close (nMainSocketId);
+            return 1;
+        }
+        else if (result == 0) {
+            printf ("The client is disconnected. Waiting for another connection ...\n");
+            close (nReqSocketId);
+            nReqSocketId = -1;
+            continue;
+        }
+        printf ("The client is connected...\n\n%s\n", sRequest);
+        write (nReqSocketId, "HTTP/1.1 200 OK\n", 16);
+        write (nReqSocketId, "Content-length: 50\n", 19);
+        write (nReqSocketId, "Content-Type: text/html\n\n", 25);
+        write (nReqSocketId, "<html><body><h1>Hello world!!!</h1></body></html>\n", 50);
+        close (nReqSocketId);
+        nReqSocketId = -1;
+    }
+    printf ("Goodbye!\n");
+    close (nMainSocketId);
+    return 0;
+}
+----------------------------------------
+
+int main () {
+    int nRecvResult = -1, nReqSocketId = -1;
+    char sRequest [REQUEST_SIZE];
+    socklen_t nAddrLen;
+    struct sockaddr_in oAddress;
+    FILE *nRespFD;
+    printf ("\n  W E L C O M E!\n\nPress CTRL-C or CTRL-\\ to quit.\n");
+    signal (SIGINT, terminateServer);
+    signal (SIGQUIT, terminateServer);
+    oAddress.sin_family = AF_INET;
+    oAddress.sin_addr.s_addr = INADDR_ANY;
+    oAddress.sin_port = htons (SERVER_PORT);
+    nMainSocketId = socket (AF_INET, SOCK_STREAM, 0);
+    if (nMainSocketId < 0) {
+        perror ("server: socket() failed");
+        return 1;
+    }
+    if (bind (nMainSocketId, (struct sockaddr *) &oAddress, sizeof (oAddress))) {
+        perror ("server: bind() failed");
+        terminateServer ();
+        return 1;
+    }
+    printf ("HTTP server listening on port %d\n", SERVER_PORT);
+    while (bExiting == 0) {
+        if (listen (nMainSocketId, 10) < 0) {
+            perror ("server: listen() failed");
+            terminateServer ();
+            return 1;
+        }
+        nReqSocketId = accept (nMainSocketId, (struct sockaddr *) &oAddress, &nAddrLen);
+        if (bExiting) {
+            break;
+        }
+        if (nReqSocketId < 0) {
+            perror ("server: accept() failed");
+            terminateServer ();
+            return 1;
+        }
+        nRecvResult = recv (nReqSocketId, sRequest, REQUEST_SIZE, 0);
+        if (nRecvResult < 0) {
+            perror ("server: recv() failed");
+            terminateServer ();
+            return 1;
+        }
+        if (nRecvResult == 0) {
+            printf ("The client is disconnected. Waiting for another connection...\n");
+            close (nReqSocketId);
+            continue;
+        }
+        printf ("The client is connected...\n\n%s\n", sRequest);
+        nRespFD = fdopen (nReqSocketId, "a+");
+        fprintf (nRespFD, "HTTP/1.1 200 OK\n");
+        fprintf (nRespFD, "Content-length: 50\n");
+        fprintf (nRespFD, "Content-Type: text/html\n\n");
+        fprintf (nRespFD, "<html><body><h1>Hello world!!!</h1></body></html>\n");
+        fclose (nRespFD);
+        close (nReqSocketId);
+    }
+    printf ("Goodbye!\n");
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+18533346_18548494_21_113
+18533346_18593919_36_152
+Title: Soft terminating a simple webserver 
+----------------------------------------
+
+int main () {
+    int nMainSocketId = -1, nReqSocketId = -1;
+    size_t nReqSize = 1024;
+    char *sRequest = malloc (nReqSize);
+    socklen_t nAddrLen;
+    struct sockaddr_in oAddress = {0};
+    signal (SIGINT, onInt);
+    signal (SIGQUIT, onQuit);
+    printf ("\n  W E L C O M E!\n\nPress CTRL-C or CTRL-\\ to quit.\n");
+    oAddress.sin_family = AF_INET;
+    oAddress.sin_addr.s_addr = INADDR_ANY;
+    oAddress.sin_port = htons (SERVER_PORT);
+    nMainSocketId = socket (AF_INET, SOCK_STREAM, 0);
+    if (nMainSocketId < 0) {
+        perror ("server: socket() failed");
+        return 1;
+    }
+    if (bind (nMainSocketId, (struct sockaddr *) &oAddress, sizeof (oAddress))) {
+        perror ("server: bind() failed");
+        close (nMainSocketId);
+        return 1;
+    }
+    printf ("HTTP server listening on port %d\n", SERVER_PORT);
+    while (1) {
+        int result = 0;
+        if (listen (nMainSocketId, 10) < 0) {
+            perror ("server: listen() failed");
+            close (nMainSocketId);
+            return 1;
+        }
+        result = accept (nMainSocketId, (struct sockaddr *) &oAddress, &nAddrLen);
+        if (result < 0) {
+            if (EINTR == errno) {
+                printf ("Shutdown requested. Exiting ...\n");
+                break;
+            }
+            perror ("server: accept failed()");
+            close (nMainSocketId);
+            return 1;
+        }
+        nReqSocketId = result;
+        result = recv (nReqSocketId, sRequest, nReqSize, 0);
+        if (result < 0) {
+            perror ("server: recv() failed");
+            close (nMainSocketId);
+            return 1;
+        }
+        else if (result == 0) {
+            printf ("The client is disconnected. Waiting for another connection ...\n");
+            close (nReqSocketId);
+            nReqSocketId = -1;
+            continue;
+        }
+        printf ("The client is connected...\n\n%s\n", sRequest);
+        write (nReqSocketId, "HTTP/1.1 200 OK\n", 16);
+        write (nReqSocketId, "Content-length: 50\n", 19);
+        write (nReqSocketId, "Content-Type: text/html\n\n", 25);
+        write (nReqSocketId, "<html><body><h1>Hello world!!!</h1></body></html>\n", 50);
+        close (nReqSocketId);
+        nReqSocketId = -1;
+    }
+    printf ("Goodbye!\n");
+    close (nMainSocketId);
+    return 0;
+}
+----------------------------------------
+
+int main (void) {
+    int nOldReqSock, nNewReqSock, nReqLen, nUninitLen = REQUEST_MAX_SIZE;
+    fd_set oActiveFD, oReadFD;
+    socklen_t nAddrLen;
+    struct sockaddr_in oAddress;
+    oAddress.sin_family = AF_INET;
+    oAddress.sin_addr.s_addr = INADDR_ANY;
+    oAddress.sin_port = htons (SERVER_PORT);
+    nMainSocket = socket (AF_INET, SOCK_STREAM, 0);
+    if (nMainSocket < 0) {
+        perror ("socket");
+        return 1;
+    }
+    if (bind (nMainSocket, (struct sockaddr *) &oAddress, sizeof (oAddress))) {
+        perror ("bind");
+        terminateServer ();
+        return 1;
+    }
+    if (listen (nMainSocket, 10) < 0) {
+        perror ("listen");
+        terminateServer ();
+        return 1;
+    }
+    FD_ZERO (& oActiveFD);
+    FD_SET (STDIN_FILENO, & oActiveFD);
+    FD_SET (nMainSocket, & oActiveFD);
+    printf ("\n  W E L C O M E!\n\nType \"q\" to quit.\n");
+    while (bListening) {
+        oReadFD = oActiveFD;
+        if (select (FD_SETSIZE, &oReadFD, NULL, NULL, NULL) < 0) {
+            perror ("select");
+            terminateServer ();
+            return EXIT_FAILURE;
+        }
+        for (nOldReqSock = 0; bListening && nOldReqSock < FD_SETSIZE; ++nOldReqSock) {
+            if (FD_ISSET (nOldReqSock, &oReadFD)) {
+                if (nOldReqSock == nMainSocket) {
+                    nAddrLen = sizeof (oAddress);
+                    nNewReqSock = accept (nMainSocket, (struct sockaddr *) &oAddress, &nAddrLen);
+                    if (nNewReqSock < 0) {
+                        perror ("accept");
+                        terminateServer ();
+                        return EXIT_FAILURE;
+                    }
+                    FD_SET (nNewReqSock, & oActiveFD);
+                }
+                else {
+                    nReqLen = read (nOldReqSock, sRequest, REQUEST_MAX_SIZE);
+                    if (nReqLen < 0) {
+                        perror ("read");
+                        terminateServer ();
+                        return EXIT_FAILURE;
+                    }
+                    else if (nReqLen == 0) {
+                        printf ("End-of-file\n");
+                        close (nOldReqSock);
+                        FD_CLR (nOldReqSock, & oActiveFD);
+                        continue;
+                    }
+                    else {
+                        if (nUninitLen > nReqLen) {
+                            memset (sRequest + nReqLen, 0, nUninitLen - nReqLen);
+                        }
+                        nUninitLen = nReqLen;
+                    }
+                    if (nOldReqSock == STDIN_FILENO) {
+                        switchStdin (nReqLen);
+                    }
+                    else {
+                        helloWorld (nOldReqSock);
+                    }
+                }
+            }
+        }
+    }
+    printf ("Goodbye\n");
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+18533346_18548943_17_98
+18533346_18593919_36_152
+Title: Soft terminating a simple webserver 
+----------------------------------------
+
+int main () {
+    int nRecvResult = -1, nReqSocketId = -1;
+    size_t nReqSize = 1024;
+    char *sRequest = malloc (nReqSize);
+    socklen_t nAddrLen;
+    struct sockaddr_in oAddress = {0};
+    printf ("\n  W E L C O M E!\n\nPress CTRL-C or CTRL-\\ to quit.\n");
+    signal (SIGINT, terminateServer);
+    signal (SIGQUIT, terminateServer);
+    oAddress.sin_family = AF_INET;
+    oAddress.sin_addr.s_addr = INADDR_ANY;
+    oAddress.sin_port = htons (SERVER_PORT);
+    nMainSocketId = socket (AF_INET, SOCK_STREAM, 0);
+    if (nMainSocketId < 0) {
+        perror ("server: socket() failed");
+        return 1;
+    }
+    if (bind (nMainSocketId, (struct sockaddr *) &oAddress, sizeof (oAddress))) {
+        perror ("server: bind() failed");
+        terminateServer ();
+        return 1;
+    }
+    printf ("HTTP server listening on port %d\n", SERVER_PORT);
+    while (bExiting == 0) {
+        if (listen (nMainSocketId, 10) < 0) {
+            perror ("server: listen() failed");
+            terminateServer ();
+            return 1;
+        }
+        nReqSocketId = accept (nMainSocketId, (struct sockaddr *) &oAddress, &nAddrLen);
+        if (bExiting) {
+            break;
+        }
+        if (nReqSocketId < 0) {
+            perror ("server: accept failed()");
+            terminateServer ();
+            return 1;
+        }
+        nRecvResult = recv (nReqSocketId, sRequest, nReqSize, 0);
+        if (nRecvResult < 0) {
+            perror ("server: recv() failed");
+            terminateServer ();
+            return 1;
+        }
+        if (nRecvResult == 0) {
+            printf ("The client is disconnected. Waiting for another connection...\n");
+            close (nReqSocketId);
+            continue;
+        }
+        printf ("The client is connected...\n\n%s\n", sRequest);
+        write (nReqSocketId, "HTTP/1.1 200 OK\n", 16);
+        write (nReqSocketId, "Content-length: 50\n", 19);
+        write (nReqSocketId, "Content-Type: text/html\n\n", 25);
+        write (nReqSocketId, "<html><body><h1>Hello world!!!</h1></body></html>\n", 50);
+        close (nReqSocketId);
+    }
+    free (sRequest);
+    printf ("Goodbye!\n");
+    return 0;
+}
+----------------------------------------
+
+int main (void) {
+    int nOldReqSock, nNewReqSock, nReqLen, nUninitLen = REQUEST_MAX_SIZE;
+    fd_set oActiveFD, oReadFD;
+    socklen_t nAddrLen;
+    struct sockaddr_in oAddress;
+    oAddress.sin_family = AF_INET;
+    oAddress.sin_addr.s_addr = INADDR_ANY;
+    oAddress.sin_port = htons (SERVER_PORT);
+    nMainSocket = socket (AF_INET, SOCK_STREAM, 0);
+    if (nMainSocket < 0) {
+        perror ("socket");
+        return 1;
+    }
+    if (bind (nMainSocket, (struct sockaddr *) &oAddress, sizeof (oAddress))) {
+        perror ("bind");
+        terminateServer ();
+        return 1;
+    }
+    if (listen (nMainSocket, 10) < 0) {
+        perror ("listen");
+        terminateServer ();
+        return 1;
+    }
+    FD_ZERO (& oActiveFD);
+    FD_SET (STDIN_FILENO, & oActiveFD);
+    FD_SET (nMainSocket, & oActiveFD);
+    printf ("\n  W E L C O M E!\n\nType \"q\" to quit.\n");
+    while (bListening) {
+        oReadFD = oActiveFD;
+        if (select (FD_SETSIZE, &oReadFD, NULL, NULL, NULL) < 0) {
+            perror ("select");
+            terminateServer ();
+            return EXIT_FAILURE;
+        }
+        for (nOldReqSock = 0; bListening && nOldReqSock < FD_SETSIZE; ++nOldReqSock) {
+            if (FD_ISSET (nOldReqSock, &oReadFD)) {
+                if (nOldReqSock == nMainSocket) {
+                    nAddrLen = sizeof (oAddress);
+                    nNewReqSock = accept (nMainSocket, (struct sockaddr *) &oAddress, &nAddrLen);
+                    if (nNewReqSock < 0) {
+                        perror ("accept");
+                        terminateServer ();
+                        return EXIT_FAILURE;
+                    }
+                    FD_SET (nNewReqSock, & oActiveFD);
+                }
+                else {
+                    nReqLen = read (nOldReqSock, sRequest, REQUEST_MAX_SIZE);
+                    if (nReqLen < 0) {
+                        perror ("read");
+                        terminateServer ();
+                        return EXIT_FAILURE;
+                    }
+                    else if (nReqLen == 0) {
+                        printf ("End-of-file\n");
+                        close (nOldReqSock);
+                        FD_CLR (nOldReqSock, & oActiveFD);
+                        continue;
+                    }
+                    else {
+                        if (nUninitLen > nReqLen) {
+                            memset (sRequest + nReqLen, 0, nUninitLen - nReqLen);
+                        }
+                        nUninitLen = nReqLen;
+                    }
+                    if (nOldReqSock == STDIN_FILENO) {
+                        switchStdin (nReqLen);
+                    }
+                    else {
+                        helloWorld (nOldReqSock);
+                    }
+                }
+            }
+        }
+    }
+    printf ("Goodbye\n");
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+18533346_18550644_17_100
+18533346_18593919_36_152
+Title: Soft terminating a simple webserver 
+----------------------------------------
+
+int main () {
+    int nRecvResult = -1, nReqSocketId = -1;
+    char sRequest [REQUEST_SIZE];
+    socklen_t nAddrLen;
+    struct sockaddr_in oAddress;
+    FILE *nRespFD;
+    printf ("\n  W E L C O M E!\n\nPress CTRL-C or CTRL-\\ to quit.\n");
+    signal (SIGINT, terminateServer);
+    signal (SIGQUIT, terminateServer);
+    oAddress.sin_family = AF_INET;
+    oAddress.sin_addr.s_addr = INADDR_ANY;
+    oAddress.sin_port = htons (SERVER_PORT);
+    nMainSocketId = socket (AF_INET, SOCK_STREAM, 0);
+    if (nMainSocketId < 0) {
+        perror ("server: socket() failed");
+        return 1;
+    }
+    if (bind (nMainSocketId, (struct sockaddr *) &oAddress, sizeof (oAddress))) {
+        perror ("server: bind() failed");
+        terminateServer ();
+        return 1;
+    }
+    printf ("HTTP server listening on port %d\n", SERVER_PORT);
+    while (bExiting == 0) {
+        if (listen (nMainSocketId, 10) < 0) {
+            perror ("server: listen() failed");
+            terminateServer ();
+            return 1;
+        }
+        nReqSocketId = accept (nMainSocketId, (struct sockaddr *) &oAddress, &nAddrLen);
+        if (bExiting) {
+            break;
+        }
+        if (nReqSocketId < 0) {
+            perror ("server: accept() failed");
+            terminateServer ();
+            return 1;
+        }
+        nRecvResult = recv (nReqSocketId, sRequest, REQUEST_SIZE, 0);
+        if (nRecvResult < 0) {
+            perror ("server: recv() failed");
+            terminateServer ();
+            return 1;
+        }
+        if (nRecvResult == 0) {
+            printf ("The client is disconnected. Waiting for another connection...\n");
+            close (nReqSocketId);
+            continue;
+        }
+        printf ("The client is connected...\n\n%s\n", sRequest);
+        nRespFD = fdopen (nReqSocketId, "a+");
+        fprintf (nRespFD, "HTTP/1.1 200 OK\n");
+        fprintf (nRespFD, "Content-length: 50\n");
+        fprintf (nRespFD, "Content-Type: text/html\n\n");
+        fprintf (nRespFD, "<html><body><h1>Hello world!!!</h1></body></html>\n");
+        fclose (nRespFD);
+        close (nReqSocketId);
+    }
+    printf ("Goodbye!\n");
+    return 0;
+}
+----------------------------------------
+
+int main (void) {
+    int nOldReqSock, nNewReqSock, nReqLen, nUninitLen = REQUEST_MAX_SIZE;
+    fd_set oActiveFD, oReadFD;
+    socklen_t nAddrLen;
+    struct sockaddr_in oAddress;
+    oAddress.sin_family = AF_INET;
+    oAddress.sin_addr.s_addr = INADDR_ANY;
+    oAddress.sin_port = htons (SERVER_PORT);
+    nMainSocket = socket (AF_INET, SOCK_STREAM, 0);
+    if (nMainSocket < 0) {
+        perror ("socket");
+        return 1;
+    }
+    if (bind (nMainSocket, (struct sockaddr *) &oAddress, sizeof (oAddress))) {
+        perror ("bind");
+        terminateServer ();
+        return 1;
+    }
+    if (listen (nMainSocket, 10) < 0) {
+        perror ("listen");
+        terminateServer ();
+        return 1;
+    }
+    FD_ZERO (& oActiveFD);
+    FD_SET (STDIN_FILENO, & oActiveFD);
+    FD_SET (nMainSocket, & oActiveFD);
+    printf ("\n  W E L C O M E!\n\nType \"q\" to quit.\n");
+    while (bListening) {
+        oReadFD = oActiveFD;
+        if (select (FD_SETSIZE, &oReadFD, NULL, NULL, NULL) < 0) {
+            perror ("select");
+            terminateServer ();
+            return EXIT_FAILURE;
+        }
+        for (nOldReqSock = 0; bListening && nOldReqSock < FD_SETSIZE; ++nOldReqSock) {
+            if (FD_ISSET (nOldReqSock, &oReadFD)) {
+                if (nOldReqSock == nMainSocket) {
+                    nAddrLen = sizeof (oAddress);
+                    nNewReqSock = accept (nMainSocket, (struct sockaddr *) &oAddress, &nAddrLen);
+                    if (nNewReqSock < 0) {
+                        perror ("accept");
+                        terminateServer ();
+                        return EXIT_FAILURE;
+                    }
+                    FD_SET (nNewReqSock, & oActiveFD);
+                }
+                else {
+                    nReqLen = read (nOldReqSock, sRequest, REQUEST_MAX_SIZE);
+                    if (nReqLen < 0) {
+                        perror ("read");
+                        terminateServer ();
+                        return EXIT_FAILURE;
+                    }
+                    else if (nReqLen == 0) {
+                        printf ("End-of-file\n");
+                        close (nOldReqSock);
+                        FD_CLR (nOldReqSock, & oActiveFD);
+                        continue;
+                    }
+                    else {
+                        if (nUninitLen > nReqLen) {
+                            memset (sRequest + nReqLen, 0, nUninitLen - nReqLen);
+                        }
+                        nUninitLen = nReqLen;
+                    }
+                    if (nOldReqSock == STDIN_FILENO) {
+                        switchStdin (nReqLen);
+                    }
+                    else {
+                        helloWorld (nOldReqSock);
+                    }
+                }
+            }
+        }
+    }
+    printf ("Goodbye\n");
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+18554775_18554859_5_24
+18554775_18554885_7_67
+Title: The simplest possible getopt program I can get? 
+----------------------------------------
+
+int main (int argc, char *argv []) {
+    char VER [] = "0.1.1";
+    int opt;
+    opt = getopt (argc, argv, "vf:");
+    char *filename;
+    while (opt != -1) {
+        switch (opt) {case 'v' : printf ("version is %s\n", VER);
+        exit (0);
+    case 'f' :
+        printf ("The filename was %s\n", argv[2]);
+        exit (0);
+    }
+}
+----------------------------------------
+
+int main (int argc, char **argv) {
+    int opt;
+    int i;
+    int bflag = 0;
+    int aflag = 0;
+    int errflag = 0;
+    char *ifile = 0;
+    char *ofile = 0;
+    while ((opt = getopt (argc, argv, ":abf:o:")) != -1) {
+        switch (opt) {
+        case 'a' :
+            if (bflag)
+                errflag++;
+            else
+                aflag++;
+            break;
+        case 'b' :
+            if (aflag)
+                errflag++;
+            else
+                bflag++;
+            break;
+        case 'f' :
+            ifile = optarg;
+            break;
+        case 'o' :
+            ofile = optarg;
+            break;
+        case ':' :
+            fprintf (stderr, "Option -%c requires an operand\n", optopt);
+            errflag++;
+            break;
+        case '?' :
+        default :
+            fprintf (stderr, "Unrecognized option: -%c\n", optopt);
+            errflag++;
+            break;
+        }
+    }
+    if (errflag) {
+        fprintf (stderr, "Usage: %s [-a|-b][-f in][-o out] [file ...]\n", argv [0]);
+        exit (2);
+    }
+    printf ("Flags: a = %d, b = %d\n", aflag, bflag);
+    if (ifile != 0)
+        printf ("Input: %s\n", ifile);
+    if (ofile != 0)
+        printf ("Output: %s\n", ofile);
+    printf ("Argc = %d, OptInd = %d\n", argc, optind);
+    for (i = optind; i < argc; i++)
+        printf ("File: %s\n", argv[i]);
+    return (EXIT_SUCCESS);
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+18555755_18555943_3_41
+18555755_18556300_4_16
+Title: Displaying pattern using arrays in C 
+----------------------------------------
+
+int main (void) {
+    int no_ofrows;
+    char array [26] [51];
+    int row_no;
+    int index;
+    int i, j;
+    printf ("No of rows: ");
+    scanf ("%d", & no_ofrows);
+    for (row_no = 0; row_no < no_ofrows; row_no++) {
+        for (index = 0; index < no_ofrows; index++) {
+            if (index < no_ofrows - row_no)
+                array[row_no][index] = 'A' + index;
+            else
+                array[row_no][index] = ' ';
+        }
+        for (index = 0; index < no_ofrows - 1; index++) {
+            if (index < row_no - 1)
+                array[row_no][no_ofrows + index] = ' ';
+            else
+                array[row_no][no_ofrows + index] = 'A' + no_ofrows - 2 - index;
+        }
+    }
+    for (i = 0; i < no_ofrows; i++) {
+        for (j = 0; j < no_ofrows * 2 - 1; j++)
+            printf ("%c", array[i][j]);
+        putchar ('\n');
+    }
+    return 0;
+}
+----------------------------------------
+
+int main (int argc, char *argv []) {
+    char arr [4] [8] = {'\0'};
+    for (int row = 0; row < 4; row++) {
+        for (int col = 0; col < 7; col++) {
+            int d = abs (col -3);
+            arr[row][col] = d < row ? ' ' : 'D' - d;
+        }
+    }
+    for (int row = 0; row < 4; row++) {
+        puts (arr [row]);
+    }
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+18568365_18568652_3_19
+18568365_18568664_3_17
+Title: Reverse an array of numbers 
+----------------------------------------
+
+int main () {
+    int n, reverse = 0;
+    printf ("Enter a number to reverse\n");
+    scanf ("%d", & n);
+    while (n != 0) {
+        reverse = reverse * 10;
+        reverse = reverse + n % 10;
+        n = n / 10;
+    }
+    printf ("Reverse of entered number is = %d\n", reverse);
+    return 0;
+}
+----------------------------------------
+
+int main () {
+    int k = 0;
+    int n = 1234;
+    while (n != 0) {
+        k *= 10;
+        k += n % 10;
+        n /= 10;
+    }
+    printf ("%d", k);
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+18568365_18568652_3_19
+18568365_18569222_5_16
+Title: Reverse an array of numbers 
+----------------------------------------
+
+int main () {
+    int n, reverse = 0;
+    printf ("Enter a number to reverse\n");
+    scanf ("%d", & n);
+    while (n != 0) {
+        reverse = reverse * 10;
+        reverse = reverse + n % 10;
+        n = n / 10;
+    }
+    printf ("Reverse of entered number is = %d\n", reverse);
+    return 0;
+}
+----------------------------------------
+
+int main (void) {
+    int ary [] = {1, 2, 3, 4};
+    int size = sizeof (ary) / sizeof (ary[0]);
+    reverse (ary, size);
+    for (int i = 0; i < size; i++)
+        printf ("%d ", ary[i]);
+    printf ("\n");
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+18568365_18568664_3_17
+18568365_18569222_5_16
+Title: Reverse an array of numbers 
+----------------------------------------
+
+int main () {
+    int k = 0;
+    int n = 1234;
+    while (n != 0) {
+        k *= 10;
+        k += n % 10;
+        n /= 10;
+    }
+    printf ("%d", k);
+    return 0;
+}
+----------------------------------------
+
+int main (void) {
+    int ary [] = {1, 2, 3, 4};
+    int size = sizeof (ary) / sizeof (ary[0]);
+    reverse (ary, size);
+    for (int i = 0; i < size; i++)
+        printf ("%d ", ary[i]);
+    printf ("\n");
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+18587424_18587913_7_49
+18587424_18588412_4_29
+Title: Reading from two columns into variables 
+----------------------------------------
+
+int main () {
+    FILE *fh = fopen ("file.txt", "r");
+    char temp [MAX_LINE_SIZE];
+    int d_out [MAX_NUMBER_OF_LINES];
+    char s_out [MAX_NUMBER_OF_LINES] [MAX_LINE_SIZE];
+    int i = 0, di = 0, si = 0;
+    while (fgets (temp, MAX_LINE_SIZE, fh) && di < MAX_NUMBER_OF_LINES) {
+        temp[strlen (temp) - 1] = '\0';
+        char *c = strtok (temp, " ");
+        while (c != NULL) {
+            if (i == 0) {
+                i = 1;
+                sscanf (c, "%d", & d_out [di ++]);
+            }
+            else {
+                i = 0;
+                sprintf (s_out [si ++], "%s", c);
+            }
+            c = strtok (NULL, " ");
+        }
+        printf ("%d %s\n", d_out [di - 1], s_out [si - 1]);
+    }
+    fclose (fh);
+    return 0;
+}
+----------------------------------------
+
+int main (void) {
+    FILE *fp;
+    char *line = NULL;
+    size_t len = 0;
+    ssize_t read;
+    char tok_str [255];
+    int tok_int;
+    fp = fopen ("./file.txt", "r");
+    if (fp == NULL)
+        exit (EXIT_FAILURE);
+    while ((read = getline (&line, &len, fp)) != -1) {
+        sscanf (line, "%d\t%s", & tok_int, tok_str);
+        printf ("%d-%s\n", tok_int, tok_str);
+    }
+    if (line)
+        free (line);
+    exit (EXIT_SUCCESS);
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+18591218_18591390_4_35
+18591218_18591430_16_32
+Title: Can character array be using switch case in c 
+----------------------------------------
+
+void main () {
+    char day [20];
+    printf ("Enter the short name of day");
+    scanf ("%s", day);
+    switch (htonl (*((unsigned long *) day))) {
+    case 'sun\0' :
+        printf ("sunday");
+        break;
+    case 'mon\0' :
+        printf ("monday");
+        break;
+    case 'Tue\0' :
+        printf ("Tuesday");
+        break;
+    case 'wed\0' :
+        printf ("wednesday");
+        break;
+    case 'Thu\0' :
+        printf ("Thursday");
+        break;
+    case 'Fri\0' :
+        printf ("friday");
+        break;
+    case 'sat\0' :
+        printf ("saturday");
+        break;
+    }
+}
+----------------------------------------
+
+int main () {
+    int i;
+    char day [20];
+    printf ("Enter the short name of day");
+    scanf ("%s", day);
+    for (i = 0; i < sizeof (days) / sizeof (days[0]); i++) {
+        if (strcasecmp (day, days[i].abbrev) == 0) {
+            printf ("%s\n", days [i].name);
+            break;
+        }
+    }
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+18603408_18603575_4_25
+18603408_18603931_11_34
+Title: Formatting a C Program 
+----------------------------------------
+
+int main () {
+    FILE *labFile;
+    char buf [100];
+    labFile = fopen ("lab1.dat", "r");
+    if (labFile == NULL)
+        perror ("Error opening file\n");
+    while (fgets (buf, 100, labFile)) {
+        if (rindex (buf, '\n'))
+            *rindex (buf, '\n') = 0;
+        int i, n = strlen (buf);
+        for (i = 0; i != n; i++) {
+            printf ("0%x ", buf [i]);
+        }
+        printf ("\n");
+        for (i = 0; i != n; i++) {
+            printf ("%c ", buf [i]);
+        }
+        printf ("\n");
+    }
+    fclose (labFile);
+    return 0;
+}
+----------------------------------------
+
+int main () {
+    FILE *labFile;
+    char buf;
+    int count = 0;
+    int num = COLUMNS / 3;
+    char printed [num];
+    labFile = fopen ("lab1.dat", "r");
+    if (labFile == NULL)
+        perror ("Error opening file\n");
+    while ((buf = fgetc (labFile)) != EOF) {
+        printf ("%s%02x", count ? " " : "", buf);
+        printed[count++] = buf;
+        if (count == num) {
+            count = 0;
+            putchar ('\n');
+            print_chars (printed, num);
+        }
+    }
+    fclose (labFile);
+    if (count) {
+        putchar ('\n');
+        print_chars (printed, count);
+    }
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+18605949_18605989_3_16
+18605949_18606005_4_26
+Title: Need help understanding while loops 
+----------------------------------------
+
+int main () {
+    int c;
+    int x;
+    printf ("Num here: ");
+    x = 0;
+    while (isdigit (c = getchar ()))
+        x = x * 10 + c - 48;
+    printf ("%d", x);
+}
+----------------------------------------
+
+int main (void) {
+    int c;
+    while ((c = getchar ()) != EOF && c != '\n') {
+        int product = 1;
+        while (c != EOF && c != '\n') {
+            while (isspace (c))
+                c = getchar ();
+            int number = 0;
+            while (isdigit (c)) {
+                number = number * 10 + (c - '0');
+                c = getchar ();
+            }
+            printf ("Number:  %d\n", number);
+            product *= number;
+        }
+        printf ("Product: %d\n", product);
+    }
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+1861780_1861810_6_18
+1861780_1862033_4_15
+Title: convert values in string to float array 
+----------------------------------------
+
+int main () {
+    char str [80];
+    float f;
+    FILE *pFile;
+    pFile = fopen ("myfile.txt", "r");
+    fscanf (pFile, "%f", & f);
+    fclose (pFile);
+    printf ("I have read: %f \n", f);
+    return 0;
+}
+----------------------------------------
+
+int main (void) {
+    char buf [] = "0.100\n0.8foo40\n0.030\n\n\n\n0.460\n0.760bar\n-0.090trash";
+    char *err, *p = buf;
+    double val;
+    while (*p) {
+        val = strtod (p, &err);
+        if (p == err)
+            p++;
+        else if ((err == NULL) || (*err == 0)) {
+            printf ("Value: %f\n", val);
+            break;
+        }
+        else {
+            printf ("Value: %f\n", val);
+            p = err + 1;
+        }
+    }
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+18627163_18627299_2_19
+18627163_18627435_1_14
+Title: Yes/No loop in C 
+----------------------------------------
+
+int main () {
+    char answer;
+    printf ("\nWould you like to play? Enter Y or N: \n");
+    scanf (" %c", & answer);
+    printf ("\n answer is %c\n", answer);
+    while (answer == 'Y') {
+        printf ("Success!");
+        printf ("\nDo you want to play again? Y or N: \n");
+        scanf (" %c", & answer);
+        printf ("\n answer is %c\n", answer);
+    }
+    printf ("GoodBye!");
+    return 0;
+}
+----------------------------------------
+
+int main (void) {
+    char answer;
+    printf ("Would you like to play? Enter Y or N: ");
+    while (scanf (" %c", &answer) == 1 && printf ("Answer is %c\n", answer) > 0 && answer == 'Y') {
+        printf ("Success!\n");
+        printf ("Do you want to play again? Y or N: ");
+    }
+    printf ("GoodBye!\n");
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+18641941_18642305_7_21
+18641941_18967478_9_31
+Title: How to dynamically return number or string with one function? 
+----------------------------------------
+
+RAWINPUT rawinput (char *message, char *type) {
+    char * resultstring int resultinteger;
+    RAWINPUT ri;
+    if (type[0] == 's')
+        ri.string = resultstring;
+    else if (type[0] == 'i')
+        ri.integer = resultinteger;
+    return ri;
+}
+----------------------------------------
+
+raw_t rawinput (const char *message, char type) {
+    raw_t r;
+    printf ("%s", message);
+    r.type = type;
+    switch (type) {
+    case 'n' :
+        if (1 != scanf ("%d", &r.u.i)) {
+        }
+        break;
+    case 's' :
+        {
+            char tmp [1024];
+            if (1 != scanf ("%1023s", tmp)) {
+            }
+            r.u.s = strdup (tmp);
+            break;
+        }
+    default :
+        ;
+    }
+    return r;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+18668940_18669049_1_13
+18668940_18669083_9_26
+Title: How can I detect a new line from fgets then convert it to '\0'? 
+----------------------------------------
+
+void number () {
+    printf ("Student No. (20XXXXXXX):\t");
+    int x = 0, i = 0;
+    fgets (studno [i], LEN, stdin);
+    if ('\n' == studno[i][strlen (studno) - 1]) {
+        studno[i][strlen (studno) - 1] = '\0';
+    }
+    ...
+}
+----------------------------------------
+
+void number () {
+    printf (LEV3 "Student No. (20XXXXXXX):\t");
+    fgets (studno, LEN, stdin);
+    int x = atoi (studno);
+    if (((x / 10000000) >= 21 || (x / 10000000) <= 19)) {
+        printf ("ERROR: Invalid Student Number. Format should be 20XXXXXXX.\n");
+        number ();
+    }
+    int l = strlen (studno);
+    if ('\n' == studno[l - 1]) {
+        studno[l - 1] = '\0';
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+18693100_18694045_273_359
+18693100_18695420_3_14
+Title: "execl(""/bin/bash""""bash""""-l""""-c""""env""NULL) what's wrong?" 
+----------------------------------------
+
+int main (int argc, char *argv []) {
+    struct passwd *pw;
+    char *shell;
+    const char *args [4];
+    char *data = NULL;
+    size_t size = 0;
+    size_t used = 0;
+    int status;
+    if (argc != 2 || !strcmp (argv[1], "-h") || !strcmp (argv[1], "--help")) {
+        wrerr ("\n");
+        wrerr ("Usage: ");
+        wrerr (argv [0]);
+        wrerr (" [ -h | --help ]\n");
+        wrerr ("       ");
+        wrerr (argv [0]);
+        wrerr (" USERNAME\n");
+        wrerr ("\n");
+        return 1;
+    }
+    pw = getpwnam (argv[1]);
+    if (!pw) {
+        wrerr (argv [1]);
+        wrerr (": ");
+        wrerr (strerror (errno));
+        wrerr (".\n");
+        return 1;
+    }
+    if (pw->pw_shell && pw->pw_shell[0] == '/')
+        shell = strdup (pw->pw_shell);
+    else
+        shell = strdup ("/bin/sh");
+    args[0] = basename_of (shell);
+    if (!args[0]) {
+        wrerr (argv [1]);
+        wrerr (": User has invalid shell, '");
+        wrerr (shell);
+        wrerr ("'.\n");
+        return 1;
+    }
+    args[1] = "-c";
+    args[2] = "env";
+    args[3] = NULL;
+    if (execute (shell, args, &data, &size, &used, &status)) {
+        wrerr ("Failed to execute ");
+        wrerr (shell);
+        wrerr (": ");
+        wrerr (strerror (errno));
+        wrerr (".\n");
+        return 1;
+    }
+    free (shell);
+    {
+        const char *p = data;
+        const char * const q = data + used;
+        ssize_t n;
+        while (p < q) {
+            n = write (STDOUT_FILENO, p, (size_t) (q - p));
+            if (n > (ssize_t) 0)
+                p += n;
+            else if (n != (ssize_t) -1) {
+                wrerr ("Error writing to standard output.\n");
+                return 1;
+            }
+            else if (errno != EINTR) {
+                wrerr ("standard output: ");
+                wrerr (strerror (errno));
+                wrerr (".\n");
+                return 1;
+            }
+        }
+    }
+    free (data);
+    data = NULL;
+    size = 0;
+    used = 0;
+    return 0;
+}
+----------------------------------------
+
+int main (int argc, const char **argv) {
+    char line [1024];
+    FILE *pipefp = popen ("/bin/bash -l -c env", "r");
+    if (pipefp) {
+        while (fgets (line, sizeof (line), pipefp)) {
+            printf ("%s", line);
+        }
+        pclose (pipefp);
+    }
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+18693841_18695586_19_34
+18693841_18701320_22_32
+Title: Read contents of a file as hex in C 
+----------------------------------------
+
+int main () {
+    FILE *fp = fopen ("sample", "r");
+    unsigned char c1, c2;
+    int i = 0;
+    unsigned char sum, final_hex [FILELEN / 2];
+    for (i = 0; i < FILELEN / 2; i++) {
+        c1 = ascii_to_hex (fgetc (fp));
+        c2 = ascii_to_hex (fgetc (fp));
+        sum = c1 << 4 | c2;
+        final_hex[i] = sum;
+        printf ("%02x ", sum);
+    }
+    printf ("\n");
+}
+----------------------------------------
+
+int main () {
+    FILE *inf = fopen ("hex.txt", "rt");
+    size_t n = ReadHexFile (inf, NULL);
+    rewind (inf);
+    unsigned char *hex = malloc (n);
+    ReadHexFile (inf, hex);
+    fclose (inf);
+    free (hex);
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+18713226_18713628_17_50
+18713226_30383735_70_85
+Title: Finding a maximum sum contiguous sub array 
+----------------------------------------
+
+int main () {
+    int arr [8] = {1, 1, 2, -2, 3, 3, 4, -4};
+    const int n = sizeof (arr) / sizeof (arr[0]);
+    DPInfoType dp [n];
+    dp[0].low = 0;
+    dp[0].high = 0;
+    dp[0].sum = arr[0];
+    for (int i = 1; i < n; ++i) {
+        if (dp[i - 1].sum > 0) {
+            dp[i].low = dp[i - 1].low;
+            dp[i].high = i;
+            dp[i].sum = dp[i - 1].sum + arr[i];
+        }
+        else {
+            dp[i].low = i;
+            dp[i].high = i;
+            dp[i].sum = arr[i];
+        }
+    }
+    int max_index = 0;
+    for (int i = 1; i < n; ++i) {
+        if (dp[max_index].sum < dp[i].sum)
+            max_index = i;
+    }
+    printf ("\n Maximum sum = %d\n", dp [max_index].sum);
+    printf ("\n low = %d\n", dp [max_index].low);
+    printf ("\n high = %d\n", dp [max_index].high);
+    return 0;
+}
+----------------------------------------
+
+int main (int argc, char const *argv []) {
+    int size, i, item, result;
+    printf ("Enter the size of array: ");
+    scanf ("%d", & size);
+    int arr [size];
+    printf ("Enter the array:\n");
+    for (i = 0; i < size; ++i) {
+        scanf ("%d", & item);
+        arr[i] = item;
+    }
+    int start = 0, end = size - 1;
+    result = findMaxSubarray (arr, 0, size -1, &start, &end);
+    printf ("Result: %d, start: %d and end: %d.\n", result, start, end);
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+18755376_18755420_1_25
+18755376_18755468_29_42
+Title: Expected initializer before function name in header. C 
+----------------------------------------
+
+instr *read_file (const char *filename) {
+    instr *arr = NULL;
+    int len = 0, size = 0;
+    FILE *f = fopen (filename, "r");
+    if (!f) {
+        perror (filename);
+        exit (EXIT_FAILURE);
+    }
+    while (!feof (f)) {
+        if (len >= size - 1) {
+            int newsize = 5 * len / 4 + 50;
+            instr *newarr = calloc (newsize, sizeof (instr));
+            if (!newarr) {
+                perror ("calloc");
+                exit (EXIT_FAILURE);
+            }
+            if (arr)
+                memcpy (newarr, arr, sizeof (instr) * len);
+            free (arr);
+            arr = newarr;
+            size = newsize;
+        }
+        if (fscanf (f, "%d %d %d", &arr[len]->op, &arr[len]->l, &arr[len]->m) < 3)
+            break;
+        len++;
+    }
+    arr[len]->op = -1;
+    fclose (f);
+    return arr;
+}
+----------------------------------------
+
+instruction *read_file (instruction code []) {
+    int i = 0;
+    ifp = fopen ("input.txt", "r");
+    while (!feof (ifp)) {
+        fscanf (ifp, "%d%d%d", & code [i].op, & code [i].l, & code [i].m);
+        i++;
+    }
+    code[i].op = -1;
+    fclose (ifp);
+    return code;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+18763987_18764291_10_42
+18763987_18764430_4_35
+Title: Complex algorithm to extract numbers/number range from a string 
+----------------------------------------
+
+int main () {
+    enum {DASH, COMMA, NUMBER};
+    struct token {
+        int type;
+        int value;
+    };
+    struct token tokStream [] = {{NUMBER, 1}, {DASH, 0}, {NUMBER, 5}, {COMMA, 0}, {NUMBER, 10}, {COMMA, 0}};
+    size_t i = 0;
+    while (i < sizeof (tokStream) / sizeof (struct token)) {
+        if (tokStream[i + 1].type == COMMA) {
+            print (tokStream [i].value, tokStream [i].value);
+            i += 2;
+        }
+        else {
+            print (tokStream [i].value, tokStream [i + 2].value);
+            i += 4;
+        }
+    }
+    return 0;
+}
+----------------------------------------
+
+int main () {
+    int i, j;
+    char delims [] = " ,";
+    char str [] = "1-5,6,7";
+    char *tok;
+    char tmp [256];
+    int rstart, rend;
+    tok = strtok (str, delims);
+    while (tok != NULL) {
+        for (i = 0; i < strlen (tok); ++i) {
+            if (i != 0 && tok[i] == '-') {
+                strncpy (tmp, tok, i);
+                rstart = atoi (tmp);
+                strcpy (tmp, tok + i + 1);
+                rend = atoi (tmp);
+                for (j = rstart; j <= rend; ++j)
+                    printf ("%d\n", j);
+                i = strlen (tok) + 1;
+            }
+            else if (strchr (tok, '-') == NULL)
+                printf ("%s\n", tok);
+        }
+        tok = strtok (NULL, delims);
+    }
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+18767566_18768076_2_24
+18767566_18768398_1_33
+Title: Merging and Sorting struct array in c 
+----------------------------------------
+
+int mergeMac2 (struct packetStruct *macadd, struct output *output, int n) {
+    int i, j, k = 0;
+    for (i = 0; i < n; i++) {
+        if (strcmp (macadd[i].mac, "") != 0) {
+            for (j = 0; j < k && strcmp (macadd[i].mac, output[j].mac) != 0; j++)
+                ;
+            if (j == k) {
+                strcpy (output [k].mac, macadd [i].mac);
+                output[k].size = macadd[i].size;
+                k++;
+            }
+            else {
+                output[j].size += macadd[i].size;
+            }
+        }
+    }
+    return k;
+}
+----------------------------------------
+
+void mergeMac2 (struct packetStruct *macadd, struct output *output, int n) {
+    int i, j, k = 0;
+    for (i = 0; i < n; i++) {
+        if (macadd[i].size == 0)
+            continue;
+        memcpy (& output [k], & macadd [i], sizeof (struct packetStruct));
+        for (j = i + 1; j < n; j++) {
+            if (macadd[j].size == 0)
+                continue;
+            if (strcmp (macadd[i].mac, macadd[j].mac) == 0) {
+                output[k].size += macadd[j].size;
+                macadd[j].size = 0;
+            }
+        }
+        k++;
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+18792489_18792520_7_33
+18792489_18792526_9_46
+Title: How to create a temporary directory in C? 
+----------------------------------------
+
+int main () {
+    char template [] = "/tmp/tmpdir.XXXXXX";
+    char *dir_name = mkdtemp (template);
+    if (dir_name == NULL) {
+        perror ("mkdtemp failed: ");
+        return 0;
+    }
+    printf ("%s", dir_name);
+    if (rmdir (dir_name) == -1) {
+        perror ("rmdir failed: ");
+        return 0;
+    }
+    return 0;
+}
+----------------------------------------
+
+int main () {
+    char template [] = "/tmp/tmpdir.XXXXXX";
+    char *tmp_dirname = mkdtemp (template);
+    if (tmp_dirname == NULL) {
+        perror ("tempdir: error: Could not create tmp directory");
+        exit (EXIT_FAILURE);
+    }
+    if (chdir (tmp_dirname) == -1) {
+        perror ("tempdir: error: ");
+        exit (EXIT_FAILURE);
+    }
+    char rm_command [26];
+    strncpy (rm_command, "rm -rf ", 7 + 1);
+    strncat (rm_command, tmp_dirname, strlen (tmp_dirname) + 1);
+    if (system (rm_command) == -1) {
+        perror ("tempdir: error: ");
+        exit (EXIT_FAILURE);
+    }
+    return EXIT_SUCCESS;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+18792772_18792834_1_18
+18792772_18793107_20_34
+Title: how do I handle arguments in main? 
+----------------------------------------
+
+int main (int argc, char **argv) {
+    int n = 0;
+    if (argc > 1) {
+        char *end;
+        n = strtol (argv[1], &end, 10);
+        if (*end) {
+            printf ("Please pass the number for the argument!");
+            return 0;
+        }
+        printf ("%d\n", n);
+    }
+    return 0;
+}
+----------------------------------------
+
+int main (int argc, char **argv) {
+    if (argc < 3) {
+        fprintf (stderr, "USAGE: %s x y\n", argv [0]);
+        exit (0);
+    }
+    int x, y;
+    if (convert (argv[1], &x) && convert (argv[2], &y)) {
+        printf ("%d\n", x + y);
+    }
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+18794190_18794388_3_20
+18794190_18794564_5_22
+Title: What is wrong with this algorithm? 
+----------------------------------------
+
+int main () {
+    long i0, i1, sum = 0, eSum = 2;
+    int counter = 0;
+    i0 = 1;
+    i1 = 1;
+    while (sum < LT) {
+        sum = i0 + i1;
+        i0 = i1;
+        i1 = sum;
+        eSum += ((counter++ % 3 == 0) && (sum <= LT)) ? sum : 0;
+    }
+    printf ("\nThe required Answer: %8.0f\n", eSum);
+    return 0;
+}
+----------------------------------------
+
+int main (void) {
+    Numtype n0 = 1;
+    Numtype n1 = 1;
+    Numtype n2 = 0;
+    Numtype sum = 0;
+    for (;;) {
+        n2 = n0 + n1;
+        if (n2 > LT)
+            break;
+        if (n2 % 2 == 0)
+            sum += n2;
+        n0 = n1;
+        n1 = n2;
+    }
+    printf ("\nThe required Answer: %ld\n", sum);
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+18798192_18798242_1_18
+18798192_18798264_42_106
+Title: C pointer segmentation fault 
+----------------------------------------
+
+int main () {
+    char buf [] = "/index.html HTTP/1.0";
+    char fileNameBuf [10];
+    int i = 0;
+    char *s = buf;
+    if (*s == '/') {
+        s++;
+        while (*s != ' ') {
+            fileNameBuf[i] = *s;
+            *s++;
+            i++;
+            printf ("%d\n", i);
+        }
+    }
+}
+----------------------------------------
+
+int main (void) {
+    char *buf;
+    int fd;
+    int s;
+    int port = 45678;
+    struct sockaddr_in server, client;
+    int clientlen = sizeof (client);
+    int msgnum = 314159;
+    bzero (& server, sizeof (server));
+    server.sin_family = AF_INET;
+    server.sin_addr.s_addr = INADDR_ANY;
+    server.sin_port = htons (port);
+    s = socket (AF_INET, SOCK_STREAM, 0);
+    if (!s)
+        err_exit ("socket()\n");
+    if (bind (s, (struct sockaddr *) &server, sizeof (server)) < 0)
+        err_exit ("bind()\n");
+    printf ("bound to address\n");
+    if (listen (s, SOMAXCONN) < 0)
+        err_exit ("listen()\n");
+    printf ("Waiting for connection\n");
+    while ((fd = accept (s, (struct sockaddr *) &client, (socklen_t *) &clientlen)) > 0) {
+        printf ("got connection\n");
+        char recv_buf [4096];
+        char el [5] = "\r\n\r\n";
+        ssize_t length;
+        if ((length = recv (fd, recv_buf, sizeof (recv_buf) - 1, 0)) > 0) {
+            recv_buf[length] = '\0';
+            if (strstr (recv_buf, el) == 0)
+                err_exit ("Incomplete message (%d bytes and no CRLF, CRLF pair)\n", length);
+            printf ("%d: <<%s>>\n", (int) length, recv_buf);
+            if (strncmp (recv_buf, "GET ", 4) == 0) {
+                printf ("check get\n");
+                buf = recv_buf + 4;
+                printf ("<<%s>>\n", buf);
+                get (buf);
+                char message [256];
+                char format1 [] = "<html><head><title>Hello World!</title></head>" "<body><h1>This is no fun at all (%d).</h1></body></html>\r\n\r\n";
+                int msg_len = snprintf (message, sizeof (message), format1, msgnum++);
+                char format2 [] = "HTTP/1.1 200 OK\r\n" "Content-Type: text/html\r\n" "Content-Length: %d\r\n" "Content-Encoding: UTF-8\r\n\r\n%s";
+                char response [1024];
+                size_t nbytes = snprintf (response, sizeof (response), format2, msg_len, message);
+                write (fd, response, nbytes);
+            }
+        }
+        close (fd);
+    }
+    return (0);
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+18801547_18802290_268_291
+18801547_18802459_15_26
+Title: transform matrix 2D to 1D 
+----------------------------------------
+
+int main (int argc, char **argv) {
+    struct {
+        int rows;
+        int cols;
+    } test [] = {{4, 4}, {6, 4}, {4, 7}, {7, 14}, {6, 16}, {3, 33},};
+    enum {NUM_TEST = sizeof (test) / sizeof (test[0])};
+    int verbose = (argv != 0 && argc > 1) ? 1 : 0;
+    for (int i = 0; i < NUM_TEST; i++) {
+        if (verbose)
+            print_info (test[i].rows, test[i].cols);
+        RLE_demonstration (test [i].rows, test [i].cols);
+    }
+    return 0;
+}
+----------------------------------------
+
+int main (int argc, char *argv []) {
+    int out [64] = {-1};
+    int in [8] [8];
+    for (int i = 0; i < 64; i++) {
+        in[i % 8][i / 8] = i;
+    }
+    dezigzag (out, in);
+    for (int i = 0; i < 64; i++) {
+        printf ("%d: %d\n", i, out [i]);
+    }
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+18831964_18832062_2_13
+18831964_18833221_2_22
+Title: Receive two inputs in C language 
+----------------------------------------
+
+int main () {
+    int ui1;
+    int ui2;
+    puts ("Please enter two numbers:");
+    scanf ("%d %d", & ui1, & ui2);
+    int sum;
+    sum = ui1 + ui2;
+    while (sum > 4) {
+        printf ("Whats up !");
+        sum = 0;
+    }
+    return 0;
+}
+----------------------------------------
+
+int main () {
+    int ui1;
+    int ui2;
+    puts ("Please enter two numbers:\n");
+    int sum = 10;
+    while (sum > 4) {
+        printf ("enter number 1:\n");
+        scanf ("%i", & ui1);
+        printf ("enter number 2:\n");
+        scanf ("%i", & ui2);
+        sum = ui1 + ui2;
+    }
+    printf ("result is:  %d\n", sum);
+    getchar ();
+    getchar ();
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+18831964_18833221_2_22
+18831964_18834129_2_15
+Title: Receive two inputs in C language 
+----------------------------------------
+
+int main () {
+    int ui1;
+    int ui2;
+    puts ("Please enter two numbers:\n");
+    int sum = 10;
+    while (sum > 4) {
+        printf ("enter number 1:\n");
+        scanf ("%i", & ui1);
+        printf ("enter number 2:\n");
+        scanf ("%i", & ui2);
+        sum = ui1 + ui2;
+    }
+    printf ("result is:  %d\n", sum);
+    getchar ();
+    getchar ();
+    return 0;
+}
+----------------------------------------
+
+int main () {
+    int ui1;
+    int ui2;
+    puts ("Please enter two numbers:");
+    scanf ("%2i", & ui1, & ui2);
+    int sum;
+    sum = ui1 + ui2;
+    while (sum > 5) {
+        printf ("Whats up !");
+        break;
+    }
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+18836512_18836951_1_24
+18836512_18837083_3_22
+Title: Calculating using modulus 
+----------------------------------------
+
+int main (void) {
+    int tree [3] = {0};
+    int max = 0;
+    int cut = 0;
+    printf ("Max Height: "), scanf ("%d", &max);
+    for (int i = 0; i < 3; ++i) {
+        printf ("Tree%d: ", i +1), scanf ("%d", &tree[i]);
+    }
+    for (int i = 0; i < 3; ++i) {
+        cut += (tree[i] % max) % tree[i];
+    }
+    printf ("Amount to remove: %d\n", cut);
+    getchar ();
+    return 0;
+}
+----------------------------------------
+
+int main () {
+    int trees [3] = {24, 7, 16};
+    int limit = 11;
+    int allowedRemainder = 0;
+    int mod = 0;
+    int modCount = 0;
+    int i;
+    for (i = 0; i < 3; ++i) {
+        allowedRemainder = (trees[i] / limit) - 1;
+        mod = trees[i] % limit;
+        modCount += (allowedRemainder > 0) * (allowedRemainder * limit) + (allowedRemainder >= 0) * mod;
+        printf ("Loop %d: mod = %d\n", i, modCount);
+    }
+    printf ("Amount to remove: %d\n", modCount);
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+18836512_18836951_1_24
+18836512_18837803_3_17
+Title: Calculating using modulus 
+----------------------------------------
+
+int main (void) {
+    int tree [3] = {0};
+    int max = 0;
+    int cut = 0;
+    printf ("Max Height: "), scanf ("%d", &max);
+    for (int i = 0; i < 3; ++i) {
+        printf ("Tree%d: ", i +1), scanf ("%d", &tree[i]);
+    }
+    for (int i = 0; i < 3; ++i) {
+        cut += (tree[i] % max) % tree[i];
+    }
+    printf ("Amount to remove: %d\n", cut);
+    getchar ();
+    return 0;
+}
+----------------------------------------
+
+int main (void) {
+    int tree_h [] = {14, 7, 16};
+    int limit = 11;
+    int i;
+    int remove = 0;
+    for (i = 0; i < 3; i++) {
+        remove += (tree_h[i] > limit) * (tree_h[i] % limit);
+    }
+    printf ("Amount to remove: %d\n", remove);
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+18836512_18836951_1_24
+18836512_18839588_5_21
+Title: Calculating using modulus 
+----------------------------------------
+
+int main (void) {
+    int tree [3] = {0};
+    int max = 0;
+    int cut = 0;
+    printf ("Max Height: "), scanf ("%d", &max);
+    for (int i = 0; i < 3; ++i) {
+        printf ("Tree%d: ", i +1), scanf ("%d", &tree[i]);
+    }
+    for (int i = 0; i < 3; ++i) {
+        cut += (tree[i] % max) % tree[i];
+    }
+    printf ("Amount to remove: %d\n", cut);
+    getchar ();
+    return 0;
+}
+----------------------------------------
+
+int main (int argc, char **argv) {
+    int tree1 = 14;
+    int tree2 = 7;
+    int tree3 = 16;
+    int limit = 11;
+    int cutamounttotal = 0;
+    cutamounttotal += CUTAMOUNT (tree1, limit);
+    cutamounttotal += CUTAMOUNT (tree2, limit);
+    cutamounttotal += CUTAMOUNT (tree3, limit);
+    printf ("Amount to remove: %d\n", cutamounttotal);
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+18836512_18837083_3_22
+18836512_18837803_3_17
+Title: Calculating using modulus 
+----------------------------------------
+
+int main () {
+    int trees [3] = {24, 7, 16};
+    int limit = 11;
+    int allowedRemainder = 0;
+    int mod = 0;
+    int modCount = 0;
+    int i;
+    for (i = 0; i < 3; ++i) {
+        allowedRemainder = (trees[i] / limit) - 1;
+        mod = trees[i] % limit;
+        modCount += (allowedRemainder > 0) * (allowedRemainder * limit) + (allowedRemainder >= 0) * mod;
+        printf ("Loop %d: mod = %d\n", i, modCount);
+    }
+    printf ("Amount to remove: %d\n", modCount);
+    return 0;
+}
+----------------------------------------
+
+int main (void) {
+    int tree_h [] = {14, 7, 16};
+    int limit = 11;
+    int i;
+    int remove = 0;
+    for (i = 0; i < 3; i++) {
+        remove += (tree_h[i] > limit) * (tree_h[i] % limit);
+    }
+    printf ("Amount to remove: %d\n", remove);
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+18836512_18837083_3_22
+18836512_18839588_5_21
+Title: Calculating using modulus 
+----------------------------------------
+
+int main () {
+    int trees [3] = {24, 7, 16};
+    int limit = 11;
+    int allowedRemainder = 0;
+    int mod = 0;
+    int modCount = 0;
+    int i;
+    for (i = 0; i < 3; ++i) {
+        allowedRemainder = (trees[i] / limit) - 1;
+        mod = trees[i] % limit;
+        modCount += (allowedRemainder > 0) * (allowedRemainder * limit) + (allowedRemainder >= 0) * mod;
+        printf ("Loop %d: mod = %d\n", i, modCount);
+    }
+    printf ("Amount to remove: %d\n", modCount);
+    return 0;
+}
+----------------------------------------
+
+int main (int argc, char **argv) {
+    int tree1 = 14;
+    int tree2 = 7;
+    int tree3 = 16;
+    int limit = 11;
+    int cutamounttotal = 0;
+    cutamounttotal += CUTAMOUNT (tree1, limit);
+    cutamounttotal += CUTAMOUNT (tree2, limit);
+    cutamounttotal += CUTAMOUNT (tree3, limit);
+    printf ("Amount to remove: %d\n", cutamounttotal);
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+18836512_18837803_3_17
+18836512_18839588_5_21
+Title: Calculating using modulus 
+----------------------------------------
+
+int main (void) {
+    int tree_h [] = {14, 7, 16};
+    int limit = 11;
+    int i;
+    int remove = 0;
+    for (i = 0; i < 3; i++) {
+        remove += (tree_h[i] > limit) * (tree_h[i] % limit);
+    }
+    printf ("Amount to remove: %d\n", remove);
+    return 0;
+}
+----------------------------------------
+
+int main (int argc, char **argv) {
+    int tree1 = 14;
+    int tree2 = 7;
+    int tree3 = 16;
+    int limit = 11;
+    int cutamounttotal = 0;
+    cutamounttotal += CUTAMOUNT (tree1, limit);
+    cutamounttotal += CUTAMOUNT (tree2, limit);
+    cutamounttotal += CUTAMOUNT (tree3, limit);
+    printf ("Amount to remove: %d\n", cutamounttotal);
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+18836604_39170333_2_31
+18836604_39192160_2_36
+Title: How to sum two rows of a 2D array element by element like a sum of vectors in C language? 
+----------------------------------------
+
+int main () {
+    int a, b, c, d, sum;
+    int k, l, num_array [50] [50];
+jump1 :
+    printf ("Coordinat system Descartes\nBasically two FOR-loops.\n\n");
+    printf ("Plot X no. of Columns, Horizontal axis. Then Y no. of Rows, Vertical axis\n:\n");
+    scanf ("%d %d", & a, & b);
+    printf ("\nPlot two no. to be multipled\n:\n");
+    scanf ("%d %d", & c, & d);
+    for (l = 0; l < b; l++) {
+        for (k = 0; k < a; k++)
+            printf ("[Y%d] [X%d] (%d * %d = %d)\t: ", l, k, c++, d, c *(d));
+        sum = (sum + (c * d++));
+        printf ("sum %d", sum);
+        printf ("\n");
+    }
+    printf ("\n");
+    goto jump1;
+    return 0;
+}
+----------------------------------------
+
+int main () {
+    int aa, c, d, p, q;
+    float j, ar_d [10] [10];
+jump0 :
+    printf ("Select 1, 2, 3, 4 : ");
+    scanf ("%d", & aa);
+    if (aa == 1 && 2 && 3)
+        goto jump0;
+    if (aa == 4) {
+        for (c = 0; c < 10; c++)
+            for (d = 0; d < 10; d++)
+                ar_d[c][d] = (float) d / c;
+        for (c = 0; c < 10; c++) {
+            for (d = 0; d < 10; d++)
+                printf ("(Y%d X%d.%.1d/%.1d= %.2f) ", c, d, c, d, ar_d[c][d]);
+            printf ("SumLine1(%d)/(%d) = %.2f\n", c, d, j);
+            j = (float) d / (c + 1);
+        }
+        printf ("\nSelect a Coordinate : first X then Y\n");
+        scanf ("%d%d", & p, & q);
+        printf ("Coordinate X[%d],Y[%d] has this value : %f\n", p, q, ar_d [q] [p]);
+    }
+    goto jump0;
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+18840984_18841012_2_13
+18840984_18841211_4_24
+Title: C Language. Accept Alphabets only and seperate two questions? 
+----------------------------------------
+
+int main () {
+    char ans1 [80], ans2 [80];
+    printf ("Input answer to question 1: ");
+    fflush (NULL);
+    scanf (" %79[a-zA-Z]", ans1);
+    printf ("Input answer to question 2: ");
+    fflush (NULL);
+    scanf (" %79[a-zA-Z]", ans2);
+    return 0;
+}
+----------------------------------------
+
+int main () {
+    char buff [1024];
+    char MyFname [20];
+    char MyLname [20];
+    if (fgets (buff, sizeof buff, stdin) != NULL) {
+        if (sscanf (buff, "%[a-zA-Z] %[a-zA-Z]", MyFname, MyLname) != 2) {
+            fprintf (stderr, "Invalid input\n");
+            exit (EXIT_FAILURE);
+        }
+    }
+    printf ("Goodbye %s have a great day!\nGoodbye %s have a great day!", MyFname, MyLname);
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+18846689_18846904_6_25
+18846689_18847023_2_27
+Title: convert float array to char buffer 
+----------------------------------------
+
+int main (void) {
+    int i;
+    char testBuffer [TEST_BUFFER_CHARS] = {'\0'};
+    char *loc = testBuffer;
+    size_t testBufferSpace = TEST_BUFFER_CHARS;
+    size_t tempLen;
+    float testFloats [] = {1.1, 1.2, 1.3, 1.4};
+    for (i = 0; i < DIM (testFloats); ++i) {
+        snprintf (loc, testBufferSpace, "%f, ", testFloats [i]);
+        tempLen = strlen (loc);
+        loc += tempLen;
+    }
+    printf (testBuffer);
+    return 0;
+}
+----------------------------------------
+
+int main () {
+    int i;
+    struct a {
+        char a;
+        char b;
+        char c;
+        float f [10];
+    };
+    struct a my_struct;
+    my_struct.a = 'a';
+    my_struct.b = 'b';
+    my_struct.c = 'c';
+    for (i = 0; i < 10; i++)
+        my_struct.f[i] = i * 1.1;
+    printf ("%c,%c,%c", my_struct.a, my_struct.b, my_struct.c);
+    for (i = 0; i < 10; i++)
+        printf (",%.8f", my_struct.f[i]);
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+18851835_18851921_1_13
+18851835_18852040_1_11
+Title: create my own memset function in c 
+----------------------------------------
+
+void *my_memset (void *b, int c, int len) {
+    int i;
+    unsigned char *p = b;
+    i = 0;
+    while (len > 0) {
+        *p = c;
+        p++;
+        len--;
+    }
+    return (b);
+}
+----------------------------------------
+
+void *my_memset (void *b, int c, int len) {
+    if (b == NULL || len <= 0)
+        return b;
+    unsigned char *ptr = b;
+    while (*ptr != '\0' && len--) {
+        *ptr++ = (unsigned char) c;
+    }
+    return (b);
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+18851835_18851921_1_13
+18851835_18853319_1_15
+Title: create my own memset function in c 
+----------------------------------------
+
+void *my_memset (void *b, int c, int len) {
+    int i;
+    unsigned char *p = b;
+    i = 0;
+    while (len > 0) {
+        *p = c;
+        p++;
+        len--;
+    }
+    return (b);
+}
+----------------------------------------
+
+void *my_memset (void *b, char c, int len) {
+    char *b_char = (char *) b;
+    if (b == NULL)
+        return NULL;
+    while (*b_char && len > 0) {
+        *b_char = c;
+        b_char++;
+        len--;
+    }
+    return b;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+18851835_18852040_1_11
+18851835_18853319_1_15
+Title: create my own memset function in c 
+----------------------------------------
+
+void *my_memset (void *b, int c, int len) {
+    if (b == NULL || len <= 0)
+        return b;
+    unsigned char *ptr = b;
+    while (*ptr != '\0' && len--) {
+        *ptr++ = (unsigned char) c;
+    }
+    return (b);
+}
+----------------------------------------
+
+void *my_memset (void *b, char c, int len) {
+    char *b_char = (char *) b;
+    if (b == NULL)
+        return NULL;
+    while (*b_char && len > 0) {
+        *b_char = c;
+        b_char++;
+        len--;
+    }
+    return b;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+18863206_18863324_4_31
+18863206_18863333_3_29
+Title: (Reading CSV file) scanf skip to next line of input after pattern mismatch 
+----------------------------------------
+
+int main () {
+    int sum = 0;
+    int count = 0;
+    while (1) {
+        int id;
+        char line [240], *token;
+        char first [80], last [80], addr [80];
+        int age;
+        if (fgets (line, 240, stdin) == NULL)
+            break;
+        line[strlen (line) - 1] = '\0';
+        id = atoi (strtok (line, ","));
+        strcpy (first, strtok (NULL, ","));
+        strcpy (last, strtok (NULL, ","));
+        strcpy (addr, strtok (NULL, ","));
+        age = atoi (strtok (NULL, ","));
+        printf ("id=%d first=%s last=%s addr=%s age=%d\n", id, first, last, addr, age);
+        sum += age;
+        count++;
+    }
+    printf ("Average age is %f\n", (float) sum / count);
+    return 0;
+}
+----------------------------------------
+
+int main (void) {
+    int sum = 0;
+    int count = 0;
+    int lineno = 0;
+    char line [4096];
+    while (fgets (line, sizeof (line), stdin) != 0) {
+        int id;
+        char first [80], last [80], addr [80];
+        int age;
+        lineno++;
+        if (sscanf (line, "%d,%79[^,],%79[^,],%79[^,],%d", &id, first, last, addr, &age) != 5)
+            fprintf (stderr, "Invalid data in line %d:\n%s", lineno, line);
+        else {
+            printf ("id=%d first=%s last=%s addr=%s age=%d\n", id, first, last, addr, age);
+            sum += age;
+            count++;
+        }
+    }
+    printf ("Average age is %f\n", (float) sum / count);
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+18874712_18875586_1_17
+18874712_18875887_1_21
+Title: Sorting 2d matrix cols and rows in C 
+----------------------------------------
+
+void SortInColumn (int arr [] [M], int m) {
+    int row, col;
+    int temp;
+    for (row = m - 1; row >= 0; row--) {
+        for (col = 0; col < N - 1; col++) {
+            if (arr [row] [col] > arr [row] [col + 1]) {temp = arr [row] [col];
+            arr[row][col] = arr[row][col + 1];
+            arr[row][j + 1] = temp;
+        }
+    }
+    printArray (arr);
+}
+----------------------------------------
+
+void SortInColumn (int arr [] [M], int m) {
+    int i, j, k;
+    int temp;
+    for (k = 0; k < m; ++k) {
+        for (j = 0; j < N - 1; j++) {
+            for (i = 0; i < N - 1 - j; i++) {
+                if (arr[i][k] > arr[i + 1][k]) {
+                    temp = arr[i][k];
+                    arr[i][k] = arr[i + 1][k];
+                    arr[i + 1][k] = temp;
+                }
+            }
+        }
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+18876296_18876479_2_13
+18876296_18880155_6_15
+Title: find ones position in 64 bit number 
+----------------------------------------
+
+int main () {
+    unsigned long long number = 576460752303423489;
+    int i;
+    for (i = 0; i < 64; i++) {
+        if ((number & (1ULL << i))) {
+            printf ("%d  ", i);
+        }
+    }
+}
+----------------------------------------
+
+int main (void) {
+    unsigned long long number = 576460752303423489;
+    int pos = sizeof (unsigned long long) * CHAR_BIT - 1;
+    while ((pos--) >= 0) {
+        if (CHECK_BIT (number, pos))
+            printf ("%d ", pos);
+    }
+    return (0);
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+18883590_18883936_35_57
+18883590_18884162_37_53
+Title: push and pop using array of doubles 
+----------------------------------------
+
+int main () {
+    double s [STACK_SIZE];
+    double *s_top = s;
+    double randNum = 0;
+    double i = 0;
+    srand ((unsigned) time (NULL));
+    for (i = 0; i < STACK_SIZE; i++) {
+        randNum = 33 + (double) (rand () % ((126 - 33) + 1));
+        printf ("Random value: %f\n", randNum);
+        push (s, randNum, & s_top, STACK_SIZE);
+    }
+    printf ("-----------\n");
+    while (pop (s, &s_top, &randNum) != STACK_EMPTY)
+        printf ("Random value: %f\n", randNum);
+    return 0;
+}
+----------------------------------------
+
+int main (void) {
+    Stack s;
+    init (& s);
+    srand (time (NULL));
+    for (int i = 0; i < STACK_SIZE; i++)
+        push (&s, (double) rand ());
+    printf ("-----------\n");
+    for (int i = 0; i < STACK_SIZE; i++)
+        pop (&s);
+    return 0;
+}
+----------------------------------------

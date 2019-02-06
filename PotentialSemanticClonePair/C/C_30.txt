@@ -1,0 +1,4390 @@
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+32736196_32736353_6_29
+32736196_32740033_17_69
+Title: What alternatives I have against sleep() to synchronize transfer between parent and child process? 
+----------------------------------------
+
+int main (void) {
+    sem_t *sem = mmap (0, sizeof (sem_t), PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1, 0);
+    sem_init (sem, 1, 1);
+    if (fork () == 0) {
+        printf ("Child: Waiting to acquire semaphore\n");
+        sem_wait (sem);
+        printf ("Child acquires lock\n");
+        sem_post (sem);
+    }
+    else {
+        printf ("Parent: Waiting to acquire semaphore\n");
+        sem_wait (sem);
+        printf ("Parent acquires lock\n");
+        sem_post (sem);
+    }
+    sem_destroy (sem);
+    return 0;
+}
+----------------------------------------
+
+int main () {
+    int shm = shm_open ("/test", O_CREAT | O_RDWR, S_IRUSR | S_IWUSR);
+    ftruncate (shm, sizeof (sem_t));
+    SemPair *sem = mmap (NULL, sizeof (sem_t), PROT_READ | PROT_WRITE, MAP_SHARED, shm, 0);
+    sem_init (& (sem -> one), 1, 0);
+    sem_init (& (sem -> two), 1, 0);
+    int shmid;
+    char *shmz;
+    if (fork () == 0) {
+        sem_wait (& (sem -> one));
+        shmid = shmget (29009, SHMSIZE, 0);
+        shmz = shmat (shmid, 0, 0);
+        printf ("Child : Reading %s \n", shmz);
+        int len = strlen (shmz);
+        char rev [100], temp;
+        int i = 0;
+        int j = strlen (shmz) - 2;
+        while (i < j) {
+            temp = shmz[i];
+            shmz[i] = shmz[j];
+            shmz[j] = temp;
+            i++;
+            j--;
+        }
+        shmdt (shmz);
+        sem_post (& (sem -> two));
+    }
+    else {
+        shmid = shmget (29009, SHMSIZE, 0666 | IPC_CREAT);
+        shmz = shmat (shmid, 0, 0);
+        printf ("Parent : Enter String \n ");
+        char *s = (char *) shmz;
+        *s = '\0';
+        char a [100];
+        fgets (a, 100, stdin);
+        strcat (s, a);
+        printf ("Parent: sending %s \n", shmz);
+        sem_post (& (sem -> one));
+        sem_wait (& (sem -> two));
+        printf ("Parent: receiving %s", shmz);
+        shmdt (shmz);
+    }
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+32765899_32766071_15_27
+32765899_32766301_11_21
+Title: obtaining the minimum value in an array 
+----------------------------------------
+
+int main (int argc, char *argv []) {
+    int data_array_1 [] = {1, 3, 5, 7, 9, 11};
+    int data_array_2 [] = {2, -4, 6, -8, 10, -12, 14, -16};
+    int data_array_3 [] = {10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0};
+    printf ("Min's index array1 is: %d\n", find_min_index (data_array_1, 6));
+    printf ("Min's index array2 is: %d\n", find_min_index (data_array_2, 8));
+    printf ("Min's index array3 is: %d\n", find_min_index (data_array_3, 11));
+    return 0;
+}
+----------------------------------------
+
+int main (int argc, char *argv []) {
+    int data_array_1 [6] = {1, 3, 5, 7, 9, 11};
+    int data_array_2 [8] = {2, -4, 6, -8, 10, -12, 14, -16};
+    int data_array_3 [11] = {10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0};
+    printf ("Min's index array1 is: %d\n", find_min_index (data_array_1, 6));
+    printf ("Min's index array2 is: %d\n", find_min_index (data_array_2, 9));
+    printf ("Min's index array3 is: %d\n", find_min_index (data_array_3, 7));
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+32766649_32766769_4_22
+32766649_32768593_4_30
+Title: C program for Armstrong Number not outputting correctly 
+----------------------------------------
+
+int main () {
+    int num, sum = 0, temp, d;
+    printf ("\n========Program for Armstrong Number=========\n");
+    printf ("Enter the number        :       ");
+    scanf ("%d", & num);
+    temp = num;
+    while (temp > 10) {
+        d = temp % 10;
+        sum += pow (d, 3);
+        temp /= 10;
+    }
+    sum += pow (temp, 3);
+    if (sum == num)
+        printf ("\nThe number %d is an Armstrong Number\n", num);
+    else
+        printf ("\nThe number %d is not an armstrong number\n", num);
+}
+----------------------------------------
+
+void main () {
+    int num, sum = 0, temp, d;
+    int digits = 0;
+    printf ("\n========Program for Armstrong Number=========\n");
+    printf ("Enter the number        :       ");
+    scanf ("%d", & num);
+    temp = num;
+    while (temp != 0) {
+        digits++;
+        temp = temp / 10;
+    }
+    temp = num;
+    while (temp != 0) {
+        d = temp % 10;
+        sum += pow (d, digits);
+        temp /= 10;
+    }
+    if (sum == num)
+        printf ("\nThe number %d is an Armstrong Number\n", num);
+    else
+        printf ("\nThe number %d is not an armstrong number\n", num);
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+32766794_32767094_1_12
+32766794_32775612_17_29
+Title: Is this code correct for checking for prime number in c using functions? 
+----------------------------------------
+
+int prime (int n) {
+    int i, count = 0;
+    for (i = 1; i < n; i++) {
+        if (n % i == 0) {
+            count++;
+        }
+        if (count == 2) {
+            break;
+        }
+    }
+    return count;
+}
+----------------------------------------
+
+int prime (int n) {
+    int i, count = 0;
+    for (i = 1; i <= n; i++) {
+        if (n % i == 0) {
+            count++;
+        }
+    }
+    return (count);
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+32769599_32769815_3_24
+32769599_32769824_12_26
+Title: Printing prime numbers up to n 
+----------------------------------------
+
+int main (void) {
+    int n, i, j, check;
+    printf ("How many prime numbers would you like to print? ");
+    scanf ("%d", & n);
+    for (i = 2; i <= n; i++) {
+        check = 0;
+        for (j = 2; j < i; j++) {
+            if (i % j == 0) {
+                check = 1;
+                break;
+            }
+        }
+        if (check == 0) {
+            printf ("%d\n", i);
+        }
+    }
+    return 0;
+}
+----------------------------------------
+
+int main (void) {
+    int n, i;
+    char *nStr = (char *) malloc (10);
+    printf ("How many prime numbers would you like to print? ");
+    fgets (nStr, 9, stdin);
+    n = atoi (nStr);
+    for (i = 1; i <= n; i++)
+        if (IsPrime (i))
+            printf ("%d\n", i);
+    getchar ();
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+32772630_32772868_6_27
+32772630_32773836_6_68
+Title: C Program executing differently from shell 
+----------------------------------------
+
+int main (void) {
+    int file;
+    ssize_t length;
+    char buffer [7];
+    file = open ("program.txt", O_RDONLY);
+    if (file == -1)
+        return -1;
+    while ((length = read (file, buffer, sizeof (buffer))) == 0) {
+        int opcode;
+        buffer[length - 1] = '\0';
+        opcode = 10 * (buffer[0] - '0') + buffer[1] - '0';
+        fprintf (stderr, "Command: `%s'\n\topcode: %d\n", buffer, opcode);
+    }
+    close (file);
+    return 0;
+}
+----------------------------------------
+
+int main (int argc, char *argv []) {
+    (void) argc;
+    (void) argv;
+    char memory [100] [6];
+    int opcode;
+    int program_line = 0;
+    FILE *fp;
+    char input_line [8];
+    fp = fopen ("asd.txt", "r");
+    if (fp == NULL) {
+        printf ("Could not open file\n");
+        return 0;
+    }
+    int itemsRead = fscanf (fp, "%s\n", input_line);
+    printf ("\n*******************************\n");
+    printf ("* Reading Program Into Memory *\n");
+    printf ("*******************************\n");
+    while (itemsRead == 1 && input_line[0] != 'Z' && program_line < 100) {
+        for (int i = 0; i < 6; i++) {
+            memory[program_line][i] = input_line[i];
+        }
+        printf ("Program Line %d: ", program_line);
+        for (int i = 0; i < 6; i++) {
+            printf ("%c", memory [program_line] [i]);
+        }
+        printf ("\n");
+        opcode = (memory[program_line][0] - '0') * 10;
+        opcode += memory[program_line][1] - '0';
+        printf ("Opcode is %d\n", opcode);
+        charRead = fscanf (fp, "%s\n", input_line);
+        program_line++;
+        printf ("\n");
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+32773213_32773335_8_75
+32773213_32775364_3_38
+Title: Finding highest prime number from set of input integers in C 
+----------------------------------------
+
+int main () {
+    int n [4] = {0, 0, 0, 0};
+    printf ("Enter 4 integers:");
+std :
+    : cin >> n [0];
+    cout << " next \n";
+std :
+    : cin >> n [1];
+    cout << " next\n";
+std :
+    : cin >> n [2];
+    cout << " next\n";
+std :
+    : cin >> n [3];
+    cout << " next\n";
+    int largest_prime = -1;
+    for (int j = 0; j < 4; j++) {
+        if (n[j] % 2 == 1) {
+            if (n[j] > largest_prime) {
+                largest_prime = n[j];
+            }
+        }
+    }
+std :
+    : cout << "\nThe highest prime number: " << largest_prime << " Thanks!";
+    return 0;
+}
+----------------------------------------
+
+int main (void) {
+    int i, j, n [4] = {0,};
+    int max_prime_val = -1;
+    int check_prime;
+    printf ("Enter four integers:\n");
+    for (j = 0; j < 4; j++) {
+        scanf ("%d", & n [j]);
+    }
+    for (j = 0; j < 4; j++) {
+        check_prime = 0;
+        for (i = 2; i < n[j] / 2; i++) {
+            if (n[j] % i == 0) {
+                check_prime = 1;
+                break;
+            }
+        }
+        if ((check_prime == 0) && (n[j] > max_prime_val)) {
+            max_prime_val = n[j];
+        }
+    }
+    printf ("The biggest prime number is [%d]", max_prime_val);
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+32778816_32779165_2_16
+32778816_32779576_1_23
+Title: Print a pattern in C 
+----------------------------------------
+
+int main () {
+    int i, j, k;
+    for (i = 1; i <= 5; i++) {
+        k = i;
+        for (j = 1; j <= i; j++) {
+            printf ("%d ", k);
+            k += 5 - j;
+        }
+        printf ("\n");
+    }
+    return 0;
+}
+----------------------------------------
+
+int main () {
+    int i, j, temp = 0, l;
+    for (i = 1; i <= 5; i++) {
+        l = 4;
+        temp = i;
+        for (j = 1; j <= i; j++) {
+            if (j > 1) {
+                printf ("%d\t", temp + l);
+                temp = temp + l;
+                l = l - 1;
+            }
+            else
+                printf ("%d\t", i);
+        }
+        printf ("\n");
+    }
+    getch ();
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+32778816_32779165_2_16
+32778816_32781023_1_19
+Title: Print a pattern in C 
+----------------------------------------
+
+int main () {
+    int i, j, k;
+    for (i = 1; i <= 5; i++) {
+        k = i;
+        for (j = 1; j <= i; j++) {
+            printf ("%d ", k);
+            k += 5 - j;
+        }
+        printf ("\n");
+    }
+    return 0;
+}
+----------------------------------------
+
+int main () {
+    int i, j;
+    for (i = 1; i <= 5; i++) {
+        int temp = 4;
+        int sum = 0;
+        for (j = 1; j <= i; j++) {
+            if (j == 1)
+                sum = i;
+            else {
+                sum = sum + temp--;
+            }
+            printf ("%d ", sum);
+        }
+        printf ("\n");
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+32778816_32779576_1_23
+32778816_32781023_1_19
+Title: Print a pattern in C 
+----------------------------------------
+
+int main () {
+    int i, j, temp = 0, l;
+    for (i = 1; i <= 5; i++) {
+        l = 4;
+        temp = i;
+        for (j = 1; j <= i; j++) {
+            if (j > 1) {
+                printf ("%d\t", temp + l);
+                temp = temp + l;
+                l = l - 1;
+            }
+            else
+                printf ("%d\t", i);
+        }
+        printf ("\n");
+    }
+    getch ();
+    return 0;
+}
+----------------------------------------
+
+int main () {
+    int i, j;
+    for (i = 1; i <= 5; i++) {
+        int temp = 4;
+        int sum = 0;
+        for (j = 1; j <= i; j++) {
+            if (j == 1)
+                sum = i;
+            else {
+                sum = sum + temp--;
+            }
+            printf ("%d ", sum);
+        }
+        printf ("\n");
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+32778816_32779576_1_23
+32778816_32783558_1_11
+Title: Print a pattern in C 
+----------------------------------------
+
+int main () {
+    int i, j, temp = 0, l;
+    for (i = 1; i <= 5; i++) {
+        l = 4;
+        temp = i;
+        for (j = 1; j <= i; j++) {
+            if (j > 1) {
+                printf ("%d\t", temp + l);
+                temp = temp + l;
+                l = l - 1;
+            }
+            else
+                printf ("%d\t", i);
+        }
+        printf ("\n");
+    }
+    getch ();
+    return 0;
+}
+----------------------------------------
+
+int main () {
+    int k, i, j;
+    for (i = 1; i <= 5; i++) {
+        k = i;
+        for (j = 1; j <= i; j++) {
+            printf ("%d ", k);
+            k = k + (5 - j);
+        }
+        printf ("\n");
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+32778816_32781023_1_19
+32778816_32783558_1_11
+Title: Print a pattern in C 
+----------------------------------------
+
+int main () {
+    int i, j;
+    for (i = 1; i <= 5; i++) {
+        int temp = 4;
+        int sum = 0;
+        for (j = 1; j <= i; j++) {
+            if (j == 1)
+                sum = i;
+            else {
+                sum = sum + temp--;
+            }
+            printf ("%d ", sum);
+        }
+        printf ("\n");
+    }
+}
+----------------------------------------
+
+int main () {
+    int k, i, j;
+    for (i = 1; i <= 5; i++) {
+        k = i;
+        for (j = 1; j <= i; j++) {
+            printf ("%d ", k);
+            k = k + (5 - j);
+        }
+        printf ("\n");
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+327893_327925_1_10
+327893_327929_1_17
+Title: How to write a compare function for qsort from stdlib? 
+----------------------------------------
+
+int porownaj (const void *vp1, const void *vp2) {
+    const pkt *pkt_a = (const pkt *) vp1;
+    const pkt *pkt_b = (const pkt *) vp2;
+    if (pkt_a->alfa > pkt_b->alfa && pkt_a->r_kw > pkt_b->r_kw)
+        return 1;
+    if (pkt_a->alfa == pkt_b->alfa && pkt_a->r_kw == pkt_b->r_kw)
+        return 0;
+    if (pkt_a->alfa < pkt_b->alfa && pkt_a->r_kw < pkt_b->r_kw)
+        return -1;
+    return 0;
+}
+----------------------------------------
+
+int porownaj (const void *p_a, const void *p_b) {
+    const pkt *pkt_a = p_a;
+    const pkt *pkt_b = p_b;
+    if (pkt_a->alfa > pkt_b->alfa)
+        return 1;
+    if (pkt_a->alfa < pkt_b->alfa)
+        return -1;
+    if (pkt_a->r_kw > pkt_b->r_kw)
+        return 1;
+    if (pkt_a->r_kw < pkt_b->r_kw)
+        return -1;
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+32797489_32797942_1_32
+32797489_32798075_1_17
+Title: Infinite loop when entering invalid input 
+----------------------------------------
+
+bool validate_int (char input []) {
+    for (;;) {
+        if (fgets (input, 10, stdin) == NULL) {
+            puts ("fgets failed");
+            return false;
+        }
+        int i, len = strlen (input);
+        if (len > 0 && input[len - 1] == '\n')
+            input[--len] = '\0';
+        if (!isalpha (input[0]))
+            continue;
+        if (len == 1)
+            continue;
+        for (i = 1; i < len; ++i) {
+            if (!isdigit (input[i]))
+                continue;
+        }
+        break;
+    }
+    return true;
+}
+----------------------------------------
+
+bool validate_int (char input []) {
+    bool valid;
+    do {
+        valid = false;
+        fgets (input, 10, stdin);
+        for (int i = 1; input[i] && input[i] != '\n'; ++i) {
+            if (!isdigit (input[i])) {
+                valid = false;
+                break;
+            }
+            else {
+                valid = true;
+            }
+        }
+    }
+    while (!valid);
+    return true;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+32799485_32799899_6_21
+32799485_32800367_20_59
+Title: Having trouble looping over a function every time I read in a '\n' from an input file in C 
+----------------------------------------
+
+int readInPuzzle (int puzzle [9] [9]) {
+    int i, j;
+    char c;
+    for (i = 0; i < 9; i++) {
+        for (j = 0; j < 9; j++) {
+            if (EOF == scanf (" %c", &c))
+                return FALSE;
+            if (c == '.')
+                c = '0';
+            puzzle[i][j] = c - '0';
+        }
+    }
+    return TRUE;
+}
+----------------------------------------
+
+void readInPuzzle (int puzzle [9] [9]) {
+    int i = 0;
+    int j = 0;
+    int c;
+    for (i = 0; i < 9; i++) {
+        for (j = 0; j < 9; j++) {
+            c = getchar ();
+            if (EOF == c) {
+                if (i || j) {
+                    printf ("input file format incorrect, unexpected EOF at row=%d, col=%d\n", i, j);
+                }
+                done = TRUE;
+                return;
+            }
+            else if ('\n' == c) {
+                printf ("input file format incorrect, unexpected newline at row=%d col=%d\n", i, j);
+                done = TRUE;
+                return;
+            }
+            if (c == '.')
+                c = '0';
+            puzzle[i][j] = (c - '0');
+        }
+    }
+    getchar ();
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+32812328_32812499_1_19
+32812328_32813274_1_15
+Title: Concatenate a word n times 
+----------------------------------------
+
+void potenciarw2 (char *pal, int potw2) {
+    size_t len = strlen (pal);
+    char *result = malloc (len *potw2 + 1);
+    if (result == NULL) {
+        fputs ("malloc() ha fallado", stdout);
+        return;
+    }
+    for (int i = 0; i < potw2; i++) {
+        memcpy (result + i * len, pal, len);
+    }
+    result[len * potw2] = '\0';
+    printf ("La palabra es:%s\n", result);
+    free (result);
+}
+----------------------------------------
+
+void potenciarw2 (char *pal, int potw2) {
+    char buffer [100];
+    strcpy (buffer, pal);
+    for (int i = 0; i < potw2; i++) {
+        strcat (buffer, pal);
+    }
+    strcpy (pal, buffer);
+    printf ("La palabra es:%s\n", pal);
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+32816006_32816158_3_28
+32816006_32816335_4_49
+Title: "3 Highest Numbers in an array without sorting Where am I missing the logic?" 
+----------------------------------------
+
+int main () {
+    int a [10] = {5, 4, 3, 6, 7, 8, 9, 10, 1, 2};
+    int h1 = INT_MIN;
+    int h2 = INT_MIN;
+    int h3 = INT_MIN;
+    for (int i = 0; i < 10; i++) {
+        if (a[i] > h1) {
+            h3 = h2;
+            h2 = h1;
+            h1 = a[i];
+        }
+        else if (a[i] > h2) {
+            h3 = h2;
+            h2 = a[i];
+        }
+        else if (a[i] > h3) {
+            h3 = a[i];
+        }
+    }
+    printf ("TOP 1st is<%d>\n", h1);
+    printf ("TOP 2nd is<%d>\n", h2);
+    printf ("TOP 3rd is<%d>\n", h3);
+    return 0;
+}
+----------------------------------------
+
+void main () {
+    int i, a, j, k, n, m [20], h [3];
+    int high, temp;
+    printf ("\n enter the total number of students");
+    scanf ("%d", & n);
+    for (i = 0; i < n; i++) {
+        printf ("enter the marks scored by student %d", i + 1);
+        scanf ("%d", & m [i]);
+    }
+    k = 0;
+    h[k] = m[0];
+    for (i = 1; i < n; i++) {
+        if (m[i] > h[0]) {
+            h[k] = m[i];
+            k++;
+            for (a = 0; a < k; a++) {
+                for (j = a + 1; j < k; j++) {
+                    if (h[a] < h[j]) {
+                        temp = h[j];
+                        h[j] = h[a];
+                        h[a] = temp;
+                    }
+                }
+            }
+        }
+    }
+    for (i = 0; i < k; i++) {
+        printf ("\n %d", h [i]);
+    }
+    getch ();
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+328215_328298_70_83
+328215_328312_12_20
+Title: Is there a C compiler that fails to compile this? 
+----------------------------------------
+
+int main (void) {
+    size_t i;
+    int result;
+    for (i = 0; i < DIM (test_case); i++) {
+        result = parseMonth (test_case[i].data);
+        if (result != test_case[i].result)
+            printf ("!! FAIL !! %s (got %d, wanted %d)\n", test_case[i].data, result, test_case[i].result);
+    }
+    return (0);
+}
+----------------------------------------
+
+int main () {
+    ex.c4[0] = 'a';
+    ex.c4[1] = 'b';
+    ex.c4[2] = 'c';
+    ex.c4[3] = 'd';
+    ex.c4[4] = '\0';
+    printf ("%s 0x%08x\n", ex.c4, ex.i);
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+32829063_32829785_14_26
+32829063_32830141_23_43
+Title: Ascending order Linked List in C 
+----------------------------------------
+
+struct set *makeSet (void) {
+    struct set dummy_head, *current = &dummy_head;
+    int val;
+    printf ("Please enter a positive integer, or a negative to stop: \n");
+    while (1 == scanf ("%d", &val) && val >= 0) {
+        current->next_p = make_aSet (val);
+        current = current->next_p;
+    }
+    return dummy_head.next_p;
+}
+----------------------------------------
+
+struct set *makeSet (struct set *head_p) {
+    int val;
+    struct set *ptr = head_p;
+    printf ("Please enter a positive integer, or a negative to stop: \n");
+    while (1) {
+        scanf ("%d", & val);
+        if (val >= 0)
+            ptr = getInput (ptr, val);
+        else
+            break;
+        if (head_p == NULL)
+            head_p = ptr;
+    }
+    return head_p;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+32833597_32834110_44_72
+32833597_47525295_5_19
+Title: how to compare two arrays in c? 
+----------------------------------------
+
+int main (void) {
+    int a1 [] = {10, 20, 30, 10};
+    int a2 [] = {20, 10, 10, 30};
+    int a3 [] = {1, 4, 5};
+    int a4 [] = {1, 3, 5};
+    if (compare_arrays (a1, 4, a2, 4)) {
+        puts ("a1 and a2 are equal");
+    }
+    else {
+        puts ("a1 and a2 are not equal");
+    }
+    if (compare_arrays (a3, 3, a4, 3)) {
+        puts ("a3 and a4 are equal");
+    }
+    else {
+        puts ("a3 and a4 are not equal");
+    }
+    if (compare_arrays (a1, 4, a4, 3)) {
+        puts ("a1 and a4 are equal");
+    }
+    else {
+        puts ("a1 and a4 are not equal");
+    }
+    return 0;
+}
+----------------------------------------
+
+int main () {
+    char buffer1 [] = "abcde";
+    char buffer2 [] = "abcde";
+    int n;
+    n = memcmp (buffer1, buffer2, sizeof (buffer1));
+    if (n > 0)
+        printf ("'%s' is greater than '%s'.\n", buffer1, buffer2);
+    else if (n < 0)
+        printf ("'%s' is less than '%s'.\n", buffer1, buffer2);
+    else
+        printf ("'%s' is the same as '%s'.\n", buffer1, buffer2);
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+32837045_32837312_6_41
+32837045_32837531_1_14
+Title: using fork() to make 3 children out of 1 parent in C (not C++) 
+----------------------------------------
+
+int main (void) {
+    int count = COUNT, children = 0;
+    pid_t retpid = 1;
+    while (count-- > 0 && retpid > 0)
+        if ((retpid = fork ()) > 0)
+            children++;
+    if (retpid != 0) {
+        printf ("Parent %d spawned %d/%d children\n", getpid (), children, COUNT);
+        while (children-- > 0)
+            wait (NULL);
+    }
+    else {
+        printf ("Child %d, sired by %d\n", getpid (), getppid ());
+    }
+    return 0;
+}
+----------------------------------------
+
+int main (void) {
+    printf ("[dad] pid %d\n", getpid ());
+    for (int i = 0; i < 3; i++)
+        if (fork () == 0) {
+            printf ("[son] pid %d from pid %d\n", getpid (), getppid ());
+            exit (0);
+        }
+    for (int i = 0; i < 3; i++)
+        wait (NULL);
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+32845127_32845459_1_13
+32845127_32845476_3_21
+Title: How to break apart multi digit number into separate number without swapping its order 
+----------------------------------------
+
+int main () {
+    int i, c = 0, value = 4567, r, arr [10];
+    while (value) {
+        r = value % 10;
+        arr[c++] = r;
+        value /= 10;
+    }
+    for (i = c - 1; i >= 0; i--) {
+        printf ("%d", arr [i]);
+    }
+    return 0;
+}
+----------------------------------------
+
+int main () {
+    using namespace std;
+    queue < int > digit;
+    int number;
+    cin >> number;
+    while (number != 0) {
+        digit.push (number % 10);
+        number /= 10;
+    }
+    while (!digit.empty ()) {
+        cout << digit.top () << " ";
+        digit.pop ();
+    }
+    cout << endl;
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+3285432_3285470_6_40
+3285432_42824376_1_11
+Title: to find if a given string is palindrome or is not palindrome 
+----------------------------------------
+
+bool isPalindrome (char *str) {
+    if (*str == '\0') {
+        return false;
+    }
+    int len = strlen (str);
+    if (len <= 1)
+        return true;
+    char *start = str;
+    char *end = start + len - 1;
+    while (start < end) {
+        if (!isAlphaNumeric (*start)) {
+            *start++;
+            continue;
+        }
+        if (!isAlphaNumeric (*end)) {
+            *end--;
+            continue;
+        }
+        if (towlower (*start) != towlower (*end)) {
+            return false;
+        }
+        *start++;
+        *end--;
+    }
+    return true;
+}
+----------------------------------------
+
+bool isPalindrome (char *str) {
+    char *s = str;
+    char *e = str;
+    while (*e)
+        e++;
+    --e;
+    while (s < e) {
+        if (*s != *e)
+            return false;
+        ++s;
+        --e;
+    }
+    return true;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+32858331_32858656_23_36
+32858331_32859237_1_16
+Title: print empty asterisk triangle c 
+----------------------------------------
+
+int main () {
+    int n;
+    scanf ("%d", & n);
+    int row = 0, col = n;
+    for (row = 0; row < n; row++, col--) {
+        if (row == 0)
+            print_full_row (col);
+        else
+            print_start_and_end_asterix (col);
+    }
+    return 0;
+}
+----------------------------------------
+
+int main () {
+    int n = 6;
+    for (int i = n - 1; i >= 0; i--) {
+        for (int j = 0; j <= i; j++) {
+            if (i == n - 1 || j == 0 || i == j)
+                printf ("*");
+            else
+                printf (" ");
+        }
+        printf ("\n");
+    }
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+32858688_32858806_3_19
+32858688_32858998_4_18
+Title: How to check spaces in a string C? 
+----------------------------------------
+
+int main (void) {
+    int i = 0;
+    char scroll [100] = {"kang cheng junga"};
+    char *p = scroll;
+    printf ("%c", * p);
+    while (*p != '\0') {
+        if (*(p - 1) == ' ' && *(p + 1) != '\0') {
+            printf ("%c", * p);
+        }
+        p++;
+    }
+    return 0;
+}
+----------------------------------------
+
+int main (void) {
+    char scroll [100] = "kang cheng junga";
+    char *p = scroll;
+    printf ("\n full name: %s\n", scroll);
+    printf (" initials : %c", * p);
+    while ((p = strpbrk (p, " ")))
+        printf ("%c", *++p);
+    printf ("\n\n");
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+32860697_32861156_6_22
+32860697_32861324_3_15
+Title: Iterating with sscanf 
+----------------------------------------
+
+int main (void) {
+    char *str = "12 45 16 789 99";
+    char *end = str;
+    int numbers [MAX_NUMBERS];
+    int i, count = 0;
+    for (i = 0; i < MAX_NUMBERS; i++) {
+        numbers[i] = (int) strtol (end, &end, 10);
+        count++;
+        if (*end == '\0')
+            break;
+    }
+    for (i = 0; i < count; i++) {
+        printf ("%d\n", numbers [i]);
+    }
+    return 0;
+}
+----------------------------------------
+
+int main (void) {
+    const char *str = "10 202 3215 1";
+    int i = 0;
+    unsigned int count = 0, tmp = 0;
+    printf ("%s\n", str);
+    while (sscanf (&str[count], "%d %n", &i, &tmp) != EOF) {
+        count += tmp;
+        printf ("number %d\n", i);
+    }
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+32873744_32874024_5_15
+32873744_32874526_5_20
+Title: How to make an Array equal another array in C 
+----------------------------------------
+
+int main (void) {
+    char array1 [] = "Michi";
+    size_t len = strlen (array1);
+    char *array2 = malloc (len +1);
+    memcpy (array2, array1, len + 1);
+    printf ("Array2 = %s\n", array2);
+    free (array2);
+    return 0;
+}
+----------------------------------------
+
+int main (void) {
+    char one [30];
+    char two [30];
+    while (fgets (one, sizeof (one), stdin)) {
+        int len = strlen (one);
+        for (int i = 0; i < (len + 1); i++) {
+            two[i] = one[i];
+        }
+        printf ("%s", two);
+        break;
+    }
+    return EXIT_SUCCESS;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+3288065_26119141_1_15
+3288065_3290559_1_35
+Title: Getting gateway to use for a given ip in ANSI C 
+----------------------------------------
+
+char *GetGatewayForInterface (const char *interface) {
+    char *gateway = NULL;
+    char cmd [1000] = {0x0};
+    sprintf (cmd, "route -n | grep %s  | grep 'UG[ \t]' | awk '{print $2}'", interface);
+    FILE *fp = popen (cmd, "r");
+    char line [256] = {0x0};
+    if (fgets (line, sizeof (line), fp) != NULL)
+        gateway = string (line);
+    pclose (fp);
+}
+----------------------------------------
+
+char *GetGatewayForInterface (const char *interface) {
+    char *gateway = NULL;
+    FILE *fp = popen ("netstat -rn", "r");
+    char line [256] = {0x0};
+    while (fgets (line, sizeof (line), fp) != NULL) {
+        char *destination;
+        destination = strndup (line, 15);
+        char *iface;
+        iface = strndup (line +73, 4);
+        if (strcmp ("0.0.0.0        ", destination) == 0 && strcmp (iface, interface) == 0) {
+            gateway = strndup (line +16, 15);
+        }
+        free (destination);
+        free (iface);
+    }
+    pclose (fp);
+    return gateway;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+32885186_32885370_1_9
+32885186_32885836_5_17
+Title: count even numbers and characters in a given array 
+----------------------------------------
+
+int count_even (int *b, int size) {
+    int count = 0;
+    for (int a = 0; a < size; a++) {
+        if (b[a] % 2 == 0) {
+            count++;
+        }
+    }
+    return count;
+}
+----------------------------------------
+
+int count_even (int b [], int size) {
+    int a;
+    for (a = 0; a < size; a++) {
+        if (b[a] % 2 == 0) {
+            result++;
+        }
+    }
+    return result;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+32894263_32894552_1_15
+32894263_32894895_2_15
+Title: Prompting the user after an if statement in C? 
+----------------------------------------
+
+int main (void) {
+    int mon;
+    for (;;) {
+        char buf [100];
+        printf ("Enter a month(1=Jan, ..., 12=Dec): ");
+        fflush (stdout);
+        if (fgets (buf, sizeof buf, stdin) == NULL)
+            return 1;
+        if (sscanf (buf, "%d", &mon) == 1 && mon >= 1 && mon <= 12) {
+            break;
+        }
+        printf ("Not a valid month ");
+    }
+    return 0;
+}
+----------------------------------------
+
+int main () {
+    int month, condition = 0;
+    do {
+        printf ("enter month");
+        scanf ("%d", & month);
+        if (month < 1 || month > 12)
+            condition = 1;
+        else
+            condition = 0;
+    }
+    while (condition == 1);
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+32894388_32895168_23_50
+32894388_32897053_39_70
+Title: How to read in 2d array from function in main 
+----------------------------------------
+
+int **getTestData (int *numberOfStudentsPtr, int **studentTestSizesPtr) {
+    int **testScoreBank;
+    scanf ("%d", numberOfStudentsPtr);
+    int numberOfStudents = *numberOfStudentsPtr;
+    testScoreBank = malloc (sizeof (int *) * numberOfStudents);
+    *studentTestSizesPtr = malloc (sizeof (int) * numberOfStudents);
+    int *studentTestSizes = *studentTestSizesPtr;
+    int i;
+    for (i = 0; i < numberOfStudents; i++) {
+        scanf ("%d", studentTestSizes + i);
+        testScoreBank[i] = malloc (sizeof (int) * studentTestSizes[i]);
+        int j;
+        for (j = 0; j < studentTestSizes[i]; j++) {
+            int testScore;
+            scanf ("%d", & testScore);
+            testScoreBank[i][j] = testScore;
+        }
+    }
+    return testScoreBank;
+}
+----------------------------------------
+
+int **getTestData (size_t *students) {
+    size_t tests, testScores, s, t;
+    int **testScoreBank;
+    printf ("\n No. of students: ");
+    scanf ("%zu", students);
+    if (!(testScoreBank = calloc (*students, sizeof *testScoreBank))) {
+        fprintf (stderr, "%s() error: virtual memory exhausted.\n", __func__);
+        return NULL;
+    }
+    for (s = 0; s < *students; s++) {
+        printf ("\n No. of scores for student[%2zu]: ", s + 1);
+        scanf ("%zu", & tests);
+        tests += 1;
+        testScoreBank[s] = calloc (tests, sizeof **testScoreBank);
+        testScoreBank[s][0] = tests;
+        for (t = 1; t < tests; t++) {
+            printf ("   student[%2zu]-test[%2zu] score: ", s + 1, t);
+            scanf ("%zu", & testScores);
+            testScoreBank[s][t] = testScores;
+        }
+    }
+    return testScoreBank;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+32894388_32895168_6_21
+32894388_32897053_6_37
+Title: How to read in 2d array from function in main 
+----------------------------------------
+
+int main () {
+    int numberOfStudents;
+    int *studentTestSizes;
+    int **testScoresBank = getTestData (&numberOfStudents, &studentTestSizes);
+    int i, j;
+    for (i = 0; i < numberOfStudents; i++) {
+        for (j = 0; j < studentTestSizes[i]; j++) {
+            printf ("%d", testScoresBank [i] [j]);
+        }
+    }
+    return 0;
+}
+----------------------------------------
+
+int main (void) {
+    int **a = NULL;
+    int j;
+    size_t i, s = 0;
+    if (!(a = getTestData (&s))) {
+        fprintf (stderr, "error: getTestData failed to return student data.\n");
+        return 1;
+    }
+    putchar ('\n');
+    for (i = 0; i < s; i++) {
+        printf (" Student[%2zu] scores : ", i + 1);
+        for (j = 1; j < a[i][0]; j++)
+            printf (" %3d", a[i][j]);
+        putchar ('\n');
+    }
+    putchar ('\n');
+    for (i = 0; i < s; i++)
+        free (a[i]);
+    free (a);
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+3291382_3291847_18_51
+3291382_36516383_10_20
+Title: Coming back to life after Segmentation Violation 
+----------------------------------------
+
+int main () {
+    int a;
+    struct sigaction sa;
+    memset (& sa, 0, sizeof (struct sigaction));
+    sa.sa_handler = sig_handler;
+    sa.sa_flags = SA_RESTART;
+    sigaction (SIGFPE, & sa, NULL);
+    if (setjmp (context)) {
+        sigset_t ss;
+        sigemptyset (& ss);
+        sigaddset (& ss, SIGFPE);
+        sigprocmask (SIG_UNBLOCK, & ss, NULL);
+        goto skip;
+    }
+    a = 10 / 0;
+skip :
+    printf ("Exiting\n");
+    return 0;
+}
+----------------------------------------
+
+int main () {
+    signal (SIGSEGV, signal_handler);
+    setjmp (buf);
+    if (counter++ == 0) {
+        *(int*) (0x1215) = 10;
+    }
+std :
+    : cout << "i am alive !!" << std : : endl;
+    system ("pause");
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+32920005_32921218_32_57
+32920005_32921442_10_25
+Title: Find all possible arrangements of a n numbers in an array 
+----------------------------------------
+
+int main () {
+    int num [100];
+    int *ptr;
+    int temp;
+    int i, n, j;
+    printf ("\nHow many number you want to enter: ");
+    scanf ("%d", & n);
+    printf ("\nEnter a list of numbers to see all combinations:\n");
+    for (i = 0; i < n; i++)
+        scanf ("%d", &num[i]);
+    printf ("my recursive method ---------------------------\n");
+    recursive_permute (num, num, n);
+    printf ("your method -----------------------------------\n");
+    for (j = 1; j <= n; j++) {
+        for (i = 0; i < n - 1; i++) {
+            temp = num[i];
+            num[i] = num[i + 1];
+            num[i + 1] = temp;
+            print (num, n);
+        }
+    }
+    return 0;
+}
+----------------------------------------
+
+int main (void) {
+    int array [] = {25, 15, 8, 20};
+    size_t sz = sizeof array / sizeof *array;
+    unsigned long long p = pnk (sz, sz);
+    printf ("\n total permutations : %llu\n\n", p);
+    printf (" permutations:\n\n");
+    permute (array, 0, sz);
+    putchar ('\n');
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+32927057_32927187_3_19
+32927057_32927679_3_20
+Title: Assigning a Letter in C 
+----------------------------------------
+
+int main () {
+    int FinalScore = 60;
+    char LetterGrade;
+    if (FinalScore >= 0 && FinalScore <= 59)
+        LetterGrade = 'F';
+    else if (FinalScore >= 60 && FinalScore <= 69)
+        LetterGrade = 'D';
+    else if (FinalScore >= 70 && FinalScore <= 79)
+        LetterGrade = 'C';
+    else if (FinalScore >= 80 && FinalScore <= 89)
+        LetterGrade = 'B';
+    else
+        LetterGrade = 'A';
+    printf ("%c", LetterGrade);
+    return 0;
+}
+----------------------------------------
+
+int main (void) {
+    int FinalScore =...;
+    char LetterGrade;
+    FinalScore /= 10;
+    if (FinalScore < 5)
+        LetterGrade = 'F';
+    else if (FinalScore < 7)
+        LetterGrade = 'D';
+    else if (FinalScore < 8)
+        LetterGrade = 'C';
+    else if (FinalScore < 9)
+        LetterGrade = 'B';
+    else
+        LetterGrade = 'A';
+    printf ("%c\n", LetterGrade);
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+32933042_32933096_1_14
+32933042_32933519_11_57
+Title: Remove the last element inside an array 
+----------------------------------------
+
+int main () {
+    float array [20] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+    float max, min;
+    float rem;
+    int i;
+    float a;
+    char op;
+    for (i = 0;
+    i < 20;
+    i ++) {printf ("Enter the element inside array[%d]: ", i);
+    scanf ("%f", & a);
+    if (a < 0)
+        break;
+    array[i] = a;
+}
+----------------------------------------
+
+void main () {
+    float array [20];
+    float max, min;
+    float rem, input;
+    int i;
+    char op;
+    int length = 0;
+    for (i = 0; i < 20; i++) {
+        printf ("Enter the element inside array[%d]: ", i);
+        scanf ("%f", & input);
+        if (input < 0)
+            break;
+        length++;
+        array[i] = input;
+    }
+    printf ("Enter ......: ");
+    scanf (" %c", & op);
+    switch (op) {
+    case 'h' :
+        max = array[0];
+        for (i = 0; i < 20; i++) {
+            if (max < array[i]) {
+                max = array[i];
+            }
+        }
+        printf ("The biggest number is: %f\n", max);
+        break;
+    case 'l' :
+        min = array[0];
+        for (i = 0; i < length; ++i) {
+            if (min > array[i]) {
+                min = array[i];
+            }
+        }
+        printf ("The smallest number is: %f\n", min);
+        break;
+    }
+    system ("pause");
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+32935754_32936500_32_46
+32935754_32938053_39_50
+Title: working with directories in POSIX with C 
+----------------------------------------
+
+int filename_to_inum (char *src) {
+    int res = 0;
+    struct stat info;
+    int result = stat (src, &info);
+    if (result != 0) {
+        fprintf (stderr, "Cannot stat ");
+        perror (src);
+        exit (EXIT_FAILURE);
+    }
+    else {
+        res = info.st_ino;
+    }
+    return res;
+}
+----------------------------------------
+
+static ino_t filename_to_inum (char *src) {
+    struct stat info;
+    if (stat (src, &info) != 0) {
+        fprintf (stderr, "Cannot stat ");
+        perror (src);
+        exit (EXIT_FAILURE);
+    }
+    return info.st_ino;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+32935754_32936500_57_70
+32935754_32938053_52_76
+Title: working with directories in POSIX with C 
+----------------------------------------
+
+void display_path (int ino_src) {
+    int bufSize = 4096;
+    char pathBuffer [bufSize];
+    int ino_prnt = filename_to_inum ("..");
+    if (ino_src == ino_prnt) {
+        return;
+    }
+    else {
+        chdir ("..");
+        inum_to_filename (ino_src, pathBuffer, bufSize);
+        display_path (ino_prnt);
+        printf ("%s", pathBuffer);
+    }
+}
+----------------------------------------
+
+static void display_path (ino_t ino_src) {
+    size_t bufSize = 4096;
+    char pathBuffer [bufSize];
+    ino_t ino_prnt = filename_to_inum ("..");
+    if (ino_src == ino_prnt) {
+        inum_to_filename (ino_src, pathBuffer, bufSize);
+        printf ("%s", "(root): /\n");
+    }
+    else {
+        if (chdir ("..") != 0) {
+            fprintf (stderr, "Failed to chdir to .. (%d: %s)\n", errno, strerror (errno));
+        }
+        inum_to_filename (ino_src, pathBuffer, bufSize);
+        display_path (ino_prnt);
+        printf ("/%s", pathBuffer);
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+32935754_32936500_8_30
+32935754_32938053_10_37
+Title: working with directories in POSIX with C 
+----------------------------------------
+
+void inum_to_filename (int inode_arg, char *pathBuffer, int size_arg) {
+    DIR *dir_ptr = opendir (".");
+    struct dirent *dirent_ptr = readdir (dir_ptr);
+    int counter = 0;
+    memset (pathBuffer, 0, size_arg);
+    while (counter != 1) {
+        if (inode_arg == dirent_ptr->d_ino) {
+            strcat (pathBuffer, "/");
+            strcat (pathBuffer, dirent_ptr -> d_name);
+            counter = counter + 1;
+            return;
+        }
+        else {
+            dirent_ptr = readdir (dir_ptr);
+        }
+    }
+    closedir (dir_ptr);
+}
+----------------------------------------
+
+static void inum_to_filename (ino_t inode_arg, char *pathBuffer, size_t size_arg) {
+    assert (size_arg > 0);
+    DIR *dir_ptr = opendir (".");
+    if (dir_ptr == 0) {
+        fprintf (stderr, "Failed to open directory '.' (%d: %s)\n", errno, strerror (errno));
+        exit (EXIT_FAILURE);
+    }
+    struct dirent *dirent_ptr;
+    while ((dirent_ptr = readdir (dir_ptr)) != 0) {
+        if (inode_arg == dirent_ptr->d_ino) {
+            if (strlen (dirent_ptr->d_name) >= size_arg) {
+                fprintf (stderr, "File name %s too long (%zu vs %zu max)\n", dirent_ptr -> d_name, strlen (dirent_ptr -> d_name), size_arg);
+                exit (EXIT_FAILURE);
+            }
+            strcpy (pathBuffer, dirent_ptr -> d_name);
+            break;
+        }
+    }
+    closedir (dir_ptr);
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+32936745_32937986_4_21
+32936745_32938008_3_14
+Title: Properties of Scanf and strtol when printing out an integer representation of string 
+----------------------------------------
+
+int main () {
+    char bytes [5];
+    printf ("enter size 1: ");
+    scanf ("%s", bytes);
+    printf ("the size is: %ld\n", strtol (bytes, NULL, 10));
+    printf ("enter size 2: ");
+    scanf ("%s", bytes);
+    printf ("the size is: %ld\n", strtol (bytes, NULL, 10));
+    return 0;
+}
+----------------------------------------
+
+int main (void) {
+    char str [100];
+    scanf ("%s", str);
+    printf ("String : %s\n", str);
+    scanf ("%s", str);
+    printf ("String 2 : %s\n", str);
+    printf ("Proof : %s", str + 6);
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+32938022_32941833_1_13
+32938022_32942587_13_34
+Title: Set first 10 bit of int 
+----------------------------------------
+
+int main (void) {
+    union uu myuu;
+    myuu.value = 999999999;
+    printf ("value = 0x%08x\n", myuu.value);
+    myuu.bits.top10 = 0;
+    printf ("value = 0x%08x\n", myuu.value);
+    myuu.bits.top10 = 0xfff;
+    printf ("value = 0x%08x\n", myuu.value);
+    return 0;
+}
+----------------------------------------
+
+int main (void) {
+    unsigned x = 0b11101010101010110101100100010010;
+    unsigned mask = 0xffffff00;
+    unsigned y = 123;
+    unsigned masked = x & mask;
+    printf ("\n x      : %s\n", binpad2 (x, sizeof x * CHAR_BIT));
+    printf ("\n & mask : %s\n", binpad2 (mask, sizeof mask * CHAR_BIT));
+    printf ("\n masked : %s\n", binpad2 (masked, sizeof masked * CHAR_BIT));
+    printf ("\n | 123  : %s\n", binpad2 (y, sizeof y * CHAR_BIT));
+    masked |= y;
+    printf ("\n final  : %s\n", binpad2 (masked, sizeof masked * CHAR_BIT));
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+3295884_3295901_1_15
+3295884_3295923_7_24
+Title: Malloc and scanf 
+----------------------------------------
+
+int main (int argc, char *argv []) {
+    char *toParseStr;
+    const int n = 10;
+    printf ("Garbage: %p\n", toParseStr);
+    AllocateString (& toParseStr, n);
+    printf ("Address of the first element of a contiguous array of %d bytes: %p\n", n, toParseStr);
+    printf ("Enter string here: ");
+    scanf ("%s", toParseStr);
+    printf ("%s", toParseStr);
+    free (toParseStr);
+    return 0;
+}
+----------------------------------------
+
+int main (int argc, char *argv []) {
+    char *toParseStr = malloc (BUFFSZ +2);
+    if (toParseStr == NULL) {
+        printf ("Could not allocate memory!\n");
+        return 1;
+    }
+    printf ("Enter a string: ");
+    if (fgets (toParseStr, BUFFSZ +2, stdin) == NULL) {
+        printf ("\nGot end of file!\n");
+        return 1;
+    }
+    printf ("Your string was: %s", toParseStr);
+    if (toParseStr[strlen (toParseStr) - 1] != '\n') {
+        printf ("\nIn addition, your string was too long!\n");
+    }
+    free (toParseStr);
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+32960319_32960601_1_20
+32960319_32960626_1_15
+Title: C delete node in a linked list 
+----------------------------------------
+
+struct list *delete_node (struct list *l, int x) {
+    struct list *prev, *retval = l;
+    while (l) {
+        if (l->value == x) {
+            if (l == retval) {
+                retval = l->next;
+                free (l);
+                l = retval;
+            }
+            else {
+                prev->next = l->next;
+                free (l);
+                l = prev;
+            }
+        }
+        prev = l;
+        l = l->next;
+    }
+    return retval;
+}
+----------------------------------------
+
+struct list *delete_node (struct list *l, int x) {
+    struct list start;
+    start.next = l;
+    struct list *p = &start;
+    while (p->next) {
+        struct list *q = p->next;
+        if (q->value == x) {
+            p->next = q->next;
+            free (q);
+            break;
+        }
+        p->next = q;
+    }
+    return start.next;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+32966757_32967493_4_19
+32966757_32970072_4_17
+Title: alphabet increment in c programming 
+----------------------------------------
+
+int main () {
+    char firstLetter;
+    char secondLetter;
+    printf ("Type in a single letter: ");
+    firstLetter = getc (stdin);
+    if (isalpha (firstLetter) && tolower (firstLetter) != 'z') {
+        secondLetter = firstLetter + 1;
+        printf ("The letter after %c is %c\n", firstLetter, secondLetter);
+    }
+    else {
+        printf ("Invalid letter\n");
+    }
+    return 0;
+}
+----------------------------------------
+
+int main () {
+    int ch = -1;
+    printf ("\n Enter char >>> ");
+    scanf ("%d", & ch);
+    if (isalpha (ch++)) {
+        printf ("\n Next character is %c.", ch);
+    }
+    else {
+        printf ("\n Ooops !!! : Either goes out of range or not valid character");
+    }
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+32976867_32976940_1_42
+32976867_32978851_1_19
+Title: Dynamically allocated array won't print outside the function it's declared 
+----------------------------------------
+
+PGM *LerPGM (char *entrada) {
+    PGM *img = (PGM *) malloc (sizeof (PGM));
+    char tipo [3];
+    int i, j;
+    FILE *arq;
+    arq = fopen (entrada, "r");
+    if (arq == NULL) {
+        printf ("Arquivo nao encontrado.");
+        return 0;
+    }
+    fscanf (arq, "%s %d %d %d", & tipo, & img -> c, & img -> l, & img -> maximo);
+    if (strcmp (tipo, "P2")) {
+        printf ("O arquivo nao e PGM.");
+        return 0;
+    }
+    img->imagem = malloc (img->l * sizeof (char *));
+    for (i = 0; i < img->c; i++)
+        img->imagem[i] = malloc (img->c * sizeof (char));
+    if (img->imagem == NULL) {
+        printf ("Falha na alocacao de memoria.");
+        return 0;
+    }
+    for (i = 0; i < img->l; i++) {
+        for (j = 0; j < img->c; j++) {
+            fscanf (arq, "%d", & img -> imagem [i] [j]);
+        }
+    }
+    fclose (arq);
+    for (i = 0; i < img->l; i++) {
+        for (j = 0; j < img->c; j++) {
+            printf ("%d ", img -> imagem [i] [j]);
+        }
+        printf ("\n");
+    }
+    return img;
+}
+----------------------------------------
+
+PGM *LerPGM (char *entrada) {
+    PGM *img = NULL;
+    FILE *arq = fopen (entrada, "r");
+    if (arq == NULL) {
+        printf ("Arquivo nao encontrado.");
+        return NULL;
+    }
+    img = malloc (sizeof (PGM));
+    if (img != NULL) {
+    }
+    return img;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+32985809_32986078_4_20
+32985809_32986252_4_27
+Title: How to know if a file is readable by other user in C? 
+----------------------------------------
+
+int main (int argc, char *argv []) {
+    int i = 0;
+    struct stat buf;
+    char ptr [] = "test.txt";
+    printf ("%s: ", ptr);
+    if (stat (ptr, &buf) < 0) {
+        perror ("stat error\n");
+        return;
+    }
+    if (buf.st_mode & S_IROTH) {
+        printf ("The Others have a read permission for file %s\n", ptr);
+    }
+    exit (0);
+}
+----------------------------------------
+
+int main () {
+    char *f = "test.ts";
+    struct stat *buff = malloc (sizeof (struct stat));
+    if (stat (f, buff) < 0)
+        return 1;
+    printf ("Information for %s\n", f);
+    printf ("File Permissions: \t");
+    printf ((S_ISDIR (buff -> st_mode)) ? "d" : "-");
+    printf ((buff -> st_mode & S_IRUSR) ? "r" : "-");
+    printf ((buff -> st_mode & S_IWUSR) ? "w" : "-");
+    printf ((buff -> st_mode & S_IXUSR) ? "x" : "-");
+    printf ((buff -> st_mode & S_IRGRP) ? "r" : "-");
+    printf ((buff -> st_mode & S_IWGRP) ? "w" : "-");
+    printf ((buff -> st_mode & S_IXGRP) ? "x" : "-");
+    printf ((buff -> st_mode & S_IROTH) ? "r" : "-");
+    printf ((buff -> st_mode & S_IWOTH) ? "w" : "-");
+    printf ((buff -> st_mode & S_IXOTH) ? "x\n" : "-\n");
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+32998105_32998621_7_33
+32998105_32998745_4_38
+Title: Reading a 2D array from a file in C 
+----------------------------------------
+
+int main (void) {
+    FILE *f;
+    int height, width, ii, jj;
+    float array [MHEIGHT] [MWIDTH];
+    if ((f = fopen ("plottestdata.txt", "r")) == NULL)
+        exit (1);
+    if (fscanf (f, "%d%d", &height, &width) != 2)
+        exit (1);
+    if (height < 1 || height > MHEIGHT || width < 1 || width > MWIDTH)
+        exit (1);
+    for (jj = 0; jj < height; jj++)
+        for (ii = 0; ii < width; ii++)
+            if (fscanf (f, "%f", &array[jj][ii]) != 1)
+                exit (1);
+    fclose (f);
+    for (jj = 0; jj < height; jj++) {
+        for (ii = 0; ii < width; ii++)
+            printf ("%10.1f", array[jj][ii]);
+        printf ("\n");
+    }
+    return 0;
+}
+----------------------------------------
+
+int main (int argc, char *argv []) {
+    FILE *f = fopen ("plottestdata", "r");
+    char size [20];
+    int height, width, ii = 0, cc, jj, kk;
+    char horiz [500];
+    if (fgets (size, 500, f) != NULL) {
+        sscanf (size, "%d %d", & height, & width);
+        printf ("%d %d\n", height, width);
+    }
+    float array [height] [width];
+    while (fgets (horiz, 500, f) != NULL) {
+        if (ii < height) {
+            sscanf (horiz, "%f %f %f %f %f", & array [ii] [0], & array [ii] [1], & array [ii] [2], & array [ii] [3], & array [ii] [4]);
+            ii++;
+        }
+    }
+    for (ii = 0; ii < height; ii++) {
+        for (kk = 0; kk < width; kk++) {
+            printf ("%.2f ", array [ii] [kk]);
+        }
+        printf ("\n");
+    }
+    fclose (f);
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+33003196_33003288_1_17
+33003196_33003723_1_20
+Title: Can't copy string to an array of strings in C 
+----------------------------------------
+
+void listToArray () {
+    char *list [numNodes];
+    int i = 0, n;
+    while (head != NULL) {printf ("[%d] %s %s:%d\n ", i, head -> fileName, head -> ip, head -> port);
+    n = snprintf (NULL, 0, "[%d] %s %s:%d\n", i, head->fileName, head->ip, head->port);
+    list[i] = malloc ((n + 1) * sizeof (char));
+    n = sprintf (list[i], "[%d] %s %s:%d\n", i, head->fileName, head->ip, head->port);
+    head = head->next;
+    printf ("%s\n", list [i]);
+    i++;
+}
+----------------------------------------
+
+void listToArray () {
+    char *list [numNodes];
+    char buf [5000];
+    int i = 0, n;
+    while (head != NULL) {
+        snprintf (buf, sizeof (buf), "[%d] %s %s:%d\n ", i, head -> fileName, head -> ip, head -> port);
+        list[i] = strdup (buf);
+        fputs (list [i], stdout);
+        head = head->next;
+        i++;
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+33019818_33020199_1_23
+33019818_33020211_5_26
+Title: Capitalize every word in a string array 
+----------------------------------------
+
+int main () {
+    char string [100];
+    int i, j;
+    printf ("\nEnter string: ");
+    gets (string);
+    if (isalpha (string[0])) {
+        string[0] = toupper (string[0]);
+        for (i = 1; i < strlen (string); i++) {
+            if (string[i - 1] == ' ' && isalnum (string[i]))
+                string[i] = toupper (string[i]);
+        }
+        i = strlen (string);
+        while (i) {int j = i;
+        while (j && j != ' ')
+            j--;
+        printf ("%.*s ", i - j, string + j);
+        i = j;
+    }
+    return 0;
+}
+----------------------------------------
+
+int main (void) {
+    char string [100];
+    char *tptr;
+    size_t i, len;
+    printf ("\nEnter string: ");
+    if (fgets (string, sizeof (string), stdin) == NULL)
+        return 1;
+    tptr = strtok (string, " \n\r\t");
+    while (tptr != NULL) {
+        tptr[0] = toupper (tptr[0]);
+        len = strlen (tptr);
+        for (i = 0; i < len; i++)
+            printf ("%c", tptr[len - 1 - i]);
+        tptr = strtok (NULL, " \n\r\t");
+        if (tptr != NULL)
+            printf (" ");
+    }
+    printf ("\n");
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+33019818_33020199_1_23
+33019818_33023072_1_26
+Title: Capitalize every word in a string array 
+----------------------------------------
+
+int main () {
+    char string [100];
+    int i, j;
+    printf ("\nEnter string: ");
+    gets (string);
+    if (isalpha (string[0])) {
+        string[0] = toupper (string[0]);
+        for (i = 1; i < strlen (string); i++) {
+            if (string[i - 1] == ' ' && isalnum (string[i]))
+                string[i] = toupper (string[i]);
+        }
+        i = strlen (string);
+        while (i) {int j = i;
+        while (j && j != ' ')
+            j--;
+        printf ("%.*s ", i - j, string + j);
+        i = j;
+    }
+    return 0;
+}
+----------------------------------------
+
+int main (void) {
+    int i, l, m, upper = 1;
+    char c;
+    char buff [] = "this is a simple string";
+    l = strlen (buff);
+    printf ("Original string:\n\t'%s'\n\n", buff);
+    for (i = 0; i < l; i++) {
+        if (upper)
+            buff[i] = toupper (buff[i]);
+        upper = isspace (buff[i]);
+    }
+    printf ("Capitalized:\n\t'%s'\n\n", buff);
+    for (i = 0; i < (l / 2); i++) {
+        c = buff[i];
+        buff[i] = buff[l - (i + 1)];
+        buff[l - (i + 1)] = c;
+    }
+    printf ("Reversed:\n\t'%s'\n\n", buff);
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+33019818_33020211_5_26
+33019818_33023072_1_26
+Title: Capitalize every word in a string array 
+----------------------------------------
+
+int main (void) {
+    char string [100];
+    char *tptr;
+    size_t i, len;
+    printf ("\nEnter string: ");
+    if (fgets (string, sizeof (string), stdin) == NULL)
+        return 1;
+    tptr = strtok (string, " \n\r\t");
+    while (tptr != NULL) {
+        tptr[0] = toupper (tptr[0]);
+        len = strlen (tptr);
+        for (i = 0; i < len; i++)
+            printf ("%c", tptr[len - 1 - i]);
+        tptr = strtok (NULL, " \n\r\t");
+        if (tptr != NULL)
+            printf (" ");
+    }
+    printf ("\n");
+    return 0;
+}
+----------------------------------------
+
+int main (void) {
+    int i, l, m, upper = 1;
+    char c;
+    char buff [] = "this is a simple string";
+    l = strlen (buff);
+    printf ("Original string:\n\t'%s'\n\n", buff);
+    for (i = 0; i < l; i++) {
+        if (upper)
+            buff[i] = toupper (buff[i]);
+        upper = isspace (buff[i]);
+    }
+    printf ("Capitalized:\n\t'%s'\n\n", buff);
+    for (i = 0; i < (l / 2); i++) {
+        c = buff[i];
+        buff[i] = buff[l - (i + 1)];
+        buff[l - (i + 1)] = c;
+    }
+    printf ("Reversed:\n\t'%s'\n\n", buff);
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+33025599_33316428_93_113
+33025599_33369810_35_183
+Title: Move the cursor in a C program 
+----------------------------------------
+
+int main (void) {
+    int c;
+    while (1) {
+        c = kbget ();
+        if (c == KEY_ENTER || c == KEY_ESCAPE || c == KEY_UP || c == KEY_DOWN) {
+            break;
+        }
+        else if (c == KEY_RIGHT) {
+            cursorbackward (1);
+        }
+        else if (c == KEY_LEFT) {
+            cursorforward (1);
+        }
+        else {
+            putchar (c);
+        }
+    }
+    printf ("\n");
+    return 0;
+}
+----------------------------------------
+
+int main () {
+    char input [SIZE] = {'\0'};
+    int insert = 0;
+    int each = 0;
+    int end = 0;
+    int to = 0;
+    int ch = 0;
+    int row = 0;
+    int col = 0;
+    struct termios oldattr, newattr;
+    tcgetattr (STDIN, & oldattr);
+    newattr = oldattr;
+    newattr.c_lflag &= ~(ICANON | ECHO);
+    tcsetattr (STDIN, TCSANOW, & newattr);
+    setbuf (stdin, NULL);
+    printf ("\033[2J");
+    printf ("\033[25;1H");
+    printf ("OVW");
+    printf ("\033[9;1H");
+    printf ("enter your text ");
+    printf ("\033[9;17H");
+    col = 17;
+    row = 9;
+    while ((ch = getchar ()) != '\n') {
+        if (isprint (ch)) {
+            if (insert && each < end && end < SIZE - 3) {
+                end++;
+                for (to = end; to >= each; to--) {
+                    input[to + 1] = input[to];
+                }
+                printf ("\033[9;17H");
+                printf ("\033[K");
+                printf ("%s", input);
+            }
+            printf ("\033[%d;%dH", row, col);
+            printf ("%c", ch);
+            input[each] = ch;
+            each++;
+            if (each > end) {
+                end = each;
+            }
+            col++;
+            if (each == end) {
+                input[each] = '\0';
+            }
+            if (each >= SIZE - 1) {
+                break;
+            }
+            continue;
+        }
+        if (ch == BACKSPACE) {
+            if (each) {
+                each--;
+                col--;
+                for (to = each; to <= end; to++) {
+                    input[to] = input[to + 1];
+                }
+                end--;
+                printf ("\033[9;17H");
+                printf ("\033[K");
+                printf ("%s", input);
+                printf ("\033[%d;%dH", row, col);
+            }
+        }
+        if (ch == ESC) {
+            if (!kbhit ()) {
+                continue;
+            }
+            ch = getchar ();
+            if (ch == OTHER) {
+                ch = getchar ();
+                if (ch == HOME) {
+                    col -= each;
+                    each = 0;
+                    printf ("\033[%d;%dH", row, col);
+                    ch = getchar ();
+                }
+                if (ch == END) {
+                    col += end - each;
+                    each = end;
+                    printf ("\033[%d;%dH", row, col);
+                    ch = getchar ();
+                }
+            }
+            if (ch == BRACKETLEFT) {
+                ch = getchar ();
+                if (ch == INSERT) {
+                    ch = getchar ();
+                    if (ch == TILDE) {
+                        insert = !insert;
+                        printf ("\033[25;1H");
+                        if (insert) {
+                            printf ("INS");
+                        }
+                        else {
+                            printf ("OVW");
+                        }
+                        printf ("\033[%d;%dH", row, col);
+                    }
+                }
+                if (ch == DELETE) {
+                    ch = getchar ();
+                    if (ch == TILDE) {
+                        for (to = each; to <= end; to++) {
+                            input[to] = input[to + 1];
+                        }
+                        end--;
+                        printf ("\033[9;17H");
+                        printf ("\033[K");
+                        printf ("%s", input);
+                        printf ("\033[%d;%dH", row, col);
+                    }
+                }
+                if (ch == ARROWRIGHT) {
+                    if (each < end) {
+                        printf ("\033[C");
+                        each++;
+                        col++;
+                    }
+                }
+                if (ch == ARROWLEFT) {
+                    if (each) {
+                        printf ("\033[D");
+                        each--;
+                        col--;
+                    }
+                }
+            }
+            else {
+                ungetc (ch, stdin);
+            }
+        }
+    }
+    printf ("\n\ninput was [%s]\n", input);
+    printf ("\n\nbye\n");
+    tcsetattr (STDIN, TCSANOW, & oldattr);
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+33028653_33028915_4_21
+33028653_33029085_29_43
+Title: How do I split elements in an array of unsigned char 
+----------------------------------------
+
+int main () {
+    char *line;
+    char *token;
+    scanf (" %[^\n]s", line);
+    token = strtok (line, " ");
+    while (token != NULL) {
+        printf (" %s\n", token);
+        token = strtok (NULL, " ");
+    }
+    return (0);
+}
+----------------------------------------
+
+int main (void) {
+    char input [256];
+    int numbers [64];
+    size_t count, i;
+    puts ("Please enter an numeric message terminated by -1:");
+    fgets (input, sizeof (input), stdin);
+    count = str_to_nums (input, " ", numbers, sizeof (numbers) / sizeof (*numbers));
+    for (i = 0; i < count; ++i) {
+        printf ("%d\n", numbers [i]);
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+33050529_33052415_4_29
+33050529_52977524_4_46
+Title: I want to print pattern of numbers using c program 
+----------------------------------------
+
+int main () {
+    printf ("Please enter a value : ");
+    scanf ("%d", & n);
+    beginnew = n - n / 2 + 1;
+    cpy = n - 1;
+    for (int i = 1; i < n + 1; i++) {
+        if (i < beginnew) {
+            for (int h = n - 1; h >= 0; h--)
+                printf ("%d * ", (n * (2 * i - 1) - h));
+        }
+        else {
+            for (int h = n - 1; h >= 0; h--)
+                printf ("%d * ", (n * (cpy) -h));
+            cpy = cpy - 2;
+        }
+        printf ("\n");
+    }
+    getch ();
+    return 0;
+}
+----------------------------------------
+
+int main () {
+    int n;
+    scanf ("%d", & n);
+    for (int i = 1; i <= n / 2 + 1; i++) {
+        for (int j = 1; j <= n; j++) {
+            if (j != 1 && j != n + 1) {
+                printf ("*");
+            }
+            printf ("%d", k);
+            k++;
+        }
+        printf ("\n \n");
+        k = k + n;
+    }
+    k = k - 3 * n;
+    for (int i = 1; i <= n / 2; i++) {
+        for (int j = 1; j <= n; j++) {
+            if (j != 1 && j != n + 1) {
+                printf ("*");
+            }
+            printf ("%d", k);
+            k++;
+        }
+        printf ("\n \n");
+        k = k - (n / 2 + 1) * n;
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+3305735_16828800_2_17
+3305735_31433326_2_19
+Title: K&R Exercise 1-9 (C) 
+----------------------------------------
+
+int main () {
+    int c;
+    while ((c = getchar ()) != EOF) {
+        if (c == ' ') {
+            while ((c = getchar ()) == ' ')
+                ;
+            putchar (' ');
+            putchar (c);
+        }
+        else
+            putchar (c);
+    }
+    return 0;
+}
+----------------------------------------
+
+int main (void) {
+    long c;
+    long nb = 0;
+    while ((c = getchar ()) != EOF) {
+        if (c == ' ' || c == '\t') {
+            ++nb;
+        }
+        else {
+            if (nb > 0) {
+                putchar (' ');
+                nb = 0;
+            }
+            putchar (c);
+        }
+    }
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+3305735_16828800_2_17
+3305735_42183000_2_26
+Title: K&R Exercise 1-9 (C) 
+----------------------------------------
+
+int main () {
+    int c;
+    while ((c = getchar ()) != EOF) {
+        if (c == ' ') {
+            while ((c = getchar ()) == ' ')
+                ;
+            putchar (' ');
+            putchar (c);
+        }
+        else
+            putchar (c);
+    }
+    return 0;
+}
+----------------------------------------
+
+int main () {
+    int c int blanks = 0;
+    while ((c = getchar ()) != EOF) {
+        if (c == ' ') {
+            while ((c = getchar ()) == ' ') {
+                blanks++;
+            }
+            if (blanks >= 0) {
+                putchar (' ');
+            }
+        }
+        putchar (c);
+    }
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+3305735_16828800_2_17
+3305735_43960585_6_38
+Title: K&R Exercise 1-9 (C) 
+----------------------------------------
+
+int main () {
+    int c;
+    while ((c = getchar ()) != EOF) {
+        if (c == ' ') {
+            while ((c = getchar ()) == ' ')
+                ;
+            putchar (' ');
+            putchar (c);
+        }
+        else
+            putchar (c);
+    }
+    return 0;
+}
+----------------------------------------
+
+int main (void) {
+    int blank_state;
+    int c;
+    int blank_count;
+    printf ("Replace one or more blanks with a single blank.\n");
+    printf ("Use ctrl+d to insert an EOF after typing ENTER.\n\n");
+    blank_state = 0;
+    blank_count = 0;
+    while ((c = getchar ()) != EOF) {
+        if (c == ' ') {
+            ++blank_count;
+            if (blank_state == 0) {
+                blank_state = 1;
+                putchar (c);
+            }
+        }
+        if (c != ' ') {
+            blank_state = 0;
+            putchar (c);
+        }
+    }
+    printf ("Total number of blanks: %d\n", blank_count);
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+3305735_16828800_2_17
+3305735_44699843_4_24
+Title: K&R Exercise 1-9 (C) 
+----------------------------------------
+
+int main () {
+    int c;
+    while ((c = getchar ()) != EOF) {
+        if (c == ' ') {
+            while ((c = getchar ()) == ' ')
+                ;
+            putchar (' ');
+            putchar (c);
+        }
+        else
+            putchar (c);
+    }
+    return 0;
+}
+----------------------------------------
+
+int main (void) {
+    int c, flag = 0;
+    while ((c = getchar ()) != EOF) {
+        if (c == ' ') {
+            if (flag == 0) {
+                flag = 1;
+                putchar (c);
+            }
+        }
+        else {
+            flag = 0;
+            putchar (c);
+        }
+    }
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+3305735_16828800_2_17
+3305735_45591499_6_43
+Title: K&R Exercise 1-9 (C) 
+----------------------------------------
+
+int main () {
+    int c;
+    while ((c = getchar ()) != EOF) {
+        if (c == ' ') {
+            while ((c = getchar ()) == ' ')
+                ;
+            putchar (' ');
+            putchar (c);
+        }
+        else
+            putchar (c);
+    }
+    return 0;
+}
+----------------------------------------
+
+int main (void) {
+    double c;
+    char blank = ' ';
+    while ((c = getchar ()) != EOF) {
+        if (c == ' ') {
+            putchar (c);
+            while ((c = getchar ()) == ' ') {
+                if (c != ' ')
+                    break;
+            }
+        }
+        if (c == '\t') {
+            putchar (blank);
+            while ((c = getchar ()) == '\t') {
+                if (c != '\t')
+                    break;
+            }
+        }
+        putchar (c);
+    }
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+3305735_16828800_2_17
+3305735_50181284_4_21
+Title: K&R Exercise 1-9 (C) 
+----------------------------------------
+
+int main () {
+    int c;
+    while ((c = getchar ()) != EOF) {
+        if (c == ' ') {
+            while ((c = getchar ()) == ' ')
+                ;
+            putchar (' ');
+            putchar (c);
+        }
+        else
+            putchar (c);
+    }
+    return 0;
+}
+----------------------------------------
+
+int main () {
+    int c = 0, sp = 0;
+    while ((c = getchar ()) != EOF) {
+        if (c == ' ')
+            ++sp;
+        if (c != ' ')
+            sp = 0;
+        if (sp < 2)
+            putchar (c);
+    }
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+3305735_18289557_3_10
+3305735_20386640_2_21
+Title: K&R Exercise 1-9 (C) 
+----------------------------------------
+
+main () {
+    int input, last = EOF;
+    while ((input = getchar ()) != EOF) {
+        if (input == ' ' && last == ' ')
+            continue;
+        last = input;
+        putchar (input);
+    }
+}
+----------------------------------------
+
+main () {
+    int c, numBlank = 0;
+    while ((c = getchar ()) != EOF) {
+        if (c == ' ') {
+            numBlank++;
+            if (numBlank < 2) {
+                printf ("character is:%c\n", c);
+            }
+        }
+        else {
+            printf ("character is:%c\n", c);
+            numBlank = 0;
+        }
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+3305735_18289557_3_10
+3305735_25051116_4_25
+Title: K&R Exercise 1-9 (C) 
+----------------------------------------
+
+main () {
+    int input, last = EOF;
+    while ((input = getchar ()) != EOF) {
+        if (input == ' ' && last == ' ')
+            continue;
+        last = input;
+        putchar (input);
+    }
+}
+----------------------------------------
+
+main () {
+    int count = 0, c;
+    for (; (c = getchar ()) != EOF;) {
+        if (c == ' ') {
+            if (count == 0) {
+                putchar (c);
+                count++;
+            }
+        }
+        if (c != ' ') {
+            putchar (c);
+            count = 0;
+        }
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+3305735_18289557_3_10
+3305735_25563090_2_22
+Title: K&R Exercise 1-9 (C) 
+----------------------------------------
+
+main () {
+    int input, last = EOF;
+    while ((input = getchar ()) != EOF) {
+        if (input == ' ' && last == ' ')
+            continue;
+        last = input;
+        putchar (input);
+    }
+}
+----------------------------------------
+
+main () {
+    int CurrentChar, LastChar;
+    LastChar = '1';
+    while ((CurrentChar = getchar ()) != EOF) {
+        if (CurrentChar != ' ') {
+            putchar (CurrentChar);
+            LastChar = '1';
+        }
+        else {
+            if (LastChar != ' ') {
+                putchar (CurrentChar);
+                LastChar = ' ';
+            }
+        }
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+3305735_18289557_3_10
+3305735_30513635_2_15
+Title: K&R Exercise 1-9 (C) 
+----------------------------------------
+
+main () {
+    int input, last = EOF;
+    while ((input = getchar ()) != EOF) {
+        if (input == ' ' && last == ' ')
+            continue;
+        last = input;
+        putchar (input);
+    }
+}
+----------------------------------------
+
+main () {
+    int c;
+    while ((c = getchar ()) != EOF) {
+        if (c == ' ') {
+            while ((c = getchar ()) == ' ')
+                ;
+            putchar (' ');
+        }
+        putchar (c);
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+3305735_18289557_3_10
+3305735_32194724_5_18
+Title: K&R Exercise 1-9 (C) 
+----------------------------------------
+
+main () {
+    int input, last = EOF;
+    while ((input = getchar ()) != EOF) {
+        if (input == ' ' && last == ' ')
+            continue;
+        last = input;
+        putchar (input);
+    }
+}
+----------------------------------------
+
+main () {
+    int c;
+    while ((c = getchar ()) != EOF) {
+        if (c == ' ') {
+            putchar (c);
+            while ((c = getchar ()) == ' ')
+                ;
+        }
+        if (c != ' ')
+            putchar (c);
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+3305735_18289557_3_10
+3305735_33478490_5_19
+Title: K&R Exercise 1-9 (C) 
+----------------------------------------
+
+main () {
+    int input, last = EOF;
+    while ((input = getchar ()) != EOF) {
+        if (input == ' ' && last == ' ')
+            continue;
+        last = input;
+        putchar (input);
+    }
+}
+----------------------------------------
+
+main () {
+    int c, blanks;
+    blanks = 0;
+    while ((c = getchar ()) != EOF) {
+        if (c != ' ') {
+            if (blanks >= 1)
+                printf (" ");
+            blanks = 0;
+            putchar (c);
+        }
+        if (c == ' ')
+            ++blanks;
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+3305735_18289557_3_10
+3305735_35106269_3_24
+Title: K&R Exercise 1-9 (C) 
+----------------------------------------
+
+main () {
+    int input, last = EOF;
+    while ((input = getchar ()) != EOF) {
+        if (input == ' ' && last == ' ')
+            continue;
+        last = input;
+        putchar (input);
+    }
+}
+----------------------------------------
+
+main () {
+    int c, pc;
+    while ((c = getchar ()) != EOF) {
+        if ((pc == ' ') + (pc == c) < 2) {
+            putchar (c);
+        }
+        pc = c;
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+3305735_20386640_2_21
+3305735_25051116_4_25
+Title: K&R Exercise 1-9 (C) 
+----------------------------------------
+
+main () {
+    int c, numBlank = 0;
+    while ((c = getchar ()) != EOF) {
+        if (c == ' ') {
+            numBlank++;
+            if (numBlank < 2) {
+                printf ("character is:%c\n", c);
+            }
+        }
+        else {
+            printf ("character is:%c\n", c);
+            numBlank = 0;
+        }
+    }
+}
+----------------------------------------
+
+main () {
+    int count = 0, c;
+    for (; (c = getchar ()) != EOF;) {
+        if (c == ' ') {
+            if (count == 0) {
+                putchar (c);
+                count++;
+            }
+        }
+        if (c != ' ') {
+            putchar (c);
+            count = 0;
+        }
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+3305735_20386640_2_21
+3305735_25563090_2_22
+Title: K&R Exercise 1-9 (C) 
+----------------------------------------
+
+main () {
+    int c, numBlank = 0;
+    while ((c = getchar ()) != EOF) {
+        if (c == ' ') {
+            numBlank++;
+            if (numBlank < 2) {
+                printf ("character is:%c\n", c);
+            }
+        }
+        else {
+            printf ("character is:%c\n", c);
+            numBlank = 0;
+        }
+    }
+}
+----------------------------------------
+
+main () {
+    int CurrentChar, LastChar;
+    LastChar = '1';
+    while ((CurrentChar = getchar ()) != EOF) {
+        if (CurrentChar != ' ') {
+            putchar (CurrentChar);
+            LastChar = '1';
+        }
+        else {
+            if (LastChar != ' ') {
+                putchar (CurrentChar);
+                LastChar = ' ';
+            }
+        }
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+3305735_20386640_2_21
+3305735_30513635_2_15
+Title: K&R Exercise 1-9 (C) 
+----------------------------------------
+
+main () {
+    int c, numBlank = 0;
+    while ((c = getchar ()) != EOF) {
+        if (c == ' ') {
+            numBlank++;
+            if (numBlank < 2) {
+                printf ("character is:%c\n", c);
+            }
+        }
+        else {
+            printf ("character is:%c\n", c);
+            numBlank = 0;
+        }
+    }
+}
+----------------------------------------
+
+main () {
+    int c;
+    while ((c = getchar ()) != EOF) {
+        if (c == ' ') {
+            while ((c = getchar ()) == ' ')
+                ;
+            putchar (' ');
+        }
+        putchar (c);
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+3305735_20386640_2_21
+3305735_32194724_5_18
+Title: K&R Exercise 1-9 (C) 
+----------------------------------------
+
+main () {
+    int c, numBlank = 0;
+    while ((c = getchar ()) != EOF) {
+        if (c == ' ') {
+            numBlank++;
+            if (numBlank < 2) {
+                printf ("character is:%c\n", c);
+            }
+        }
+        else {
+            printf ("character is:%c\n", c);
+            numBlank = 0;
+        }
+    }
+}
+----------------------------------------
+
+main () {
+    int c;
+    while ((c = getchar ()) != EOF) {
+        if (c == ' ') {
+            putchar (c);
+            while ((c = getchar ()) == ' ')
+                ;
+        }
+        if (c != ' ')
+            putchar (c);
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+3305735_20386640_2_21
+3305735_33478490_5_19
+Title: K&R Exercise 1-9 (C) 
+----------------------------------------
+
+main () {
+    int c, numBlank = 0;
+    while ((c = getchar ()) != EOF) {
+        if (c == ' ') {
+            numBlank++;
+            if (numBlank < 2) {
+                printf ("character is:%c\n", c);
+            }
+        }
+        else {
+            printf ("character is:%c\n", c);
+            numBlank = 0;
+        }
+    }
+}
+----------------------------------------
+
+main () {
+    int c, blanks;
+    blanks = 0;
+    while ((c = getchar ()) != EOF) {
+        if (c != ' ') {
+            if (blanks >= 1)
+                printf (" ");
+            blanks = 0;
+            putchar (c);
+        }
+        if (c == ' ')
+            ++blanks;
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+3305735_20386640_2_21
+3305735_35106269_3_24
+Title: K&R Exercise 1-9 (C) 
+----------------------------------------
+
+main () {
+    int c, numBlank = 0;
+    while ((c = getchar ()) != EOF) {
+        if (c == ' ') {
+            numBlank++;
+            if (numBlank < 2) {
+                printf ("character is:%c\n", c);
+            }
+        }
+        else {
+            printf ("character is:%c\n", c);
+            numBlank = 0;
+        }
+    }
+}
+----------------------------------------
+
+main () {
+    int c, pc;
+    while ((c = getchar ()) != EOF) {
+        if ((pc == ' ') + (pc == c) < 2) {
+            putchar (c);
+        }
+        pc = c;
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+3305735_25051116_4_25
+3305735_25563090_2_22
+Title: K&R Exercise 1-9 (C) 
+----------------------------------------
+
+main () {
+    int count = 0, c;
+    for (; (c = getchar ()) != EOF;) {
+        if (c == ' ') {
+            if (count == 0) {
+                putchar (c);
+                count++;
+            }
+        }
+        if (c != ' ') {
+            putchar (c);
+            count = 0;
+        }
+    }
+}
+----------------------------------------
+
+main () {
+    int CurrentChar, LastChar;
+    LastChar = '1';
+    while ((CurrentChar = getchar ()) != EOF) {
+        if (CurrentChar != ' ') {
+            putchar (CurrentChar);
+            LastChar = '1';
+        }
+        else {
+            if (LastChar != ' ') {
+                putchar (CurrentChar);
+                LastChar = ' ';
+            }
+        }
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+3305735_25051116_4_25
+3305735_30513635_2_15
+Title: K&R Exercise 1-9 (C) 
+----------------------------------------
+
+main () {
+    int count = 0, c;
+    for (; (c = getchar ()) != EOF;) {
+        if (c == ' ') {
+            if (count == 0) {
+                putchar (c);
+                count++;
+            }
+        }
+        if (c != ' ') {
+            putchar (c);
+            count = 0;
+        }
+    }
+}
+----------------------------------------
+
+main () {
+    int c;
+    while ((c = getchar ()) != EOF) {
+        if (c == ' ') {
+            while ((c = getchar ()) == ' ')
+                ;
+            putchar (' ');
+        }
+        putchar (c);
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+3305735_25051116_4_25
+3305735_32194724_5_18
+Title: K&R Exercise 1-9 (C) 
+----------------------------------------
+
+main () {
+    int count = 0, c;
+    for (; (c = getchar ()) != EOF;) {
+        if (c == ' ') {
+            if (count == 0) {
+                putchar (c);
+                count++;
+            }
+        }
+        if (c != ' ') {
+            putchar (c);
+            count = 0;
+        }
+    }
+}
+----------------------------------------
+
+main () {
+    int c;
+    while ((c = getchar ()) != EOF) {
+        if (c == ' ') {
+            putchar (c);
+            while ((c = getchar ()) == ' ')
+                ;
+        }
+        if (c != ' ')
+            putchar (c);
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+3305735_25051116_4_25
+3305735_33478490_5_19
+Title: K&R Exercise 1-9 (C) 
+----------------------------------------
+
+main () {
+    int count = 0, c;
+    for (; (c = getchar ()) != EOF;) {
+        if (c == ' ') {
+            if (count == 0) {
+                putchar (c);
+                count++;
+            }
+        }
+        if (c != ' ') {
+            putchar (c);
+            count = 0;
+        }
+    }
+}
+----------------------------------------
+
+main () {
+    int c, blanks;
+    blanks = 0;
+    while ((c = getchar ()) != EOF) {
+        if (c != ' ') {
+            if (blanks >= 1)
+                printf (" ");
+            blanks = 0;
+            putchar (c);
+        }
+        if (c == ' ')
+            ++blanks;
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+3305735_25051116_4_25
+3305735_35106269_3_24
+Title: K&R Exercise 1-9 (C) 
+----------------------------------------
+
+main () {
+    int count = 0, c;
+    for (; (c = getchar ()) != EOF;) {
+        if (c == ' ') {
+            if (count == 0) {
+                putchar (c);
+                count++;
+            }
+        }
+        if (c != ' ') {
+            putchar (c);
+            count = 0;
+        }
+    }
+}
+----------------------------------------
+
+main () {
+    int c, pc;
+    while ((c = getchar ()) != EOF) {
+        if ((pc == ' ') + (pc == c) < 2) {
+            putchar (c);
+        }
+        pc = c;
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+3305735_25563090_2_22
+3305735_30513635_2_15
+Title: K&R Exercise 1-9 (C) 
+----------------------------------------
+
+main () {
+    int CurrentChar, LastChar;
+    LastChar = '1';
+    while ((CurrentChar = getchar ()) != EOF) {
+        if (CurrentChar != ' ') {
+            putchar (CurrentChar);
+            LastChar = '1';
+        }
+        else {
+            if (LastChar != ' ') {
+                putchar (CurrentChar);
+                LastChar = ' ';
+            }
+        }
+    }
+}
+----------------------------------------
+
+main () {
+    int c;
+    while ((c = getchar ()) != EOF) {
+        if (c == ' ') {
+            while ((c = getchar ()) == ' ')
+                ;
+            putchar (' ');
+        }
+        putchar (c);
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+3305735_25563090_2_22
+3305735_32194724_5_18
+Title: K&R Exercise 1-9 (C) 
+----------------------------------------
+
+main () {
+    int CurrentChar, LastChar;
+    LastChar = '1';
+    while ((CurrentChar = getchar ()) != EOF) {
+        if (CurrentChar != ' ') {
+            putchar (CurrentChar);
+            LastChar = '1';
+        }
+        else {
+            if (LastChar != ' ') {
+                putchar (CurrentChar);
+                LastChar = ' ';
+            }
+        }
+    }
+}
+----------------------------------------
+
+main () {
+    int c;
+    while ((c = getchar ()) != EOF) {
+        if (c == ' ') {
+            putchar (c);
+            while ((c = getchar ()) == ' ')
+                ;
+        }
+        if (c != ' ')
+            putchar (c);
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+3305735_25563090_2_22
+3305735_33478490_5_19
+Title: K&R Exercise 1-9 (C) 
+----------------------------------------
+
+main () {
+    int CurrentChar, LastChar;
+    LastChar = '1';
+    while ((CurrentChar = getchar ()) != EOF) {
+        if (CurrentChar != ' ') {
+            putchar (CurrentChar);
+            LastChar = '1';
+        }
+        else {
+            if (LastChar != ' ') {
+                putchar (CurrentChar);
+                LastChar = ' ';
+            }
+        }
+    }
+}
+----------------------------------------
+
+main () {
+    int c, blanks;
+    blanks = 0;
+    while ((c = getchar ()) != EOF) {
+        if (c != ' ') {
+            if (blanks >= 1)
+                printf (" ");
+            blanks = 0;
+            putchar (c);
+        }
+        if (c == ' ')
+            ++blanks;
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+3305735_25563090_2_22
+3305735_35106269_3_24
+Title: K&R Exercise 1-9 (C) 
+----------------------------------------
+
+main () {
+    int CurrentChar, LastChar;
+    LastChar = '1';
+    while ((CurrentChar = getchar ()) != EOF) {
+        if (CurrentChar != ' ') {
+            putchar (CurrentChar);
+            LastChar = '1';
+        }
+        else {
+            if (LastChar != ' ') {
+                putchar (CurrentChar);
+                LastChar = ' ';
+            }
+        }
+    }
+}
+----------------------------------------
+
+main () {
+    int c, pc;
+    while ((c = getchar ()) != EOF) {
+        if ((pc == ' ') + (pc == c) < 2) {
+            putchar (c);
+        }
+        pc = c;
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+3305735_30513635_2_15
+3305735_33478490_5_19
+Title: K&R Exercise 1-9 (C) 
+----------------------------------------
+
+main () {
+    int c;
+    while ((c = getchar ()) != EOF) {
+        if (c == ' ') {
+            while ((c = getchar ()) == ' ')
+                ;
+            putchar (' ');
+        }
+        putchar (c);
+    }
+}
+----------------------------------------
+
+main () {
+    int c, blanks;
+    blanks = 0;
+    while ((c = getchar ()) != EOF) {
+        if (c != ' ') {
+            if (blanks >= 1)
+                printf (" ");
+            blanks = 0;
+            putchar (c);
+        }
+        if (c == ' ')
+            ++blanks;
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+3305735_30513635_2_15
+3305735_35106269_3_24
+Title: K&R Exercise 1-9 (C) 
+----------------------------------------
+
+main () {
+    int c;
+    while ((c = getchar ()) != EOF) {
+        if (c == ' ') {
+            while ((c = getchar ()) == ' ')
+                ;
+            putchar (' ');
+        }
+        putchar (c);
+    }
+}
+----------------------------------------
+
+main () {
+    int c, pc;
+    while ((c = getchar ()) != EOF) {
+        if ((pc == ' ') + (pc == c) < 2) {
+            putchar (c);
+        }
+        pc = c;
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+3305735_31433326_2_19
+3305735_42183000_2_26
+Title: K&R Exercise 1-9 (C) 
+----------------------------------------
+
+int main (void) {
+    long c;
+    long nb = 0;
+    while ((c = getchar ()) != EOF) {
+        if (c == ' ' || c == '\t') {
+            ++nb;
+        }
+        else {
+            if (nb > 0) {
+                putchar (' ');
+                nb = 0;
+            }
+            putchar (c);
+        }
+    }
+    return 0;
+}
+----------------------------------------
+
+int main () {
+    int c int blanks = 0;
+    while ((c = getchar ()) != EOF) {
+        if (c == ' ') {
+            while ((c = getchar ()) == ' ') {
+                blanks++;
+            }
+            if (blanks >= 0) {
+                putchar (' ');
+            }
+        }
+        putchar (c);
+    }
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+3305735_31433326_2_19
+3305735_43960585_6_38
+Title: K&R Exercise 1-9 (C) 
+----------------------------------------
+
+int main (void) {
+    long c;
+    long nb = 0;
+    while ((c = getchar ()) != EOF) {
+        if (c == ' ' || c == '\t') {
+            ++nb;
+        }
+        else {
+            if (nb > 0) {
+                putchar (' ');
+                nb = 0;
+            }
+            putchar (c);
+        }
+    }
+    return 0;
+}
+----------------------------------------
+
+int main (void) {
+    int blank_state;
+    int c;
+    int blank_count;
+    printf ("Replace one or more blanks with a single blank.\n");
+    printf ("Use ctrl+d to insert an EOF after typing ENTER.\n\n");
+    blank_state = 0;
+    blank_count = 0;
+    while ((c = getchar ()) != EOF) {
+        if (c == ' ') {
+            ++blank_count;
+            if (blank_state == 0) {
+                blank_state = 1;
+                putchar (c);
+            }
+        }
+        if (c != ' ') {
+            blank_state = 0;
+            putchar (c);
+        }
+    }
+    printf ("Total number of blanks: %d\n", blank_count);
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+3305735_31433326_2_19
+3305735_44699843_4_24
+Title: K&R Exercise 1-9 (C) 
+----------------------------------------
+
+int main (void) {
+    long c;
+    long nb = 0;
+    while ((c = getchar ()) != EOF) {
+        if (c == ' ' || c == '\t') {
+            ++nb;
+        }
+        else {
+            if (nb > 0) {
+                putchar (' ');
+                nb = 0;
+            }
+            putchar (c);
+        }
+    }
+    return 0;
+}
+----------------------------------------
+
+int main (void) {
+    int c, flag = 0;
+    while ((c = getchar ()) != EOF) {
+        if (c == ' ') {
+            if (flag == 0) {
+                flag = 1;
+                putchar (c);
+            }
+        }
+        else {
+            flag = 0;
+            putchar (c);
+        }
+    }
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+3305735_31433326_2_19
+3305735_45591499_6_43
+Title: K&R Exercise 1-9 (C) 
+----------------------------------------
+
+int main (void) {
+    long c;
+    long nb = 0;
+    while ((c = getchar ()) != EOF) {
+        if (c == ' ' || c == '\t') {
+            ++nb;
+        }
+        else {
+            if (nb > 0) {
+                putchar (' ');
+                nb = 0;
+            }
+            putchar (c);
+        }
+    }
+    return 0;
+}
+----------------------------------------
+
+int main (void) {
+    double c;
+    char blank = ' ';
+    while ((c = getchar ()) != EOF) {
+        if (c == ' ') {
+            putchar (c);
+            while ((c = getchar ()) == ' ') {
+                if (c != ' ')
+                    break;
+            }
+        }
+        if (c == '\t') {
+            putchar (blank);
+            while ((c = getchar ()) == '\t') {
+                if (c != '\t')
+                    break;
+            }
+        }
+        putchar (c);
+    }
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+3305735_31433326_2_19
+3305735_50181284_4_21
+Title: K&R Exercise 1-9 (C) 
+----------------------------------------
+
+int main (void) {
+    long c;
+    long nb = 0;
+    while ((c = getchar ()) != EOF) {
+        if (c == ' ' || c == '\t') {
+            ++nb;
+        }
+        else {
+            if (nb > 0) {
+                putchar (' ');
+                nb = 0;
+            }
+            putchar (c);
+        }
+    }
+    return 0;
+}
+----------------------------------------
+
+int main () {
+    int c = 0, sp = 0;
+    while ((c = getchar ()) != EOF) {
+        if (c == ' ')
+            ++sp;
+        if (c != ' ')
+            sp = 0;
+        if (sp < 2)
+            putchar (c);
+    }
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+3305735_32194724_5_18
+3305735_33478490_5_19
+Title: K&R Exercise 1-9 (C) 
+----------------------------------------
+
+main () {
+    int c;
+    while ((c = getchar ()) != EOF) {
+        if (c == ' ') {
+            putchar (c);
+            while ((c = getchar ()) == ' ')
+                ;
+        }
+        if (c != ' ')
+            putchar (c);
+    }
+}
+----------------------------------------
+
+main () {
+    int c, blanks;
+    blanks = 0;
+    while ((c = getchar ()) != EOF) {
+        if (c != ' ') {
+            if (blanks >= 1)
+                printf (" ");
+            blanks = 0;
+            putchar (c);
+        }
+        if (c == ' ')
+            ++blanks;
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+3305735_32194724_5_18
+3305735_35106269_3_24
+Title: K&R Exercise 1-9 (C) 
+----------------------------------------
+
+main () {
+    int c;
+    while ((c = getchar ()) != EOF) {
+        if (c == ' ') {
+            putchar (c);
+            while ((c = getchar ()) == ' ')
+                ;
+        }
+        if (c != ' ')
+            putchar (c);
+    }
+}
+----------------------------------------
+
+main () {
+    int c, pc;
+    while ((c = getchar ()) != EOF) {
+        if ((pc == ' ') + (pc == c) < 2) {
+            putchar (c);
+        }
+        pc = c;
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+3305735_33478490_5_19
+3305735_35106269_3_24
+Title: K&R Exercise 1-9 (C) 
+----------------------------------------
+
+main () {
+    int c, blanks;
+    blanks = 0;
+    while ((c = getchar ()) != EOF) {
+        if (c != ' ') {
+            if (blanks >= 1)
+                printf (" ");
+            blanks = 0;
+            putchar (c);
+        }
+        if (c == ' ')
+            ++blanks;
+    }
+}
+----------------------------------------
+
+main () {
+    int c, pc;
+    while ((c = getchar ()) != EOF) {
+        if ((pc == ' ') + (pc == c) < 2) {
+            putchar (c);
+        }
+        pc = c;
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+3305735_42183000_2_26
+3305735_43960585_6_38
+Title: K&R Exercise 1-9 (C) 
+----------------------------------------
+
+int main () {
+    int c int blanks = 0;
+    while ((c = getchar ()) != EOF) {
+        if (c == ' ') {
+            while ((c = getchar ()) == ' ') {
+                blanks++;
+            }
+            if (blanks >= 0) {
+                putchar (' ');
+            }
+        }
+        putchar (c);
+    }
+    return 0;
+}
+----------------------------------------
+
+int main (void) {
+    int blank_state;
+    int c;
+    int blank_count;
+    printf ("Replace one or more blanks with a single blank.\n");
+    printf ("Use ctrl+d to insert an EOF after typing ENTER.\n\n");
+    blank_state = 0;
+    blank_count = 0;
+    while ((c = getchar ()) != EOF) {
+        if (c == ' ') {
+            ++blank_count;
+            if (blank_state == 0) {
+                blank_state = 1;
+                putchar (c);
+            }
+        }
+        if (c != ' ') {
+            blank_state = 0;
+            putchar (c);
+        }
+    }
+    printf ("Total number of blanks: %d\n", blank_count);
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+3305735_42183000_2_26
+3305735_44699843_4_24
+Title: K&R Exercise 1-9 (C) 
+----------------------------------------
+
+int main () {
+    int c int blanks = 0;
+    while ((c = getchar ()) != EOF) {
+        if (c == ' ') {
+            while ((c = getchar ()) == ' ') {
+                blanks++;
+            }
+            if (blanks >= 0) {
+                putchar (' ');
+            }
+        }
+        putchar (c);
+    }
+    return 0;
+}
+----------------------------------------
+
+int main (void) {
+    int c, flag = 0;
+    while ((c = getchar ()) != EOF) {
+        if (c == ' ') {
+            if (flag == 0) {
+                flag = 1;
+                putchar (c);
+            }
+        }
+        else {
+            flag = 0;
+            putchar (c);
+        }
+    }
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+3305735_42183000_2_26
+3305735_45591499_6_43
+Title: K&R Exercise 1-9 (C) 
+----------------------------------------
+
+int main () {
+    int c int blanks = 0;
+    while ((c = getchar ()) != EOF) {
+        if (c == ' ') {
+            while ((c = getchar ()) == ' ') {
+                blanks++;
+            }
+            if (blanks >= 0) {
+                putchar (' ');
+            }
+        }
+        putchar (c);
+    }
+    return 0;
+}
+----------------------------------------
+
+int main (void) {
+    double c;
+    char blank = ' ';
+    while ((c = getchar ()) != EOF) {
+        if (c == ' ') {
+            putchar (c);
+            while ((c = getchar ()) == ' ') {
+                if (c != ' ')
+                    break;
+            }
+        }
+        if (c == '\t') {
+            putchar (blank);
+            while ((c = getchar ()) == '\t') {
+                if (c != '\t')
+                    break;
+            }
+        }
+        putchar (c);
+    }
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+3305735_42183000_2_26
+3305735_50181284_4_21
+Title: K&R Exercise 1-9 (C) 
+----------------------------------------
+
+int main () {
+    int c int blanks = 0;
+    while ((c = getchar ()) != EOF) {
+        if (c == ' ') {
+            while ((c = getchar ()) == ' ') {
+                blanks++;
+            }
+            if (blanks >= 0) {
+                putchar (' ');
+            }
+        }
+        putchar (c);
+    }
+    return 0;
+}
+----------------------------------------
+
+int main () {
+    int c = 0, sp = 0;
+    while ((c = getchar ()) != EOF) {
+        if (c == ' ')
+            ++sp;
+        if (c != ' ')
+            sp = 0;
+        if (sp < 2)
+            putchar (c);
+    }
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+3305735_43960585_6_38
+3305735_44699843_4_24
+Title: K&R Exercise 1-9 (C) 
+----------------------------------------
+
+int main (void) {
+    int blank_state;
+    int c;
+    int blank_count;
+    printf ("Replace one or more blanks with a single blank.\n");
+    printf ("Use ctrl+d to insert an EOF after typing ENTER.\n\n");
+    blank_state = 0;
+    blank_count = 0;
+    while ((c = getchar ()) != EOF) {
+        if (c == ' ') {
+            ++blank_count;
+            if (blank_state == 0) {
+                blank_state = 1;
+                putchar (c);
+            }
+        }
+        if (c != ' ') {
+            blank_state = 0;
+            putchar (c);
+        }
+    }
+    printf ("Total number of blanks: %d\n", blank_count);
+    return 0;
+}
+----------------------------------------
+
+int main (void) {
+    int c, flag = 0;
+    while ((c = getchar ()) != EOF) {
+        if (c == ' ') {
+            if (flag == 0) {
+                flag = 1;
+                putchar (c);
+            }
+        }
+        else {
+            flag = 0;
+            putchar (c);
+        }
+    }
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+3305735_43960585_6_38
+3305735_45591499_6_43
+Title: K&R Exercise 1-9 (C) 
+----------------------------------------
+
+int main (void) {
+    int blank_state;
+    int c;
+    int blank_count;
+    printf ("Replace one or more blanks with a single blank.\n");
+    printf ("Use ctrl+d to insert an EOF after typing ENTER.\n\n");
+    blank_state = 0;
+    blank_count = 0;
+    while ((c = getchar ()) != EOF) {
+        if (c == ' ') {
+            ++blank_count;
+            if (blank_state == 0) {
+                blank_state = 1;
+                putchar (c);
+            }
+        }
+        if (c != ' ') {
+            blank_state = 0;
+            putchar (c);
+        }
+    }
+    printf ("Total number of blanks: %d\n", blank_count);
+    return 0;
+}
+----------------------------------------
+
+int main (void) {
+    double c;
+    char blank = ' ';
+    while ((c = getchar ()) != EOF) {
+        if (c == ' ') {
+            putchar (c);
+            while ((c = getchar ()) == ' ') {
+                if (c != ' ')
+                    break;
+            }
+        }
+        if (c == '\t') {
+            putchar (blank);
+            while ((c = getchar ()) == '\t') {
+                if (c != '\t')
+                    break;
+            }
+        }
+        putchar (c);
+    }
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+3305735_43960585_6_38
+3305735_50181284_4_21
+Title: K&R Exercise 1-9 (C) 
+----------------------------------------
+
+int main (void) {
+    int blank_state;
+    int c;
+    int blank_count;
+    printf ("Replace one or more blanks with a single blank.\n");
+    printf ("Use ctrl+d to insert an EOF after typing ENTER.\n\n");
+    blank_state = 0;
+    blank_count = 0;
+    while ((c = getchar ()) != EOF) {
+        if (c == ' ') {
+            ++blank_count;
+            if (blank_state == 0) {
+                blank_state = 1;
+                putchar (c);
+            }
+        }
+        if (c != ' ') {
+            blank_state = 0;
+            putchar (c);
+        }
+    }
+    printf ("Total number of blanks: %d\n", blank_count);
+    return 0;
+}
+----------------------------------------
+
+int main () {
+    int c = 0, sp = 0;
+    while ((c = getchar ()) != EOF) {
+        if (c == ' ')
+            ++sp;
+        if (c != ' ')
+            sp = 0;
+        if (sp < 2)
+            putchar (c);
+    }
+    return 0;
+}
+----------------------------------------

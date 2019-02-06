@@ -1,0 +1,4760 @@
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+10005053_10005168_1_19
+10005053_10006088_9_26
+Title: Key for maximum value in Hashtable 
+----------------------------------------
+
+public static void main (String [] args) {
+    Map < Object, Double > maps = new HashMap < Object, Double > ();
+    maps.put ("5", new Double (50.0));
+    maps.put ("4", new Double (40.0));
+    maps.put ("2", new Double (20.0));
+    maps.put ("1", new Double (100.0));
+    maps.put ("3", new Double (30.0));
+    maps.put ("5", new Double (50.0));
+    Double max = Double.MIN_VALUE;
+    for (Object key : maps.keySet ()) {
+        Double tmp = maps.get (key);
+        if (tmp.compareTo (max) > 0) {
+            max = tmp;
+        }
+    }
+    System.out.println (max);
+}
+----------------------------------------
+
+public static void main (String [] args) {
+    Hashtable < Object, Double > table = new Hashtable < Object, Double > ();
+    table.put ("a", 10.0);
+    table.put ("b", 15.0);
+    table.put ("c", 18.0);
+    table.put ("d", 18.0);
+    List < Object > maxKeyList = new ArrayList < Object > ();
+    Double maxValue = Double.MIN_VALUE;
+    for (Map.Entry < Object, Double > entry : table.entrySet ()) {
+        if (entry.getValue () > maxValue) {
+            maxValue = entry.getValue ();
+            maxKeyList.add (entry.getKey ());
+        }
+    }
+    System.out.println ("All max Keys : " + maxKeyList);
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+10006165_10006225_1_14
+10006165_23532955_6_14
+Title: "Converting String to ""Character"" array in Java" 
+----------------------------------------
+
+public Character [] toCharacterArray (String s) {
+    if (s == null) {
+        return null;
+    }
+    int len = s.length ();
+    Character [] array = new Character [len];
+    for (int i = 0;
+    i < len; i ++) {
+        array [i] = new Character (s.charAt (i));
+    }
+    return array;
+}
+----------------------------------------
+
+public static Character [] toCharacterArray (String sourceString) {
+    char [] charArrays = new char [sourceString.length ()];
+    charArrays = sourceString.toCharArray ();
+    Character [] characterArray = new Character [charArrays.length];
+    for (int i = 0;
+    i < charArrays.length; i ++) {
+        characterArray [i] = charArrays [i];
+    }
+    return characterArray;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+1001290_1001340_16_23
+1001290_39257908_1_12
+Title: Console based progress in Java 
+----------------------------------------
+
+public static void main (String [] args) {
+    try {
+        for (double progressPercentage = 0.0;
+        progressPercentage < 1.0; progressPercentage += 0.01) {
+            updateProgress (progressPercentage);
+            Thread.sleep (20);
+        }
+    } catch (InterruptedException e) {
+    }
+}
+----------------------------------------
+
+public static void main (String [] args) {
+    long total = 235;
+    long startTime = System.currentTimeMillis ();
+    for (int i = 1;
+    i <= total; i = i + 3) {
+        try {
+            Thread.sleep (50);
+            printProgress (startTime, total, i);
+        } catch (InterruptedException e) {
+        }
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+10029755_10123002_16_51
+10029755_10147904_48_61
+Title: How to write a filtered IObservableList 
+----------------------------------------
+
+protected void handleListChange (ListChangeEvent event) {
+    final List < ListDiffEntry > diffs = new ArrayList ();
+    final List < Integer > mapping = new ArrayList ();
+    int i = 0;
+    for (E e : filtered) mapping.add (e != null ? i ++ : i);
+
+    event.diff.accept (new ListDiffVisitor () {
+        @Override
+        public void handleAdd (int index, Object element) {
+            final boolean passes = pred.eval (element);
+            filtered.add (index, passes ? (E) element : null);
+            final Integer outInd = mapping.get (index);
+            mapping.add (index, outInd);
+            if (passes) {
+                diffs.add (new FilteredDiffEntry (outInd, true, element));
+                for (int i = index + 1;
+                i < mapping.size (); i ++) mapping.set (i, mapping.get (i) + 1);
+
+            }
+        }@Override
+        public void handleRemove (int index, Object element) {
+            final boolean passes = filtered.get (index) != null;
+            filtered.remove (index);
+            final int outInd = mapping.get (index);
+            mapping.remove (index);
+            if (passes) {
+                diffs.add (new FilteredDiffEntry (outInd, false, element));
+                for (int i = index;
+                i < mapping.size (); i ++) mapping.set (i, mapping.get (i) - 1);
+
+            }
+        }}
+
+    );
+    if (! diffs.isEmpty ()) {
+        final ListDiffEntry [] difAry = diffs.toArray (new ListDiffEntry [diffs.size ()]);
+        fireListChange (new ListDiff () {
+            @Override
+            public ListDiffEntry [] getDifferences () {
+                return difAry;
+            }}
+
+        );
+    }
+}
+----------------------------------------
+
+protected void handleListChange (final ListChangeEvent event) {
+    final List < ListDiffEntry > filteredDiffs = new ArrayList < ListDiffEntry > (event.diff.getDifferences ().length);
+    for (ListDiffEntry element : event.diff.getDifferences ()) {
+        if (predicate.evaluate (element.getElement ())) {
+            filteredDiffs.add (element);
+        }
+    }
+    rebuildCache ();
+    if (! filteredDiffs.isEmpty ()) {
+        fireListChange (new FilteredListDiff (filteredDiffs));
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+10029755_10123002_53_81
+10029755_10147904_122_180
+Title: How to write a filtered IObservableList 
+----------------------------------------
+
+public ListIterator < E > listIterator () {
+    getterCalled ();
+    final Iterator < E > it = decorated.iterator ();
+    return new ListIterator < E > () {
+        E next;
+        boolean nextReady;
+        public boolean hasNext () {
+            getterCalled ();
+            if (nextReady) return true;
+
+            while (it.hasNext ()) {
+                next = it.next ();
+                if (next != null) {
+                    nextReady = true;
+                    break;
+                }
+            }
+            return nextReady;
+        } public E next () {
+            getterCalled ();
+            if (hasNext ()) {
+                nextReady = false;
+                return next;
+            } else throw new NoSuchElementException ();
+
+        } public void add (Object o) {
+            throw new UnsupportedOperationException ();
+        } public boolean hasPrevious () {
+            throw new UnsupportedOperationException ();
+        } public int nextIndex () {
+            throw new UnsupportedOperationException ();
+        } public E previous () {
+            throw new UnsupportedOperationException ();
+        } public int previousIndex () {
+            throw new UnsupportedOperationException ();
+        } public void remove () {
+            throw new UnsupportedOperationException ();
+        } public void set (Object o) {
+            throw new UnsupportedOperationException ();
+        }}
+
+    ;
+}
+----------------------------------------
+
+public ListIterator listIterator (int index) {
+    getterCalled ();
+    final ListIterator iterator = filteredList.listIterator (index);
+    return new ListIterator () {
+        @Override
+        public boolean hasNext () {
+            getterCalled ();
+            return iterator.hasNext ();
+        }@Override
+        public boolean hasPrevious () {
+            getterCalled ();
+            return iterator.hasPrevious ();
+        }@Override
+        public Object next () {
+            getterCalled ();
+            return iterator.next ();
+        }@Override
+        public int nextIndex () {
+            getterCalled ();
+            return iterator.nextIndex ();
+        }@Override
+        public Object previous () {
+            getterCalled ();
+            return iterator.previous ();
+        }@Override
+        public int previousIndex () {
+            getterCalled ();
+            return iterator.previousIndex ();
+        }@Override
+        public void add (Object o) {
+            throw new UnsupportedOperationException ();
+        }@Override
+        public void set (Object o) {
+            throw new UnsupportedOperationException ();
+        }@Override
+        public void remove () {
+            throw new UnsupportedOperationException ();
+        }}
+
+    ;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+10037887_10039279_21_31
+10037887_10050783_70_81
+Title: How can I put titles in ViewPager using fragments? 
+----------------------------------------
+
+public Fragment getItem (int position) {
+    switch (position) {
+        case POSITION_TITLE_1 :
+            return PageOneFragment.newInstance ();
+        case POSITION_TITLE_2 :
+            return PageTwoFragment.newInstance ();
+        case POSITION_TITLE_3 :
+            return PageThreeFragment.newInstance ();
+    }
+    return null;
+}
+----------------------------------------
+
+public Fragment getItem (int position) {
+    try {
+        FragmentPrueba1.class.newInstance ();
+    } catch (InstantiationException e) {
+        e.printStackTrace ();
+    } catch (IllegalAccessException e) {
+        e.printStackTrace ();
+    }
+    return this.fragments.get (position);
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+1004128_12296532_27_44
+1004128_12296532_4_24
+Title: Obtain id of an insert in the same statement 
+----------------------------------------
+
+public void run () {
+    try {
+        synchronized (semaphore) {
+            semaphore.wait ();
+        }
+        Connection con = getConnection ();
+        Statement s = con.createStatement ();
+        ResultSet r = s.executeQuery ("SELECT SEQ_INV_BATCH_DWNLD.nextval AS val FROM DUAL ");
+        r.next ();
+        System.out.println ("Session2 nextval is: " + r.getLong ("val"));
+        con.commit ();
+        synchronized (semaphore) {
+            semaphore.notify ();
+        }
+    } catch (Exception e) {
+        e.printStackTrace ();
+    }
+}
+----------------------------------------
+
+public void run () {
+    try {
+        Connection con = getConnection ();
+        Statement s = con.createStatement ();
+        ResultSet r = s.executeQuery ("SELECT SEQ_INV_BATCH_DWNLD.nextval AS val FROM DUAL ");
+        r.next ();
+        System.out.println ("Session1 nextval is: " + r.getLong ("val"));
+        synchronized (semaphore) {
+            semaphore.notify ();
+        }
+        synchronized (semaphore) {
+            semaphore.wait ();
+        }
+        r = s.executeQuery ("SELECT SEQ_INV_BATCH_DWNLD.currval AS val FROM DUAL ");
+        r.next ();
+        System.out.println ("Session1 currval is: " + r.getLong ("val"));
+        con.commit ();
+    } catch (Exception e) {
+        e.printStackTrace ();
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+10042_1963840_1_14
+10042_6674458_32_43
+Title: How do I create a Linked List Data Structure in Java? 
+----------------------------------------
+
+public void insert (int d1, double d2) {
+    Link link = new Link (d1, d2);
+    if (first == null) {
+        link.nextLink = null;
+        first = link;
+        last = link;
+    } else {
+        last.nextLink = link;
+        link.nextLink = null;
+        last = link;
+    }
+}
+----------------------------------------
+
+public static void insert (int d1) {
+    Link a = new Link (d1);
+    a.nextlink = null;
+    if (first != null) {
+        last.nextlink = a;
+        last = a;
+    } else {
+        first = a;
+        last = a;
+    }
+    System.out.println ("Inserted -:" + d1);
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+10042_25311_50_58
+10042_6674458_56_64
+Title: How do I create a Linked List Data Structure in Java? 
+----------------------------------------
+
+public void printList () {
+    Link currentLink = first;
+    System.out.print ("List: ");
+    while (currentLink != null) {
+        currentLink.printLink ();
+        currentLink = currentLink.nextLink;
+    }
+    System.out.println ("");
+}
+----------------------------------------
+
+public static void printList () {
+    System.out.println ("Elements in the list are");
+    System.out.println ("-------------------------");
+    Link temp = first;
+    while (temp != null) {
+        System.out.println (temp.data);
+        temp = temp.nextlink;
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+10042_25311_62_80
+10042_6674458_10_21
+Title: How do I create a Linked List Data Structure in Java? 
+----------------------------------------
+
+public static void main (String [] args) {
+    LinkList list = new LinkList ();
+    list.insert (1, 1.01);
+    list.insert (2, 2.02);
+    list.insert (3, 3.03);
+    list.insert (4, 4.04);
+    list.insert (5, 5.05);
+    list.printList ();
+    while (! list.isEmpty ()) {
+        Link deletedLink = list.delete ();
+        System.out.print ("deleted: ");
+        deletedLink.printLink ();
+        System.out.println ("");
+    }
+    list.printList ();
+}
+----------------------------------------
+
+public static void main (String [] args) {
+    for (int i = 0;
+    i < 5; i ++) {
+        Link.insert (i + 5);
+    }
+    Link.printList ();
+    Link.deletefromFirst ();
+    Link.printList ();
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+10055127_10055548_23_38
+10055127_10063027_1_29
+Title: Json Gson binding not working (Exception object / String) 
+----------------------------------------
+
+public static void main (String [] args) {
+    Gson gson = new Gson ();
+    String jsonStr = gson.toJson (target);
+    logger.info (String.format ("Target As String\n: %s", jsonStr));
+    ToSerialize test [] = gson.fromJson (jsonStr, ToSerialize [].class);
+    for (ToSerialize deserialized : test) {
+        logger.info (String.format ("From JSON\n: %s", deserialized.toString ()));
+    }
+}
+----------------------------------------
+
+public static void main (String [] args) {
+    GsonBuilder gsonBuilder = new GsonBuilder ();
+    gsonBuilder.registerTypeAdapter (DateTime.class, new DateTimeTypeConverter ());
+    Gson gson = gsonBuilder.create ();
+    String jsonStr = gson.toJson (target);
+    logger.info (String.format ("Target As String\n: %s", jsonStr));
+    ToSerialize test [] = gson.fromJson (jsonStr, ToSerialize [].class);
+    for (ToSerialize deserialized : test) {
+        logger.info (String.format ("From JSON\n: %s", deserialized.toString ()));
+    }
+    String testString = "[{\"ID\" : \"1\",\"name\" : \"Test name\",\"type\" : \"1\",\"Desc\" : \"blablabla\",\"minNum\" : \"0\",\"maxNum\" : \"12\",\"Num\" : \"8\",\"bool1\" : \"0\",\"bool2\" : \"1\",\"bool3\" : \"1\",\"date\" : \"2012-04-08T07:50:01.600-05:00\",\"double1\" : \"39.47208\",\"doubl2\" : \"-0.3556063\",\"someText\" : \"ajayeah\",\"number\" : \"15\",\"anotherNumber\" : \"1234\"}, {\"ID\" : \"2\",\"name\" : \"Test name\",\"type\" : \"1\",\"Desc\" : \"blablabla\",\"minNum\" : \"0\",\"maxNum\" : \"12\",\"Num\" : \"8\",\"bool1\" : \"0\",\"bool2\" : \"1\",\"bool3\" : \"1\",\"date\" : \"2012-04-08T07:50:01.600-05:00\",\"double1\" : \"39.47208\",\"doubl2\" : \"-0.3556063\",\"someText\" : \"ajayeah\",\"number\" : \"15\",\"anotherNumber\" : \"1234\"}]";
+    ToSerialize test2 [] = gson.fromJson (testString, ToSerialize [].class);
+    for (ToSerialize deserialized : test2) {
+        logger.info (String.format ("From JSON\n: %s", deserialized.toString ()));
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+10069059_10069125_20_41
+10069059_10069125_48_64
+Title: Is it possible to run a socket server and socket client on the same machine? 
+----------------------------------------
+
+public void run () {
+    try {
+        Socket s = new Socket ("localhost", 60010);
+        BufferedWriter out = new BufferedWriter (new OutputStreamWriter (s.getOutputStream ()));
+        while (true) {
+            out.write ("Hello World!");
+            out.newLine ();
+            out.flush ();
+            Thread.sleep (200);
+        }
+    } catch (UnknownHostException e) {
+        e.printStackTrace ();
+    } catch (IOException e) {
+        e.printStackTrace ();
+    } catch (InterruptedException e) {
+        e.printStackTrace ();
+    }
+}
+----------------------------------------
+
+public void run () {
+    ServerSocket ss;
+    try {
+        ss = new ServerSocket (60010);
+        Socket s = ss.accept ();
+        BufferedReader in = new BufferedReader (new InputStreamReader (s.getInputStream ()));
+        String line = null;
+        while ((line = in.readLine ()) != null) {
+            System.out.println (line);
+        }
+    } catch (IOException e) {
+        e.printStackTrace ();
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+10083447_10083508_45_58
+10083447_48994222_4_17
+Title: Selecting Folder Destination in Java? 
+----------------------------------------
+
+public static void main (String s []) {
+    JFrame frame = new JFrame ("");
+    DemoJFileChooser panel = new DemoJFileChooser ();
+    frame.addWindowListener (new WindowAdapter () {
+        public void windowClosing (WindowEvent e) {
+            System.exit (0);
+        }}
+
+    );
+    frame.getContentPane ().add (panel, "Center");
+    frame.setSize (panel.getPreferredSize ());
+    frame.setVisible (true);
+}
+----------------------------------------
+
+public static void main (String s []) {
+    JFileChooser chooser = new JFileChooser ();
+    chooser.setCurrentDirectory (new java.io.File ("."));
+    chooser.setDialogTitle ("choosertitle");
+    chooser.setFileSelectionMode (JFileChooser.DIRECTORIES_ONLY);
+    chooser.setAcceptAllFileFilterUsed (false);
+    if (chooser.showOpenDialog (null) == JFileChooser.APPROVE_OPTION) {
+        System.out.println ("getCurrentDirectory(): " + chooser.getCurrentDirectory ());
+        System.out.println ("getSelectedFile() : " + chooser.getSelectedFile ());
+    } else {
+        System.out.println ("No Selection ");
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+10085457_23068471_7_20
+10085457_35566933_2_14
+Title: Java method reference 
+----------------------------------------
+
+public static void main (String [] args) {
+    Map < Class, Runnable > dict = new HashMap < > ();
+    MyClass1 myClass1 = new MyClass1 ();
+    dict.put (MyClass1.class, myClass1 :: sideEffects);
+    MyClass2 myClass2 = new MyClass2 ();
+    dict.put (MyClass2.class, myClass2 :: sideEffects);
+    for (Map.Entry < Class, Runnable > classRunnableEntry : dict.entrySet ()) {
+        System.out.println ("Running a method from " + classRunnableEntry.getKey ().getName ());
+        classRunnableEntry.getValue ().run ();
+    }
+}
+----------------------------------------
+
+public static void main (final String [] args) throws NoSuchMethodException, SecurityException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+    final Map < Class < ? >, Method > methods = new HashMap < Class < ? >, Method > ();
+    methods.put (MyClass1.class, MyClass1.class.getMethod ("boo"));
+    methods.put (MyClass2.class, MyClass2.class.getMethod ("yay", String.class));
+    final MyClass1 instance1 = new MyClass1 ();
+    methods.get (MyClass1.class).invoke (instance1);
+    final MyClass2 instance2 = new MyClass2 ();
+    methods.get (MyClass2.class).invoke (instance2, "example param");
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+10088853_10089138_59_69
+10088853_10089138_73_81
+Title: could not set the column width to zero i.e. not made column invisible 
+----------------------------------------
+
+public void actionPerformed (ActionEvent e) {
+    if (table.getColumnCount () > 0) {
+        TableColumn colToDelete = table.getColumnModel ().getColumn (table.getColumnCount () - 1);
+        table.removeColumn (colToDelete);
+        table.validate ();
+        colDeleted.push (colToDelete);
+        addButton.setEnabled (true);
+    } else {
+        deleteButton.setEnabled (false);
+    }
+}
+----------------------------------------
+
+public void actionPerformed (ActionEvent e) {
+    if (colDeleted.size () > 0) {
+        table.addColumn (colDeleted.pop ());
+        table.validate ();
+        deleteButton.setEnabled (true);
+    } else {
+        addButton.setEnabled (false);
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+10094055_10094297_128_198
+10094055_10094297_254_398
+Title: Possible to open two persistent connections to different remote MySQL servers using JAVA sql? 
+----------------------------------------
+
+public void run () {
+    for (Table table : this.config.getManifest ()) {
+        PreparedStatement stmt = null;
+        ResultSet rs = null;
+        try {
+            String sql = table.buildSourceSelect ();
+            this.log ("executing: " + sql);
+            stmt = this.adaptor.getConn ().prepareStatement (sql);
+            stmt.execute ();
+            rs = stmt.getResultSet ();
+            ResultSetMetaData meta = rs.getMetaData ();
+            this.queue.put (table);
+            this.queue.put (meta);
+            final int columnCount = meta.getColumnCount ();
+            while (rs.next ()) {
+                ArrayList < Object > a = new ArrayList < Object > (columnCount);
+                for (int i = 0;
+                i < columnCount; i ++) {
+                    a.add (rs.getObject (i + 1));
+                }
+                this.queue.put (a);
+            }
+        } catch (InterruptedException ex) {
+            ex.printStackTrace ();
+        } catch (SQLException e) {
+            e.printStackTrace ();
+        }
+        try {
+            this.adaptor.reconnect ();
+        } catch (SQLException e) {
+            e.printStackTrace ();
+        }
+    }
+    try {
+        this.log ("putting finished object into queue");
+        this.queue.put (new QueueFinished ());
+        this.adaptor.close ();
+    } catch (InterruptedException e) {
+        e.printStackTrace ();
+    } catch (SQLException e) {
+        e.printStackTrace ();
+    }
+}
+----------------------------------------
+
+public void run () {
+    this.log ("running");
+    Table currentTable = null;
+    ResultSetMetaData meta = null;
+    int columnCount = - 1;
+    PreparedStatement stmt = null;
+    while (true) {
+        try {
+            Object o = this.queue.take ();
+            if (o instanceof Table) {
+                currentTable = (Table) o;
+                this.log ("processing" + currentTable);
+                if (this.currentBatchSize > 0) {
+                    this.adaptor.getConn ().commit ();
+                    this.printThroughput ();
+                    this.currentBatchSize = 0;
+                }
+                this.adaptor.reconnect ();
+                this.adaptor.getConn ().setAutoCommit (false);
+                this.currentBatchSize = 0;
+                this.currentRowNumber = 0;
+                if (currentTable.isTruncate ()) {
+                    this.log ("truncating " + currentTable);
+                    stmt = this.adaptor.getConn ().prepareStatement ("TRUNCATE TABLE " + currentTable);
+                    stmt.execute ();
+                }
+                this.tableStartTs = System.currentTimeMillis ();
+            } else if (o instanceof ResultSetMetaData) {
+                this.log ("received metadata for " + currentTable);
+                meta = (ResultSetMetaData) o;
+                columnCount = meta.getColumnCount ();
+                String sql = currentTable.buildDestinationInsert (columnCount);
+                stmt = this.adaptor.getConn ().prepareStatement (sql);
+            } else if (o instanceof ArrayList) {
+                ArrayList < ? > a = (ArrayList < ? >) o;
+                for (int i = 0, j = 1;
+                i < columnCount; i ++, j ++) {
+                    try {
+                        stmt.setObject (j, a.get (i), meta.getColumnType (j));
+                    } catch (SQLException e) {
+                        if (e.getMessage ().contains ("Only dates between")) {
+                            if (meta.isNullable (j) == ResultSetMetaData.columnNullable) {
+                                this.log ("Casting bad data to null: " + a.get (i));
+                                stmt.setObject (j, null, meta.getColumnType (j));
+                            } else {
+                                this.log ("Casting bad data to 0000-01-01: " + a.get (i));
+                                stmt.setObject (j, new java.sql.Date (- 64376208000L), meta.getColumnType (j));
+                            }
+                        } else {
+                            throw e;
+                        }
+                    }
+                }
+                stmt.execute ();
+                this.currentBatchSize ++;
+                this.currentRowNumber ++;
+                if (this.currentBatchSize == this.config.getBatchSize ()) {
+                    this.adaptor.getConn ().commit ();
+                    this.printThroughput ();
+                    this.currentBatchSize = 0;
+                }
+            } else if (o instanceof QueueFinished) {
+                if (this.currentBatchSize > 0) {
+                    this.adaptor.getConn ().commit ();
+                    this.printThroughput ();
+                    this.log ();
+                    this.log ("completed");
+                }
+                break;
+            } else {
+                throw new RuntimeException ("Unexpected obeject in queue: " + o.getClass ());
+            }
+
+        } catch (InterruptedException e) {
+            e.printStackTrace ();
+        } catch (SQLException e) {
+            e.printStackTrace ();
+        }
+    }
+    try {
+        this.adaptor.close ();
+    } catch (SQLException e) {
+        e.printStackTrace ();
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+10097491_10097910_1_12
+10097491_43306216_5_16
+Title: Call and receive output from Python script in Java? 
+----------------------------------------
+
+public static void main (String [] args) throws ScriptException, IOException {
+    StringWriter writer = new StringWriter ();
+    ScriptEngineManager manager = new ScriptEngineManager ();
+    ScriptContext context = new SimpleScriptContext ();
+    context.setWriter (writer);
+    ScriptEngine engine = manager.getEngineByName ("python");
+    engine.eval (new FileReader ("numbers.py"), context);
+    System.out.println (writer.toString ());
+}
+----------------------------------------
+
+public static void main (String a []) {
+    PythonInterpreter python = new PythonInterpreter ();
+    int number1 = 10;
+    int number2 = 32;
+    python.set ("number1", new PyInteger (number1));
+    python.set ("number2", new PyInteger (number2));
+    python.exec ("number3 = number1+number2");
+    PyObject number3 = python.get ("number3");
+    System.out.println ("val : " + number3.toString ());
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+10101428_10101705_1_29
+10101428_30559218_1_13
+Title: showing Popup box on Right click at JTree node swing 
+----------------------------------------
+
+public static void main (String [] args) {
+    JFrame frame = new JFrame ();
+    final JTree tree = new JTree ();
+    tree.addMouseListener (new MouseAdapter () {
+        public void mousePressed (MouseEvent e) {
+            if (SwingUtilities.isRightMouseButton (e)) {
+                TreePath path = tree.getPathForLocation (e.getX (), e.getY ());
+                Rectangle pathBounds = tree.getUI ().getPathBounds (tree, path);
+                if (pathBounds != null && pathBounds.contains (e.getX (), e.getY ())) {
+                    JPopupMenu menu = new JPopupMenu ();
+                    menu.add (new JMenuItem ("Test"));
+                    menu.show (tree, pathBounds.x, pathBounds.y + pathBounds.height);
+                }
+            }
+        }}
+
+    );
+    frame.add (tree);
+    frame.pack ();
+    frame.setLocationRelativeTo (null);
+    frame.setVisible (true);
+}
+----------------------------------------
+
+public static void main (String [] args) {
+    JFrame frame = new JFrame ();
+    final JTree tree = new JTree ();
+    JPopupMenu menu = new JPopupMenu ();
+    menu.add (new JMenuItem ("Test"));
+    tree.setComponentPopupMenu (menu);
+    frame.add (tree);
+    frame.pack ();
+    frame.setLocationRelativeTo (null);
+    frame.setVisible (true);
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+10106198_10106326_33_43
+10106198_10106395_28_41
+Title: stack generic class not working 
+----------------------------------------
+
+public void push (E e) {
+    if (e == null) throw new NullPointerException ();
+    else if (top == size () - 1) System.out.println ("Stack full");
+    else {
+        a [++ top] = e;
+        System.out.println ("pushed :" + e);
+    }
+
+}
+----------------------------------------
+
+public void push (E e) {
+    if (e == null) throw new NullPointerException ();
+    else if (top == size () - 1) System.out.println ("Stack full");
+    else {
+        a [++ top] = e;
+        System.out.println ("pushed :" + e);
+    }
+
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+10106801_10107705_1_37
+10106801_10113632_1_50
+Title: Getting all combinations of values from many lists 
+----------------------------------------
+
+static void Main (string [] args) {
+    string input = "1,2,3,###4,5,###6,###7,8,";
+    string [] lists = input.Replace ("###", "#").Split ('#');
+    int N = lists.Length;
+    int [] length = new int [N];
+    int [] indices = new int [N];
+    for (int i = 0;
+    i < N; i ++) length [i] = lists [i].Split (',').Length - 1;
+
+    string [] [] element = new string [N] [];
+    for (int i = 0;
+    i < N; i ++) {
+        string [] list = lists [i].Split (',');
+        element [i] = new string [length [i]];
+        for (int j = 0;
+        j < length [i]; j ++) element [i] [j] = list [j];
+
+    }
+    while (true) {
+        for (int i = 0;
+        i < N; i ++) Console.Write (element [i] [indices [i]]);
+
+        Console.WriteLine (" ");
+        int ind = N - 1;
+        for (; ind >= 0; ind --) if (indices [ind] < length [ind] - 1) break;
+
+        if (ind == - 1) break;
+
+        indices [ind] ++;
+        for (ind ++; ind < N; ind ++) indices [ind] = 0;
+
+    }
+}
+----------------------------------------
+
+static void Main (string [] args) {
+    string input = "1,2,3,###4,5,###6,###7,8,";
+    string [] lists = input.Replace ("###", "#").Split ('#');
+    int N = lists.Length;
+    int [] length = new int [N];
+    string [] [] element = new string [N] [];
+    int outCount = 1;
+    for (int i = 0;
+    i < N; i ++) {
+        string list = lists [i];
+        if (list.Substring (list.Length - 1, 1) == ",") list = list.Substring (0, list.Length - 1);
+
+        string [] strings = list.Split (',');
+        element [i] = strings;
+        length [i] = strings.Length;
+        outCount *= length [i];
+    }
+    string [] outstr = new string [outCount];
+    string [] position = new string [N];
+    for (int j = 0;
+    j < outCount; j ++) {
+        int k = j;
+        for (int i = 0;
+        i < N; i ++) {
+            int c = length [i];
+            int q = k / c;
+            int r = k - (q * c);
+            k = q;
+            position [i] = element [i] [r];
+        }
+        outstr [j] = string.Join ("", position);
+    }
+    string result = string.Join (", ", outstr);
+    Console.Write (result);
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+10112659_10112750_1_24
+10112659_10113101_1_16
+Title: Count number of commas within a string except for commas between double quotes 
+----------------------------------------
+
+public static int countCharOfString (char c, String s) {
+    int numberOfC = 0;
+    int innerC = 0;
+    boolean holdDoubleQuotes = false;
+    for (int i = 0;
+    i < s.length (); i ++) {
+        char r = s.charAt (i);
+        if (i == s.length () - 1 && r != '\"') {
+            numberOfC += innerC;
+            if (r == c) numberOfC ++;
+
+        } else if (r == c && ! holdDoubleQuotes) numberOfC ++;
+        else if (r == c && holdDoubleQuotes) innerC ++;
+        else if (r == '\"' && holdDoubleQuotes) {
+            holdDoubleQuotes = false;
+            innerC = 0;
+        } else if (r == '\"' && ! holdDoubleQuotes) holdDoubleQuotes = true;
+
+    }
+    return numberOfC;
+}
+----------------------------------------
+
+public static int countCharOfString (char quote, CharSequence sequence) {
+    int total = 0, length = sequence.length ();
+    for (int i = 0;
+    i < length; i ++) {
+        char c = sequence.charAt (i);
+        if (c == '"') {
+            for (i ++; i < length && sequence.charAt (i) != '"'; i ++) {
+            }
+        } else if (c == quote) {
+            total ++;
+        }
+
+    }
+    return total;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+10131377_10131449_8_35
+10131377_19432300_58_108
+Title: socket programming multiple client to one server 
+----------------------------------------
+
+public void run () {
+    InputStream inp = null;
+    BufferedReader brinp = null;
+    DataOutputStream out = null;
+    try {
+        inp = socket.getInputStream ();
+        brinp = new BufferedReader (new InputStreamReader (inp));
+        out = new DataOutputStream (socket.getOutputStream ());
+    } catch (IOException e) {
+        return;
+    }
+    String line;
+    while (true) {
+        try {
+            line = brinp.readLine ();
+            if ((line == null) || line.equalsIgnoreCase ("QUIT")) {
+                socket.close ();
+                return;
+            } else {
+                out.writeBytes (line + "\n\r");
+                out.flush ();
+            }
+        } catch (IOException e) {
+            e.printStackTrace ();
+            return;
+        }
+    }
+}
+----------------------------------------
+
+public void run () {
+    try {
+        is = new BufferedReader (new InputStreamReader (s.getInputStream ()));
+        os = new PrintWriter (s.getOutputStream ());
+    } catch (IOException e) {
+        System.out.println ("IO error in server thread");
+    }
+    try {
+        line = is.readLine ();
+        while (line.compareTo ("QUIT") != 0) {
+            os.println (line);
+            os.flush ();
+            System.out.println ("Response to Client  :  " + line);
+            line = is.readLine ();
+        }
+    } catch (IOException e) {
+        line = this.getName ();
+        System.out.println ("IO Error/ Client " + line + " terminated abruptly");
+    } catch (NullPointerException e) {
+        line = this.getName ();
+        System.out.println ("Client " + line + " Closed");
+    } finally {
+        try {
+            System.out.println ("Connection Closing..");
+            if (is != null) {
+                is.close ();
+                System.out.println (" Socket Input Stream Closed");
+            }
+            if (os != null) {
+                os.close ();
+                System.out.println ("Socket Out Closed");
+            }
+            if (s != null) {
+                s.close ();
+                System.out.println ("Socket Closed");
+            }
+        } catch (IOException ie) {
+            System.out.println ("Socket Close Error");
+        }
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+10131377_10131449_8_35
+10131377_48965733_19_34
+Title: socket programming multiple client to one server 
+----------------------------------------
+
+public void run () {
+    InputStream inp = null;
+    BufferedReader brinp = null;
+    DataOutputStream out = null;
+    try {
+        inp = socket.getInputStream ();
+        brinp = new BufferedReader (new InputStreamReader (inp));
+        out = new DataOutputStream (socket.getOutputStream ());
+    } catch (IOException e) {
+        return;
+    }
+    String line;
+    while (true) {
+        try {
+            line = brinp.readLine ();
+            if ((line == null) || line.equalsIgnoreCase ("QUIT")) {
+                socket.close ();
+                return;
+            } else {
+                out.writeBytes (line + "\n\r");
+                out.flush ();
+            }
+        } catch (IOException e) {
+            e.printStackTrace ();
+            return;
+        }
+    }
+}
+----------------------------------------
+
+public void run () {
+    String SQL = new String ();
+    try {
+        SQL = infromClient.readUTF ();
+    } catch (IOException ex) {
+        Logger.getLogger (Multi.class.getName ()).log (Level.SEVERE, null, ex);
+    }
+    System.out.println ("Query: " + SQL);
+    try {
+        System.out.println ("Socket Closing");
+        s.close ();
+    } catch (IOException ex) {
+        Logger.getLogger (Multi.class.getName ()).log (Level.SEVERE, null, ex);
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+10131377_19432300_11_43
+10131377_48965733_38_55
+Title: socket programming multiple client to one server 
+----------------------------------------
+
+public static void main (String args []) {
+    Socket s = null;
+    ServerSocket ss2 = null;
+    System.out.println ("Server Listening......");
+    try {
+        ss2 = new ServerSocket (4445);
+    } catch (IOException e) {
+        e.printStackTrace ();
+        System.out.println ("Server error");
+    }
+    while (true) {
+        try {
+            s = ss2.accept ();
+            System.out.println ("connection Established");
+            ServerThread st = new ServerThread (s);
+            st.start ();
+        } catch (Exception e) {
+            e.printStackTrace ();
+            System.out.println ("Connection Error");
+        }
+    }
+}
+----------------------------------------
+
+public static void main (String args []) throws IOException, InterruptedException {
+    while (true) {
+        ServerSocket ss = new ServerSocket (11111);
+        System.out.println ("Server is Awaiting");
+        Socket s = ss.accept ();
+        Multi t = new Multi (s);
+        t.start ();
+        Thread.sleep (2000);
+        ss.close ();
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+10131377_19432300_58_108
+10131377_48965733_19_34
+Title: socket programming multiple client to one server 
+----------------------------------------
+
+public void run () {
+    try {
+        is = new BufferedReader (new InputStreamReader (s.getInputStream ()));
+        os = new PrintWriter (s.getOutputStream ());
+    } catch (IOException e) {
+        System.out.println ("IO error in server thread");
+    }
+    try {
+        line = is.readLine ();
+        while (line.compareTo ("QUIT") != 0) {
+            os.println (line);
+            os.flush ();
+            System.out.println ("Response to Client  :  " + line);
+            line = is.readLine ();
+        }
+    } catch (IOException e) {
+        line = this.getName ();
+        System.out.println ("IO Error/ Client " + line + " terminated abruptly");
+    } catch (NullPointerException e) {
+        line = this.getName ();
+        System.out.println ("Client " + line + " Closed");
+    } finally {
+        try {
+            System.out.println ("Connection Closing..");
+            if (is != null) {
+                is.close ();
+                System.out.println (" Socket Input Stream Closed");
+            }
+            if (os != null) {
+                os.close ();
+                System.out.println ("Socket Out Closed");
+            }
+            if (s != null) {
+                s.close ();
+                System.out.println ("Socket Closed");
+            }
+        } catch (IOException ie) {
+            System.out.println ("Socket Close Error");
+        }
+    }
+}
+----------------------------------------
+
+public void run () {
+    String SQL = new String ();
+    try {
+        SQL = infromClient.readUTF ();
+    } catch (IOException ex) {
+        Logger.getLogger (Multi.class.getName ()).log (Level.SEVERE, null, ex);
+    }
+    System.out.println ("Query: " + SQL);
+    try {
+        System.out.println ("Socket Closing");
+        s.close ();
+    } catch (IOException ex) {
+        Logger.getLogger (Multi.class.getName ()).log (Level.SEVERE, null, ex);
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+10168066_10168146_3_17
+10168066_26901895_3_18
+Title: How to print out all the elements of a List in Java? 
+----------------------------------------
+
+public static void main (String [] args) {
+    List < Model > models = new ArrayList < > ();
+    for (Model model : models) {
+        System.out.println (model.getName ());
+    }
+    for (int i = 0;
+    i < models.size (); i ++) {
+        System.out.println (models.get (i).getName ());
+    }
+}
+----------------------------------------
+
+public static void main (String [] args) {
+    List < String > sList = new ArrayList < String > ();
+    sList.add ("string1");
+    sList.add ("string2");
+    System.out.println (sList);
+    Student st1 = new Student (15, "Tom");
+    Student st2 = new Student (16, "Kate");
+    List < Student > stList = new ArrayList < Student > ();
+    stList.add (st1);
+    stList.add (st2);
+    System.out.println (stList);
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+10213100_10214447_7_35
+10213100_14151971_22_47
+Title: JScrollPane words wrap 
+----------------------------------------
+
+public static void main (String [] args) {
+    EventQueue.invokeLater (new Runnable () {
+        public void run () {
+            try {
+                Test frame = new Test ();
+                JTextArea message = new JTextArea ("Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.", 6, 40);
+                message.setWrapStyleWord (true);
+                message.setLineWrap (true);
+                message.setEditable (false);
+                message.setFocusable (false);
+                message.setOpaque (false);
+                JScrollPane scrollPane = new JScrollPane (message, ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED, ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+                frame.add (scrollPane);
+                frame.pack ();
+                frame.setVisible (true);
+            } catch (Exception e) {
+                e.printStackTrace ();
+            }
+        }}
+
+    );
+}
+----------------------------------------
+
+public static void main (String [] args) {
+    EventQueue.invokeLater (new Runnable () {
+        public void run () {
+            try {
+                TestScrollLabel frame = new TestScrollLabel ();
+                JScrollPane scrollPane = new JScrollPane ();
+                scrollPane.setHorizontalScrollBarPolicy (ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+                JPanel panel = new MyPanel ();
+                panel.setLayout (new BorderLayout ());
+                panel.add (new JLabel ("<html>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</html>"));
+                scrollPane.setViewportView (panel);
+                frame.add (scrollPane);
+                frame.setVisible (true);
+            } catch (Exception e) {
+                e.printStackTrace ();
+            }
+        }}
+
+    );
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+10213100_10214447_9_33
+10213100_14151971_26_45
+Title: JScrollPane words wrap 
+----------------------------------------
+
+public void run () {
+    try {
+        Test frame = new Test ();
+        JTextArea message = new JTextArea ("Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.", 6, 40);
+        message.setWrapStyleWord (true);
+        message.setLineWrap (true);
+        message.setEditable (false);
+        message.setFocusable (false);
+        message.setOpaque (false);
+        JScrollPane scrollPane = new JScrollPane (message, ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED, ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+        frame.add (scrollPane);
+        frame.pack ();
+        frame.setVisible (true);
+    } catch (Exception e) {
+        e.printStackTrace ();
+    }
+}
+----------------------------------------
+
+public void run () {
+    try {
+        TestScrollLabel frame = new TestScrollLabel ();
+        JScrollPane scrollPane = new JScrollPane ();
+        scrollPane.setHorizontalScrollBarPolicy (ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+        JPanel panel = new MyPanel ();
+        panel.setLayout (new BorderLayout ());
+        panel.add (new JLabel ("<html>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</html>"));
+        scrollPane.setViewportView (panel);
+        frame.add (scrollPane);
+        frame.setVisible (true);
+    } catch (Exception e) {
+        e.printStackTrace ();
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+10216014_10221981_5_15
+10216014_22148310_16_42
+Title: Simple program to call R from Java using Eclipse and Rserve 
+----------------------------------------
+
+public static void main (String [] args) throws RserveException {
+    try {
+        RConnection c = new RConnection ();
+        double d [] = c.eval ("rnorm(10)").asDoubles ();
+        org.rosuda.REngine.REXP x0 = c.eval ("R.version.string");
+        System.out.println (x0.asString ());
+    } catch (REngineException e) {
+    }
+}
+----------------------------------------
+
+public static void main (String [] args) throws RserveException, REXPMismatchException, FileNotFoundException, IOException {
+    RConnection c = new RConnection ("<host/ip>", 6311);
+    if (c.isConnected ()) {
+        System.out.println ("Connected to RServe.");
+        if (c.needLogin ()) {
+            System.out.println ("Providing Login");
+            c.login ("username", "password");
+        }
+        REXP x;
+        System.out.println ("Reading script...");
+        File file = new File ("<file location>");
+        try (BufferedReader br = new BufferedReader (new FileReader (file))) {
+            for (String line;
+            (line = br.readLine ()) != null;) {
+                System.out.println (line);
+                x = c.eval (line);
+                System.out.println (x);
+            }
+        }
+    } else {
+        System.out.println ("Rserve could not connect");
+    }
+    c.close ();
+    System.out.println ("Session Closed");
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+10217174_10217554_5_13
+10217174_14264930_5_42
+Title: Temperature conversion code in Java won't run? 
+----------------------------------------
+
+public static void main (String [] args) {
+    Scanner in = new Scanner (System.in);
+    double tempInFarenheit;
+    double tempInCelcius;
+    System.out.println ("enter the temp in celcius");
+    tempInCelcius = in.nextDouble ();
+    tempInFarenheit = 1.8 * tempInCelcius + 32;
+    System.out.println (tempInFarenheit);
+}
+----------------------------------------
+
+public static void main (String [] args) {
+    Scanner input = new Scanner (System.in);
+    System.out.println ("Enter a temperature: ");
+    double temperature = input.nextDouble ();
+    System.out.println ("Enter the letter of the temperature type. Ex: C or c for celsius, F or f for fahrenheit.: ");
+    String tempType = input.next ();
+    String C = tempType;
+    String c = tempType;
+    String F = tempType;
+    String f = tempType;
+    double celsius = temperature;
+    double fahrenheit = temperature;
+    if (tempType.equals (C) || tempType.equals (c)) {
+        celsius = (5 * (fahrenheit - 32) / 9);
+        System.out.print ("The fahrenheit degree " + fahrenheit + " is " + celsius + " in celsius.");
+    } else if (tempType.equals (F) || tempType.equals (f)) {
+        fahrenheit = (9 * (celsius / 5) + 32);
+        System.out.print ("The celsius degree " + celsius + " is " + fahrenheit + " in fahrenheit.");
+    } else {
+        System.out.print ("The temperature type is not recognized.");
+    }
+
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+10237310_10237556_19_31
+10237310_10237556_55_67
+Title: I don't get thread synchronization much at all 
+----------------------------------------
+
+public void run () {
+    while (itemno <= no_items) {
+        while (buffer.size () == buffer_size) {
+            try {
+                sleep (100);
+            } catch (InterruptedException e) {
+                Thread.interrupted ();
+            }
+        }
+        produce ();
+    }
+}
+----------------------------------------
+
+public void run () {
+    boolean end = false;
+    while (! end) {
+        while (buffer.isEmpty ()) {
+            try {
+                sleep (100);
+            } catch (InterruptedException ex) {
+                Logger.getLogger (TrashMe.class.getName ()).log (Level.SEVERE, null, ex);
+            }
+        }
+        end = consume ();
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+10258570_10258644_6_23
+10258570_10258647_3_12
+Title: Java - Unusual GridLayout behaviour 
+----------------------------------------
+
+public static void main (String [] args) {
+    JFrame frame = new JFrame ();
+    Container container = frame.getContentPane ();
+    container.setPreferredSize (new Dimension (500, 500));
+    container.setLayout (new GridLayout (10, 10));
+    for (int i = 0;
+    i < 10; i ++) {
+        for (int j = 0;
+        j < 10; j ++) {
+            if (i >= j) {
+                container.add (new JButton ("X"));
+            } else {
+                container.add (new JLabel ("Y"));
+            }
+        }
+    }
+    frame.pack ();
+    frame.setVisible (true);
+}
+----------------------------------------
+
+public static void main (String [] args) {
+    JFrame frame = new JFrame ();
+    Container container = frame.getContentPane ();
+    container.setLayout (new GridLayout (10, 10));
+    for (int i = 0;
+    i < 100; i ++) {
+        container.add (new JLabel ("" + i));
+    }
+    frame.setSize (500, 500);
+    frame.setVisible (true);
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+10264169_10264201_1_11
+10264169_10264220_1_16
+Title: Implementing ArrayLists to Table models 
+----------------------------------------
+
+public Object getValueAt (int row, int col) {
+    switch (col) {
+        case 0 :
+            return ((Pets) data.get (row)).getName ();
+        case 1 :
+            return ((Pets) data.get (row)).getSpecies ();
+        case 2 :
+            return ((Pets) data.get (row)).getAge ();
+    }
+    return null;
+}
+----------------------------------------
+
+@Override
+public Object getValueAt (int row, int col) {
+    if (row > getRowCount ()) {
+    }
+    RowItem rowItem = rowItemList.get (row);
+    switch (col) {
+        case 0 :
+            return rowItem.getName ();
+        case 1 :
+            return rowItem.getLastSpecies ();
+        case 2 :
+            return rowItem.getAge ();
+    }
+    return null;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+10269017_10280623_1_31
+10269017_10289438_17_41
+Title: javafx animation: displaying circles 
+----------------------------------------
+
+@Override
+public void start (Stage primaryStage) throws Exception {
+    Group root = new Group ();
+    primaryStage.setResizable (false);
+    primaryStage.setScene (new Scene (root, sceneWidth, sceneHeight));
+    final ObservableList < Node > ol = root.getChildren ();
+    new Thread (new Runnable () {
+        @Override
+        public void run () {
+            while (true) {
+                try {
+                    Thread.sleep (2000);
+                } catch (InterruptedException ex) {
+                    ex.printStackTrace ();
+                }
+                Platform.runLater (new Runnable () {
+                    @Override
+                    public void run () {
+                        System.out.println ("ol size:" + ol.size ());
+                        if (ol.size () == 5) {
+                            ol.remove (0);
+                        }
+                        ol.add (createCircle ());
+                    }}
+
+                );
+            }
+        }}
+
+    ).start ();
+    primaryStage.show ();
+}
+----------------------------------------
+
+public void start (final Stage stage) throws Exception {
+    final Group circles = new Group ();
+    final Timeline animation = new Timeline (new KeyFrame (Duration.seconds (.5), new EventHandler < ActionEvent > () {
+        @Override
+        public void handle (ActionEvent actionEvent) {
+            while (circles.getChildren ().size () >= 5) circles.getChildren ().remove (0);
+
+            int radius = 10 * r.nextInt (20);
+            circles.getChildren ().add (new Circle (r.nextInt (SCENE_SIZE - radius * 2) + radius, r.nextInt (SCENE_SIZE - radius * 2) + radius, radius, new Color (r.nextDouble (), r.nextDouble (), r.nextDouble (), r.nextDouble ())));
+        }}
+
+    ));
+    animation.setCycleCount (Animation.INDEFINITE);
+    animation.play ();
+    stage.setScene (new Scene (circles, SCENE_SIZE, SCENE_SIZE, Color.CORNSILK));
+    stage.show ();
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+10274223_34303695_38_48
+10274223_34303695_54_62
+Title: Implementing producer consumer in Java 
+----------------------------------------
+
+public void run () {
+    for (int i = 0;
+    i < 5000; i ++) {
+        empty.p ();
+        mutex.p ();
+        System.out.println (Thread.currentThread ().getName () + " is trying to insert item " + i);
+        sQueue.add (i);
+        mutex.v ();
+        full.v ();
+    }
+}
+----------------------------------------
+
+public void run () {
+    while (true) {
+        full.p ();
+        mutex.p ();
+        System.out.println (Thread.currentThread ().getName () + " consuming item " + sQueue.remove (0));
+        mutex.v ();
+        empty.v ();
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+10275862_18587977_20_28
+10275862_25059741_4_20
+Title: How to sort Properties in java? 
+----------------------------------------
+
+public Enumeration keys () {
+    Enumeration keysEnum = super.keys ();
+    Vector < String > keyList = new Vector < String > ();
+    while (keysEnum.hasMoreElements ()) {
+        keyList.add ((String) keysEnum.nextElement ());
+    }
+    Collections.sort (keyList);
+    return keyList.elements ();
+}
+----------------------------------------
+
+public Enumeration < Object > keys () {
+    Enumeration < Object > keysEnum = super.keys ();
+    Vector < Object > keyList = new Vector < Object > ();
+    while (keysEnum.hasMoreElements ()) {
+        keyList.add (keysEnum.nextElement ());
+    }
+    Collections.sort (keyList, new Comparator < Object > () {
+        @Override
+        public int compare (Object o1, Object o2) {
+            return o1.toString ().compareTo (o2.toString ());
+        }}
+
+    );
+    return keyList.elements ();
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+1027616_1027698_1_15
+1027616_1029705_42_57
+Title: Java- checking the value in a MultiDimensional Array 
+----------------------------------------
+
+public boolean isBoardComplete () {
+    for (int i = 0;
+    i < 3; i ++) {
+        for (int j = 0;
+        j < 3; j ++) {
+            if (_board [i] [j] == 0) {
+                return false;
+            }
+        }
+    }
+    return true;
+}
+----------------------------------------
+
+public boolean isBoardComplete () {
+    for (int row = 0;
+    row < 3; row ++) {
+        for (int column = 0;
+        column < 3; column ++) {
+            if (_board [row] [column] == 0) {
+                return false;
+            }
+        }
+    }
+    return true;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+1027616_1029705_23_39
+1027616_1030523_1_12
+Title: Java- checking the value in a MultiDimensional Array 
+----------------------------------------
+
+public boolean makeMove (int row, int col) {
+    row = row - 1;
+    col = col - 1;
+    if (_board [row] [col] == 0) {
+        _board [row] [col] = _player;
+        return false;
+    } else {
+        return true;
+    }
+}
+----------------------------------------
+
+public boolean makeMove (int row, int col) {
+    row = row - 1;
+    col = col - 1;
+    if (_board [row] [col] == 0) {
+        _board [row] [col] = _player;
+        return true;
+    }
+    return false;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+10287685_10287848_5_13
+10287685_10288186_1_14
+Title: How do I use Java Regex to find all repeating character sequences in a string? 
+----------------------------------------
+
+public static void main (String [] args) {
+    String s = "aaabbaaacccbb";
+    find (s);
+    String s1 = "RonRonRonJoeJoe .... ,,,,";
+    find (s1);
+    System.err.println ("---");
+    String s2 = "RonBobRonJoe";
+    find (s2);
+}
+----------------------------------------
+
+public static void main (final String [] args) {
+    final String s = "aaabbaaacccbb";
+    final Pattern p = Pattern.compile ("(.+).*\\1");
+    final Matcher m = p.matcher (s);
+    int start = 0;
+    while (m.find (start)) {
+        System.out.println (m.group (1));
+        start = m.toMatchResult ().end (1);
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+10287685_10287848_5_13
+10287685_10288456_1_12
+Title: How do I use Java Regex to find all repeating character sequences in a string? 
+----------------------------------------
+
+public static void main (String [] args) {
+    String s = "aaabbaaacccbb";
+    find (s);
+    String s1 = "RonRonRonJoeJoe .... ,,,,";
+    find (s1);
+    System.err.println ("---");
+    String s2 = "RonBobRonJoe";
+    find (s2);
+}
+----------------------------------------
+
+public static void main (String [] args) {
+    String s = "RonSamJoeJoeSamRon";
+    Matcher m = Pattern.compile ("(\\S{2,})(?=.*?\\1)").matcher (s);
+    while (m.find ()) {
+        for (int i = 1;
+        i <= m.groupCount (); i ++) {
+            System.out.println (m.group (i));
+        }
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+10287685_10288186_1_14
+10287685_10288456_1_12
+Title: How do I use Java Regex to find all repeating character sequences in a string? 
+----------------------------------------
+
+public static void main (final String [] args) {
+    final String s = "aaabbaaacccbb";
+    final Pattern p = Pattern.compile ("(.+).*\\1");
+    final Matcher m = p.matcher (s);
+    int start = 0;
+    while (m.find (start)) {
+        System.out.println (m.group (1));
+        start = m.toMatchResult ().end (1);
+    }
+}
+----------------------------------------
+
+public static void main (String [] args) {
+    String s = "RonSamJoeJoeSamRon";
+    Matcher m = Pattern.compile ("(\\S{2,})(?=.*?\\1)").matcher (s);
+    while (m.find ()) {
+        for (int i = 1;
+        i <= m.groupCount (); i ++) {
+            System.out.println (m.group (i));
+        }
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+10294072_10295079_3_18
+10294072_10303819_6_50
+Title: No Line Found error while reading text file 
+----------------------------------------
+
+public static void main (String [] args) throws FileNotFoundException {
+    Scanner scanner = new Scanner (new File ("c:\\poll.txt"));
+    while (scanner.hasNextLine ()) {
+        String line = scanner.nextLine ();
+        Scanner linescanner = new Scanner (line);
+        while (linescanner.hasNext ()) {
+            System.out.print (linescanner.next () + " ");
+        }
+        System.out.println ();
+        linescanner.close ();
+    }
+    scanner.close ();
+}
+----------------------------------------
+
+public static void main (String [] args) throws FileNotFoundException {
+    int dVotes = 0;
+    int sVotes = 0;
+    Scanner scanner = new Scanner (new File ("poll.txt"));
+    String [] nonDigits = new String [29];
+    int [] Digits = new int [10];
+    int i = 0;
+    while (scanner.hasNextLine ()) {
+        String line = scanner.nextLine ();
+        Scanner linescan = new Scanner (line);
+        i = 0;
+        while (linescan.hasNext ()) {
+            String temp = linescan.next ();
+            nonDigits [i] = temp;
+            i ++;
+        }
+        i = 0;
+        int j = 1;
+        while (j <= 3) {
+            Digits [i] = Integer.parseInt (nonDigits [j]);
+            i ++;
+            j ++;
+        }
+        if (Digits [0] > Digits [1]) sVotes += Digits [2];
+        else dVotes += Digits [2];
+
+    }
+    System.out.println ("Smith Votes:\t" + sVotes);
+    System.out.println ("Dow Votes:\t" + dVotes);
+    if (sVotes > dVotes) System.out.println ("Smith is currently in the lead!");
+
+    if (dVotes > sVotes) System.out.println ("Dow is currently in the lead!");
+
+    if (dVotes == sVotes) System.out.println ("It's a tie!");
+
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+10297264_10297426_14_27
+10297264_39356384_18_48
+Title: Gson: How to change output of Enum 
+----------------------------------------
+
+public void write (JsonWriter out, T value) throws IOException {
+    if (value == null) {
+        out.nullValue ();
+        return;
+    }
+    RequestStatus status = (RequestStatus) value;
+    out.beginObject ();
+    out.name ("value");
+    out.value (status.name ());
+    out.name ("code");
+    out.value (status.getCode ());
+    out.endObject ();
+}
+----------------------------------------
+
+public void write (JsonWriter out, T value) throws IOException {
+    if (value == null || ! value.getClass ().isEnum ()) {
+        out.nullValue ();
+        return;
+    }
+    try {
+        out.beginObject ();
+        out.name ("value");
+        out.value (value.toString ());
+        Arrays.stream (Introspector.getBeanInfo (value.getClass ()).getPropertyDescriptors ()).filter (pd -> pd.getReadMethod () != null && ! "class".equals (pd.getName ()) && ! "declaringClass".equals (pd.getName ())).forEach (pd -> {
+            try {
+                out.name (pd.getName ());
+                out.value (String.valueOf (pd.getReadMethod ().invoke (value)));
+            } catch (IllegalAccessException | InvocationTargetException | IOException e) {
+                e.printStackTrace ();
+            }
+        });
+        out.endObject ();
+    } catch (IntrospectionException e) {
+        e.printStackTrace ();
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+10298306_44774526_13_29
+10298306_44774526_35_43
+Title: Difference between a daemon thread and a low priority thread 
+----------------------------------------
+
+public void run () {
+    if (createChild) new Thread (new DeamonThreadPlus ("DaemonChild", false)).start ();
+
+    while (true) {
+        try {
+            Thread.sleep (1);
+        } catch (InterruptedException e) {
+            e.printStackTrace ();
+        }
+        System.out.println ("Daemon " + Thread.currentThread ().isDaemon () + " id = " + id);
+    }
+}
+----------------------------------------
+
+public void run () {
+    System.out.println ("User thread start");
+    try {
+        Thread.sleep (5);
+    } catch (InterruptedException e) {
+        e.printStackTrace ();
+    }
+    System.out.println ("User thread end (program exits)");
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+10308769_15376540_24_43
+10308769_21694732_5_29
+Title: decimal to binary in java 
+----------------------------------------
+
+public static void main (String [] args) {
+    Scanner sc = new Scanner (System.in);
+    System.out.print ("Enter any no.: ");
+    int num = sc.nextInt ();
+    int [] bin = new int [howManyTerms (num)];
+    int dup = num, el = - 1;
+    while (dup != 0) {
+        int rem = dup % 2;
+        bin [++ el] = rem;
+        dup /= 2;
+    }
+    String d2b = revArrayofBin2Str (bin);
+    System.out.println ("Binary of " + num + " is: " + d2b);
+}
+----------------------------------------
+
+public static void main (String [] args) {
+    try {
+        System.out.println ("Please enter a number");
+        BufferedReader br = new BufferedReader (new InputStreamReader (System.in));
+        String input = br.readLine ();
+        int x = Integer.parseInt (input);
+        int bin = 0;
+        int p = 1;
+        while (x > 0) {
+            int r = x % 2;
+            bin = (r * p) + bin;
+            x = x / 2;
+            p *= 10;
+        }
+        System.out.println ("Binary of " + input + " is = " + bin);
+    } catch (Exception e) {
+        System.out.println ("Please enter a valid decimal number.");
+        System.exit (1);
+        e.printStackTrace ();
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+10309264_10309297_1_19
+10309264_10311780_1_17
+Title: Return value of if statement in a for each loop 
+----------------------------------------
+
+public static Apartment getApartment (String aNumber) {
+    Apartment chosen = null;
+    for (Apartment x : listOfApartments) {
+        if (x.getApartmentNo ().equalsIgnoreCase (aNumber)) {
+            chosen = x;
+        } else {
+            JOptionPane.showMessageDialog (null, "Apartment not found");
+        }
+    }
+    return chosen;
+}
+----------------------------------------
+
+public static Apartment getApartment (String aNumber) {
+    Apartment result = null;
+    for (Apartment apartment : listOfApartments) {
+        if (apartment.getApartmentNo ().equalsIgnoreCase (aNumber)) {
+            result = apartment;
+            break;
+        }
+    }
+    if (result == null) {
+        JOptionPane.showMessageDialog (null, "Apartment not found");
+    }
+    return result;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+10313971_10314046_7_21
+10313971_10329541_40_54
+Title: How to run a mvn command from a java program? 
+----------------------------------------
+
+public static void main (String [] args) throws IOException, InterruptedException {
+    Process p = null;
+    try {
+        p = Runtime.getRuntime ().exec ("C:/Applications/apache-maven-3.0.3/bin/mvn.bat integration-test -DskipTests -P interactive -e");
+    } catch (IOException e) {
+        System.err.println ("Error on exec() method");
+        e.printStackTrace ();
+    }
+    copy (p.getInputStream (), System.out);
+    p.waitFor ();
+}
+----------------------------------------
+
+public static void main (String args []) throws IOException {
+    try {
+        String outlist [] = runCommand ("mvn integration-test -DskipTests -P interactive -e");
+        for (int i = 0;
+        i < outlist.length; i ++) System.out.println (outlist [i]);
+
+    } catch (IOException e) {
+        System.err.println (e);
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+10319183_10319818_14_31
+10319183_36701216_18_27
+Title: Program to display the first 100 prime numbers is not displaying 
+----------------------------------------
+
+public static void main (String [] args) {
+    int currentNumber = 2;
+    int primesFound = 0;
+    while (primesFound < 100) {
+        if (isPrime (currentNumber)) {
+            primesFound ++;
+            System.out.print (currentNumber + " ");
+            if (primesFound % 10 == 0) {
+                System.out.println ();
+            }
+        }
+        currentNumber ++;
+    }
+}
+----------------------------------------
+
+public static void main (String [] args) {
+    int k = 0, found = 0;
+    for (int i = 1;
+    found < 100; i ++) {
+        k = Prime (i, 0);
+        if (k > 0) {
+            found ++;
+            System.out.println (k);
+        }
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+10319183_10319818_14_31
+10319183_36865354_5_37
+Title: Program to display the first 100 prime numbers is not displaying 
+----------------------------------------
+
+public static void main (String [] args) {
+    int currentNumber = 2;
+    int primesFound = 0;
+    while (primesFound < 100) {
+        if (isPrime (currentNumber)) {
+            primesFound ++;
+            System.out.print (currentNumber + " ");
+            if (primesFound % 10 == 0) {
+                System.out.println ();
+            }
+        }
+        currentNumber ++;
+    }
+}
+----------------------------------------
+
+public static void main (String [] args) {
+    int status = 0;
+    for (int i = 2;
+    i < 100; i ++) {
+        status = 0;
+        for (int j = 2;
+        j < i; j ++) {
+            if (i % 2 == 0) {
+                status = 1;
+                break;
+            }
+            try {
+                if (i % j == 0) {
+                    status = 1;
+                    break;
+                }
+            } catch (Exception e) {
+                System.out.println (e.getMessage ());
+            }
+        }
+        if (status == 0) {
+            System.out.println (i);
+        }
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+10319183_10319818_3_12
+10319183_16135052_65_81
+Title: Program to display the first 100 prime numbers is not displaying 
+----------------------------------------
+
+public static boolean isPrime (int x) {
+    for (int i = 2;
+    i <= Math.sqrt (x); i ++) {
+        if (x % i == 0) {
+            return false;
+        }
+    }
+    return true;
+}
+----------------------------------------
+
+public static boolean isPrime (int getNumber) {
+    int dem1 = 0;
+    int [] arrayTest = new int [getNumber];
+    for (int i = 2;
+    i <= getNumber; i ++) {
+        arrayTest [i] = i;
+    }
+    for (int i = 2;
+    i < getNumber; i ++) {
+        if (getNumber % arrayTest [i] == 0) dem1 ++;
+        else continue;
+
+    }
+    if (dem1 != 0) return false;
+    else return true;
+
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+10319183_10319818_3_12
+10319183_17297970_3_13
+Title: Program to display the first 100 prime numbers is not displaying 
+----------------------------------------
+
+public static boolean isPrime (int x) {
+    for (int i = 2;
+    i <= Math.sqrt (x); i ++) {
+        if (x % i == 0) {
+            return false;
+        }
+    }
+    return true;
+}
+----------------------------------------
+
+public static boolean isPrime (int x) {
+    for (int i = 2;
+    i <= Math.sqrt (x); i ++) {
+        if (x % i == 0) {
+            return false;
+        }
+    }
+    return true;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+10319183_16135052_65_81
+10319183_17297970_3_13
+Title: Program to display the first 100 prime numbers is not displaying 
+----------------------------------------
+
+public static boolean isPrime (int getNumber) {
+    int dem1 = 0;
+    int [] arrayTest = new int [getNumber];
+    for (int i = 2;
+    i <= getNumber; i ++) {
+        arrayTest [i] = i;
+    }
+    for (int i = 2;
+    i < getNumber; i ++) {
+        if (getNumber % arrayTest [i] == 0) dem1 ++;
+        else continue;
+
+    }
+    if (dem1 != 0) return false;
+    else return true;
+
+}
+----------------------------------------
+
+public static boolean isPrime (int x) {
+    for (int i = 2;
+    i <= Math.sqrt (x); i ++) {
+        if (x % i == 0) {
+            return false;
+        }
+    }
+    return true;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+10319183_36701216_18_27
+10319183_36865354_5_37
+Title: Program to display the first 100 prime numbers is not displaying 
+----------------------------------------
+
+public static void main (String [] args) {
+    int k = 0, found = 0;
+    for (int i = 1;
+    found < 100; i ++) {
+        k = Prime (i, 0);
+        if (k > 0) {
+            found ++;
+            System.out.println (k);
+        }
+    }
+}
+----------------------------------------
+
+public static void main (String [] args) {
+    int status = 0;
+    for (int i = 2;
+    i < 100; i ++) {
+        status = 0;
+        for (int j = 2;
+        j < i; j ++) {
+            if (i % 2 == 0) {
+                status = 1;
+                break;
+            }
+            try {
+                if (i % j == 0) {
+                    status = 1;
+                    break;
+                }
+            } catch (Exception e) {
+                System.out.println (e.getMessage ());
+            }
+        }
+        if (status == 0) {
+            System.out.println (i);
+        }
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+10345525_43270495_1_22
+10345525_52921353_1_39
+Title: How to Click a option in Security Warning dialog box using Selenium? 
+----------------------------------------
+
+private void acceptSecurityAlert () {
+    Wait < WebDriver > wait = new FluentWait < WebDriver > (driver).withTimeout (10, TimeUnit.SECONDS).pollingEvery (3, TimeUnit.SECONDS).ignoring (NoSuchElementException.class);
+    Alert alert = wait.until (new Function < WebDriver, Alert > () {
+        public Alert apply (WebDriver driver) {
+            try {
+                return driver.switchTo ().alert ();
+            } catch (NoAlertPresentException e) {
+                return null;
+            }
+        }}
+
+    );
+    alert.accept ();
+}
+----------------------------------------
+
+public void acceptSecurityAlert () {
+    Wait < WebDriver > wait = new FluentWait < WebDriver > (driver).withTimeout (1000, TimeUnit.SECONDS).pollingEvery (7, TimeUnit.SECONDS).ignoring (NoSuchElementException.class);
+    boolean isTrue = wait.until (new Function < WebDriver, Boolean > () {
+        public Boolean apply (WebDriver driver) {
+            try {
+                char [] buffer = new char [1024 * 2];
+                HWND hwnd = User32.INSTANCE.GetForegroundWindow ();
+                User32.INSTANCE.GetWindowText (hwnd, buffer, 1024);
+                if (Native.toString (buffer).equalsIgnoreCase ("Security Warning")) {
+                    Robot robot = new Robot ();
+                    robot.keyPress (KeyEvent.VK_TAB);
+                    robot.delay (200);
+                    robot.keyRelease (KeyEvent.VK_TAB);
+                    robot.delay (200);
+                    robot.keyPress (KeyEvent.VK_TAB);
+                    robot.delay (200);
+                    robot.keyRelease (KeyEvent.VK_TAB);
+                    robot.delay (200);
+                    robot.keyPress (KeyEvent.VK_ENTER);
+                    robot.delay (200);
+                    robot.keyRelease (KeyEvent.VK_ENTER);
+                    robot.delay (200);
+                    return true;
+                }
+                return null;
+            } catch (Exception e) {
+                System.out.println ("Exception!");
+                e.printStackTrace ();
+            }
+            return null;
+        }}
+
+    );
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+10346304_10346340_1_28
+10346304_48674929_1_19
+Title: Count continuous repeated occurrence of characters from String 
+----------------------------------------
+
+public static void countContinuosOccurence () {
+    String first = "ABBCDDDEFGGH";
+    StringBuffer result = new StringBuffer ();
+    int count = 1;
+    int i;
+    for (i = 1; i < first.length (); i ++) {
+        if (first.charAt (i) == (first.charAt (i - 1))) {
+            count ++;
+        } else {
+            if (count > 1) {
+                result.append (String.valueOf (count) + first.charAt (i - 1));
+            } else {
+                result.append (first.charAt (i - 1));
+            }
+            count = 1;
+        }
+    }
+    if (count > 1) {
+        result.append (String.valueOf (count) + first.charAt (i - 1));
+    } else {
+        result.append (first.charAt (i - 1));
+    }
+    System.out.println ("First String is:" + first);
+    System.out.println ("Result is:" + result);
+}
+----------------------------------------
+
+public static void countContinuosOccurence () {
+    String [] input = "ABBCDDDEFGGH".split ("");
+    String out = "";
+    for (int i = 0;
+    i < input.length; i ++) {
+        int repeatedCharCount = 1;
+        String currentChr = input [i];
+        if (! (i == input.length - 1)) {
+            while (input [i].equals (input [i + 1])) {
+                repeatedCharCount ++;
+                i ++;
+            }
+        }
+        out = out + repeatedCharCount + currentChr;
+    }
+    System.out.println (out);
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+10347674_10348406_1_27
+10347674_10353270_23_31
+Title: Logarithmic Axis Labels/Ticks Customization 
+----------------------------------------
+
+public static void main (String [] args) {
+    XYSeries series = new XYSeries ("");
+    series.add (1, 10);
+    series.add (2, 100);
+    series.add (3, 1000);
+    series.add (4, 10000);
+    series.add (5, 100000);
+    series.add (6, 1000000);
+    LogAxis yAxis = new LogAxis ("");
+    yAxis.setBase (10);
+    LogFormat format = new LogFormat (yAxis.getBase (), "", "", true);
+    yAxis.setNumberFormatOverride (format);
+    XYPlot plot = new XYPlot (new XYSeriesCollection (series), new NumberAxis (""), yAxis, new XYLineAndShapeRenderer (true, false));
+    JFreeChart chart = new JFreeChart ("", JFreeChart.DEFAULT_TITLE_FONT, plot, false);
+    JFrame frame = new JFrame ("LogAxis Test");
+    frame.setDefaultCloseOperation (JFrame.EXIT_ON_CLOSE);
+    frame.setContentPane (new ChartPanel (chart));
+    frame.pack ();
+    frame.setVisible (true);
+}
+----------------------------------------
+
+public static void main (String [] args) {
+    EventQueue.invokeLater (new Runnable () {
+        @Override
+        public void run () {
+            createFrame ();
+        }}
+
+    );
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+10347674_10348406_1_27
+10347674_26225645_3_40
+Title: Logarithmic Axis Labels/Ticks Customization 
+----------------------------------------
+
+public static void main (String [] args) {
+    XYSeries series = new XYSeries ("");
+    series.add (1, 10);
+    series.add (2, 100);
+    series.add (3, 1000);
+    series.add (4, 10000);
+    series.add (5, 100000);
+    series.add (6, 1000000);
+    LogAxis yAxis = new LogAxis ("");
+    yAxis.setBase (10);
+    LogFormat format = new LogFormat (yAxis.getBase (), "", "", true);
+    yAxis.setNumberFormatOverride (format);
+    XYPlot plot = new XYPlot (new XYSeriesCollection (series), new NumberAxis (""), yAxis, new XYLineAndShapeRenderer (true, false));
+    JFreeChart chart = new JFreeChart ("", JFreeChart.DEFAULT_TITLE_FONT, plot, false);
+    JFrame frame = new JFrame ("LogAxis Test");
+    frame.setDefaultCloseOperation (JFrame.EXIT_ON_CLOSE);
+    frame.setContentPane (new ChartPanel (chart));
+    frame.pack ();
+    frame.setVisible (true);
+}
+----------------------------------------
+
+public static void main (String [] args) {
+    XYSeries series = new XYSeries ("First");
+    series.add (1.0, 1.0);
+    series.add (2.0, 10.0);
+    series.add (3.0, 100.0);
+    series.add (4.0, 1000.0);
+    series.add (5.0, 10000.0);
+    series.add (6.0, 100000.0);
+    series.add (7.0, 1000000.0);
+    series.add (8.0, 10000000.0);
+    XYSeriesCollection dataset = new XYSeriesCollection ();
+    dataset.addSeries (series);
+    JFreeChart chart = ChartFactory.createXYLineChart ("XY Chart", "x-axis", "y-axis", dataset, PlotOrientation.VERTICAL, false, false, false);
+    LogarithmicAxis yAxis = new LogarithmicAxis ("Y");
+    XYPlot plot = chart.getXYPlot ();
+    plot.setRangeAxis (yAxis);
+    XYLineAndShapeRenderer renderer = (XYLineAndShapeRenderer) plot.getRenderer ();
+    renderer.setSeriesShapesVisible (0, true);
+    ChartFrame frame = new ChartFrame ("My Chart", chart);
+    frame.pack ();
+    frame.setVisible (true);
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+10347674_10353270_23_31
+10347674_26225645_3_40
+Title: Logarithmic Axis Labels/Ticks Customization 
+----------------------------------------
+
+public static void main (String [] args) {
+    EventQueue.invokeLater (new Runnable () {
+        @Override
+        public void run () {
+            createFrame ();
+        }}
+
+    );
+}
+----------------------------------------
+
+public static void main (String [] args) {
+    XYSeries series = new XYSeries ("First");
+    series.add (1.0, 1.0);
+    series.add (2.0, 10.0);
+    series.add (3.0, 100.0);
+    series.add (4.0, 1000.0);
+    series.add (5.0, 10000.0);
+    series.add (6.0, 100000.0);
+    series.add (7.0, 1000000.0);
+    series.add (8.0, 10000000.0);
+    XYSeriesCollection dataset = new XYSeriesCollection ();
+    dataset.addSeries (series);
+    JFreeChart chart = ChartFactory.createXYLineChart ("XY Chart", "x-axis", "y-axis", dataset, PlotOrientation.VERTICAL, false, false, false);
+    LogarithmicAxis yAxis = new LogarithmicAxis ("Y");
+    XYPlot plot = chart.getXYPlot ();
+    plot.setRangeAxis (yAxis);
+    XYLineAndShapeRenderer renderer = (XYLineAndShapeRenderer) plot.getRenderer ();
+    renderer.setSeriesShapesVisible (0, true);
+    ChartFrame frame = new ChartFrame ("My Chart", chart);
+    frame.pack ();
+    frame.setVisible (true);
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+10368856_10488050_1_21
+10368856_17716473_43_61
+Title: jcombobox filter in java - Look and feel independent 
+----------------------------------------
+
+public void comboFilter (String enteredText) {
+    if (! this.isPopupVisible ()) {
+        this.showPopup ();
+    }
+    List < String > filterArray = new ArrayList < String > ();
+    for (int i = 0;
+    i < array.size (); i ++) {
+        if (array.get (i).toLowerCase ().contains (enteredText.toLowerCase ())) {
+            filterArray.add (array.get (i));
+        }
+    }
+    if (filterArray.size () > 0) {
+        DefaultComboBoxModel model = (DefaultComboBoxModel) this.getModel ();
+        model.removeAllElements ();
+        for (String s : filterArray) model.addElement (s);
+
+        JTextField textfield = (JTextField) this.getEditor ().getEditorComponent ();
+        textfield.setText (enteredText);
+    }
+}
+----------------------------------------
+
+public void comboFilter (String enteredText) {
+    List < String > filterArray = new ArrayList < String > ();
+    for (int i = 0;
+    i < array.size (); i ++) {
+        if (array.get (i).toLowerCase ().contains (enteredText.toLowerCase ())) {
+            filterArray.add (array.get (i));
+        }
+    }
+    if (filterArray.size () > 0) {
+        this.setModel (new DefaultComboBoxModel (filterArray.toArray ()));
+        this.setSelectedItem (enteredText);
+        this.showPopup ();
+    } else {
+        this.hidePopup ();
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+10370508_10370758_6_18
+10370508_10370970_2_65
+Title: "Java count number of Sundays that fell on 1st of the month from 1901 to 2000" 
+----------------------------------------
+
+public static void main (String [] argv) {
+    int counter = 0;
+    for (int year = 1901, last_year = 2000;
+    year <= last_year; year ++) {
+        for (int month = 1, last_month = 12;
+        month <= last_month; month ++) {
+            Date d = new GregorianCalendar (year, month - 1, 1).getTime ();
+            if (d.getDay () == 0) {
+                counter ++;
+                System.out.println (String.valueOf (counter) + " " + d);
+            }
+        }
+    }
+    System.out.println ("Total sunday in XX century: " + counter);
+}
+----------------------------------------
+
+public static void main (String [] args) {
+    final int ThirtyOne = 31;
+    final int Thirty = 30;
+    final int FebNorm = 28;
+    final int FebLeap = 29;
+    int numOfSundays = 0;
+    int calendar [] [] = new int [12] [];
+    calendar [0] = new int [ThirtyOne];
+    calendar [1] = new int [FebLeap];
+    calendar [2] = new int [ThirtyOne];
+    calendar [3] = new int [Thirty];
+    calendar [4] = new int [ThirtyOne];
+    calendar [5] = new int [Thirty];
+    calendar [6] = new int [ThirtyOne];
+    calendar [7] = new int [ThirtyOne];
+    calendar [8] = new int [Thirty];
+    calendar [9] = new int [ThirtyOne];
+    calendar [10] = new int [Thirty];
+    calendar [11] = new int [ThirtyOne];
+    int dayOfWeek = 1;
+    for (int year = 1900;
+    year < 2001; year ++) {
+        for (int month = 0;
+        month < calendar.length; month ++) {
+            int dayOfMonth = 0;
+            int daysInMonth;
+            if (month == 1) {
+                daysInMonth = isLeapYear (year) ? FebLeap : FebNorm;
+            } else {
+                daysInMonth = calendar [month].length;
+            }
+            while (dayOfWeek < 8 && dayOfMonth < daysInMonth) {
+                System.out.println ("year: " + year + "\tday: " + dayOfWeek + "\tcalendar[" + month + "][" + dayOfMonth + "]: " + calendar [month] [dayOfMonth]);
+                if (dayOfWeek == 7 && year > 1900) {
+                    calendar [month] [dayOfMonth] ++;
+                    if (dayOfMonth == 0) {
+                        numOfSundays ++;
+                    }
+                }
+                dayOfMonth ++;
+                dayOfWeek ++;
+                if (dayOfWeek > 7) {
+                    dayOfWeek = 1;
+                }
+            }
+        }
+    }
+    for (int month = 0;
+    month < calendar.length; month ++) {
+        System.out.println (calendar [month] [0]);
+    }
+    System.out.println (numOfSundays);
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+10370508_10370758_6_18
+10370508_10371049_4_17
+Title: "Java count number of Sundays that fell on 1st of the month from 1901 to 2000" 
+----------------------------------------
+
+public static void main (String [] argv) {
+    int counter = 0;
+    for (int year = 1901, last_year = 2000;
+    year <= last_year; year ++) {
+        for (int month = 1, last_month = 12;
+        month <= last_month; month ++) {
+            Date d = new GregorianCalendar (year, month - 1, 1).getTime ();
+            if (d.getDay () == 0) {
+                counter ++;
+                System.out.println (String.valueOf (counter) + " " + d);
+            }
+        }
+    }
+    System.out.println ("Total sunday in XX century: " + counter);
+}
+----------------------------------------
+
+public static void main (String [] args) {
+    Calendar calendar = Calendar.getInstance ();
+    int countFirstSunday = 0;
+    for (int year = 1901;
+    year <= 2000; year ++) {
+        for (int month = 0;
+        month <= 11; month ++) {
+            calendar.set (year, month, 1);
+            if (calendar.get (Calendar.DAY_OF_WEEK) == Calendar.SUNDAY) {
+                countFirstSunday ++;
+            }
+        }
+    }
+    System.out.println ("Sundays as the first of month: " + countFirstSunday);
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+10370508_10370758_6_18
+10370508_10373651_1_27
+Title: "Java count number of Sundays that fell on 1st of the month from 1901 to 2000" 
+----------------------------------------
+
+public static void main (String [] argv) {
+    int counter = 0;
+    for (int year = 1901, last_year = 2000;
+    year <= last_year; year ++) {
+        for (int month = 1, last_month = 12;
+        month <= last_month; month ++) {
+            Date d = new GregorianCalendar (year, month - 1, 1).getTime ();
+            if (d.getDay () == 0) {
+                counter ++;
+                System.out.println (String.valueOf (counter) + " " + d);
+            }
+        }
+    }
+    System.out.println ("Total sunday in XX century: " + counter);
+}
+----------------------------------------
+
+public static void main (String [] args) {
+    final int thirtyOne = 31, thirty = 30;
+    final int calendar [] [] = new int [12] [];
+    final int [] febLeap = new int [29];
+    final int [] febNorm = new int [28];
+    calendar [0] = new int [thirtyOne];
+    calendar [2] = new int [thirtyOne];
+    calendar [3] = new int [thirty];
+    calendar [4] = new int [thirtyOne];
+    calendar [5] = new int [thirty];
+    calendar [6] = new int [thirtyOne];
+    calendar [7] = new int [thirtyOne];
+    calendar [8] = new int [thirty];
+    calendar [9] = new int [thirtyOne];
+    calendar [10] = new int [thirty];
+    calendar [11] = new int [thirtyOne];
+    int dow = 0;
+    for (int y = 1901;
+    y < 2001; y ++) {
+        calendar [1] = leapYearTest (y) ? febLeap : febNorm;
+        for (int m = 0;
+        m < calendar.length; m ++) for (int d = 0;
+        d < calendar [m].length; d ++) if (dow ++ % 7 == 0) calendar [m] [d] ++;
+
+    }
+    int sumSundays = calendar [0] [0] + febLeap [0] + febNorm [0];
+    for (int i = 2;
+    i < calendar.length; i ++) sumSundays += calendar [i] [0];
+
+    System.out.println ("Number of Sundays is " + sumSundays);
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+10370508_10370758_6_18
+10370508_27071542_3_22
+Title: "Java count number of Sundays that fell on 1st of the month from 1901 to 2000" 
+----------------------------------------
+
+public static void main (String [] argv) {
+    int counter = 0;
+    for (int year = 1901, last_year = 2000;
+    year <= last_year; year ++) {
+        for (int month = 1, last_month = 12;
+        month <= last_month; month ++) {
+            Date d = new GregorianCalendar (year, month - 1, 1).getTime ();
+            if (d.getDay () == 0) {
+                counter ++;
+                System.out.println (String.valueOf (counter) + " " + d);
+            }
+        }
+    }
+    System.out.println ("Total sunday in XX century: " + counter);
+}
+----------------------------------------
+
+public static void main (String [] args) {
+    int yearStart = 1901, yearEnd = 2000;
+    int monthStart = 1, monthEnd = 12;
+    int dayStart = 6, dayEnd = 31;
+    Date dateStart = new Date (yearStart, monthStart, dayStart);
+    Date dateStop = new Date (yearEnd, monthEnd, dayEnd);
+    int result = 0;
+    while (Date.compareDates (dateStart, dateStop) < 0) {
+        if (dateStart.day == 1) {
+            result ++;
+        }
+        dateStart.addDays (7);
+    }
+    System.out.println (result);
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+10370508_10370758_6_18
+10370508_44315611_3_39
+Title: "Java count number of Sundays that fell on 1st of the month from 1901 to 2000" 
+----------------------------------------
+
+public static void main (String [] argv) {
+    int counter = 0;
+    for (int year = 1901, last_year = 2000;
+    year <= last_year; year ++) {
+        for (int month = 1, last_month = 12;
+        month <= last_month; month ++) {
+            Date d = new GregorianCalendar (year, month - 1, 1).getTime ();
+            if (d.getDay () == 0) {
+                counter ++;
+                System.out.println (String.valueOf (counter) + " " + d);
+            }
+        }
+    }
+    System.out.println ("Total sunday in XX century: " + counter);
+}
+----------------------------------------
+
+public static void main (String [] args) {
+    int lastDayOfPreviousMonth = 6;
+    int countOfSundayOnFirstOfMonth = 0;
+    for (int year = 1900;
+    year <= 2000; year ++) {
+        for (int month = 1;
+        month <= 12; month ++) {
+            int dayOnFirstOfThisMonth = (lastDayOfPreviousMonth + 1) % 7;
+            if (year > 1900 && dayOnFirstOfThisMonth == 6) countOfSundayOnFirstOfMonth ++;
+
+            switch (month) {
+                case 1 :
+                case 3 :
+                case 5 :
+                case 7 :
+                case 8 :
+                case 10 :
+                case 12 :
+                    lastDayOfPreviousMonth = (lastDayOfPreviousMonth + 3) % 7;
+                    break;
+                case 4 :
+                case 6 :
+                case 9 :
+                case 11 :
+                    lastDayOfPreviousMonth = (lastDayOfPreviousMonth + 2) % 7;
+                    break;
+                case 2 :
+                    if (year % 4 == 0 && (year % 100 != 0 || year % 400 == 0)) lastDayOfPreviousMonth = (lastDayOfPreviousMonth + 1) % 7;
+
+            }
+        }
+    }
+    System.out.println (countOfSundayOnFirstOfMonth);
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+10370508_10370970_2_65
+10370508_10371049_4_17
+Title: "Java count number of Sundays that fell on 1st of the month from 1901 to 2000" 
+----------------------------------------
+
+public static void main (String [] args) {
+    final int ThirtyOne = 31;
+    final int Thirty = 30;
+    final int FebNorm = 28;
+    final int FebLeap = 29;
+    int numOfSundays = 0;
+    int calendar [] [] = new int [12] [];
+    calendar [0] = new int [ThirtyOne];
+    calendar [1] = new int [FebLeap];
+    calendar [2] = new int [ThirtyOne];
+    calendar [3] = new int [Thirty];
+    calendar [4] = new int [ThirtyOne];
+    calendar [5] = new int [Thirty];
+    calendar [6] = new int [ThirtyOne];
+    calendar [7] = new int [ThirtyOne];
+    calendar [8] = new int [Thirty];
+    calendar [9] = new int [ThirtyOne];
+    calendar [10] = new int [Thirty];
+    calendar [11] = new int [ThirtyOne];
+    int dayOfWeek = 1;
+    for (int year = 1900;
+    year < 2001; year ++) {
+        for (int month = 0;
+        month < calendar.length; month ++) {
+            int dayOfMonth = 0;
+            int daysInMonth;
+            if (month == 1) {
+                daysInMonth = isLeapYear (year) ? FebLeap : FebNorm;
+            } else {
+                daysInMonth = calendar [month].length;
+            }
+            while (dayOfWeek < 8 && dayOfMonth < daysInMonth) {
+                System.out.println ("year: " + year + "\tday: " + dayOfWeek + "\tcalendar[" + month + "][" + dayOfMonth + "]: " + calendar [month] [dayOfMonth]);
+                if (dayOfWeek == 7 && year > 1900) {
+                    calendar [month] [dayOfMonth] ++;
+                    if (dayOfMonth == 0) {
+                        numOfSundays ++;
+                    }
+                }
+                dayOfMonth ++;
+                dayOfWeek ++;
+                if (dayOfWeek > 7) {
+                    dayOfWeek = 1;
+                }
+            }
+        }
+    }
+    for (int month = 0;
+    month < calendar.length; month ++) {
+        System.out.println (calendar [month] [0]);
+    }
+    System.out.println (numOfSundays);
+}
+----------------------------------------
+
+public static void main (String [] args) {
+    Calendar calendar = Calendar.getInstance ();
+    int countFirstSunday = 0;
+    for (int year = 1901;
+    year <= 2000; year ++) {
+        for (int month = 0;
+        month <= 11; month ++) {
+            calendar.set (year, month, 1);
+            if (calendar.get (Calendar.DAY_OF_WEEK) == Calendar.SUNDAY) {
+                countFirstSunday ++;
+            }
+        }
+    }
+    System.out.println ("Sundays as the first of month: " + countFirstSunday);
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+10370508_10370970_2_65
+10370508_10373651_1_27
+Title: "Java count number of Sundays that fell on 1st of the month from 1901 to 2000" 
+----------------------------------------
+
+public static void main (String [] args) {
+    final int ThirtyOne = 31;
+    final int Thirty = 30;
+    final int FebNorm = 28;
+    final int FebLeap = 29;
+    int numOfSundays = 0;
+    int calendar [] [] = new int [12] [];
+    calendar [0] = new int [ThirtyOne];
+    calendar [1] = new int [FebLeap];
+    calendar [2] = new int [ThirtyOne];
+    calendar [3] = new int [Thirty];
+    calendar [4] = new int [ThirtyOne];
+    calendar [5] = new int [Thirty];
+    calendar [6] = new int [ThirtyOne];
+    calendar [7] = new int [ThirtyOne];
+    calendar [8] = new int [Thirty];
+    calendar [9] = new int [ThirtyOne];
+    calendar [10] = new int [Thirty];
+    calendar [11] = new int [ThirtyOne];
+    int dayOfWeek = 1;
+    for (int year = 1900;
+    year < 2001; year ++) {
+        for (int month = 0;
+        month < calendar.length; month ++) {
+            int dayOfMonth = 0;
+            int daysInMonth;
+            if (month == 1) {
+                daysInMonth = isLeapYear (year) ? FebLeap : FebNorm;
+            } else {
+                daysInMonth = calendar [month].length;
+            }
+            while (dayOfWeek < 8 && dayOfMonth < daysInMonth) {
+                System.out.println ("year: " + year + "\tday: " + dayOfWeek + "\tcalendar[" + month + "][" + dayOfMonth + "]: " + calendar [month] [dayOfMonth]);
+                if (dayOfWeek == 7 && year > 1900) {
+                    calendar [month] [dayOfMonth] ++;
+                    if (dayOfMonth == 0) {
+                        numOfSundays ++;
+                    }
+                }
+                dayOfMonth ++;
+                dayOfWeek ++;
+                if (dayOfWeek > 7) {
+                    dayOfWeek = 1;
+                }
+            }
+        }
+    }
+    for (int month = 0;
+    month < calendar.length; month ++) {
+        System.out.println (calendar [month] [0]);
+    }
+    System.out.println (numOfSundays);
+}
+----------------------------------------
+
+public static void main (String [] args) {
+    final int thirtyOne = 31, thirty = 30;
+    final int calendar [] [] = new int [12] [];
+    final int [] febLeap = new int [29];
+    final int [] febNorm = new int [28];
+    calendar [0] = new int [thirtyOne];
+    calendar [2] = new int [thirtyOne];
+    calendar [3] = new int [thirty];
+    calendar [4] = new int [thirtyOne];
+    calendar [5] = new int [thirty];
+    calendar [6] = new int [thirtyOne];
+    calendar [7] = new int [thirtyOne];
+    calendar [8] = new int [thirty];
+    calendar [9] = new int [thirtyOne];
+    calendar [10] = new int [thirty];
+    calendar [11] = new int [thirtyOne];
+    int dow = 0;
+    for (int y = 1901;
+    y < 2001; y ++) {
+        calendar [1] = leapYearTest (y) ? febLeap : febNorm;
+        for (int m = 0;
+        m < calendar.length; m ++) for (int d = 0;
+        d < calendar [m].length; d ++) if (dow ++ % 7 == 0) calendar [m] [d] ++;
+
+    }
+    int sumSundays = calendar [0] [0] + febLeap [0] + febNorm [0];
+    for (int i = 2;
+    i < calendar.length; i ++) sumSundays += calendar [i] [0];
+
+    System.out.println ("Number of Sundays is " + sumSundays);
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+10370508_10370970_2_65
+10370508_27071542_3_22
+Title: "Java count number of Sundays that fell on 1st of the month from 1901 to 2000" 
+----------------------------------------
+
+public static void main (String [] args) {
+    final int ThirtyOne = 31;
+    final int Thirty = 30;
+    final int FebNorm = 28;
+    final int FebLeap = 29;
+    int numOfSundays = 0;
+    int calendar [] [] = new int [12] [];
+    calendar [0] = new int [ThirtyOne];
+    calendar [1] = new int [FebLeap];
+    calendar [2] = new int [ThirtyOne];
+    calendar [3] = new int [Thirty];
+    calendar [4] = new int [ThirtyOne];
+    calendar [5] = new int [Thirty];
+    calendar [6] = new int [ThirtyOne];
+    calendar [7] = new int [ThirtyOne];
+    calendar [8] = new int [Thirty];
+    calendar [9] = new int [ThirtyOne];
+    calendar [10] = new int [Thirty];
+    calendar [11] = new int [ThirtyOne];
+    int dayOfWeek = 1;
+    for (int year = 1900;
+    year < 2001; year ++) {
+        for (int month = 0;
+        month < calendar.length; month ++) {
+            int dayOfMonth = 0;
+            int daysInMonth;
+            if (month == 1) {
+                daysInMonth = isLeapYear (year) ? FebLeap : FebNorm;
+            } else {
+                daysInMonth = calendar [month].length;
+            }
+            while (dayOfWeek < 8 && dayOfMonth < daysInMonth) {
+                System.out.println ("year: " + year + "\tday: " + dayOfWeek + "\tcalendar[" + month + "][" + dayOfMonth + "]: " + calendar [month] [dayOfMonth]);
+                if (dayOfWeek == 7 && year > 1900) {
+                    calendar [month] [dayOfMonth] ++;
+                    if (dayOfMonth == 0) {
+                        numOfSundays ++;
+                    }
+                }
+                dayOfMonth ++;
+                dayOfWeek ++;
+                if (dayOfWeek > 7) {
+                    dayOfWeek = 1;
+                }
+            }
+        }
+    }
+    for (int month = 0;
+    month < calendar.length; month ++) {
+        System.out.println (calendar [month] [0]);
+    }
+    System.out.println (numOfSundays);
+}
+----------------------------------------
+
+public static void main (String [] args) {
+    int yearStart = 1901, yearEnd = 2000;
+    int monthStart = 1, monthEnd = 12;
+    int dayStart = 6, dayEnd = 31;
+    Date dateStart = new Date (yearStart, monthStart, dayStart);
+    Date dateStop = new Date (yearEnd, monthEnd, dayEnd);
+    int result = 0;
+    while (Date.compareDates (dateStart, dateStop) < 0) {
+        if (dateStart.day == 1) {
+            result ++;
+        }
+        dateStart.addDays (7);
+    }
+    System.out.println (result);
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+10370508_10370970_2_65
+10370508_44315611_3_39
+Title: "Java count number of Sundays that fell on 1st of the month from 1901 to 2000" 
+----------------------------------------
+
+public static void main (String [] args) {
+    final int ThirtyOne = 31;
+    final int Thirty = 30;
+    final int FebNorm = 28;
+    final int FebLeap = 29;
+    int numOfSundays = 0;
+    int calendar [] [] = new int [12] [];
+    calendar [0] = new int [ThirtyOne];
+    calendar [1] = new int [FebLeap];
+    calendar [2] = new int [ThirtyOne];
+    calendar [3] = new int [Thirty];
+    calendar [4] = new int [ThirtyOne];
+    calendar [5] = new int [Thirty];
+    calendar [6] = new int [ThirtyOne];
+    calendar [7] = new int [ThirtyOne];
+    calendar [8] = new int [Thirty];
+    calendar [9] = new int [ThirtyOne];
+    calendar [10] = new int [Thirty];
+    calendar [11] = new int [ThirtyOne];
+    int dayOfWeek = 1;
+    for (int year = 1900;
+    year < 2001; year ++) {
+        for (int month = 0;
+        month < calendar.length; month ++) {
+            int dayOfMonth = 0;
+            int daysInMonth;
+            if (month == 1) {
+                daysInMonth = isLeapYear (year) ? FebLeap : FebNorm;
+            } else {
+                daysInMonth = calendar [month].length;
+            }
+            while (dayOfWeek < 8 && dayOfMonth < daysInMonth) {
+                System.out.println ("year: " + year + "\tday: " + dayOfWeek + "\tcalendar[" + month + "][" + dayOfMonth + "]: " + calendar [month] [dayOfMonth]);
+                if (dayOfWeek == 7 && year > 1900) {
+                    calendar [month] [dayOfMonth] ++;
+                    if (dayOfMonth == 0) {
+                        numOfSundays ++;
+                    }
+                }
+                dayOfMonth ++;
+                dayOfWeek ++;
+                if (dayOfWeek > 7) {
+                    dayOfWeek = 1;
+                }
+            }
+        }
+    }
+    for (int month = 0;
+    month < calendar.length; month ++) {
+        System.out.println (calendar [month] [0]);
+    }
+    System.out.println (numOfSundays);
+}
+----------------------------------------
+
+public static void main (String [] args) {
+    int lastDayOfPreviousMonth = 6;
+    int countOfSundayOnFirstOfMonth = 0;
+    for (int year = 1900;
+    year <= 2000; year ++) {
+        for (int month = 1;
+        month <= 12; month ++) {
+            int dayOnFirstOfThisMonth = (lastDayOfPreviousMonth + 1) % 7;
+            if (year > 1900 && dayOnFirstOfThisMonth == 6) countOfSundayOnFirstOfMonth ++;
+
+            switch (month) {
+                case 1 :
+                case 3 :
+                case 5 :
+                case 7 :
+                case 8 :
+                case 10 :
+                case 12 :
+                    lastDayOfPreviousMonth = (lastDayOfPreviousMonth + 3) % 7;
+                    break;
+                case 4 :
+                case 6 :
+                case 9 :
+                case 11 :
+                    lastDayOfPreviousMonth = (lastDayOfPreviousMonth + 2) % 7;
+                    break;
+                case 2 :
+                    if (year % 4 == 0 && (year % 100 != 0 || year % 400 == 0)) lastDayOfPreviousMonth = (lastDayOfPreviousMonth + 1) % 7;
+
+            }
+        }
+    }
+    System.out.println (countOfSundayOnFirstOfMonth);
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+10370508_10371049_4_17
+10370508_10373651_1_27
+Title: "Java count number of Sundays that fell on 1st of the month from 1901 to 2000" 
+----------------------------------------
+
+public static void main (String [] args) {
+    Calendar calendar = Calendar.getInstance ();
+    int countFirstSunday = 0;
+    for (int year = 1901;
+    year <= 2000; year ++) {
+        for (int month = 0;
+        month <= 11; month ++) {
+            calendar.set (year, month, 1);
+            if (calendar.get (Calendar.DAY_OF_WEEK) == Calendar.SUNDAY) {
+                countFirstSunday ++;
+            }
+        }
+    }
+    System.out.println ("Sundays as the first of month: " + countFirstSunday);
+}
+----------------------------------------
+
+public static void main (String [] args) {
+    final int thirtyOne = 31, thirty = 30;
+    final int calendar [] [] = new int [12] [];
+    final int [] febLeap = new int [29];
+    final int [] febNorm = new int [28];
+    calendar [0] = new int [thirtyOne];
+    calendar [2] = new int [thirtyOne];
+    calendar [3] = new int [thirty];
+    calendar [4] = new int [thirtyOne];
+    calendar [5] = new int [thirty];
+    calendar [6] = new int [thirtyOne];
+    calendar [7] = new int [thirtyOne];
+    calendar [8] = new int [thirty];
+    calendar [9] = new int [thirtyOne];
+    calendar [10] = new int [thirty];
+    calendar [11] = new int [thirtyOne];
+    int dow = 0;
+    for (int y = 1901;
+    y < 2001; y ++) {
+        calendar [1] = leapYearTest (y) ? febLeap : febNorm;
+        for (int m = 0;
+        m < calendar.length; m ++) for (int d = 0;
+        d < calendar [m].length; d ++) if (dow ++ % 7 == 0) calendar [m] [d] ++;
+
+    }
+    int sumSundays = calendar [0] [0] + febLeap [0] + febNorm [0];
+    for (int i = 2;
+    i < calendar.length; i ++) sumSundays += calendar [i] [0];
+
+    System.out.println ("Number of Sundays is " + sumSundays);
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+10370508_10371049_4_17
+10370508_27071542_3_22
+Title: "Java count number of Sundays that fell on 1st of the month from 1901 to 2000" 
+----------------------------------------
+
+public static void main (String [] args) {
+    Calendar calendar = Calendar.getInstance ();
+    int countFirstSunday = 0;
+    for (int year = 1901;
+    year <= 2000; year ++) {
+        for (int month = 0;
+        month <= 11; month ++) {
+            calendar.set (year, month, 1);
+            if (calendar.get (Calendar.DAY_OF_WEEK) == Calendar.SUNDAY) {
+                countFirstSunday ++;
+            }
+        }
+    }
+    System.out.println ("Sundays as the first of month: " + countFirstSunday);
+}
+----------------------------------------
+
+public static void main (String [] args) {
+    int yearStart = 1901, yearEnd = 2000;
+    int monthStart = 1, monthEnd = 12;
+    int dayStart = 6, dayEnd = 31;
+    Date dateStart = new Date (yearStart, monthStart, dayStart);
+    Date dateStop = new Date (yearEnd, monthEnd, dayEnd);
+    int result = 0;
+    while (Date.compareDates (dateStart, dateStop) < 0) {
+        if (dateStart.day == 1) {
+            result ++;
+        }
+        dateStart.addDays (7);
+    }
+    System.out.println (result);
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+10370508_10371049_4_17
+10370508_44315611_3_39
+Title: "Java count number of Sundays that fell on 1st of the month from 1901 to 2000" 
+----------------------------------------
+
+public static void main (String [] args) {
+    Calendar calendar = Calendar.getInstance ();
+    int countFirstSunday = 0;
+    for (int year = 1901;
+    year <= 2000; year ++) {
+        for (int month = 0;
+        month <= 11; month ++) {
+            calendar.set (year, month, 1);
+            if (calendar.get (Calendar.DAY_OF_WEEK) == Calendar.SUNDAY) {
+                countFirstSunday ++;
+            }
+        }
+    }
+    System.out.println ("Sundays as the first of month: " + countFirstSunday);
+}
+----------------------------------------
+
+public static void main (String [] args) {
+    int lastDayOfPreviousMonth = 6;
+    int countOfSundayOnFirstOfMonth = 0;
+    for (int year = 1900;
+    year <= 2000; year ++) {
+        for (int month = 1;
+        month <= 12; month ++) {
+            int dayOnFirstOfThisMonth = (lastDayOfPreviousMonth + 1) % 7;
+            if (year > 1900 && dayOnFirstOfThisMonth == 6) countOfSundayOnFirstOfMonth ++;
+
+            switch (month) {
+                case 1 :
+                case 3 :
+                case 5 :
+                case 7 :
+                case 8 :
+                case 10 :
+                case 12 :
+                    lastDayOfPreviousMonth = (lastDayOfPreviousMonth + 3) % 7;
+                    break;
+                case 4 :
+                case 6 :
+                case 9 :
+                case 11 :
+                    lastDayOfPreviousMonth = (lastDayOfPreviousMonth + 2) % 7;
+                    break;
+                case 2 :
+                    if (year % 4 == 0 && (year % 100 != 0 || year % 400 == 0)) lastDayOfPreviousMonth = (lastDayOfPreviousMonth + 1) % 7;
+
+            }
+        }
+    }
+    System.out.println (countOfSundayOnFirstOfMonth);
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+10370508_10373651_1_27
+10370508_27071542_3_22
+Title: "Java count number of Sundays that fell on 1st of the month from 1901 to 2000" 
+----------------------------------------
+
+public static void main (String [] args) {
+    final int thirtyOne = 31, thirty = 30;
+    final int calendar [] [] = new int [12] [];
+    final int [] febLeap = new int [29];
+    final int [] febNorm = new int [28];
+    calendar [0] = new int [thirtyOne];
+    calendar [2] = new int [thirtyOne];
+    calendar [3] = new int [thirty];
+    calendar [4] = new int [thirtyOne];
+    calendar [5] = new int [thirty];
+    calendar [6] = new int [thirtyOne];
+    calendar [7] = new int [thirtyOne];
+    calendar [8] = new int [thirty];
+    calendar [9] = new int [thirtyOne];
+    calendar [10] = new int [thirty];
+    calendar [11] = new int [thirtyOne];
+    int dow = 0;
+    for (int y = 1901;
+    y < 2001; y ++) {
+        calendar [1] = leapYearTest (y) ? febLeap : febNorm;
+        for (int m = 0;
+        m < calendar.length; m ++) for (int d = 0;
+        d < calendar [m].length; d ++) if (dow ++ % 7 == 0) calendar [m] [d] ++;
+
+    }
+    int sumSundays = calendar [0] [0] + febLeap [0] + febNorm [0];
+    for (int i = 2;
+    i < calendar.length; i ++) sumSundays += calendar [i] [0];
+
+    System.out.println ("Number of Sundays is " + sumSundays);
+}
+----------------------------------------
+
+public static void main (String [] args) {
+    int yearStart = 1901, yearEnd = 2000;
+    int monthStart = 1, monthEnd = 12;
+    int dayStart = 6, dayEnd = 31;
+    Date dateStart = new Date (yearStart, monthStart, dayStart);
+    Date dateStop = new Date (yearEnd, monthEnd, dayEnd);
+    int result = 0;
+    while (Date.compareDates (dateStart, dateStop) < 0) {
+        if (dateStart.day == 1) {
+            result ++;
+        }
+        dateStart.addDays (7);
+    }
+    System.out.println (result);
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+10370508_10373651_1_27
+10370508_44315611_3_39
+Title: "Java count number of Sundays that fell on 1st of the month from 1901 to 2000" 
+----------------------------------------
+
+public static void main (String [] args) {
+    final int thirtyOne = 31, thirty = 30;
+    final int calendar [] [] = new int [12] [];
+    final int [] febLeap = new int [29];
+    final int [] febNorm = new int [28];
+    calendar [0] = new int [thirtyOne];
+    calendar [2] = new int [thirtyOne];
+    calendar [3] = new int [thirty];
+    calendar [4] = new int [thirtyOne];
+    calendar [5] = new int [thirty];
+    calendar [6] = new int [thirtyOne];
+    calendar [7] = new int [thirtyOne];
+    calendar [8] = new int [thirty];
+    calendar [9] = new int [thirtyOne];
+    calendar [10] = new int [thirty];
+    calendar [11] = new int [thirtyOne];
+    int dow = 0;
+    for (int y = 1901;
+    y < 2001; y ++) {
+        calendar [1] = leapYearTest (y) ? febLeap : febNorm;
+        for (int m = 0;
+        m < calendar.length; m ++) for (int d = 0;
+        d < calendar [m].length; d ++) if (dow ++ % 7 == 0) calendar [m] [d] ++;
+
+    }
+    int sumSundays = calendar [0] [0] + febLeap [0] + febNorm [0];
+    for (int i = 2;
+    i < calendar.length; i ++) sumSundays += calendar [i] [0];
+
+    System.out.println ("Number of Sundays is " + sumSundays);
+}
+----------------------------------------
+
+public static void main (String [] args) {
+    int lastDayOfPreviousMonth = 6;
+    int countOfSundayOnFirstOfMonth = 0;
+    for (int year = 1900;
+    year <= 2000; year ++) {
+        for (int month = 1;
+        month <= 12; month ++) {
+            int dayOnFirstOfThisMonth = (lastDayOfPreviousMonth + 1) % 7;
+            if (year > 1900 && dayOnFirstOfThisMonth == 6) countOfSundayOnFirstOfMonth ++;
+
+            switch (month) {
+                case 1 :
+                case 3 :
+                case 5 :
+                case 7 :
+                case 8 :
+                case 10 :
+                case 12 :
+                    lastDayOfPreviousMonth = (lastDayOfPreviousMonth + 3) % 7;
+                    break;
+                case 4 :
+                case 6 :
+                case 9 :
+                case 11 :
+                    lastDayOfPreviousMonth = (lastDayOfPreviousMonth + 2) % 7;
+                    break;
+                case 2 :
+                    if (year % 4 == 0 && (year % 100 != 0 || year % 400 == 0)) lastDayOfPreviousMonth = (lastDayOfPreviousMonth + 1) % 7;
+
+            }
+        }
+    }
+    System.out.println (countOfSundayOnFirstOfMonth);
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+10370508_27071542_3_22
+10370508_44315611_3_39
+Title: "Java count number of Sundays that fell on 1st of the month from 1901 to 2000" 
+----------------------------------------
+
+public static void main (String [] args) {
+    int yearStart = 1901, yearEnd = 2000;
+    int monthStart = 1, monthEnd = 12;
+    int dayStart = 6, dayEnd = 31;
+    Date dateStart = new Date (yearStart, monthStart, dayStart);
+    Date dateStop = new Date (yearEnd, monthEnd, dayEnd);
+    int result = 0;
+    while (Date.compareDates (dateStart, dateStop) < 0) {
+        if (dateStart.day == 1) {
+            result ++;
+        }
+        dateStart.addDays (7);
+    }
+    System.out.println (result);
+}
+----------------------------------------
+
+public static void main (String [] args) {
+    int lastDayOfPreviousMonth = 6;
+    int countOfSundayOnFirstOfMonth = 0;
+    for (int year = 1900;
+    year <= 2000; year ++) {
+        for (int month = 1;
+        month <= 12; month ++) {
+            int dayOnFirstOfThisMonth = (lastDayOfPreviousMonth + 1) % 7;
+            if (year > 1900 && dayOnFirstOfThisMonth == 6) countOfSundayOnFirstOfMonth ++;
+
+            switch (month) {
+                case 1 :
+                case 3 :
+                case 5 :
+                case 7 :
+                case 8 :
+                case 10 :
+                case 12 :
+                    lastDayOfPreviousMonth = (lastDayOfPreviousMonth + 3) % 7;
+                    break;
+                case 4 :
+                case 6 :
+                case 9 :
+                case 11 :
+                    lastDayOfPreviousMonth = (lastDayOfPreviousMonth + 2) % 7;
+                    break;
+                case 2 :
+                    if (year % 4 == 0 && (year % 100 != 0 || year % 400 == 0)) lastDayOfPreviousMonth = (lastDayOfPreviousMonth + 1) % 7;
+
+            }
+        }
+    }
+    System.out.println (countOfSundayOnFirstOfMonth);
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+10372046_10372062_1_16
+10372046_10372217_1_21
+Title: Swing: jLabel.setText invoked too late 
+----------------------------------------
+
+private void searchForPattern (java.awt.event.ActionEvent evt) {
+    textArea.setText ("");
+    busyLabel.setText ("Searching ...");
+    new SwingWorker < Void, Void > () {
+        @Override
+        protected Void doInBackground () throws Exception {
+            doSearch ();
+            return null;
+        }@Override
+        protected void done () {
+            busyLabel.setText ("Idle");
+        }}
+
+    .execute ();
+}
+----------------------------------------
+
+private void searchForPattern (java.awt.event.ActionEvent evt) {
+    SwingUtilities.invokeLater (new Runnable () {
+        public void run () {
+            textArea.setText ("");
+            busyLabel.setText ("Searchnig ...");
+        }}
+
+    );
+    doSearch ();
+    SwingUtilities.invokeLater (new Runnable () {
+        public void run () {
+            busyLabel.setText ("Idle");
+        }}
+
+    );
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+10401992_10403473_35_81
+10401992_10403473_88_102
+Title: Swing JPopupMenu: grey area overlapping 
+----------------------------------------
+
+public void run () {
+    countCalled ++;
+    if (countCalled < maxCalled) {
+        if (countCalled % 3 == 0) {
+        } else {
+            if (this.getExecutionTime () < ALLOWED_TARDINESS) {
+                countRun ++;
+                isThereReallyEDT ();
+            }
+        }
+    } else {
+        System.out.println ("Terminating this madness");
+        System.exit (0);
+    }
+}
+----------------------------------------
+
+public void run () {
+    isThereReallyEDT ();
+    Label label1 = new Label ("Hello in frame 1");
+    for (int i = 1;
+    i <= 5; i ++) {
+        MenuItem menuItem = new MenuItem ("item" + i);
+        popup1.add (menuItem);
+    }
+    label1.add (popup1);
+    frame1.setDefaultCloseOperation (JFrame.EXIT_ON_CLOSE);
+    frame1.add (label1);
+    frame1.pack ();
+    frame1.setLocation (100, 100);
+    frame1.setVisible (true);
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+10405994_10415259_31_41
+10405994_10415259_45_53
+Title: Remove column from a JTable 
+----------------------------------------
+
+public void actionPerformed (ActionEvent arg0) {
+    if (table.getColumnCount () > 0) {
+        TableColumn colToDelete = table.getColumnModel ().getColumn (table.getColumnCount () - 1);
+        table.removeColumn (colToDelete);
+        table.validate ();
+        colDeleted.push (colToDelete);
+        button1.setEnabled (true);
+    } else {
+        button.setEnabled (false);
+    }
+}
+----------------------------------------
+
+public void actionPerformed (ActionEvent arg0) {
+    if (colDeleted.size () > 0) {
+        table.addColumn (colDeleted.pop ());
+        table.validate ();
+        button.setEnabled (true);
+    } else {
+        button1.setEnabled (false);
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+10405994_15408721_15_38
+10405994_29464325_1_23
+Title: Remove column from a JTable 
+----------------------------------------
+
+private void removeColumn (int columnIndex) {
+    String [] [] data = new String [table.getRowCount ()] [table.getColumnCount () - 1];
+    for (int i = 0;
+    i < table.getRowCount (); i ++) {
+        for (int j = 0;
+        j < table.getColumnCount (); j ++) {
+            if (j != columnIndex) {
+                if (table.getValueAt (i, j) == null) {
+                    table.setValueAt ("", i, j);
+                }
+                if (j < columnIndex) {
+                    data [i] [j] = table.getValueAt (i, j).toString ();
+                } else {
+                    data [i] [j - 1] = table.getValueAt (i, j).toString ();
+                }
+            }
+        }
+    }
+    modeltable = new DefaultTableModel (data, getRemainingIdentifiers (columnIndex));
+    table.setModel (modeltable);
+}
+----------------------------------------
+
+private void removeColumn (int index, JTable myTable) {
+    int nRow = myTable.getRowCount ();
+    int nCol = myTable.getColumnCount () - 1;
+    Object [] [] cells = new Object [nRow] [nCol];
+    String [] names = new String [nCol];
+    for (int j = 0;
+    j < nCol; j ++) {
+        if (j < index) {
+            names [j] = myTable.getColumnName (j);
+            for (int i = 0;
+            i < nRow; i ++) {
+                cells [i] [j] = myTable.getValueAt (i, j);
+            }
+        } else {
+            names [j] = myTable.getColumnName (j + 1);
+            for (int i = 0;
+            i < nRow; i ++) {
+                cells [i] [j] = myTable.getValueAt (i, j + 1);
+            }
+        }
+    }
+    DefaultTableModel newModel = new DefaultTableModel (cells, names);
+    myTable.setModel (newModel);
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+10406730_10406962_25_38
+10406730_10406962_47_54
+Title: Java: How Executors relate to Queues 
+----------------------------------------
+
+public void run () {
+    int sum = 0;
+    while (true) {
+        try {
+            Integer result = queue.take ();
+            sum += result;
+            System.out.println ("New sum is " + sum);
+        } catch (InterruptedException e) {
+            e.printStackTrace ();
+        }
+    }
+}
+----------------------------------------
+
+public void run () {
+    System.out.println ("Worker started counting from " + start + " to " + stop);
+    int count = 0;
+    for (int i = start;
+    i < stop; i ++) {
+        count += i;
+    }
+    queue.add (count);
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+10413977_10414459_64_71
+10413977_10414459_76_86
+Title: Java:Removing all the rows of DefaultTableModel 
+----------------------------------------
+
+public void actionPerformed (ActionEvent arg0) {
+    if (model.getRowCount () > 0) {
+        for (int i = model.getRowCount () - 1;
+        i > - 1; i --) {
+            model.removeRow (i);
+        }
+    }
+    System.out.println ("model.getRowCount() --->" + model.getRowCount ());
+}
+----------------------------------------
+
+public void actionPerformed (ActionEvent arg0) {
+    Object [] data0 = {"Buy", "IBM", new Integer (1000), new Double (80.50)};
+    model.addRow (data0);
+    Object [] data1 = {"Sell", "MicroSoft", new Integer (2000), new Double (6.25)};
+    model.addRow (data1);
+    Object [] data2 = {"Sell", "Apple", new Integer (3000), new Double (7.35)};
+    model.addRow (data2);
+    Object [] data3 = {"Buy", "Nortel", new Integer (4000), new Double (20.00)};
+    model.addRow (data3);
+    System.out.println ("model.getRowCount() --->" + model.getRowCount ());
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+10453876_10454113_19_28
+10453876_10454113_30_40
+Title: "How do I ""cancel"" a CountDownLatch?" 
+----------------------------------------
+
+public void await () throws InterruptedException {
+    lock.lock ();
+    try {
+        if (getCount () > 0) {
+            countIsZero.await ();
+        }
+    } finally {
+        lock.unlock ();
+    }
+}
+----------------------------------------
+
+public boolean await (long time, TimeUnit unit) throws InterruptedException {
+    lock.lock ();
+    try {
+        if (getCount () > 0) {
+            return countIsZero.await (time, unit);
+        }
+    } finally {
+        lock.unlock ();
+    }
+    return true;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+10455081_10455113_1_10
+10455081_10455357_32_64
+Title: "Java OO design -- associate a (keyvalue) pair with the value of a boolean variable" 
+----------------------------------------
+
+private setState (List < KeyValuePair > pairs) {
+    for (KeyValuePair pair : pairs) {
+        String key = pair.getKey ();
+        String value = pair.getValue ();
+        hungry = (key.equals ("hunger") && value.equals ("Y")) || hungry;
+        sleepy = (key.equals ("tired") && value.equals ("Y")) || sleepy;
+        happy = (key.equals ("sad") && value.equals ("N")) || happy;
+    }
+}
+----------------------------------------
+
+public boolean setState (List < KeyValuePair > pairs) {
+    boolean happy = false;
+    final Comparator < KeyValuePair > comparator = new Comparator < KeyValuePair > () {
+        @Override
+        public int compare (KeyValuePair o1, KeyValuePair o2) {
+            int compareTo = o1.getKey ().compareTo (o2.getKey ());
+            if (compareTo == 0) {
+                compareTo = o1.getValue ().compareTo (o2.getValue ());
+            }
+            return compareTo;
+        }}
+
+    ;
+    final SortedSet < KeyValuePair > matchingKeyValuePairSet = new TreeSet < KeyValuePair > (comparator);
+    matchingKeyValuePairSet.add (new KeyValuePair ("hunger", "Y"));
+    matchingKeyValuePairSet.add (new KeyValuePair ("tired", "Y"));
+    matchingKeyValuePairSet.add (new KeyValuePair ("sad", "N"));
+    for (KeyValuePair pair : pairs) {
+        happy |= matchingKeyValuePairSet.contains (pair);
+    }
+    return happy;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+10461381_10461417_1_22
+10461381_10461487_1_10
+Title: Arrays logical error 
+----------------------------------------
+
+public boolean linearIn (int [] outer, int [] inner) {
+    for (int x : inner) {
+        boolean result = false;
+        for (int y : outer) {
+            if (x == y) {
+                result = true;
+                break;
+            }
+        }
+        if (result == false) return false;
+
+    }
+    return true;
+}
+----------------------------------------
+
+public boolean linearIn (int [] outer, int [] inner) {
+    int in = 0;
+    for (int i : outer) {
+        if (in == inner.length) return true;
+
+        if (inner [in] == i) in ++;
+
+    }
+    if (in == inner.length) return true;
+
+    return false;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+10461381_10461417_1_22
+10461381_10461648_1_26
+Title: Arrays logical error 
+----------------------------------------
+
+public boolean linearIn (int [] outer, int [] inner) {
+    for (int x : inner) {
+        boolean result = false;
+        for (int y : outer) {
+            if (x == y) {
+                result = true;
+                break;
+            }
+        }
+        if (result == false) return false;
+
+    }
+    return true;
+}
+----------------------------------------
+
+public boolean linearIn (int [] outer, int [] inner) {
+    int i, j;
+    for (i = 0, j = 0; i < outer.length && j < inner.length; i ++) {
+        while (i < outer.length - 1 && outer [i] == outer [i + 1]) {
+            i ++;
+        }
+        while (j < inner.length - 1 && inner [j] == inner [j + 1]) {
+            j ++;
+        }
+        if (inner [j] < outer [i]) {
+            return false;
+        }
+        if (inner [j] == outer [i]) {
+            j ++;
+        }
+    }
+    if (j == inner.length) {
+        return true;
+    }
+    return false;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+10461381_10461487_1_10
+10461381_10461648_1_26
+Title: Arrays logical error 
+----------------------------------------
+
+public boolean linearIn (int [] outer, int [] inner) {
+    int in = 0;
+    for (int i : outer) {
+        if (in == inner.length) return true;
+
+        if (inner [in] == i) in ++;
+
+    }
+    if (in == inner.length) return true;
+
+    return false;
+}
+----------------------------------------
+
+public boolean linearIn (int [] outer, int [] inner) {
+    int i, j;
+    for (i = 0, j = 0; i < outer.length && j < inner.length; i ++) {
+        while (i < outer.length - 1 && outer [i] == outer [i + 1]) {
+            i ++;
+        }
+        while (j < inner.length - 1 && inner [j] == inner [j + 1]) {
+            j ++;
+        }
+        if (inner [j] < outer [i]) {
+            return false;
+        }
+        if (inner [j] == outer [i]) {
+            j ++;
+        }
+    }
+    if (j == inner.length) {
+        return true;
+    }
+    return false;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+10462819_25133733_3_23
+10462819_30026740_3_14
+Title: Get keys from HashMap in Java 
+----------------------------------------
+
+public static void main (String args []) {
+    HashMap map = new HashMap ();
+    map.put (1, "one");
+    map.put (2, "two");
+    map.put (3, "three");
+    map.put (4, "four");
+    Set keyset = map.keySet ();
+    System.out.println ("Key set values are: " + keyset);
+}
+----------------------------------------
+
+public static void main (String a []) {
+    HashMap < String, String > hm = new HashMap < String, String > ();
+    hm.put ("first", "FIRST INSERTED");
+    hm.put ("second", "SECOND INSERTED");
+    hm.put ("third", "THIRD INSERTED");
+    System.out.println (hm);
+    Set < String > keys = hm.keySet ();
+    for (String key : keys) {
+        System.out.println (key);
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+10469701_12996338_15_26
+10469701_49790305_7_18
+Title: How to configure Java Priority Queue to ignore duplicates? 
+----------------------------------------
+
+public static void main (String args []) {
+    PriorityQueue < Integer > p = new NoDuplicates < Integer > ();
+    p.add (10);
+    p.add (20);
+    p.add (10);
+    for (int i = 0;
+    i <= 2; i ++) {
+        System.out.println (p.poll ());
+    }
+}
+----------------------------------------
+
+public static void main (String [] args) {
+    HashSet < Integer > s = new HashSet < > ();
+    s.add (10);
+    s.add (20);
+    s.add (5);
+    s.add (10);
+    PriorityQueue < Integer > q = new PriorityQueue < > (s);
+    System.out.println (q);
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+10472656_10472735_4_16
+10472656_10472897_5_32
+Title: java iterator in a nested map (Map 2D) 
+----------------------------------------
+
+public static void main (String [] args) {
+    Map < String, String > innerMap = new HashMap < > ();
+    Map < String, Map < String, String > > outerMap = new HashMap < > ();
+    innerMap.put ("Key1", "Val1");
+    innerMap.put ("Key2", "Val2");
+    innerMap.put ("Key3", "Val3");
+    innerMap.put ("Key4", "Val4");
+    outerMap.put ("OuterKey1", innerMap);
+    printNestedMap (outerMap);
+}
+----------------------------------------
+
+public static void main (String [] args) {
+    Map < String, String > innerMap1 = new HashMap < String, String > ();
+    Map < String, String > innerMap2 = new HashMap < String, String > ();
+    Map < String, Map < String, String > > outerMap = new HashMap < String, Map < String, String > > ();
+    innerMap1.put ("InnerKey1", "Val1");
+    innerMap1.put ("InnerKey2", "Val2");
+    innerMap1.put ("InnerKey3", "Val3");
+    innerMap1.put ("InnerKey4", "Val4");
+    innerMap2.put ("InnerKey5", "Val5");
+    innerMap2.put ("InnerKey6", "Val6");
+    innerMap2.put ("InnerKey7", "Val7");
+    innerMap2.put ("InnerKey8", "Val8");
+    outerMap.put ("OuterKey1", innerMap1);
+    outerMap.put ("OuterKey2", innerMap2);
+    Map < Pair < String, String >, String > convertedMap = convert (outerMap);
+    for (Map.Entry < Pair < String, String >, String > entry : convertedMap.entrySet ()) {
+        System.out.println (String.format ("OuterKey: %s, InnerKey: %s, Value: %s", entry.getKey ().getFirst (), entry.getKey ().getSecond (), entry.getValue ()));
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+1047597_1048180_120_131
+1047597_1048180_145_156
+Title: Java to batch file 
+----------------------------------------
+
+public void run () {
+    String nextLine = null;
+    try {
+        while ((nextLine = reader.readLine ()) != null) {
+            stderr.add (nextLine);
+        }
+    } catch (IOException e) {
+        System.out.println ("CommandExecutor.connectStderrReader() error in reader thread");
+        e.printStackTrace (System.out);
+    }
+}
+----------------------------------------
+
+public void run () {
+    String nextLine = null;
+    try {
+        while ((nextLine = reader.readLine ()) != null) {
+            stdout.add (nextLine);
+        }
+    } catch (IOException e) {
+        System.out.println ("CommandExecutor.connectStdoutReader() error in reader thread");
+        e.printStackTrace (System.out);
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+10486076_39945930_9_30
+10486076_40414268_6_26
+Title: How can I split a string into words in Java without using String.split()? 
+----------------------------------------
+
+public static String [] split (String s) {
+    int count = 0;
+    char [] c = s.toCharArray ();
+    for (int i = 0;
+    i < c.length; i ++) {
+        if (c [i] == ' ') {
+            count ++;
+        }
+    }
+    String temp = "";
+    int k = 0;
+    String [] rev = new String [count + 1];
+    for (int i = 0;
+    i < c.length; i ++) {
+        if (c [i] == ' ') {
+            rev [k ++] = temp;
+            temp = "";
+        } else temp = temp + c [i];
+
+    }
+    rev [k] = temp;
+    return rev;
+}
+----------------------------------------
+
+static void split (char delimeter, String line) {
+    String word = "";
+    String wordsArr [] = new String [3];
+    int k = 0;
+    for (int i = 0;
+    i < line.length (); i ++) {
+        if (line.charAt (i) != delimeter) {
+            word += line.charAt (i);
+        } else {
+            wordsArr [k] = word;
+            word = "";
+            k ++;
+        }
+    }
+    wordsArr [k] = word;
+    for (int j = 0;
+    j < wordsArr.length; j ++) System.out.println (wordsArr [j]);
+
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+10488621_10488649_4_17
+10488621_10488653_2_12
+Title: Java Arrays binarySearch 
+----------------------------------------
+
+public static void main (String [] args) {
+    String [] arr = new String [6];
+    arr [0] = "ccc";
+    arr [1] = "aaa";
+    arr [2] = "bbb";
+    arr [3] = "eee";
+    arr [4] = "ddd";
+    arr [5] = "aaa";
+    System.out.println (Arrays.toString (arr));
+    System.out.println ("\"eee\" was found at index: " + Arrays.binarySearch (arr, "eee"));
+    Arrays.sort (arr);
+    System.out.println (Arrays.toString (arr));
+    System.out.println ("\"eee\" was found at index: " + Arrays.binarySearch (arr, "eee"));
+}
+----------------------------------------
+
+public static void main (String [] args) {
+    String [] arr = new String [6];
+    arr [0] = "ccc";
+    arr [1] = "aaa";
+    arr [2] = "bbb";
+    arr [3] = "eee";
+    arr [4] = "ddd";
+    arr [5] = "aaa";
+    System.out.println (Arrays.binarySearch (arr, "eee"));
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+1049434_1053188_36_60
+1049434_1383130_1_11
+Title: Is there a neater way of testing calls to mocked methods for each item in a list 
+----------------------------------------
+
+public void testExecuteEven (final Bar bar) {
+    final List < String > allParameters = new ArrayList < String > ();
+    final List < Matcher < ? extends String > > expectedParameters = new ArrayList < Matcher < ? extends String > > ();
+    for (int i = 0;
+    i < 3; i ++) {
+        allParameters.add ("param" + i);
+        if (i % 2 == 0) {
+            expectedParameters.add (new IsEqual < String > ("param" + i));
+        }
+    }
+    new Expectations () {
+
+        {
+            bar.doIt (with (anyOf (expectedParameters)));
+            repeats (expectedParameters.size ());
+        }
+
+    }
+
+    ;
+    Foo subject = new Foo ();
+    subject.setBar (bar);
+    subject.executeEven (allParameters);
+}
+----------------------------------------
+
+public void testExecuteEven () {
+    final List < String > values = Arrays.asList ("param0", "param1", "param2", "param3");
+    Sequence evens = mockery.sequence ("evens");
+    mockery.checking (new Expectations () {
+
+        {
+            oneOf (bar).doIt (values.get (0));
+            inSequence (evens);
+            oneOf (bar).doIt (values.get (2));
+            inSequence (evens);
+        }
+
+    }
+
+    );
+    subject.executeEven (values);
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+1049434_1053188_36_60
+1049434_2111778_1_39
+Title: Is there a neater way of testing calls to mocked methods for each item in a list 
+----------------------------------------
+
+public void testExecuteEven (final Bar bar) {
+    final List < String > allParameters = new ArrayList < String > ();
+    final List < Matcher < ? extends String > > expectedParameters = new ArrayList < Matcher < ? extends String > > ();
+    for (int i = 0;
+    i < 3; i ++) {
+        allParameters.add ("param" + i);
+        if (i % 2 == 0) {
+            expectedParameters.add (new IsEqual < String > ("param" + i));
+        }
+    }
+    new Expectations () {
+
+        {
+            bar.doIt (with (anyOf (expectedParameters)));
+            repeats (expectedParameters.size ());
+        }
+
+    }
+
+    ;
+    Foo subject = new Foo ();
+    subject.setBar (bar);
+    subject.executeEven (allParameters);
+}
+----------------------------------------
+
+@Test
+public void testExecuteEven () {
+    Mockery mockery = new Mockery ();
+    Sequence evens = mockery.sequence ("evens");
+    final Bar bar = mockery.mock (Bar.class);
+    List < Expectations > expectations = new ArrayList < Expectations > ();
+    final List < String > allParameters = new ArrayList < String > ();
+    final List < String > expectedParameters = new ArrayList < String > ();
+    for (int i = 0;
+    i < 3; i ++) {
+        allParameters.add ("param" + i);
+        if (i % 2 == 0) {
+            expectedParameters.add ("param" + i);
+        }
+    }
+    for (String param : expectedParameters) {
+        expectations.add (new Expectations () {
+
+            {
+                oneOf (bar).doIt (param);
+                inSequence (evens);
+            }
+
+        }
+
+        );
+    }
+    expectations.add (new Expectations () {
+
+        {
+            oneOf (bar).doSomethingElse ()
+        }
+
+    }
+
+    );
+    for (Expectations expectation : expectations) {
+        mockery.checking (expectation);
+    }
+    Foo subject = new Foo ();
+    subject.setBar (bar);
+    subject.executeEven (allParameters);
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+1049434_1383130_1_11
+1049434_2111778_1_39
+Title: Is there a neater way of testing calls to mocked methods for each item in a list 
+----------------------------------------
+
+public void testExecuteEven () {
+    final List < String > values = Arrays.asList ("param0", "param1", "param2", "param3");
+    Sequence evens = mockery.sequence ("evens");
+    mockery.checking (new Expectations () {
+
+        {
+            oneOf (bar).doIt (values.get (0));
+            inSequence (evens);
+            oneOf (bar).doIt (values.get (2));
+            inSequence (evens);
+        }
+
+    }
+
+    );
+    subject.executeEven (values);
+}
+----------------------------------------
+
+@Test
+public void testExecuteEven () {
+    Mockery mockery = new Mockery ();
+    Sequence evens = mockery.sequence ("evens");
+    final Bar bar = mockery.mock (Bar.class);
+    List < Expectations > expectations = new ArrayList < Expectations > ();
+    final List < String > allParameters = new ArrayList < String > ();
+    final List < String > expectedParameters = new ArrayList < String > ();
+    for (int i = 0;
+    i < 3; i ++) {
+        allParameters.add ("param" + i);
+        if (i % 2 == 0) {
+            expectedParameters.add ("param" + i);
+        }
+    }
+    for (String param : expectedParameters) {
+        expectations.add (new Expectations () {
+
+            {
+                oneOf (bar).doIt (param);
+                inSequence (evens);
+            }
+
+        }
+
+        );
+    }
+    expectations.add (new Expectations () {
+
+        {
+            oneOf (bar).doSomethingElse ()
+        }
+
+    }
+
+    );
+    for (Expectations expectation : expectations) {
+        mockery.checking (expectation);
+    }
+    Foo subject = new Foo ();
+    subject.setBar (bar);
+    subject.executeEven (allParameters);
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+10501559_10502137_11_18
+10501559_10502843_11_19
+Title: JDialog fixed height 
+----------------------------------------
+
+public static void main (String [] args) {
+    SwingUtilities.invokeLater (new Runnable () {
+        @Override
+        public void run () {
+            init ();
+        }}
+
+    );
+}
+----------------------------------------
+
+public static void main (String [] args) {
+    SwingUtilities.invokeLater (new Runnable () {
+        @Override
+        public void run () {
+            new WidthResizeableDialog ().makeUI ();
+        }}
+
+    );
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+10504498_10504648_1_12
+10504498_10504673_1_10
+Title: lexical analyzer 
+----------------------------------------
+
+public static void main (String [] args) {
+    String s = "(3+4)*5";
+    System.out.println ("s = " + s);
+    char [] chars = s.toCharArray ();
+    for (int i = 0;
+    i < chars.length; i ++) {
+        lookup (chars [i]);
+    }
+}
+----------------------------------------
+
+public static void main (String [] args) {
+    String s = "(3+4)*5";
+    System.out.println ("s = " + s);
+    for (int i = 0;
+    i < s.length (); i ++) {
+        char ch = s.charAt (i);
+        lookup (ch);
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+10515174_17732631_132_147
+10515174_17732631_87_105
+Title: Conversion of Audio Format 
+----------------------------------------
+
+protected int compress (short sample) {
+    int sign;
+    int exponent;
+    int mantissa;
+    int compressedByte;
+    sign = (sample>> 8) & 0x80;
+    if (sign != 0) {
+        sample *= - 1;
+    }
+    if (sample > cClip) {
+        sample = cClip;
+    }
+    sample += cBias;
+    exponent = uLawCompressTable [(sample>> 7) & 0x00FF];
+    mantissa = (sample>> (exponent + 3)) & 0x0F;
+    compressedByte = ~ (sign | (exponent << 4) | mantissa);
+    return compressedByte & 0x000000FF;
+}
+----------------------------------------
+
+protected int compress (short sample) {
+    int sign;
+    int exponent;
+    int mantissa;
+    int compressedByte;
+    sign = ((~ sample)>> 8) & 0x80;
+    if (sign == 0) {
+        sample *= - 1;
+    }
+    if (sample > cClip) {
+        sample = cClip;
+    }
+    if (sample >= 256) {
+        exponent = ALawCompressTable [(sample>> 8) & 0x007F];
+        mantissa = (sample>> (exponent + 3)) & 0x0F;
+        compressedByte = 0x007F & ((exponent << 4) | mantissa);
+    } else {
+        compressedByte = 0x007F & (sample>> 4);
+    }
+    compressedByte ^= (sign ^ 0x55);
+    return compressedByte;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+10523424_10524446_112_120
+10523424_10524446_142_157
+Title: files duplication in java 
+----------------------------------------
+
+public void actionPerformed (ActionEvent e) {
+    for (File file : fileChooser.getSelectedFiles ()) {
+        try {
+            model.addFileToModel (file);
+        } catch (IllegalArgumentException e1) {
+            showError (btnNewButton, file);
+        }
+    }
+}
+----------------------------------------
+
+public void actionPerformed (ActionEvent e) {
+    File file = fileChooser.getSelectedFile ();
+    boolean found = false;
+    for (File f : vector) {
+        if (file.getName ().equals (f.getName ())) {
+            found = true;
+            break;
+        }
+    }
+    if (found) {
+        showError (btnNewButton_2, file);
+    } else {
+        JOptionPane.showMessageDialog (btnNewButton_2, "File " + file.getAbsolutePath () + " is not in the list yet");
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+10525555_10525626_1_16
+10525555_10525807_1_20
+Title: Sort a java collection of objects by one value and remain unique by another value 
+----------------------------------------
+
+public int compareTo (Artifact aThat) {
+    final int BEFORE = - 1;
+    final int EQUAL = 0;
+    final int AFTER = 1;
+    if (this == aThat) return EQUAL;
+
+    if (this.level < aThat.level) return BEFORE;
+
+    if (this.level > aThat.level) return AFTER;
+
+    return this.getTitle ().compareTo (aThat.getTitle ());
+}
+----------------------------------------
+
+@Override
+public int compareTo (Artifact aThat) {
+    final int BEFORE = - 1;
+    final int EQUAL = 0;
+    final int AFTER = 1;
+    if (this == aThat) return EQUAL;
+
+    if (this.level < aThat.level) return BEFORE;
+
+    if (this.level > aThat.level) return AFTER;
+
+    int compare = this.getTitle ().compareTo (aThat.getTitle ());
+    if (compare != EQUAL) return compare;
+
+    assert this.equals (aThat) : "compareTo inconsistent with equals.";
+    return EQUAL;
+}
+----------------------------------------

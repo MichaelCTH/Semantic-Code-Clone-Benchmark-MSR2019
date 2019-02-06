@@ -1,0 +1,4315 @@
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+13211334_13211589_10_21
+13211334_13211611_11_21
+Title: How do I wait until Task is finished in C#? 
+----------------------------------------
+
+private static string Print (Task < HttpResponseMessage > httpTask) {
+    Task < string > task = httpTask.Result.Content.ReadAsStringAsync ();
+    string result = string.Empty;
+    Task continuation = task.ContinueWith (t = > {
+        Console.WriteLine ("Result: " + t.Result);
+        result = t.Result;
+    });
+    continuation.Wait ();
+    return result;
+}
+----------------------------------------
+
+private static Task < string > Print (Task < HttpResponseMessage > httpTask) {
+    Task < string > task = httpTask.Result.Content.ReadAsStringAsync ();
+    string result = string.Empty;
+    task.ContinueWith (t = > {
+        Console.WriteLine ("Result: " + t.Result);
+        result = t.Result;
+    });
+    return task;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+13251457_13251854_14_22
+13251457_13251854_33_41
+Title: Get value of an Attribute-decorated property 
+----------------------------------------
+
+public void CheckOk (object value) {
+    var str = value as string;
+    if (str != value)
+        throw new Exception ("Not a string!");
+
+    if (str != null && str.Length > MaxLength)
+        throw new Exception ("To long!");
+
+}
+----------------------------------------
+
+public void CheckOk (object value) {
+    var str = value as string;
+    if (str != value)
+        throw new Exception ("Not a string!");
+
+    if (str != null && Chars.Any (c = > str.Contains (c)))
+        throw new Exception ("Contains forbidden character!");
+
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+13266277_13268230_110_134
+13266277_13268230_313_332
+Title: How do I call async methods in asp.net C# 4.0? 
+----------------------------------------
+
+public static CancellationTokenSource ExecuteBlockingOperation < TIn, TOut > (Func < TIn, TOut > func, TIn parameter, Action < TOut > completition, Action < AggregateException, TIn > onException) {
+    if (func == null)
+        throw new ArgumentNullException ("func");
+
+    if (completition == null)
+        throw new ArgumentNullException ("completition");
+
+    var cts = new CancellationTokenSource ();
+    var token = cts.Token;
+    var scheduler = TaskScheduler.FromCurrentSynchronizationContext ();
+    var task = new Task < TOut > (() = > func (parameter), TaskCreationOptions.LongRunning);
+    task.ContinueWith (asyncPartTask = > onException (asyncPartTask.Exception, parameter), CancellationToken.None, TaskContinuationOptions.OnlyOnFaulted, scheduler);
+    task.ContinueWith (asyncPart = > {
+        if (! token.IsCancellationRequested)
+            completition (asyncPart.Result);
+
+    }, CancellationToken.None, TaskContinuationOptions.OnlyOnRanToCompletion, scheduler);
+    task.Start ();
+    return cts;
+}
+----------------------------------------
+
+public static void ExecuteBlockingOperation < TIn > (Action < TIn > action, TIn parameter, Action < TIn > completition, Predicate < TIn > shouldComplete, Action < AggregateException, TIn > onException) {
+    if (action == null)
+        throw new ArgumentNullException ("action");
+
+    if (completition == null)
+        throw new ArgumentNullException ("completition");
+
+    var scheduler = TaskScheduler.FromCurrentSynchronizationContext ();
+    var task = new Task (() = > action (parameter), TaskCreationOptions.LongRunning);
+    task.ContinueWith (asyncPartTask = > onException (asyncPartTask.Exception, parameter), CancellationToken.None, TaskContinuationOptions.OnlyOnFaulted, scheduler);
+    task.ContinueWith (asyncPart = > {
+        if (shouldComplete == null || shouldComplete (parameter))
+            completition (parameter);
+
+    }, CancellationToken.None, TaskContinuationOptions.OnlyOnRanToCompletion, scheduler);
+    task.Start ();
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+13266277_13268230_110_134
+13266277_13268230_334_353
+Title: How do I call async methods in asp.net C# 4.0? 
+----------------------------------------
+
+public static CancellationTokenSource ExecuteBlockingOperation < TIn, TOut > (Func < TIn, TOut > func, TIn parameter, Action < TOut > completition, Action < AggregateException, TIn > onException) {
+    if (func == null)
+        throw new ArgumentNullException ("func");
+
+    if (completition == null)
+        throw new ArgumentNullException ("completition");
+
+    var cts = new CancellationTokenSource ();
+    var token = cts.Token;
+    var scheduler = TaskScheduler.FromCurrentSynchronizationContext ();
+    var task = new Task < TOut > (() = > func (parameter), TaskCreationOptions.LongRunning);
+    task.ContinueWith (asyncPartTask = > onException (asyncPartTask.Exception, parameter), CancellationToken.None, TaskContinuationOptions.OnlyOnFaulted, scheduler);
+    task.ContinueWith (asyncPart = > {
+        if (! token.IsCancellationRequested)
+            completition (asyncPart.Result);
+
+    }, CancellationToken.None, TaskContinuationOptions.OnlyOnRanToCompletion, scheduler);
+    task.Start ();
+    return cts;
+}
+----------------------------------------
+
+public static void ExecuteBlockingOperation < TOut > (Func < TOut > func, Action < TOut > completition, Predicate < TOut > shoudComplete, Action < AggregateException > onException) {
+    if (func == null)
+        throw new ArgumentNullException ("func");
+
+    if (completition == null)
+        throw new ArgumentNullException ("completition");
+
+    var scheduler = TaskScheduler.FromCurrentSynchronizationContext ();
+    var task = new Task < TOut > (func, TaskCreationOptions.LongRunning);
+    task.ContinueWith (asyncPartTask = > onException (asyncPartTask.Exception), CancellationToken.None, TaskContinuationOptions.OnlyOnFaulted, scheduler);
+    task.ContinueWith (asyncPartTask = > {
+        if (shoudComplete == null || shoudComplete (asyncPartTask.Result))
+            completition (asyncPartTask.Result);
+
+    }, CancellationToken.None, TaskContinuationOptions.OnlyOnRanToCompletion, scheduler);
+    task.Start ();
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+13266277_13268230_110_134
+13266277_13268230_355_374
+Title: How do I call async methods in asp.net C# 4.0? 
+----------------------------------------
+
+public static CancellationTokenSource ExecuteBlockingOperation < TIn, TOut > (Func < TIn, TOut > func, TIn parameter, Action < TOut > completition, Action < AggregateException, TIn > onException) {
+    if (func == null)
+        throw new ArgumentNullException ("func");
+
+    if (completition == null)
+        throw new ArgumentNullException ("completition");
+
+    var cts = new CancellationTokenSource ();
+    var token = cts.Token;
+    var scheduler = TaskScheduler.FromCurrentSynchronizationContext ();
+    var task = new Task < TOut > (() = > func (parameter), TaskCreationOptions.LongRunning);
+    task.ContinueWith (asyncPartTask = > onException (asyncPartTask.Exception, parameter), CancellationToken.None, TaskContinuationOptions.OnlyOnFaulted, scheduler);
+    task.ContinueWith (asyncPart = > {
+        if (! token.IsCancellationRequested)
+            completition (asyncPart.Result);
+
+    }, CancellationToken.None, TaskContinuationOptions.OnlyOnRanToCompletion, scheduler);
+    task.Start ();
+    return cts;
+}
+----------------------------------------
+
+public static void ExecuteBlockingOperation < TIn, TOut > (Func < TIn, TOut > func, TIn parameter, Action < TOut, TIn > completition, Func < TOut, TIn, bool > shouldComplete, Action < AggregateException, TIn > onException) {
+    if (func == null)
+        throw new ArgumentNullException ("func");
+
+    if (completition == null)
+        throw new ArgumentNullException ("completition");
+
+    var scheduler = TaskScheduler.FromCurrentSynchronizationContext ();
+    var task = new Task < TOut > (() = > func (parameter), TaskCreationOptions.LongRunning);
+    task.ContinueWith (asyncPartTask = > onException (asyncPartTask.Exception, parameter), CancellationToken.None, TaskContinuationOptions.OnlyOnFaulted, scheduler);
+    task.ContinueWith (asyncPart = > {
+        if (shouldComplete == null || shouldComplete (asyncPart.Result, parameter))
+            completition (asyncPart.Result, parameter);
+
+    }, CancellationToken.None, TaskContinuationOptions.OnlyOnRanToCompletion, scheduler);
+    task.Start ();
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+13266277_13268230_136_160
+13266277_13268230_313_332
+Title: How do I call async methods in asp.net C# 4.0? 
+----------------------------------------
+
+public static CancellationTokenSource ExecuteBlockingOperation < TIn, TOut > (Func < TIn, TOut > func, TIn parameter, Action < TIn > completition, Action < AggregateException, TIn > onException) {
+    if (func == null)
+        throw new ArgumentNullException ("func");
+
+    if (completition == null)
+        throw new ArgumentNullException ("completition");
+
+    var cts = new CancellationTokenSource ();
+    var token = cts.Token;
+    var scheduler = TaskScheduler.FromCurrentSynchronizationContext ();
+    var task = new Task < TOut > (() = > func (parameter), TaskCreationOptions.LongRunning);
+    task.ContinueWith (asyncPartTask = > onException (asyncPartTask.Exception, parameter), CancellationToken.None, TaskContinuationOptions.OnlyOnFaulted, scheduler);
+    task.ContinueWith (asyncPart = > {
+        if (! token.IsCancellationRequested)
+            completition (parameter);
+
+    }, CancellationToken.None, TaskContinuationOptions.OnlyOnRanToCompletion, scheduler);
+    task.Start ();
+    return cts;
+}
+----------------------------------------
+
+public static void ExecuteBlockingOperation < TIn > (Action < TIn > action, TIn parameter, Action < TIn > completition, Predicate < TIn > shouldComplete, Action < AggregateException, TIn > onException) {
+    if (action == null)
+        throw new ArgumentNullException ("action");
+
+    if (completition == null)
+        throw new ArgumentNullException ("completition");
+
+    var scheduler = TaskScheduler.FromCurrentSynchronizationContext ();
+    var task = new Task (() = > action (parameter), TaskCreationOptions.LongRunning);
+    task.ContinueWith (asyncPartTask = > onException (asyncPartTask.Exception, parameter), CancellationToken.None, TaskContinuationOptions.OnlyOnFaulted, scheduler);
+    task.ContinueWith (asyncPart = > {
+        if (shouldComplete == null || shouldComplete (parameter))
+            completition (parameter);
+
+    }, CancellationToken.None, TaskContinuationOptions.OnlyOnRanToCompletion, scheduler);
+    task.Start ();
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+13266277_13268230_136_160
+13266277_13268230_334_353
+Title: How do I call async methods in asp.net C# 4.0? 
+----------------------------------------
+
+public static CancellationTokenSource ExecuteBlockingOperation < TIn, TOut > (Func < TIn, TOut > func, TIn parameter, Action < TIn > completition, Action < AggregateException, TIn > onException) {
+    if (func == null)
+        throw new ArgumentNullException ("func");
+
+    if (completition == null)
+        throw new ArgumentNullException ("completition");
+
+    var cts = new CancellationTokenSource ();
+    var token = cts.Token;
+    var scheduler = TaskScheduler.FromCurrentSynchronizationContext ();
+    var task = new Task < TOut > (() = > func (parameter), TaskCreationOptions.LongRunning);
+    task.ContinueWith (asyncPartTask = > onException (asyncPartTask.Exception, parameter), CancellationToken.None, TaskContinuationOptions.OnlyOnFaulted, scheduler);
+    task.ContinueWith (asyncPart = > {
+        if (! token.IsCancellationRequested)
+            completition (parameter);
+
+    }, CancellationToken.None, TaskContinuationOptions.OnlyOnRanToCompletion, scheduler);
+    task.Start ();
+    return cts;
+}
+----------------------------------------
+
+public static void ExecuteBlockingOperation < TOut > (Func < TOut > func, Action < TOut > completition, Predicate < TOut > shoudComplete, Action < AggregateException > onException) {
+    if (func == null)
+        throw new ArgumentNullException ("func");
+
+    if (completition == null)
+        throw new ArgumentNullException ("completition");
+
+    var scheduler = TaskScheduler.FromCurrentSynchronizationContext ();
+    var task = new Task < TOut > (func, TaskCreationOptions.LongRunning);
+    task.ContinueWith (asyncPartTask = > onException (asyncPartTask.Exception), CancellationToken.None, TaskContinuationOptions.OnlyOnFaulted, scheduler);
+    task.ContinueWith (asyncPartTask = > {
+        if (shoudComplete == null || shoudComplete (asyncPartTask.Result))
+            completition (asyncPartTask.Result);
+
+    }, CancellationToken.None, TaskContinuationOptions.OnlyOnRanToCompletion, scheduler);
+    task.Start ();
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+13266277_13268230_136_160
+13266277_13268230_355_374
+Title: How do I call async methods in asp.net C# 4.0? 
+----------------------------------------
+
+public static CancellationTokenSource ExecuteBlockingOperation < TIn, TOut > (Func < TIn, TOut > func, TIn parameter, Action < TIn > completition, Action < AggregateException, TIn > onException) {
+    if (func == null)
+        throw new ArgumentNullException ("func");
+
+    if (completition == null)
+        throw new ArgumentNullException ("completition");
+
+    var cts = new CancellationTokenSource ();
+    var token = cts.Token;
+    var scheduler = TaskScheduler.FromCurrentSynchronizationContext ();
+    var task = new Task < TOut > (() = > func (parameter), TaskCreationOptions.LongRunning);
+    task.ContinueWith (asyncPartTask = > onException (asyncPartTask.Exception, parameter), CancellationToken.None, TaskContinuationOptions.OnlyOnFaulted, scheduler);
+    task.ContinueWith (asyncPart = > {
+        if (! token.IsCancellationRequested)
+            completition (parameter);
+
+    }, CancellationToken.None, TaskContinuationOptions.OnlyOnRanToCompletion, scheduler);
+    task.Start ();
+    return cts;
+}
+----------------------------------------
+
+public static void ExecuteBlockingOperation < TIn, TOut > (Func < TIn, TOut > func, TIn parameter, Action < TOut, TIn > completition, Func < TOut, TIn, bool > shouldComplete, Action < AggregateException, TIn > onException) {
+    if (func == null)
+        throw new ArgumentNullException ("func");
+
+    if (completition == null)
+        throw new ArgumentNullException ("completition");
+
+    var scheduler = TaskScheduler.FromCurrentSynchronizationContext ();
+    var task = new Task < TOut > (() = > func (parameter), TaskCreationOptions.LongRunning);
+    task.ContinueWith (asyncPartTask = > onException (asyncPartTask.Exception, parameter), CancellationToken.None, TaskContinuationOptions.OnlyOnFaulted, scheduler);
+    task.ContinueWith (asyncPart = > {
+        if (shouldComplete == null || shouldComplete (asyncPart.Result, parameter))
+            completition (asyncPart.Result, parameter);
+
+    }, CancellationToken.None, TaskContinuationOptions.OnlyOnRanToCompletion, scheduler);
+    task.Start ();
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+13266277_13268230_162_186
+13266277_13268230_313_332
+Title: How do I call async methods in asp.net C# 4.0? 
+----------------------------------------
+
+public static CancellationTokenSource ExecuteBlockingOperation < TIn, TOut > (Func < TIn, TOut > func, TIn parameter, Action completition, Action < AggregateException, TIn > onException) {
+    if (func == null)
+        throw new ArgumentNullException ("func");
+
+    if (completition == null)
+        throw new ArgumentNullException ("completition");
+
+    var cts = new CancellationTokenSource ();
+    var token = cts.Token;
+    var scheduler = TaskScheduler.FromCurrentSynchronizationContext ();
+    var task = new Task < TOut > (() = > func (parameter), TaskCreationOptions.LongRunning);
+    task.ContinueWith (asyncPartTask = > onException (asyncPartTask.Exception, parameter), CancellationToken.None, TaskContinuationOptions.OnlyOnFaulted, scheduler);
+    task.ContinueWith (asyncPart = > {
+        if (! token.IsCancellationRequested)
+            completition ();
+
+    }, CancellationToken.None, TaskContinuationOptions.OnlyOnRanToCompletion, scheduler);
+    task.Start ();
+    return cts;
+}
+----------------------------------------
+
+public static void ExecuteBlockingOperation < TIn > (Action < TIn > action, TIn parameter, Action < TIn > completition, Predicate < TIn > shouldComplete, Action < AggregateException, TIn > onException) {
+    if (action == null)
+        throw new ArgumentNullException ("action");
+
+    if (completition == null)
+        throw new ArgumentNullException ("completition");
+
+    var scheduler = TaskScheduler.FromCurrentSynchronizationContext ();
+    var task = new Task (() = > action (parameter), TaskCreationOptions.LongRunning);
+    task.ContinueWith (asyncPartTask = > onException (asyncPartTask.Exception, parameter), CancellationToken.None, TaskContinuationOptions.OnlyOnFaulted, scheduler);
+    task.ContinueWith (asyncPart = > {
+        if (shouldComplete == null || shouldComplete (parameter))
+            completition (parameter);
+
+    }, CancellationToken.None, TaskContinuationOptions.OnlyOnRanToCompletion, scheduler);
+    task.Start ();
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+13266277_13268230_162_186
+13266277_13268230_334_353
+Title: How do I call async methods in asp.net C# 4.0? 
+----------------------------------------
+
+public static CancellationTokenSource ExecuteBlockingOperation < TIn, TOut > (Func < TIn, TOut > func, TIn parameter, Action completition, Action < AggregateException, TIn > onException) {
+    if (func == null)
+        throw new ArgumentNullException ("func");
+
+    if (completition == null)
+        throw new ArgumentNullException ("completition");
+
+    var cts = new CancellationTokenSource ();
+    var token = cts.Token;
+    var scheduler = TaskScheduler.FromCurrentSynchronizationContext ();
+    var task = new Task < TOut > (() = > func (parameter), TaskCreationOptions.LongRunning);
+    task.ContinueWith (asyncPartTask = > onException (asyncPartTask.Exception, parameter), CancellationToken.None, TaskContinuationOptions.OnlyOnFaulted, scheduler);
+    task.ContinueWith (asyncPart = > {
+        if (! token.IsCancellationRequested)
+            completition ();
+
+    }, CancellationToken.None, TaskContinuationOptions.OnlyOnRanToCompletion, scheduler);
+    task.Start ();
+    return cts;
+}
+----------------------------------------
+
+public static void ExecuteBlockingOperation < TOut > (Func < TOut > func, Action < TOut > completition, Predicate < TOut > shoudComplete, Action < AggregateException > onException) {
+    if (func == null)
+        throw new ArgumentNullException ("func");
+
+    if (completition == null)
+        throw new ArgumentNullException ("completition");
+
+    var scheduler = TaskScheduler.FromCurrentSynchronizationContext ();
+    var task = new Task < TOut > (func, TaskCreationOptions.LongRunning);
+    task.ContinueWith (asyncPartTask = > onException (asyncPartTask.Exception), CancellationToken.None, TaskContinuationOptions.OnlyOnFaulted, scheduler);
+    task.ContinueWith (asyncPartTask = > {
+        if (shoudComplete == null || shoudComplete (asyncPartTask.Result))
+            completition (asyncPartTask.Result);
+
+    }, CancellationToken.None, TaskContinuationOptions.OnlyOnRanToCompletion, scheduler);
+    task.Start ();
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+13266277_13268230_162_186
+13266277_13268230_355_374
+Title: How do I call async methods in asp.net C# 4.0? 
+----------------------------------------
+
+public static CancellationTokenSource ExecuteBlockingOperation < TIn, TOut > (Func < TIn, TOut > func, TIn parameter, Action completition, Action < AggregateException, TIn > onException) {
+    if (func == null)
+        throw new ArgumentNullException ("func");
+
+    if (completition == null)
+        throw new ArgumentNullException ("completition");
+
+    var cts = new CancellationTokenSource ();
+    var token = cts.Token;
+    var scheduler = TaskScheduler.FromCurrentSynchronizationContext ();
+    var task = new Task < TOut > (() = > func (parameter), TaskCreationOptions.LongRunning);
+    task.ContinueWith (asyncPartTask = > onException (asyncPartTask.Exception, parameter), CancellationToken.None, TaskContinuationOptions.OnlyOnFaulted, scheduler);
+    task.ContinueWith (asyncPart = > {
+        if (! token.IsCancellationRequested)
+            completition ();
+
+    }, CancellationToken.None, TaskContinuationOptions.OnlyOnRanToCompletion, scheduler);
+    task.Start ();
+    return cts;
+}
+----------------------------------------
+
+public static void ExecuteBlockingOperation < TIn, TOut > (Func < TIn, TOut > func, TIn parameter, Action < TOut, TIn > completition, Func < TOut, TIn, bool > shouldComplete, Action < AggregateException, TIn > onException) {
+    if (func == null)
+        throw new ArgumentNullException ("func");
+
+    if (completition == null)
+        throw new ArgumentNullException ("completition");
+
+    var scheduler = TaskScheduler.FromCurrentSynchronizationContext ();
+    var task = new Task < TOut > (() = > func (parameter), TaskCreationOptions.LongRunning);
+    task.ContinueWith (asyncPartTask = > onException (asyncPartTask.Exception, parameter), CancellationToken.None, TaskContinuationOptions.OnlyOnFaulted, scheduler);
+    task.ContinueWith (asyncPart = > {
+        if (shouldComplete == null || shouldComplete (asyncPart.Result, parameter))
+            completition (asyncPart.Result, parameter);
+
+    }, CancellationToken.None, TaskContinuationOptions.OnlyOnRanToCompletion, scheduler);
+    task.Start ();
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+13266277_13268230_188_212
+13266277_13268230_313_332
+Title: How do I call async methods in asp.net C# 4.0? 
+----------------------------------------
+
+public static CancellationTokenSource ExecuteBlockingOperation < TIn, TOut > (Func < TIn, TOut > func, TIn parameter, Action < TIn > completition, Action < AggregateException > onException) {
+    if (func == null)
+        throw new ArgumentNullException ("func");
+
+    if (completition == null)
+        throw new ArgumentNullException ("completition");
+
+    var cts = new CancellationTokenSource ();
+    var token = cts.Token;
+    var scheduler = TaskScheduler.FromCurrentSynchronizationContext ();
+    var task = new Task < TOut > (() = > func (parameter), TaskCreationOptions.LongRunning);
+    task.ContinueWith (asyncPartTask = > onException (asyncPartTask.Exception), CancellationToken.None, TaskContinuationOptions.OnlyOnFaulted, scheduler);
+    task.ContinueWith (asyncPart = > {
+        if (! token.IsCancellationRequested)
+            completition (parameter);
+
+    }, CancellationToken.None, TaskContinuationOptions.OnlyOnRanToCompletion, scheduler);
+    task.Start ();
+    return cts;
+}
+----------------------------------------
+
+public static void ExecuteBlockingOperation < TIn > (Action < TIn > action, TIn parameter, Action < TIn > completition, Predicate < TIn > shouldComplete, Action < AggregateException, TIn > onException) {
+    if (action == null)
+        throw new ArgumentNullException ("action");
+
+    if (completition == null)
+        throw new ArgumentNullException ("completition");
+
+    var scheduler = TaskScheduler.FromCurrentSynchronizationContext ();
+    var task = new Task (() = > action (parameter), TaskCreationOptions.LongRunning);
+    task.ContinueWith (asyncPartTask = > onException (asyncPartTask.Exception, parameter), CancellationToken.None, TaskContinuationOptions.OnlyOnFaulted, scheduler);
+    task.ContinueWith (asyncPart = > {
+        if (shouldComplete == null || shouldComplete (parameter))
+            completition (parameter);
+
+    }, CancellationToken.None, TaskContinuationOptions.OnlyOnRanToCompletion, scheduler);
+    task.Start ();
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+13266277_13268230_188_212
+13266277_13268230_334_353
+Title: How do I call async methods in asp.net C# 4.0? 
+----------------------------------------
+
+public static CancellationTokenSource ExecuteBlockingOperation < TIn, TOut > (Func < TIn, TOut > func, TIn parameter, Action < TIn > completition, Action < AggregateException > onException) {
+    if (func == null)
+        throw new ArgumentNullException ("func");
+
+    if (completition == null)
+        throw new ArgumentNullException ("completition");
+
+    var cts = new CancellationTokenSource ();
+    var token = cts.Token;
+    var scheduler = TaskScheduler.FromCurrentSynchronizationContext ();
+    var task = new Task < TOut > (() = > func (parameter), TaskCreationOptions.LongRunning);
+    task.ContinueWith (asyncPartTask = > onException (asyncPartTask.Exception), CancellationToken.None, TaskContinuationOptions.OnlyOnFaulted, scheduler);
+    task.ContinueWith (asyncPart = > {
+        if (! token.IsCancellationRequested)
+            completition (parameter);
+
+    }, CancellationToken.None, TaskContinuationOptions.OnlyOnRanToCompletion, scheduler);
+    task.Start ();
+    return cts;
+}
+----------------------------------------
+
+public static void ExecuteBlockingOperation < TOut > (Func < TOut > func, Action < TOut > completition, Predicate < TOut > shoudComplete, Action < AggregateException > onException) {
+    if (func == null)
+        throw new ArgumentNullException ("func");
+
+    if (completition == null)
+        throw new ArgumentNullException ("completition");
+
+    var scheduler = TaskScheduler.FromCurrentSynchronizationContext ();
+    var task = new Task < TOut > (func, TaskCreationOptions.LongRunning);
+    task.ContinueWith (asyncPartTask = > onException (asyncPartTask.Exception), CancellationToken.None, TaskContinuationOptions.OnlyOnFaulted, scheduler);
+    task.ContinueWith (asyncPartTask = > {
+        if (shoudComplete == null || shoudComplete (asyncPartTask.Result))
+            completition (asyncPartTask.Result);
+
+    }, CancellationToken.None, TaskContinuationOptions.OnlyOnRanToCompletion, scheduler);
+    task.Start ();
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+13266277_13268230_188_212
+13266277_13268230_355_374
+Title: How do I call async methods in asp.net C# 4.0? 
+----------------------------------------
+
+public static CancellationTokenSource ExecuteBlockingOperation < TIn, TOut > (Func < TIn, TOut > func, TIn parameter, Action < TIn > completition, Action < AggregateException > onException) {
+    if (func == null)
+        throw new ArgumentNullException ("func");
+
+    if (completition == null)
+        throw new ArgumentNullException ("completition");
+
+    var cts = new CancellationTokenSource ();
+    var token = cts.Token;
+    var scheduler = TaskScheduler.FromCurrentSynchronizationContext ();
+    var task = new Task < TOut > (() = > func (parameter), TaskCreationOptions.LongRunning);
+    task.ContinueWith (asyncPartTask = > onException (asyncPartTask.Exception), CancellationToken.None, TaskContinuationOptions.OnlyOnFaulted, scheduler);
+    task.ContinueWith (asyncPart = > {
+        if (! token.IsCancellationRequested)
+            completition (parameter);
+
+    }, CancellationToken.None, TaskContinuationOptions.OnlyOnRanToCompletion, scheduler);
+    task.Start ();
+    return cts;
+}
+----------------------------------------
+
+public static void ExecuteBlockingOperation < TIn, TOut > (Func < TIn, TOut > func, TIn parameter, Action < TOut, TIn > completition, Func < TOut, TIn, bool > shouldComplete, Action < AggregateException, TIn > onException) {
+    if (func == null)
+        throw new ArgumentNullException ("func");
+
+    if (completition == null)
+        throw new ArgumentNullException ("completition");
+
+    var scheduler = TaskScheduler.FromCurrentSynchronizationContext ();
+    var task = new Task < TOut > (() = > func (parameter), TaskCreationOptions.LongRunning);
+    task.ContinueWith (asyncPartTask = > onException (asyncPartTask.Exception, parameter), CancellationToken.None, TaskContinuationOptions.OnlyOnFaulted, scheduler);
+    task.ContinueWith (asyncPart = > {
+        if (shouldComplete == null || shouldComplete (asyncPart.Result, parameter))
+            completition (asyncPart.Result, parameter);
+
+    }, CancellationToken.None, TaskContinuationOptions.OnlyOnRanToCompletion, scheduler);
+    task.Start ();
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+13266277_13268230_214_238
+13266277_13268230_313_332
+Title: How do I call async methods in asp.net C# 4.0? 
+----------------------------------------
+
+public static CancellationTokenSource ExecuteBlockingOperation < TIn, TOut > (Func < TIn, TOut > func, TIn parameter, Action < TOut, TIn > completition, Action < AggregateException > onException) {
+    if (func == null)
+        throw new ArgumentNullException ("func");
+
+    if (completition == null)
+        throw new ArgumentNullException ("completition");
+
+    var cts = new CancellationTokenSource ();
+    var token = cts.Token;
+    var scheduler = TaskScheduler.FromCurrentSynchronizationContext ();
+    var task = new Task < TOut > (() = > func (parameter), TaskCreationOptions.LongRunning);
+    task.ContinueWith (asyncPartTask = > onException (asyncPartTask.Exception), CancellationToken.None, TaskContinuationOptions.OnlyOnFaulted, scheduler);
+    task.ContinueWith (asyncPart = > {
+        if (! token.IsCancellationRequested)
+            completition (asyncPart.Result, parameter);
+
+    }, CancellationToken.None, TaskContinuationOptions.OnlyOnRanToCompletion, scheduler);
+    task.Start ();
+    return cts;
+}
+----------------------------------------
+
+public static void ExecuteBlockingOperation < TIn > (Action < TIn > action, TIn parameter, Action < TIn > completition, Predicate < TIn > shouldComplete, Action < AggregateException, TIn > onException) {
+    if (action == null)
+        throw new ArgumentNullException ("action");
+
+    if (completition == null)
+        throw new ArgumentNullException ("completition");
+
+    var scheduler = TaskScheduler.FromCurrentSynchronizationContext ();
+    var task = new Task (() = > action (parameter), TaskCreationOptions.LongRunning);
+    task.ContinueWith (asyncPartTask = > onException (asyncPartTask.Exception, parameter), CancellationToken.None, TaskContinuationOptions.OnlyOnFaulted, scheduler);
+    task.ContinueWith (asyncPart = > {
+        if (shouldComplete == null || shouldComplete (parameter))
+            completition (parameter);
+
+    }, CancellationToken.None, TaskContinuationOptions.OnlyOnRanToCompletion, scheduler);
+    task.Start ();
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+13266277_13268230_214_238
+13266277_13268230_334_353
+Title: How do I call async methods in asp.net C# 4.0? 
+----------------------------------------
+
+public static CancellationTokenSource ExecuteBlockingOperation < TIn, TOut > (Func < TIn, TOut > func, TIn parameter, Action < TOut, TIn > completition, Action < AggregateException > onException) {
+    if (func == null)
+        throw new ArgumentNullException ("func");
+
+    if (completition == null)
+        throw new ArgumentNullException ("completition");
+
+    var cts = new CancellationTokenSource ();
+    var token = cts.Token;
+    var scheduler = TaskScheduler.FromCurrentSynchronizationContext ();
+    var task = new Task < TOut > (() = > func (parameter), TaskCreationOptions.LongRunning);
+    task.ContinueWith (asyncPartTask = > onException (asyncPartTask.Exception), CancellationToken.None, TaskContinuationOptions.OnlyOnFaulted, scheduler);
+    task.ContinueWith (asyncPart = > {
+        if (! token.IsCancellationRequested)
+            completition (asyncPart.Result, parameter);
+
+    }, CancellationToken.None, TaskContinuationOptions.OnlyOnRanToCompletion, scheduler);
+    task.Start ();
+    return cts;
+}
+----------------------------------------
+
+public static void ExecuteBlockingOperation < TOut > (Func < TOut > func, Action < TOut > completition, Predicate < TOut > shoudComplete, Action < AggregateException > onException) {
+    if (func == null)
+        throw new ArgumentNullException ("func");
+
+    if (completition == null)
+        throw new ArgumentNullException ("completition");
+
+    var scheduler = TaskScheduler.FromCurrentSynchronizationContext ();
+    var task = new Task < TOut > (func, TaskCreationOptions.LongRunning);
+    task.ContinueWith (asyncPartTask = > onException (asyncPartTask.Exception), CancellationToken.None, TaskContinuationOptions.OnlyOnFaulted, scheduler);
+    task.ContinueWith (asyncPartTask = > {
+        if (shoudComplete == null || shoudComplete (asyncPartTask.Result))
+            completition (asyncPartTask.Result);
+
+    }, CancellationToken.None, TaskContinuationOptions.OnlyOnRanToCompletion, scheduler);
+    task.Start ();
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+13266277_13268230_214_238
+13266277_13268230_355_374
+Title: How do I call async methods in asp.net C# 4.0? 
+----------------------------------------
+
+public static CancellationTokenSource ExecuteBlockingOperation < TIn, TOut > (Func < TIn, TOut > func, TIn parameter, Action < TOut, TIn > completition, Action < AggregateException > onException) {
+    if (func == null)
+        throw new ArgumentNullException ("func");
+
+    if (completition == null)
+        throw new ArgumentNullException ("completition");
+
+    var cts = new CancellationTokenSource ();
+    var token = cts.Token;
+    var scheduler = TaskScheduler.FromCurrentSynchronizationContext ();
+    var task = new Task < TOut > (() = > func (parameter), TaskCreationOptions.LongRunning);
+    task.ContinueWith (asyncPartTask = > onException (asyncPartTask.Exception), CancellationToken.None, TaskContinuationOptions.OnlyOnFaulted, scheduler);
+    task.ContinueWith (asyncPart = > {
+        if (! token.IsCancellationRequested)
+            completition (asyncPart.Result, parameter);
+
+    }, CancellationToken.None, TaskContinuationOptions.OnlyOnRanToCompletion, scheduler);
+    task.Start ();
+    return cts;
+}
+----------------------------------------
+
+public static void ExecuteBlockingOperation < TIn, TOut > (Func < TIn, TOut > func, TIn parameter, Action < TOut, TIn > completition, Func < TOut, TIn, bool > shouldComplete, Action < AggregateException, TIn > onException) {
+    if (func == null)
+        throw new ArgumentNullException ("func");
+
+    if (completition == null)
+        throw new ArgumentNullException ("completition");
+
+    var scheduler = TaskScheduler.FromCurrentSynchronizationContext ();
+    var task = new Task < TOut > (() = > func (parameter), TaskCreationOptions.LongRunning);
+    task.ContinueWith (asyncPartTask = > onException (asyncPartTask.Exception, parameter), CancellationToken.None, TaskContinuationOptions.OnlyOnFaulted, scheduler);
+    task.ContinueWith (asyncPart = > {
+        if (shouldComplete == null || shouldComplete (asyncPart.Result, parameter))
+            completition (asyncPart.Result, parameter);
+
+    }, CancellationToken.None, TaskContinuationOptions.OnlyOnRanToCompletion, scheduler);
+    task.Start ();
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+13266277_13268230_240_264
+13266277_13268230_313_332
+Title: How do I call async methods in asp.net C# 4.0? 
+----------------------------------------
+
+public static CancellationTokenSource ExecuteBlockingOperation < TIn, TOut > (Func < TIn, TOut > func, TIn parameter, Action < TOut > completition, Action < AggregateException > onException) {
+    if (func == null)
+        throw new ArgumentNullException ("func");
+
+    if (completition == null)
+        throw new ArgumentNullException ("completition");
+
+    var cts = new CancellationTokenSource ();
+    var token = cts.Token;
+    var scheduler = TaskScheduler.FromCurrentSynchronizationContext ();
+    var task = new Task < TOut > (() = > func (parameter), TaskCreationOptions.LongRunning);
+    task.ContinueWith (asyncPartTask = > onException (asyncPartTask.Exception), CancellationToken.None, TaskContinuationOptions.OnlyOnFaulted, scheduler);
+    task.ContinueWith (asyncPart = > {
+        if (! token.IsCancellationRequested)
+            completition (asyncPart.Result);
+
+    }, CancellationToken.None, TaskContinuationOptions.OnlyOnRanToCompletion, scheduler);
+    task.Start ();
+    return cts;
+}
+----------------------------------------
+
+public static void ExecuteBlockingOperation < TIn > (Action < TIn > action, TIn parameter, Action < TIn > completition, Predicate < TIn > shouldComplete, Action < AggregateException, TIn > onException) {
+    if (action == null)
+        throw new ArgumentNullException ("action");
+
+    if (completition == null)
+        throw new ArgumentNullException ("completition");
+
+    var scheduler = TaskScheduler.FromCurrentSynchronizationContext ();
+    var task = new Task (() = > action (parameter), TaskCreationOptions.LongRunning);
+    task.ContinueWith (asyncPartTask = > onException (asyncPartTask.Exception, parameter), CancellationToken.None, TaskContinuationOptions.OnlyOnFaulted, scheduler);
+    task.ContinueWith (asyncPart = > {
+        if (shouldComplete == null || shouldComplete (parameter))
+            completition (parameter);
+
+    }, CancellationToken.None, TaskContinuationOptions.OnlyOnRanToCompletion, scheduler);
+    task.Start ();
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+13266277_13268230_240_264
+13266277_13268230_334_353
+Title: How do I call async methods in asp.net C# 4.0? 
+----------------------------------------
+
+public static CancellationTokenSource ExecuteBlockingOperation < TIn, TOut > (Func < TIn, TOut > func, TIn parameter, Action < TOut > completition, Action < AggregateException > onException) {
+    if (func == null)
+        throw new ArgumentNullException ("func");
+
+    if (completition == null)
+        throw new ArgumentNullException ("completition");
+
+    var cts = new CancellationTokenSource ();
+    var token = cts.Token;
+    var scheduler = TaskScheduler.FromCurrentSynchronizationContext ();
+    var task = new Task < TOut > (() = > func (parameter), TaskCreationOptions.LongRunning);
+    task.ContinueWith (asyncPartTask = > onException (asyncPartTask.Exception), CancellationToken.None, TaskContinuationOptions.OnlyOnFaulted, scheduler);
+    task.ContinueWith (asyncPart = > {
+        if (! token.IsCancellationRequested)
+            completition (asyncPart.Result);
+
+    }, CancellationToken.None, TaskContinuationOptions.OnlyOnRanToCompletion, scheduler);
+    task.Start ();
+    return cts;
+}
+----------------------------------------
+
+public static void ExecuteBlockingOperation < TOut > (Func < TOut > func, Action < TOut > completition, Predicate < TOut > shoudComplete, Action < AggregateException > onException) {
+    if (func == null)
+        throw new ArgumentNullException ("func");
+
+    if (completition == null)
+        throw new ArgumentNullException ("completition");
+
+    var scheduler = TaskScheduler.FromCurrentSynchronizationContext ();
+    var task = new Task < TOut > (func, TaskCreationOptions.LongRunning);
+    task.ContinueWith (asyncPartTask = > onException (asyncPartTask.Exception), CancellationToken.None, TaskContinuationOptions.OnlyOnFaulted, scheduler);
+    task.ContinueWith (asyncPartTask = > {
+        if (shoudComplete == null || shoudComplete (asyncPartTask.Result))
+            completition (asyncPartTask.Result);
+
+    }, CancellationToken.None, TaskContinuationOptions.OnlyOnRanToCompletion, scheduler);
+    task.Start ();
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+13266277_13268230_240_264
+13266277_13268230_355_374
+Title: How do I call async methods in asp.net C# 4.0? 
+----------------------------------------
+
+public static CancellationTokenSource ExecuteBlockingOperation < TIn, TOut > (Func < TIn, TOut > func, TIn parameter, Action < TOut > completition, Action < AggregateException > onException) {
+    if (func == null)
+        throw new ArgumentNullException ("func");
+
+    if (completition == null)
+        throw new ArgumentNullException ("completition");
+
+    var cts = new CancellationTokenSource ();
+    var token = cts.Token;
+    var scheduler = TaskScheduler.FromCurrentSynchronizationContext ();
+    var task = new Task < TOut > (() = > func (parameter), TaskCreationOptions.LongRunning);
+    task.ContinueWith (asyncPartTask = > onException (asyncPartTask.Exception), CancellationToken.None, TaskContinuationOptions.OnlyOnFaulted, scheduler);
+    task.ContinueWith (asyncPart = > {
+        if (! token.IsCancellationRequested)
+            completition (asyncPart.Result);
+
+    }, CancellationToken.None, TaskContinuationOptions.OnlyOnRanToCompletion, scheduler);
+    task.Start ();
+    return cts;
+}
+----------------------------------------
+
+public static void ExecuteBlockingOperation < TIn, TOut > (Func < TIn, TOut > func, TIn parameter, Action < TOut, TIn > completition, Func < TOut, TIn, bool > shouldComplete, Action < AggregateException, TIn > onException) {
+    if (func == null)
+        throw new ArgumentNullException ("func");
+
+    if (completition == null)
+        throw new ArgumentNullException ("completition");
+
+    var scheduler = TaskScheduler.FromCurrentSynchronizationContext ();
+    var task = new Task < TOut > (() = > func (parameter), TaskCreationOptions.LongRunning);
+    task.ContinueWith (asyncPartTask = > onException (asyncPartTask.Exception, parameter), CancellationToken.None, TaskContinuationOptions.OnlyOnFaulted, scheduler);
+    task.ContinueWith (asyncPart = > {
+        if (shouldComplete == null || shouldComplete (asyncPart.Result, parameter))
+            completition (asyncPart.Result, parameter);
+
+    }, CancellationToken.None, TaskContinuationOptions.OnlyOnRanToCompletion, scheduler);
+    task.Start ();
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+13266277_13268230_266_290
+13266277_13268230_313_332
+Title: How do I call async methods in asp.net C# 4.0? 
+----------------------------------------
+
+public static CancellationTokenSource ExecuteBlockingOperation < TIn, TOut > (Func < TIn, TOut > func, TIn parameter, Action completition, Action < AggregateException > onException) {
+    if (func == null)
+        throw new ArgumentNullException ("func");
+
+    if (completition == null)
+        throw new ArgumentNullException ("completition");
+
+    var cts = new CancellationTokenSource ();
+    var token = cts.Token;
+    var scheduler = TaskScheduler.FromCurrentSynchronizationContext ();
+    var task = new Task < TOut > (() = > func (parameter), TaskCreationOptions.LongRunning);
+    task.ContinueWith (asyncPartTask = > onException (asyncPartTask.Exception), CancellationToken.None, TaskContinuationOptions.OnlyOnFaulted, scheduler);
+    task.ContinueWith (asyncPart = > {
+        if (! token.IsCancellationRequested)
+            completition ();
+
+    }, CancellationToken.None, TaskContinuationOptions.OnlyOnRanToCompletion, scheduler);
+    task.Start ();
+    return cts;
+}
+----------------------------------------
+
+public static void ExecuteBlockingOperation < TIn > (Action < TIn > action, TIn parameter, Action < TIn > completition, Predicate < TIn > shouldComplete, Action < AggregateException, TIn > onException) {
+    if (action == null)
+        throw new ArgumentNullException ("action");
+
+    if (completition == null)
+        throw new ArgumentNullException ("completition");
+
+    var scheduler = TaskScheduler.FromCurrentSynchronizationContext ();
+    var task = new Task (() = > action (parameter), TaskCreationOptions.LongRunning);
+    task.ContinueWith (asyncPartTask = > onException (asyncPartTask.Exception, parameter), CancellationToken.None, TaskContinuationOptions.OnlyOnFaulted, scheduler);
+    task.ContinueWith (asyncPart = > {
+        if (shouldComplete == null || shouldComplete (parameter))
+            completition (parameter);
+
+    }, CancellationToken.None, TaskContinuationOptions.OnlyOnRanToCompletion, scheduler);
+    task.Start ();
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+13266277_13268230_266_290
+13266277_13268230_334_353
+Title: How do I call async methods in asp.net C# 4.0? 
+----------------------------------------
+
+public static CancellationTokenSource ExecuteBlockingOperation < TIn, TOut > (Func < TIn, TOut > func, TIn parameter, Action completition, Action < AggregateException > onException) {
+    if (func == null)
+        throw new ArgumentNullException ("func");
+
+    if (completition == null)
+        throw new ArgumentNullException ("completition");
+
+    var cts = new CancellationTokenSource ();
+    var token = cts.Token;
+    var scheduler = TaskScheduler.FromCurrentSynchronizationContext ();
+    var task = new Task < TOut > (() = > func (parameter), TaskCreationOptions.LongRunning);
+    task.ContinueWith (asyncPartTask = > onException (asyncPartTask.Exception), CancellationToken.None, TaskContinuationOptions.OnlyOnFaulted, scheduler);
+    task.ContinueWith (asyncPart = > {
+        if (! token.IsCancellationRequested)
+            completition ();
+
+    }, CancellationToken.None, TaskContinuationOptions.OnlyOnRanToCompletion, scheduler);
+    task.Start ();
+    return cts;
+}
+----------------------------------------
+
+public static void ExecuteBlockingOperation < TOut > (Func < TOut > func, Action < TOut > completition, Predicate < TOut > shoudComplete, Action < AggregateException > onException) {
+    if (func == null)
+        throw new ArgumentNullException ("func");
+
+    if (completition == null)
+        throw new ArgumentNullException ("completition");
+
+    var scheduler = TaskScheduler.FromCurrentSynchronizationContext ();
+    var task = new Task < TOut > (func, TaskCreationOptions.LongRunning);
+    task.ContinueWith (asyncPartTask = > onException (asyncPartTask.Exception), CancellationToken.None, TaskContinuationOptions.OnlyOnFaulted, scheduler);
+    task.ContinueWith (asyncPartTask = > {
+        if (shoudComplete == null || shoudComplete (asyncPartTask.Result))
+            completition (asyncPartTask.Result);
+
+    }, CancellationToken.None, TaskContinuationOptions.OnlyOnRanToCompletion, scheduler);
+    task.Start ();
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+13266277_13268230_266_290
+13266277_13268230_355_374
+Title: How do I call async methods in asp.net C# 4.0? 
+----------------------------------------
+
+public static CancellationTokenSource ExecuteBlockingOperation < TIn, TOut > (Func < TIn, TOut > func, TIn parameter, Action completition, Action < AggregateException > onException) {
+    if (func == null)
+        throw new ArgumentNullException ("func");
+
+    if (completition == null)
+        throw new ArgumentNullException ("completition");
+
+    var cts = new CancellationTokenSource ();
+    var token = cts.Token;
+    var scheduler = TaskScheduler.FromCurrentSynchronizationContext ();
+    var task = new Task < TOut > (() = > func (parameter), TaskCreationOptions.LongRunning);
+    task.ContinueWith (asyncPartTask = > onException (asyncPartTask.Exception), CancellationToken.None, TaskContinuationOptions.OnlyOnFaulted, scheduler);
+    task.ContinueWith (asyncPart = > {
+        if (! token.IsCancellationRequested)
+            completition ();
+
+    }, CancellationToken.None, TaskContinuationOptions.OnlyOnRanToCompletion, scheduler);
+    task.Start ();
+    return cts;
+}
+----------------------------------------
+
+public static void ExecuteBlockingOperation < TIn, TOut > (Func < TIn, TOut > func, TIn parameter, Action < TOut, TIn > completition, Func < TOut, TIn, bool > shouldComplete, Action < AggregateException, TIn > onException) {
+    if (func == null)
+        throw new ArgumentNullException ("func");
+
+    if (completition == null)
+        throw new ArgumentNullException ("completition");
+
+    var scheduler = TaskScheduler.FromCurrentSynchronizationContext ();
+    var task = new Task < TOut > (() = > func (parameter), TaskCreationOptions.LongRunning);
+    task.ContinueWith (asyncPartTask = > onException (asyncPartTask.Exception, parameter), CancellationToken.None, TaskContinuationOptions.OnlyOnFaulted, scheduler);
+    task.ContinueWith (asyncPart = > {
+        if (shouldComplete == null || shouldComplete (asyncPart.Result, parameter))
+            completition (asyncPart.Result, parameter);
+
+    }, CancellationToken.None, TaskContinuationOptions.OnlyOnRanToCompletion, scheduler);
+    task.Start ();
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+13266277_13268230_30_55
+13266277_13268230_334_353
+Title: How do I call async methods in asp.net C# 4.0? 
+----------------------------------------
+
+public static CancellationTokenSource ExecuteBlockingOperation < TIn > (Action < TIn > action, TIn parameter, Action < TIn > completition, Action < AggregateException, TIn > onException) {
+    if (action == null)
+        throw new ArgumentNullException ("action");
+
+    if (completition == null)
+        throw new ArgumentNullException ("completition");
+
+    var cts = new CancellationTokenSource ();
+    var token = cts.Token;
+    var scheduler = TaskScheduler.FromCurrentSynchronizationContext ();
+    var task = new Task (() = > action (parameter), TaskCreationOptions.LongRunning);
+    task.ContinueWith (asyncPartTask = > onException (asyncPartTask.Exception, parameter), CancellationToken.None, TaskContinuationOptions.OnlyOnFaulted, scheduler);
+    task.ContinueWith (asyncPart = > {
+        if (! token.IsCancellationRequested)
+            completition (parameter);
+
+    }, CancellationToken.None, TaskContinuationOptions.OnlyOnRanToCompletion, scheduler);
+    task.Start ();
+    return cts;
+}
+----------------------------------------
+
+public static void ExecuteBlockingOperation < TOut > (Func < TOut > func, Action < TOut > completition, Predicate < TOut > shoudComplete, Action < AggregateException > onException) {
+    if (func == null)
+        throw new ArgumentNullException ("func");
+
+    if (completition == null)
+        throw new ArgumentNullException ("completition");
+
+    var scheduler = TaskScheduler.FromCurrentSynchronizationContext ();
+    var task = new Task < TOut > (func, TaskCreationOptions.LongRunning);
+    task.ContinueWith (asyncPartTask = > onException (asyncPartTask.Exception), CancellationToken.None, TaskContinuationOptions.OnlyOnFaulted, scheduler);
+    task.ContinueWith (asyncPartTask = > {
+        if (shoudComplete == null || shoudComplete (asyncPartTask.Result))
+            completition (asyncPartTask.Result);
+
+    }, CancellationToken.None, TaskContinuationOptions.OnlyOnRanToCompletion, scheduler);
+    task.Start ();
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+13266277_13268230_30_55
+13266277_13268230_355_374
+Title: How do I call async methods in asp.net C# 4.0? 
+----------------------------------------
+
+public static CancellationTokenSource ExecuteBlockingOperation < TIn > (Action < TIn > action, TIn parameter, Action < TIn > completition, Action < AggregateException, TIn > onException) {
+    if (action == null)
+        throw new ArgumentNullException ("action");
+
+    if (completition == null)
+        throw new ArgumentNullException ("completition");
+
+    var cts = new CancellationTokenSource ();
+    var token = cts.Token;
+    var scheduler = TaskScheduler.FromCurrentSynchronizationContext ();
+    var task = new Task (() = > action (parameter), TaskCreationOptions.LongRunning);
+    task.ContinueWith (asyncPartTask = > onException (asyncPartTask.Exception, parameter), CancellationToken.None, TaskContinuationOptions.OnlyOnFaulted, scheduler);
+    task.ContinueWith (asyncPart = > {
+        if (! token.IsCancellationRequested)
+            completition (parameter);
+
+    }, CancellationToken.None, TaskContinuationOptions.OnlyOnRanToCompletion, scheduler);
+    task.Start ();
+    return cts;
+}
+----------------------------------------
+
+public static void ExecuteBlockingOperation < TIn, TOut > (Func < TIn, TOut > func, TIn parameter, Action < TOut, TIn > completition, Func < TOut, TIn, bool > shouldComplete, Action < AggregateException, TIn > onException) {
+    if (func == null)
+        throw new ArgumentNullException ("func");
+
+    if (completition == null)
+        throw new ArgumentNullException ("completition");
+
+    var scheduler = TaskScheduler.FromCurrentSynchronizationContext ();
+    var task = new Task < TOut > (() = > func (parameter), TaskCreationOptions.LongRunning);
+    task.ContinueWith (asyncPartTask = > onException (asyncPartTask.Exception, parameter), CancellationToken.None, TaskContinuationOptions.OnlyOnFaulted, scheduler);
+    task.ContinueWith (asyncPart = > {
+        if (shouldComplete == null || shouldComplete (asyncPart.Result, parameter))
+            completition (asyncPart.Result, parameter);
+
+    }, CancellationToken.None, TaskContinuationOptions.OnlyOnRanToCompletion, scheduler);
+    task.Start ();
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+13266277_13268230_313_332
+13266277_13268230_334_353
+Title: How do I call async methods in asp.net C# 4.0? 
+----------------------------------------
+
+public static void ExecuteBlockingOperation < TIn > (Action < TIn > action, TIn parameter, Action < TIn > completition, Predicate < TIn > shouldComplete, Action < AggregateException, TIn > onException) {
+    if (action == null)
+        throw new ArgumentNullException ("action");
+
+    if (completition == null)
+        throw new ArgumentNullException ("completition");
+
+    var scheduler = TaskScheduler.FromCurrentSynchronizationContext ();
+    var task = new Task (() = > action (parameter), TaskCreationOptions.LongRunning);
+    task.ContinueWith (asyncPartTask = > onException (asyncPartTask.Exception, parameter), CancellationToken.None, TaskContinuationOptions.OnlyOnFaulted, scheduler);
+    task.ContinueWith (asyncPart = > {
+        if (shouldComplete == null || shouldComplete (parameter))
+            completition (parameter);
+
+    }, CancellationToken.None, TaskContinuationOptions.OnlyOnRanToCompletion, scheduler);
+    task.Start ();
+}
+----------------------------------------
+
+public static void ExecuteBlockingOperation < TOut > (Func < TOut > func, Action < TOut > completition, Predicate < TOut > shoudComplete, Action < AggregateException > onException) {
+    if (func == null)
+        throw new ArgumentNullException ("func");
+
+    if (completition == null)
+        throw new ArgumentNullException ("completition");
+
+    var scheduler = TaskScheduler.FromCurrentSynchronizationContext ();
+    var task = new Task < TOut > (func, TaskCreationOptions.LongRunning);
+    task.ContinueWith (asyncPartTask = > onException (asyncPartTask.Exception), CancellationToken.None, TaskContinuationOptions.OnlyOnFaulted, scheduler);
+    task.ContinueWith (asyncPartTask = > {
+        if (shoudComplete == null || shoudComplete (asyncPartTask.Result))
+            completition (asyncPartTask.Result);
+
+    }, CancellationToken.None, TaskContinuationOptions.OnlyOnRanToCompletion, scheduler);
+    task.Start ();
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+13266277_13268230_313_332
+13266277_13268230_355_374
+Title: How do I call async methods in asp.net C# 4.0? 
+----------------------------------------
+
+public static void ExecuteBlockingOperation < TIn > (Action < TIn > action, TIn parameter, Action < TIn > completition, Predicate < TIn > shouldComplete, Action < AggregateException, TIn > onException) {
+    if (action == null)
+        throw new ArgumentNullException ("action");
+
+    if (completition == null)
+        throw new ArgumentNullException ("completition");
+
+    var scheduler = TaskScheduler.FromCurrentSynchronizationContext ();
+    var task = new Task (() = > action (parameter), TaskCreationOptions.LongRunning);
+    task.ContinueWith (asyncPartTask = > onException (asyncPartTask.Exception, parameter), CancellationToken.None, TaskContinuationOptions.OnlyOnFaulted, scheduler);
+    task.ContinueWith (asyncPart = > {
+        if (shouldComplete == null || shouldComplete (parameter))
+            completition (parameter);
+
+    }, CancellationToken.None, TaskContinuationOptions.OnlyOnRanToCompletion, scheduler);
+    task.Start ();
+}
+----------------------------------------
+
+public static void ExecuteBlockingOperation < TIn, TOut > (Func < TIn, TOut > func, TIn parameter, Action < TOut, TIn > completition, Func < TOut, TIn, bool > shouldComplete, Action < AggregateException, TIn > onException) {
+    if (func == null)
+        throw new ArgumentNullException ("func");
+
+    if (completition == null)
+        throw new ArgumentNullException ("completition");
+
+    var scheduler = TaskScheduler.FromCurrentSynchronizationContext ();
+    var task = new Task < TOut > (() = > func (parameter), TaskCreationOptions.LongRunning);
+    task.ContinueWith (asyncPartTask = > onException (asyncPartTask.Exception, parameter), CancellationToken.None, TaskContinuationOptions.OnlyOnFaulted, scheduler);
+    task.ContinueWith (asyncPart = > {
+        if (shouldComplete == null || shouldComplete (asyncPart.Result, parameter))
+            completition (asyncPart.Result, parameter);
+
+    }, CancellationToken.None, TaskContinuationOptions.OnlyOnRanToCompletion, scheduler);
+    task.Start ();
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+13266277_13268230_313_332
+13266277_13268230_57_82
+Title: How do I call async methods in asp.net C# 4.0? 
+----------------------------------------
+
+public static void ExecuteBlockingOperation < TIn > (Action < TIn > action, TIn parameter, Action < TIn > completition, Predicate < TIn > shouldComplete, Action < AggregateException, TIn > onException) {
+    if (action == null)
+        throw new ArgumentNullException ("action");
+
+    if (completition == null)
+        throw new ArgumentNullException ("completition");
+
+    var scheduler = TaskScheduler.FromCurrentSynchronizationContext ();
+    var task = new Task (() = > action (parameter), TaskCreationOptions.LongRunning);
+    task.ContinueWith (asyncPartTask = > onException (asyncPartTask.Exception, parameter), CancellationToken.None, TaskContinuationOptions.OnlyOnFaulted, scheduler);
+    task.ContinueWith (asyncPart = > {
+        if (shouldComplete == null || shouldComplete (parameter))
+            completition (parameter);
+
+    }, CancellationToken.None, TaskContinuationOptions.OnlyOnRanToCompletion, scheduler);
+    task.Start ();
+}
+----------------------------------------
+
+public static CancellationTokenSource ExecuteBlockingOperation < TOut > (Func < TOut > func, Action < TOut > completition, Action < AggregateException > onException) {
+    if (func == null)
+        throw new ArgumentNullException ("func");
+
+    if (completition == null)
+        throw new ArgumentNullException ("completition");
+
+    var cts = new CancellationTokenSource ();
+    var token = cts.Token;
+    var scheduler = TaskScheduler.FromCurrentSynchronizationContext ();
+    var task = new Task < TOut > (func, TaskCreationOptions.LongRunning);
+    task.ContinueWith (asyncPartTask = > onException (asyncPartTask.Exception), CancellationToken.None, TaskContinuationOptions.OnlyOnFaulted, scheduler);
+    task.ContinueWith (asyncPart = > {
+        if (! token.IsCancellationRequested)
+            completition (asyncPart.Result);
+
+    }, CancellationToken.None, TaskContinuationOptions.OnlyOnRanToCompletion, scheduler);
+    task.Start ();
+    return cts;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+13266277_13268230_313_332
+13266277_13268230_84_108
+Title: How do I call async methods in asp.net C# 4.0? 
+----------------------------------------
+
+public static void ExecuteBlockingOperation < TIn > (Action < TIn > action, TIn parameter, Action < TIn > completition, Predicate < TIn > shouldComplete, Action < AggregateException, TIn > onException) {
+    if (action == null)
+        throw new ArgumentNullException ("action");
+
+    if (completition == null)
+        throw new ArgumentNullException ("completition");
+
+    var scheduler = TaskScheduler.FromCurrentSynchronizationContext ();
+    var task = new Task (() = > action (parameter), TaskCreationOptions.LongRunning);
+    task.ContinueWith (asyncPartTask = > onException (asyncPartTask.Exception, parameter), CancellationToken.None, TaskContinuationOptions.OnlyOnFaulted, scheduler);
+    task.ContinueWith (asyncPart = > {
+        if (shouldComplete == null || shouldComplete (parameter))
+            completition (parameter);
+
+    }, CancellationToken.None, TaskContinuationOptions.OnlyOnRanToCompletion, scheduler);
+    task.Start ();
+}
+----------------------------------------
+
+public static CancellationTokenSource ExecuteBlockingOperation < TIn, TOut > (Func < TIn, TOut > func, TIn parameter, Action < TOut, TIn > completition, Action < AggregateException, TIn > onException) {
+    if (func == null)
+        throw new ArgumentNullException ("func");
+
+    if (completition == null)
+        throw new ArgumentNullException ("completition");
+
+    var cts = new CancellationTokenSource ();
+    var token = cts.Token;
+    var scheduler = TaskScheduler.FromCurrentSynchronizationContext ();
+    var task = new Task < TOut > (() = > func (parameter), TaskCreationOptions.LongRunning);
+    task.ContinueWith (asyncPartTask = > onException (asyncPartTask.Exception, parameter), CancellationToken.None, TaskContinuationOptions.OnlyOnFaulted, scheduler);
+    task.ContinueWith (asyncPart = > {
+        if (! token.IsCancellationRequested)
+            completition (asyncPart.Result, parameter);
+
+    }, CancellationToken.None, TaskContinuationOptions.OnlyOnRanToCompletion, scheduler);
+    task.Start ();
+    return cts;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+13266277_13268230_334_353
+13266277_13268230_355_374
+Title: How do I call async methods in asp.net C# 4.0? 
+----------------------------------------
+
+public static void ExecuteBlockingOperation < TOut > (Func < TOut > func, Action < TOut > completition, Predicate < TOut > shoudComplete, Action < AggregateException > onException) {
+    if (func == null)
+        throw new ArgumentNullException ("func");
+
+    if (completition == null)
+        throw new ArgumentNullException ("completition");
+
+    var scheduler = TaskScheduler.FromCurrentSynchronizationContext ();
+    var task = new Task < TOut > (func, TaskCreationOptions.LongRunning);
+    task.ContinueWith (asyncPartTask = > onException (asyncPartTask.Exception), CancellationToken.None, TaskContinuationOptions.OnlyOnFaulted, scheduler);
+    task.ContinueWith (asyncPartTask = > {
+        if (shoudComplete == null || shoudComplete (asyncPartTask.Result))
+            completition (asyncPartTask.Result);
+
+    }, CancellationToken.None, TaskContinuationOptions.OnlyOnRanToCompletion, scheduler);
+    task.Start ();
+}
+----------------------------------------
+
+public static void ExecuteBlockingOperation < TIn, TOut > (Func < TIn, TOut > func, TIn parameter, Action < TOut, TIn > completition, Func < TOut, TIn, bool > shouldComplete, Action < AggregateException, TIn > onException) {
+    if (func == null)
+        throw new ArgumentNullException ("func");
+
+    if (completition == null)
+        throw new ArgumentNullException ("completition");
+
+    var scheduler = TaskScheduler.FromCurrentSynchronizationContext ();
+    var task = new Task < TOut > (() = > func (parameter), TaskCreationOptions.LongRunning);
+    task.ContinueWith (asyncPartTask = > onException (asyncPartTask.Exception, parameter), CancellationToken.None, TaskContinuationOptions.OnlyOnFaulted, scheduler);
+    task.ContinueWith (asyncPart = > {
+        if (shouldComplete == null || shouldComplete (asyncPart.Result, parameter))
+            completition (asyncPart.Result, parameter);
+
+    }, CancellationToken.None, TaskContinuationOptions.OnlyOnRanToCompletion, scheduler);
+    task.Start ();
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+13266277_13268230_334_353
+13266277_13268230_84_108
+Title: How do I call async methods in asp.net C# 4.0? 
+----------------------------------------
+
+public static void ExecuteBlockingOperation < TOut > (Func < TOut > func, Action < TOut > completition, Predicate < TOut > shoudComplete, Action < AggregateException > onException) {
+    if (func == null)
+        throw new ArgumentNullException ("func");
+
+    if (completition == null)
+        throw new ArgumentNullException ("completition");
+
+    var scheduler = TaskScheduler.FromCurrentSynchronizationContext ();
+    var task = new Task < TOut > (func, TaskCreationOptions.LongRunning);
+    task.ContinueWith (asyncPartTask = > onException (asyncPartTask.Exception), CancellationToken.None, TaskContinuationOptions.OnlyOnFaulted, scheduler);
+    task.ContinueWith (asyncPartTask = > {
+        if (shoudComplete == null || shoudComplete (asyncPartTask.Result))
+            completition (asyncPartTask.Result);
+
+    }, CancellationToken.None, TaskContinuationOptions.OnlyOnRanToCompletion, scheduler);
+    task.Start ();
+}
+----------------------------------------
+
+public static CancellationTokenSource ExecuteBlockingOperation < TIn, TOut > (Func < TIn, TOut > func, TIn parameter, Action < TOut, TIn > completition, Action < AggregateException, TIn > onException) {
+    if (func == null)
+        throw new ArgumentNullException ("func");
+
+    if (completition == null)
+        throw new ArgumentNullException ("completition");
+
+    var cts = new CancellationTokenSource ();
+    var token = cts.Token;
+    var scheduler = TaskScheduler.FromCurrentSynchronizationContext ();
+    var task = new Task < TOut > (() = > func (parameter), TaskCreationOptions.LongRunning);
+    task.ContinueWith (asyncPartTask = > onException (asyncPartTask.Exception, parameter), CancellationToken.None, TaskContinuationOptions.OnlyOnFaulted, scheduler);
+    task.ContinueWith (asyncPart = > {
+        if (! token.IsCancellationRequested)
+            completition (asyncPart.Result, parameter);
+
+    }, CancellationToken.None, TaskContinuationOptions.OnlyOnRanToCompletion, scheduler);
+    task.Start ();
+    return cts;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+13266277_13268230_355_374
+13266277_13268230_57_82
+Title: How do I call async methods in asp.net C# 4.0? 
+----------------------------------------
+
+public static void ExecuteBlockingOperation < TIn, TOut > (Func < TIn, TOut > func, TIn parameter, Action < TOut, TIn > completition, Func < TOut, TIn, bool > shouldComplete, Action < AggregateException, TIn > onException) {
+    if (func == null)
+        throw new ArgumentNullException ("func");
+
+    if (completition == null)
+        throw new ArgumentNullException ("completition");
+
+    var scheduler = TaskScheduler.FromCurrentSynchronizationContext ();
+    var task = new Task < TOut > (() = > func (parameter), TaskCreationOptions.LongRunning);
+    task.ContinueWith (asyncPartTask = > onException (asyncPartTask.Exception, parameter), CancellationToken.None, TaskContinuationOptions.OnlyOnFaulted, scheduler);
+    task.ContinueWith (asyncPart = > {
+        if (shouldComplete == null || shouldComplete (asyncPart.Result, parameter))
+            completition (asyncPart.Result, parameter);
+
+    }, CancellationToken.None, TaskContinuationOptions.OnlyOnRanToCompletion, scheduler);
+    task.Start ();
+}
+----------------------------------------
+
+public static CancellationTokenSource ExecuteBlockingOperation < TOut > (Func < TOut > func, Action < TOut > completition, Action < AggregateException > onException) {
+    if (func == null)
+        throw new ArgumentNullException ("func");
+
+    if (completition == null)
+        throw new ArgumentNullException ("completition");
+
+    var cts = new CancellationTokenSource ();
+    var token = cts.Token;
+    var scheduler = TaskScheduler.FromCurrentSynchronizationContext ();
+    var task = new Task < TOut > (func, TaskCreationOptions.LongRunning);
+    task.ContinueWith (asyncPartTask = > onException (asyncPartTask.Exception), CancellationToken.None, TaskContinuationOptions.OnlyOnFaulted, scheduler);
+    task.ContinueWith (asyncPart = > {
+        if (! token.IsCancellationRequested)
+            completition (asyncPart.Result);
+
+    }, CancellationToken.None, TaskContinuationOptions.OnlyOnRanToCompletion, scheduler);
+    task.Start ();
+    return cts;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+13278194_13278208_1_14
+13278194_13278366_1_16
+Title: LINQ and Array.Copy 
+----------------------------------------
+
+public static T [,] ToMultidimensionArray < T > (this List < T [] > list, int columns) {
+    var array = new T [list.Count, columns];
+    for (int i = 0; i < list.Count; i ++) {
+        var source = list [i];
+        for (int j = 0; j < columns; j ++) {
+            array [i, j] = source [j];
+        }
+    }
+    return array;
+}
+----------------------------------------
+
+public static T [,] GetColumns < T > (IList < IEnumerable < T > > source, int numColumns) {
+    T [,] output = new T [source.Count, numColumns];
+    for (int i = 0; i < source.Count; i ++) {
+        int j = 0;
+        foreach (T item in source [j].Take (numColumns)) {
+            output [i, j] = item;
+            j ++;
+        }
+    }
+    return output;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+13280008_14534586_9_23
+13280008_35235773_12_37
+Title: How do I compile a C# solution with Roslyn? 
+----------------------------------------
+
+static void Main (string [] args) {
+    var solution = Solution.Create (SolutionId.CreateNewId ()).AddCSharpProject ("Foo", "Foo").Solution;
+    var workspaceServices = (IHaveWorkspaceServices) solution;
+    var projectDependencyService = workspaceServices.WorkspaceServices.GetService < IProjectDependencyService > ();
+    var assemblies = new List < Stream > ();
+    foreach (var projectId in projectDependencyService.GetDependencyGraph (solution).GetTopologicallySortedProjects ()) {
+        using (var stream = new MemoryStream ())
+        {
+            solution.GetProject (projectId).GetCompilation ().Emit (stream);
+            assemblies.Add (stream);
+        }}
+}
+----------------------------------------
+
+static void Main (string [] args) {
+    string solutionUrl = "C:\\Dev\\Roslyn.TryItOut\\Roslyn.TryItOut.sln";
+    string outputDir = "C:\\Dev\\Roslyn.TryItOut\\output";
+    if (! Directory.Exists (outputDir)) {
+        Directory.CreateDirectory (outputDir);
+    }
+    bool success = CompileSolution (solutionUrl, outputDir);
+    if (success) {
+        Console.WriteLine ("Compilation completed successfully.");
+        Console.WriteLine ("Output directory:");
+        Console.WriteLine (outputDir);
+    } else {
+        Console.WriteLine ("Compilation failed.");
+    }
+    Console.WriteLine ("Press the any key to exit.");
+    Console.ReadKey ();
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+13283184_13283467_10_24
+13283184_15004833_9_33
+Title: C# Column formatting 
+----------------------------------------
+
+static void Main (string [] args) {
+    List < string > names = new List < string > () {"Sam", "John", "Bob", "Adam", "Kelly", "Nolan", "Carl", "Tim", "Tom", "David"};
+    for (int i = 0; i < names.Count; i ++) {
+        if (i % 4 == 0 && i > 0)
+            Console.WriteLine ();
+
+        Console.Write (names [i] + "\t");
+    }
+    Console.ReadLine ();
+}
+----------------------------------------
+
+public static void Main () {
+    Tuple < string, DateTime, int, DateTime, int > [] cities = {Tuple.Create ("Los Angeles", new DateTime (1940, 1, 1), 1504277, new DateTime (1950, 1, 1), 1970358), Tuple.Create ("New York", new DateTime (1940, 1, 1), 7454995, new DateTime (1950, 1, 1), 7891957), Tuple.Create ("Chicago", new DateTime (1940, 1, 1), 3396808, new DateTime (1950, 1, 1), 3620962), Tuple.Create ("Detroit", new DateTime (1940, 1, 1), 1623452, new DateTime (1950, 1, 1), 1849568)};
+    string header = String.Format ("{0,-12}{1,8}{2,12}{1,8}{2,12}{3,14}\n", "City", "Year", "Population", "Change (%)");
+    Console.WriteLine (header);
+    string output;
+    foreach (var city in cities) {
+        output = String.Format ("{0,-12}{1,8:yyyy}{2,12:N0}{3,8:yyyy}{4,12:N0}{5,14:P1}", city.Item1, city.Item2, city.Item3, city.Item4, city.Item5, (city.Item5 - city.Item3) / (double) city.Item3);
+        Console.WriteLine (output);
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+13286431_13287020_1_15
+13286431_13287847_1_19
+Title: getting current value reflection c# 
+----------------------------------------
+
+public static string GetPropertyValue < T > (this T obj, string parameterName) {
+    PropertyInfo [] property = null;
+    Type typ = obj.GetType ();
+    if (listPropertyInfo.ContainsKey (typ.Name)) {
+        property = listPropertyInfo [typ.Name];
+    } else {
+        property = typ.GetProperties ();
+        listPropertyInfo.TryAdd (typ.Name, property);
+    }
+    return property.First (p = > p.Name == parameterName).GetValue (obj, null).ToString ();
+}
+----------------------------------------
+
+public static void SetPropertyValue < T > (this T obj, string parameterName, object value) {
+    PropertyInfo [] property = null;
+    Type typ = obj.GetType ();
+    if (listPropertyInfo.ContainsKey (typ.Name)) {
+        property = listPropertyInfo [typ.Name];
+    } else {
+        property = typ.GetProperties ();
+        listPropertyInfo.TryAdd (typ.Name, property);
+    }
+    if (value == DBNull.Value) {
+        value = null;
+    }
+    property.First (p = > p.Name == parameterName).SetValue (obj, value, null);
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+13291788_13292001_1_16
+13291788_23164737_1_10
+Title: LINQ to find array indexes of a value 
+----------------------------------------
+
+public static IEnumerable < int > Indexes < T > (IEnumerable < T > source, T itemToFind) {
+    if (source == null)
+        throw new ArgumentNullException ("source");
+
+    int i = 0;
+    foreach (T item in source) {
+        if (object.Equals (itemToFind, item)) {
+            yield return i;
+        }
+        i ++;
+    }
+}
+----------------------------------------
+
+public static IEnumerable < TResult > SelectWhere < TSource, TResult > (this IEnumerable < TSource > source, Func < TSource, bool > filter, Func < TSource, int, TResult > selector) {
+    int index = - 1;
+    foreach (var s in source) {
+        checked {
+            ++ index;
+        }
+        if (filter (s))
+            yield return selector (s, index);
+
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+1330220_2462381_1_13
+1330220_33903052_1_13
+Title: Set datagrid view background to transparent 
+----------------------------------------
+
+protected override void PaintBackground (Graphics graphics, Rectangle clipBounds, Rectangle gridBounds) {
+    base.PaintBackground (graphics, clipBounds, gridBounds);
+    Rectangle rectSource = new Rectangle (this.Location.X, this.Location.Y, this.Width, this.Height);
+    Rectangle rectDest = new Rectangle (0, 0, rectSource.Width, rectSource.Height);
+    Bitmap b = new Bitmap (Parent.ClientRectangle.Width, Parent.ClientRectangle.Height);
+    Graphics.FromImage (b).DrawImage (this.Parent.BackgroundImage, Parent.ClientRectangle);
+    graphics.DrawImage (b, rectDest, rectSource, GraphicsUnit.Pixel);
+    SetCellsTransparent ();
+}
+----------------------------------------
+
+protected override void PaintBackground (Graphics graphics, Rectangle clipBounds, Rectangle gridBounds) {
+    base.PaintBackground (graphics, clipBounds, gridBounds);
+    if (main.ActiveForm != null && this.Parent.BackgroundImage != null) {
+        Rectangle rectSource = new Rectangle (this.Location.X, this.Location.Y, this.Width, this.Height);
+        Rectangle rectDest = new Rectangle (- 3, 3, rectSource.Width, rectSource.Height);
+        Bitmap b = new Bitmap (Parent.ClientRectangle.Width, Parent.ClientRectangle.Height);
+        Graphics.FromImage (b).DrawImage (this.Parent.BackgroundImage, Parent.ClientRectangle);
+        graphics.DrawImage (b, rectDest, rectSource, GraphicsUnit.Pixel);
+        SetCellsTransparent ();
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+13307185_13307314_15_30
+13307185_13307622_3_20
+Title: Unable to remove cast event handler 
+----------------------------------------
+
+static void Main () {
+    IBM ibm = new IBM ("IBM", 120.00);
+    ibm.Attach (new Investor ("Sorros"));
+    ibm.Attach (new Investor ("Berkshire"));
+    ibm.Price = 120.10;
+    ibm.Price = 121.00;
+    ibm.Price = 120.50;
+    ibm.Price = 120.75;
+    Console.ReadKey ();
+}
+----------------------------------------
+
+static void Main (string [] args) {
+    IGenericInterface < int > x = new ImplementingClass < int > ();
+    Console.WriteLine ("Created x and invoking...");
+    x.InvokeEvent ();
+    Console.WriteLine ("Adding event and invoking...");
+    x.Event += x_Event;
+    x.InvokeEvent ();
+    Console.WriteLine ("Removing event and invoking...");
+    x.Event -= x_Event;
+    x.InvokeEvent ();
+    Console.WriteLine ("Done.");
+    Console.ReadKey (true);
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+13307769_13308427_1_27
+13307769_13308427_28_65
+Title: TCP response cut short 
+----------------------------------------
+
+public string GetFromTextCommand (string command) {
+    try {
+        if (! _isConnected)
+            Connect ();
+
+        if (! _isConnected)
+            return null;
+
+        SendTextCommand (command);
+        string response = GetFromTextCommand ();
+        if (response.StartsWith ("202")) {
+            while (! response.EndsWith (".\r\n")) {
+                string newResponse = GetFromTextCommand ();
+                response += newResponse;
+            }
+        }
+        return response;
+    }
+    catch (Exception ex) {
+        GenerateException (ex.Message);
+        return null;
+    }
+}
+----------------------------------------
+
+public string GetFromTextCommand () {
+    try {
+        if (! _isConnected)
+            Connect ();
+
+        if (! _isConnected)
+            return null;
+
+        string response = "";
+        SocketAsyncEventArgs socketEventArg = new SocketAsyncEventArgs ();
+        socketEventArg.RemoteEndPoint = _socket.RemoteEndPoint;
+        socketEventArg.UserToken = null;
+        socketEventArg.SetBuffer (new Byte [MAX_BUFFER_SIZE], 0, MAX_BUFFER_SIZE);
+        socketEventArg.Completed += new EventHandler < SocketAsyncEventArgs > (delegate (object s, SocketAsyncEventArgs e) {
+            if (e.SocketError == SocketError.Success) {
+                response = Encoding.ASCII.GetString (e.Buffer);
+                response = response.Trim ('\0');
+            } else
+                throw new Exception (e.SocketError.ToString ());
+
+            _pausingThread.Set ();
+        });
+        _pausingThread.Reset ();
+        _socket.ReceiveAsync (socketEventArg);
+        _pausingThread.WaitOne (TIMEOUT_MILLISECONDS);
+        return response;
+    }
+    catch (Exception ex) {
+        GenerateException (ex.Message);
+        return null;
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+13318890_13318945_19_34
+13318890_13319421_21_35
+Title: instance of class doesn't exist? 
+----------------------------------------
+
+public void EatFruits () {
+    double dblpercent;
+    MakeFruits ();
+    Console.WriteLine ("You have an Apple and a Banana in your fruit garden.\n");
+    Console.WriteLine ("What Percent of the Apple would you like to eat?");
+    dblpercent = Convert.ToDouble (Console.ReadLine ());
+    Console.WriteLine ("\nWhat Percent of the Banana would you like to eat?");
+    dblpercent = Convert.ToDouble (Console.ReadLine ());
+    Console.Write ("You have ");
+    apple.Eat (dblpercent);
+    Console.Write ("% of your apple, and ");
+    banana.Eat (dblpercent);
+    Console.Write ("% of your banana left.");
+    Console.ReadLine ();
+}
+----------------------------------------
+
+static void EatFruits () {
+    for (int i = 0; i < myGarden.Fruits.Count; i ++) {
+        Fruit myFruitSnack = myGarden.Fruits [i];
+        while (myFruitSnack.FruitSize > 0) {
+            Console.WriteLine (myFruitSnack.TakeBite ());
+        }
+    }
+    Console.ReadLine ();
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+1332328_1332358_1_18
+1332328_1332436_1_24
+Title: How does C# evaluate Logic block? 
+----------------------------------------
+
+public bool dcpl_radar () {
+    if (radar != null) {
+        if (radar.InvokeRequired) {
+            radar.BeginInvoke (new MethodInvoker (HideRadar));
+        } else {
+            HideRadar ();
+        }
+        return true;
+    }
+    return false;
+}
+----------------------------------------
+
+public bool dcpl_radar () {
+    if (radar == null)
+        return false;
+    else {
+        if (radar != null) {
+            if (radar.InvokeRequired)
+                radar.BeginInvoke (new MethodInvoker (delegate () {
+                    radar.Visible = false;
+                    radar = null;
+                }));
+            else {
+                this.radar.Visible = false;
+                radar = null;
+            }
+        }
+        return true;
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+133270_13300755_20_31
+133270_13300755_9_14
+Title: Illustrating usage of the volatile keyword in C# 
+----------------------------------------
+
+public void Run () {
+    new Thread (delegate () {
+        Thread.Sleep (500);
+        _normalInt = 1;
+    }).Start ();
+    while (_normalInt != 1)
+        ;
+    Console.WriteLine ("_normalInt=" + _normalInt);
+}
+----------------------------------------
+
+public void Run () {
+    new Thread (delegate () {
+        Thread.Sleep (500);
+        _volatileInt = 1;
+    }).Start ();
+    while (_volatileInt != 1)
+        ;
+    Console.WriteLine ("_volatileInt=" + _volatileInt);
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+1332916_1332929_105_170
+1332916_1336575_91_146
+Title: Converting vb.net to c# 
+----------------------------------------
+
+private int LowLevelHook (int code, int wParam, ref KeyboardLowLevelHookStruct lParam) {
+    if (code == Hc_Action) {
+        if ((wParam == (int) WindowsMessage.KeyDown) || (wParam == (int) WindowsMessage.SystemKeyDown) || (wParam == (int) WindowsMessage.KeyUp) || (wParam == (int) WindowsMessage.SystemKeyUp)) {
+            bool control = (GetAsyncKeyState ((int) Vk.Control) & 0x8000) == 0x8000;
+            bool suppress = false;
+            if (control && lParam.VirtualKeyCode == (int) Vk.Escape) {
+                suppress = true;
+            }
+            if ((lParam.Flags & LowLevelKeyboardHfAltDown) == LowLevelKeyboardHfAltDown && lParam.VirtualKeyCode == (int) Vk.Tab) {
+                suppress = true;
+            }
+            if ((lParam.Flags & LowLevelKeyboardHfAltDown) == LowLevelKeyboardHfAltDown && lParam.VirtualKeyCode == (int) Vk.Escape) {
+                suppress = true;
+            }
+            if (lParam.VirtualKeyCode == (int) Vk.LeftWindows) {
+                suppress = true;
+                MessageBox.Show ("Pressed Left windows key");
+            }
+            if (lParam.VirtualKeyCode == (int) Vk.RightWindows) {
+                suppress = true;
+                MessageBox.Show ("Pressed Right windows key");
+            }
+            if (lParam.VirtualKeyCode == (int) Vk.Applications) {
+                suppress = true;
+            }
+            if (suppress) {
+                return 1;
+            }
+        }
+        return CallNextHookEx (m_hookHandle, code, wParam, lParam);
+    }
+    return 0;
+}
+----------------------------------------
+
+private int LowLevelHook (int code, int wParam, ref KeyboardLowLevelHookStruct lParam) {
+    if (code == Hc_Action) {
+        if ((wParam == WindowsMessage.KeyDown) || (wParam == WindowsMessage.SystemKeyDown) || (wParam == WindowsMessage.KeyUp) || (wParam == WindowsMessage.SystemKeyUp)) {
+            bool control = (GetAsyncKeyState (Vk.Control) & 0x8000) == 0x8000;
+            bool suppress;
+            if (control && lParam.VirtualKeyCode == Vk.Escape) {
+                suppress = true;
+            }
+            if ((lParam.Flags & LowLevelKeyboardHfAltDown) == LowLevelKeyboardHfAltDown && lParam.VirtualKeyCode == Vk.Tab) {
+                suppress = true;
+            }
+            if ((lParam.Flags & LowLevelKeyboardHfAltDown) == LowLevelKeyboardHfAltDown && lParam.VirtualKeyCode == Vk.Escape) {
+                suppress = true;
+            }
+            if (lParam.VirtualKeyCode == Vk.LeftWindows) {
+                suppress = true;
+                MessageBox.Show ("Pressed Left windows key");
+            }
+            if (lParam.VirtualKeyCode == Vk.RightWindows) {
+                suppress = true;
+                MessageBox.Show ("Pressed Right windows key");
+            }
+            if (lParam.VirtualKeyCode == Vk.Applications) {
+                suppress = true;
+            }
+            if (suppress) {
+                return 1;
+            }
+        }
+        return CallNextHookEx (m_hookHandle, code, wParam, lParam);
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+1332938_1333042_29_43
+1332938_1333042_55_65
+Title: Efficient way to find the flags enum length? 
+----------------------------------------
+
+public static T SetFlags < T > (this T value, T flags, bool on) where T : struct {
+    CheckEnumWithFlags < T > ();
+    long lValue = Convert.ToInt64 (value);
+    long lFlag = Convert.ToInt64 (flags);
+    if (on) {
+        lValue |= lFlag;
+    } else {
+        lValue &= (~ lFlag);
+    }
+    return (T) Enum.ToObject (typeof (T), lValue);
+}
+----------------------------------------
+
+public static T CombineFlags < T > (this IEnumerable < T > flags) where T : struct {
+    CheckEnumWithFlags < T > ();
+    long lValue = 0;
+    foreach (T flag in flags) {
+        long lFlag = Convert.ToInt64 (flag);
+        lValue |= lFlag;
+    }
+    return (T) Enum.ToObject (typeof (T), lValue);
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+13370440_13370586_1_14
+13370440_13370669_1_27
+Title: "Writing to console char by char fastest way" 
+----------------------------------------
+
+static void Main (string [] args) {
+    Test1 ("just a little test string.");
+    GC.Collect ();
+    GC.WaitForPendingFinalizers ();
+    Stopwatch timer = new Stopwatch ();
+    timer.Start ();
+    for (int i = 0; i < 10000; i ++) {
+        Test1 ("just a little test string.");
+    }
+    timer.Stop ();
+    Console.WriteLine (timer.Elapsed);
+}
+----------------------------------------
+
+static void Main (string [] args) {
+    var timer = new Stopwatch ();
+    timer.Restart ();
+    for (int i = 0; i < 1000; i ++)
+        Test1 ("just a little test string.");
+
+    timer.Stop ();
+    TimeSpan elapsed1 = timer.Elapsed;
+    timer.Restart ();
+    for (int i = 0; i < 1000; i ++)
+        Test2 ("just a little test string.");
+
+    timer.Stop ();
+    TimeSpan elapsed2 = timer.Elapsed;
+    timer.Restart ();
+    for (int i = 0; i < 1000; i ++)
+        Test3 ("just a little test string.");
+
+    timer.Stop ();
+    TimeSpan elapsed3 = timer.Elapsed;
+    Console.WriteLine (elapsed1);
+    Console.WriteLine (elapsed2);
+    Console.WriteLine (elapsed3);
+    Console.Read ();
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+13384163_13384889_14_31
+13384163_13384889_34_78
+Title: How to find common parts of a string within a List<string> in C# 
+----------------------------------------
+
+public static string LongestCommonSubstring (IList < string > values) {
+    string result = string.Empty;
+    for (int i = 0; i < values.Count - 1; i ++) {
+        for (int j = i + 1; j < values.Count; j ++) {
+            string tmp;
+            if (LongestCommonSubstring (values [i], values [j], out tmp) > result.Length) {
+                result = tmp;
+            }
+        }
+    }
+    return result;
+}
+----------------------------------------
+
+public static int LongestCommonSubstring (string str1, string str2, out string sequence) {
+    sequence = string.Empty;
+    if (String.IsNullOrEmpty (str1) || String.IsNullOrEmpty (str2))
+        return 0;
+
+    int [,] num = new int [str1.Length, str2.Length];
+    int maxlen = 0;
+    int lastSubsBegin = 0;
+    StringBuilder sequenceBuilder = new StringBuilder ();
+    for (int i = 0; i < str1.Length; i ++) {
+        for (int j = 0; j < str2.Length; j ++) {
+            if (str1 [i] != str2 [j])
+                num [i, j] = 0;
+            else {
+                if ((i == 0) || (j == 0))
+                    num [i, j] = 1;
+                else
+                    num [i, j] = 1 + num [i - 1, j - 1];
+
+                if (num [i, j] > maxlen) {
+                    maxlen = num [i, j];
+                    int thisSubsBegin = i - num [i, j] + 1;
+                    if (lastSubsBegin == thisSubsBegin) {
+                        sequenceBuilder.Append (str1 [i]);
+                    } else {
+                        lastSubsBegin = thisSubsBegin;
+                        sequenceBuilder.Length = 0;
+                        sequenceBuilder.Append (str1.Substring (lastSubsBegin, (i + 1) - lastSubsBegin));
+                    }
+                }
+            }
+        }
+    }
+    sequence = sequenceBuilder.ToString ();
+    return maxlen;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+13417226_13417375_1_16
+13417226_13417667_1_26
+Title: Logic for AddWorkingDays to Date 
+----------------------------------------
+
+public static DateTime AddWorkingDays (this DateTime date, int days) {
+    if (days == 0)
+        return date;
+
+    int sign = days < 0 ? - 1 : 1;
+    while (days % 5 != 0 || ! date.IsWorkingDay ()) {
+        date = date.AddDays (sign);
+        if (! date.IsWorkingDay ())
+            continue;
+
+        days -= sign;
+    }
+    int nWeekEnds = days / 5;
+    DateTime result = date.AddDays (days + nWeekEnds * 2);
+    return result;
+}
+----------------------------------------
+
+public static DateTime AddWorkingDays (DateTime startDate, int amount) {
+    if (amount <= 0)
+        return startDate;
+
+    var ret = startDate;
+    for (int i = 0; i < amount;) {
+        var nextDay = ret.AddDays (1);
+        if (nextDay.DayOfWeek == DayOfWeek.Saturday || nextDay.DayOfWeek == DayOfWeek.Sunday) {
+            ret = ret.AddDays (1);
+            continue;
+        }
+        ret = ret.AddDays (1);
+        i ++;
+    }
+    return ret;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+13464471_13464541_7_19
+13464471_13464624_1_16
+Title: How to refactor a sequence of if-then statements? 
+----------------------------------------
+
+public string getVersion (Worksheet sht) {
+    for (int j = 1; j < 4; j ++) {
+        for (int i = 24; i > 0; i --) {
+            if (checkContentsStartsWith (sht, "A" + j.ToString (), "Changes for Version " + i)) {
+                return i;
+            }
+        }
+    }
+}
+----------------------------------------
+
+public static string getVersion (Worksheet sht) {
+    Range range = sht.Range ["A1:A10"];
+    foreach (Range c in range.Cells) {
+        if (null == c.Value2)
+            continue;
+
+        string val = c.Value.ToString ();
+        if (val.Contains ("Changes for Version ")) {
+            int startIndex = ("Changes for Version ").Length;
+            return val.Substring (startIndex, 2).Trim ();
+        }
+    }
+    return null;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+13464471_13464541_7_19
+13464471_13464774_13_25
+Title: How to refactor a sequence of if-then statements? 
+----------------------------------------
+
+public string getVersion (Worksheet sht) {
+    for (int j = 1; j < 4; j ++) {
+        for (int i = 24; i > 0; i --) {
+            if (checkContentsStartsWith (sht, "A" + j.ToString (), "Changes for Version " + i)) {
+                return i;
+            }
+        }
+    }
+}
+----------------------------------------
+
+public string getVersion (Excel._Worksheet sht) {
+    string [] [] values = new string [3] [] {new string [3] {"a4", "Changes for Version 24", "24"}, new string [3] {"a1", "Changes for Version 23 (Official)", "23"}, new string [3] {"a2", "Changes for Version 22", "22"}};
+    foreach (string [] strings in values) {
+        if (checkContents (sht, strings [0], strings [1]))
+            return strings [2];
+
+    }
+    return null;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+13464471_13464541_7_19
+13464471_13464774_1_10
+Title: How to refactor a sequence of if-then statements? 
+----------------------------------------
+
+public string getVersion (Worksheet sht) {
+    for (int j = 1; j < 4; j ++) {
+        for (int i = 24; i > 0; i --) {
+            if (checkContentsStartsWith (sht, "A" + j.ToString (), "Changes for Version " + i)) {
+                return i;
+            }
+        }
+    }
+}
+----------------------------------------
+
+public string getVersion (Excel._Worksheet sht) {
+    if (checkContents (sht, "a4", "Changes for Version 24"))
+        return "24";
+
+    if (checkContents (sht, "a1", "Changes for Version 23 (Official)"))
+        return "23";
+
+    if (checkContents (sht, "a2", "Changes for Version 22"))
+        return "22";
+
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+13464471_13464624_1_16
+13464471_13464774_13_25
+Title: How to refactor a sequence of if-then statements? 
+----------------------------------------
+
+public static string getVersion (Worksheet sht) {
+    Range range = sht.Range ["A1:A10"];
+    foreach (Range c in range.Cells) {
+        if (null == c.Value2)
+            continue;
+
+        string val = c.Value.ToString ();
+        if (val.Contains ("Changes for Version ")) {
+            int startIndex = ("Changes for Version ").Length;
+            return val.Substring (startIndex, 2).Trim ();
+        }
+    }
+    return null;
+}
+----------------------------------------
+
+public string getVersion (Excel._Worksheet sht) {
+    string [] [] values = new string [3] [] {new string [3] {"a4", "Changes for Version 24", "24"}, new string [3] {"a1", "Changes for Version 23 (Official)", "23"}, new string [3] {"a2", "Changes for Version 22", "22"}};
+    foreach (string [] strings in values) {
+        if (checkContents (sht, strings [0], strings [1]))
+            return strings [2];
+
+    }
+    return null;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+13464471_13464624_1_16
+13464471_13464774_1_10
+Title: How to refactor a sequence of if-then statements? 
+----------------------------------------
+
+public static string getVersion (Worksheet sht) {
+    Range range = sht.Range ["A1:A10"];
+    foreach (Range c in range.Cells) {
+        if (null == c.Value2)
+            continue;
+
+        string val = c.Value.ToString ();
+        if (val.Contains ("Changes for Version ")) {
+            int startIndex = ("Changes for Version ").Length;
+            return val.Substring (startIndex, 2).Trim ();
+        }
+    }
+    return null;
+}
+----------------------------------------
+
+public string getVersion (Excel._Worksheet sht) {
+    if (checkContents (sht, "a4", "Changes for Version 24"))
+        return "24";
+
+    if (checkContents (sht, "a1", "Changes for Version 23 (Official)"))
+        return "23";
+
+    if (checkContents (sht, "a2", "Changes for Version 22"))
+        return "22";
+
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+13464471_13464774_13_25
+13464471_13464774_1_10
+Title: How to refactor a sequence of if-then statements? 
+----------------------------------------
+
+public string getVersion (Excel._Worksheet sht) {
+    string [] [] values = new string [3] [] {new string [3] {"a4", "Changes for Version 24", "24"}, new string [3] {"a1", "Changes for Version 23 (Official)", "23"}, new string [3] {"a2", "Changes for Version 22", "22"}};
+    foreach (string [] strings in values) {
+        if (checkContents (sht, strings [0], strings [1]))
+            return strings [2];
+
+    }
+    return null;
+}
+----------------------------------------
+
+public string getVersion (Excel._Worksheet sht) {
+    if (checkContents (sht, "a4", "Changes for Version 24"))
+        return "24";
+
+    if (checkContents (sht, "a1", "Changes for Version 23 (Official)"))
+        return "23";
+
+    if (checkContents (sht, "a2", "Changes for Version 22"))
+        return "22";
+
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+13466078_13611576_8_25
+13466078_13612090_1_36
+Title: Create open constructed type from string 
+----------------------------------------
+
+static void Main (string [] args) {
+    var typesAsStr = new string [] {"T", "List`1[T]", "List`1[Tuple`2[T, string]]"};
+    Type testType = typeof (MyClass < >);
+    MethodInfo myMethodInfo = testType.GetMethod ("MyMethod");
+    string [] paramTypes = myMethodInfo.GetParameters ().Select (pi = > TypeToString (pi.ParameterType)).ToArray ();
+    var index = - 1;
+    Console.WriteLine ("Method found: {0}", typesAsStr.All (str = > {
+        index ++;
+        return index < paramTypes.Length && str == paramTypes [index];
+    }));
+    Console.ReadLine ();
+}
+----------------------------------------
+
+private static void Main (string [] args) {
+    Type testType = Type.GetType ("yournamespace.MyClass`1");
+    Type [] testTypeGenericArgs = testType.GetGenericArguments ();
+    Type tType = testTypeGenericArgs [0];
+    Type genericListType = Type.GetType ("System.Collections.Generic.List`1");
+    Type openListType = genericListType.MakeGenericType (testTypeGenericArgs [0]);
+    Type genericTuple = Type.GetType ("System.Tuple`2");
+    Type stringType = Type.GetType ("System.String");
+    Type openTuple = genericTuple.MakeGenericType (new [] {tType, stringType});
+    Type openListOfTuple = genericListType.MakeGenericType (openTuple);
+    Type [] typesFromStrings = new [] {tType, openListType, openListOfTuple};
+    Type myClassType = typeof (MyClass < >);
+    MethodInfo myMethodInfo = myClassType.GetMethod ("MyMethod");
+    Type [] paramTypes = myMethodInfo.GetParameters ().Select (pi = > pi.ParameterType).ToArray ();
+    for (int i = 0; i < typesFromStrings.Length; i ++) {
+        Console.WriteLine (typesFromStrings [i].Equals (paramTypes [i]));
+    }
+    Console.ReadLine ();
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+1348643_1348727_10_41
+1348643_1348853_11_64
+Title: How performant is StackFrame? 
+----------------------------------------
+
+static void Main (string [] args) {
+    Stopwatch sw;
+    for (int i = 0; i < 100000; i ++) {
+        CallA ();
+    }
+    sw = Stopwatch.StartNew ();
+    for (int i = 0; i < 100000; i ++) {
+        CallA ();
+    }
+    sw.Stop ();
+    Console.WriteLine ("Don't generate 100K frames: {0}ms", sw.ElapsedMilliseconds);
+    generateFrame = true;
+    sw = Stopwatch.StartNew ();
+    for (int i = 0; i < 100000; i ++) {
+        CallA ();
+    }
+    Console.WriteLine ("Generate 100K frames: {0}ms", sw.ElapsedMilliseconds);
+    Console.ReadKey ();
+}
+----------------------------------------
+
+static void Main (string [] args) {
+    Stopwatch sw;
+    for (int i = 0; i < 100000; i ++) {
+        TraceCall ();
+    }
+    sw = Stopwatch.StartNew ();
+    traceCalls = false;
+    for (int i = 0; i < 100000; i ++) {
+        TraceCall (MethodBase.GetCurrentMethod ());
+    }
+    sw.Stop ();
+    Console.WriteLine ("Tracing Disabled, passing Method Name: {0}ms", sw.ElapsedMilliseconds);
+    sw = Stopwatch.StartNew ();
+    traceCalls = true;
+    for (int i = 0; i < 100000; i ++) {
+        TraceCall (MethodBase.GetCurrentMethod ());
+    }
+    sw.Stop ();
+    Console.WriteLine ("Tracing Enabled, passing Method Name: {0}ms", sw.ElapsedMilliseconds);
+    sw = Stopwatch.StartNew ();
+    traceCalls = false;
+    for (int i = 0; i < 100000; i ++) {
+        TraceCall ();
+    }
+    Console.WriteLine ("Tracing Disabled, looking up Method Name: {0}ms", sw.ElapsedMilliseconds);
+    sw = Stopwatch.StartNew ();
+    traceCalls = true;
+    for (int i = 0; i < 100000; i ++) {
+        TraceCall ();
+    }
+    Console.WriteLine ("Tracing Enabled, looking up Method Name: {0}ms", sw.ElapsedMilliseconds);
+    Console.ReadKey ();
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+1349491_3935038_1_12
+1349491_9136291_1_14
+Title: How can I split an IEnumerable<String> into groups of IEnumerable<string> 
+----------------------------------------
+
+public IEnumerable < IEnumerable < T > > Paginate < T > (this IEnumerable < T > source, int pageSize) {
+    List < IEnumerable < T > > pages = new List < IEnumerable < T > > ();
+    int skipCount = 0;
+    while (skipCount * pageSize < source.Count) {
+        pages.Add (source.Skip (skipCount * pageSize).Take (pageSize));
+        skipCount += 1;
+    }
+    return pages;
+}
+----------------------------------------
+
+public static IEnumerable < IEnumerable < T > > Split2 < T > (this IEnumerable < T > source, int chunkSize) {
+    var chunk = new List < T > (chunkSize);
+    foreach (var x in source) {
+        chunk.Add (x);
+        if (chunk.Count <= chunkSize) {
+            continue;
+        }
+        yield return chunk;
+        chunk = new List < T > (chunkSize);
+    }
+    if (chunk.Any ()) {
+        yield return chunk;
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+1349689_1350776_10_18
+1349689_1350776_1_9
+Title: Is there a nice simple & elegant way to make ICollection more fluent in C#? 
+----------------------------------------
+
+public static void AddRange < T > (this ICollection < T > collection, IEnumerable < T > items) {
+    if (collection == null)
+        throw new ArgumentNullException ("collection");
+
+    if (items == null)
+        throw new ArgumentNullException ("items");
+
+    foreach (T item in items) {
+        collection.Add (item);
+    }
+}
+----------------------------------------
+
+public static void AddRange < T > (this ICollection < T > collection, params T [] items) {
+    if (collection == null)
+        throw new ArgumentNullException ("collection");
+
+    if (items == null)
+        throw new ArgumentNullException ("items");
+
+    for (int i = 0; i < items.Length; i ++) {
+        collection.Add (items [i]);
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+13502157_17441086_50_70
+13502157_17441086_94_112
+Title: Azure SDK for TableStorage with .NET 4.5 
+----------------------------------------
+
+public Boolean DeleleEntity < T > (String partitionKey, String rowKey) where T : class, ITableEntity, new () {
+    TableOperation retrieveOperation = TableOperation.Retrieve < T > (partitionKey, rowKey);
+    var retrievedResult = Table.Execute (retrieveOperation);
+    var deleteEntity = (T) retrievedResult.Result;
+    if (deleteEntity != null) {
+        TableOperation deleteOperation = TableOperation.Delete (deleteEntity);
+        Table.Execute (deleteOperation);
+    }
+    return true;
+}
+----------------------------------------
+
+public Boolean UpdateEntity < T > (T entity) where T : class, ITableEntity, new () {
+    Boolean isUpdate = false;
+    try {
+        TableOperation updateOperation = TableOperation.Replace (entity);
+        Table.Execute (updateOperation);
+        isUpdate = true;
+    }
+    catch (Exception ex) {
+        isUpdate = false;
+    }
+    return isUpdate;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+13502157_17441086_72_92
+13502157_17441086_94_112
+Title: Azure SDK for TableStorage with .NET 4.5 
+----------------------------------------
+
+public Boolean UpdateEntity < T > (String partitionKey, String rowKey) where T : class, ITableEntity, new () {
+    TableOperation retrieveOperation = TableOperation.Retrieve < T > (partitionKey, rowKey);
+    TableResult retrievedResult = Table.Execute (retrieveOperation);
+    var updateEntity = (T) retrievedResult.Result;
+    if (updateEntity != null) {
+        TableOperation updateOperation = TableOperation.Replace (updateEntity);
+        Table.Execute (updateOperation);
+    }
+    return true;
+}
+----------------------------------------
+
+public Boolean UpdateEntity < T > (T entity) where T : class, ITableEntity, new () {
+    Boolean isUpdate = false;
+    try {
+        TableOperation updateOperation = TableOperation.Replace (entity);
+        Table.Execute (updateOperation);
+        isUpdate = true;
+    }
+    catch (Exception ex) {
+        isUpdate = false;
+    }
+    return isUpdate;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+13524426_13524487_7_18
+13524426_37842298_145_167
+Title: Add a property at runtime to an existing object by using propertyBuilder 
+----------------------------------------
+
+[STAThread] static void Main () {
+    Application.EnableVisualStyles ();
+    FooConverter.AddProperty ("Time", typeof (DateTime));
+    FooConverter.AddProperty ("Age", typeof (int));
+    using (var grid = new PropertyGrid {Dock = DockStyle.Fill, SelectedObject = new Foo ()})
+    using (var form = new Form {Controls = {grid}})
+    {
+        Application.Run (form);
+    }}
+----------------------------------------
+
+public static void Main () {
+    object [] ctorParams = new object [2];
+    Console.Write ("Enter a integer value for X: ");
+    string myX = Console.ReadLine ();
+    Console.Write ("Enter a integer value for Y: ");
+    string myY = Console.ReadLine ();
+    Console.WriteLine ("---");
+    ctorParams [0] = Convert.ToInt32 (myX);
+    ctorParams [1] = Convert.ToInt32 (myY);
+    Type ptType = CreateDynamicType ();
+    object ptInstance = Activator.CreateInstance (ptType, ctorParams);
+    ptType.InvokeMember ("WritePoint", BindingFlags.InvokeMethod, null, ptInstance, new object [0]);
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+13528175_13528864_1_22
+13528175_13529866_1_23
+Title: Simplest way to perform data validation for fields on Windows Forms 
+----------------------------------------
+
+private void Calculate_button_Click (object sender, EventArgs e) {
+    if (textBox1.Text == string.Empty) {
+        MessageBox.Show ("Please enter a value to textBox1!");
+        return;
+    } else if (! radioButton1.Checked && ! radioButton2.Checked) {
+        MessageBox.Show ("Please check one radio button!");
+        return;
+    } else if (comboBox1.SelectedIndex == - 1) {
+        MessageBox.Show ("Please select a value from comboBox!");
+        return;
+    } else {
+    }
+}
+----------------------------------------
+
+private void Calculate_button_Click (object sender, EventArgs e) {
+    RadioButton [] newRadioButtons = {radiobutton1, radiobutton2, radiobutton3};
+    for (int inti = 0; inti < newRadioButtons.Length; inti ++) {
+        if (newRadioButton [inti].Checked == false) {
+            MessageBox.Show ("Please check the radio button");
+            newRadioButtons [inti].Focus ();
+            return;
+        }
+    }
+    TextBox [] newTextBox = {txtbox1, txtbox2, txtbox3, txtbox4, txtbox5};
+    for (int inti = 0; inti < newRadioButtons.Length; inti ++) {
+        if (newTextBox [inti].text == string.Empty) {
+            MessageBox.Show ("Please fill the text box");
+            newTextBox [inti].Focus ();
+            return;
+        }
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+13570579_13572192_1_31
+13570579_13600806_83_125
+Title: Is it possible always to force a new thread with Task? 
+----------------------------------------
+
+static void Main (string [] args) {
+    ConcurrentDictionary < int, int > startedThreads = new ConcurrentDictionary < int, int > ();
+    for (int i = 0; i < 10; i ++) {
+        new Thread (() = > {
+            new Thread (() = > {
+                startedThreads.AddOrUpdate (Thread.CurrentThread.ManagedThreadId, Thread.CurrentThread.ManagedThreadId, (a, b) = > b);
+            }).Start ();
+            for (int j = 0; j < 100; j ++) {
+                new Thread (() = > {
+                    while (true) {
+                        Thread.Sleep (10);
+                        if (startedThreads.ContainsKey (Thread.CurrentThread.ManagedThreadId))
+                            Console.WriteLine ("Thread reused");
+
+                    }
+                }).Start ();
+            }
+        }).Start ();
+    }
+    Console.Read ();
+}
+----------------------------------------
+
+static void Main (string [] args) {
+    CancellationTokenSource tokenSource = new CancellationTokenSource ();
+    tokenSourceQueue.Enqueue (tokenSource);
+    ConcurrentDictionary < int, int > startedThreads = new ConcurrentDictionary < int, int > ();
+    for (int i = 0; i < 10; i ++) {
+        Thread.Sleep (1000);
+        Task.Factory.StartNew (() = > {
+            startedThreads.AddOrUpdate (Thread.CurrentThread.ManagedThreadId, Thread.CurrentThread.ManagedThreadId, (a, b) = > b);
+            for (int j = 0; j < 50; j ++)
+                Task.Factory.StartNew (() = > startedThreads.AddOrUpdate (Thread.CurrentThread.ManagedThreadId, Thread.CurrentThread.ManagedThreadId, (a, b) = > b));
+
+            for (int j = 0; j < 50; j ++) {
+                Task.Factory.StartNew (() = > {
+                    while (! tokenSource.Token.IsCancellationRequested) {
+                        if (startedThreads.ContainsKey (Thread.CurrentThread.ManagedThreadId))
+                            Console.WriteLine ("Thread reused");
+
+                        Thread.CurrentThread.Block (10);
+                        if (startedThreads.ContainsKey (Thread.CurrentThread.ManagedThreadId))
+                            Console.WriteLine ("Thread reused");
+
+                    }
+                }, tokenSource.Token, TaskCreationOptions.LongRunning, TaskScheduler.Default).ContinueWith (task = > {
+                    WriteExceptions (task.Exception);
+                    Console.WriteLine ("-----------------------------");
+                }, TaskContinuationOptions.OnlyOnFaulted);
+            }
+            Thread.CurrentThread.Block ();
+        }, tokenSource.Token, TaskCreationOptions.LongRunning, TaskScheduler.Default).ContinueWith (task = > {
+            WriteExceptions (task.Exception);
+            Console.WriteLine ("-----------------------------");
+        }, TaskContinuationOptions.OnlyOnFaulted);
+    }
+    Console.Read ();
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+1357557_1357610_11_18
+1357557_1357619_1_13
+Title: Custom System.Diagnostics.TraceListener output to RichTextBox hangs 
+----------------------------------------
+
+public override void Write (string message) {
+    Action append = delegate () {
+        output.AppendText (message);
+    };
+    if (output.InvokeRequired) {
+        output.Invoke (append);
+    } else {
+        append ();
+    }
+}
+----------------------------------------
+
+public override void Write (string message) {
+    if (this.output.InvokeRequired) {
+        this.output.Invoke ((MethodInvoker) delegate {
+            this.output.AppendText (message);
+        });
+    } else {
+        this.output.AppendText (message);
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+13587417_13590231_15_34
+13587417_13603063_1_23
+Title: "Dynamically construct ""or"" LIKE query in LINQ to SQL" 
+----------------------------------------
+
+private static LambdaExpression CombineLambdas < T > (string [] properties, string [] values) {
+    var param = Expression.Parameter (typeof (T));
+    LambdaExpression prev = null;
+    foreach (var value in values) {
+        foreach (var property in properties) {
+            LambdaExpression current = GetContainsExpression < T > (property, value);
+            if (prev != null) {
+                Expression body = Expression.Or (Expression.Invoke (prev, param), Expression.Invoke (current, param));
+                prev = Expression.Lambda (body, param);
+            }
+            prev = prev ?? current;
+        }
+    }
+    return prev;
+}
+----------------------------------------
+
+public static IQueryable < T > WhereFilter < T > (this IQueryable < T > source, string [] possibleValues, params Expression < Func < T, string > > [] selectors) {
+    List < Expression > expressions = new List < Expression > ();
+    var param = Expression.Parameter (typeof (T), "p");
+    var bodies = new List < MemberExpression > ();
+    foreach (var s in selectors) {
+        bodies.Add (Expression.Property (param, ((MemberExpression) s.Body).Member.Name));
+    }
+    foreach (var v in possibleValues) {
+        foreach (var b in bodies) {
+            expressions.Add (Expression.Call (b, "Contains", null, Expression.Constant (v)));
+        }
+    }
+    var finalExpression = expressions.Aggregate ((accumulate, equal) = > Expression.Or (accumulate, equal));
+    return source.Where (Expression.Lambda < Func < T, bool > > (finalExpression, param));
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+13593188_13593269_1_13
+13593188_13593346_1_16
+Title: "Edit List contains objects which themselves contain objects and so on" 
+----------------------------------------
+
+public static IEnumerable < T > FlattenTree < T > (IEnumerable < T > source, Func < T, IEnumerable < T > > selector) {
+    var stack = new Stack < T > ();
+    while (stack.Any ()) {
+        T next = stack.Pop ();
+        yield return next;
+        foreach (T child in selector (next))
+            stack.Push (child);
+
+    }
+}
+----------------------------------------
+
+public static IEnumerable < T > Traverse < T > (this IEnumerable < T > source, Func < T, IEnumerable < T > > fnRecurse) {
+    foreach (T item in source) {
+        yield return item;
+        IEnumerable < T > seqRecurse = fnRecurse (item);
+        if (seqRecurse != null) {
+            foreach (T itemRecurse in Traverse (seqRecurse, fnRecurse)) {
+                yield return itemRecurse;
+            }
+        }
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+13593188_13593269_1_13
+13593188_13593521_1_13
+Title: "Edit List contains objects which themselves contain objects and so on" 
+----------------------------------------
+
+public static IEnumerable < T > FlattenTree < T > (IEnumerable < T > source, Func < T, IEnumerable < T > > selector) {
+    var stack = new Stack < T > ();
+    while (stack.Any ()) {
+        T next = stack.Pop ();
+        yield return next;
+        foreach (T child in selector (next))
+            stack.Push (child);
+
+    }
+}
+----------------------------------------
+
+public static void ForEach < T > (this IEnumerable < T > source, Func < T, IEnumerable < T > > getChildren, Action < T > action) {
+    if (source == null) {
+        return;
+    }
+    foreach (T item in source) {
+        action (item);
+        IEnumerable < T > children = getChildren (item);
+        children.ForEach (getChildren, action);
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+13593188_13593346_1_16
+13593188_13593521_1_13
+Title: "Edit List contains objects which themselves contain objects and so on" 
+----------------------------------------
+
+public static IEnumerable < T > Traverse < T > (this IEnumerable < T > source, Func < T, IEnumerable < T > > fnRecurse) {
+    foreach (T item in source) {
+        yield return item;
+        IEnumerable < T > seqRecurse = fnRecurse (item);
+        if (seqRecurse != null) {
+            foreach (T itemRecurse in Traverse (seqRecurse, fnRecurse)) {
+                yield return itemRecurse;
+            }
+        }
+    }
+}
+----------------------------------------
+
+public static void ForEach < T > (this IEnumerable < T > source, Func < T, IEnumerable < T > > getChildren, Action < T > action) {
+    if (source == null) {
+        return;
+    }
+    foreach (T item in source) {
+        action (item);
+        IEnumerable < T > children = getChildren (item);
+        children.ForEach (getChildren, action);
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+13604630_30969665_1_26
+13604630_38395410_1_12
+Title: C# Linq OrderBy filtering null or empty values to be last 
+----------------------------------------
+
+public static IQueryable < T > OrderByFieldNullsLast < T > (this IQueryable < T > q, string SortField, bool Ascending) {
+    var param = Expression.Parameter (typeof (T), "p");
+    var prop = Expression.Property (param, SortField);
+    var hasValue = Expression.Property (prop, "HasValue");
+    var exp = Expression.Lambda (hasValue, param);
+    string method = "OrderByDescending";
+    Type [] types = new Type [] {q.ElementType, exp.Body.Type};
+    var orderByCallExpression = Expression.Call (typeof (Queryable), method, types, q.Expression, exp);
+    exp = Expression.Lambda (prop, param);
+    types = new Type [] {q.ElementType, exp.Body.Type};
+    method = Ascending ? "ThenBy" : "ThenByDescending";
+    var ThenByCallExpression = Expression.Call (typeof (Queryable), method, types, orderByCallExpression, exp);
+    return q.Provider.CreateQuery < T > (ThenByCallExpression);
+}
+----------------------------------------
+
+private static IQueryable < T > GetOrderQuery < T > (this IQueryable < T > q, BaseFilterCollection filter) {
+    q = q.OrderBy (GetExpression < T > (filter.SortField));
+    var param = Expression.Parameter (typeof (T), "p");
+    var prop = Expression.Property (param, filter.SortField);
+    var exp = Expression.Lambda (prop, param);
+    string method = filter.SortDirection == SortDirectionType.Asc ? "ThenBy" : "ThenByDescending";
+    Type [] types = {q.ElementType, exp.Body.Type};
+    var rs = Expression.Call (typeof (Queryable), method, types, q.Expression, exp);
+    return q.Provider.CreateQuery < T > (rs);
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+13610867_13611480_1_17
+13610867_13611595_1_32
+Title: How can I use generics to convert a TValue from a dictionary into a List<TValue> 
+----------------------------------------
+
+private static bool DictionaryEquals < TKey, TValue > (Dictionary < TKey, TValue > left, Dictionary < TKey, TValue > right) {
+    var comp = EqualityComparer < TValue >.Default;
+    if (left.Count != right.Count) {
+        return false;
+    }
+    if (typeof (TValue).IsGenericType && typeof (TValue).GetGenericTypeDefinition () == typeof (List < >)) {
+        return left.All (pair = > right.ContainsKey (pair.Key) && ListEquals ((dynamic) pair.Value, (dynamic) right [pair.Key]));
+    } else {
+        return left.All (pair = > right.ContainsKey (pair.Key) && comp.Equals (pair.Value, right [pair.Key]));
+    }
+}
+----------------------------------------
+
+private static bool DictionaryEquals < TKey, TValue > (Dictionary < TKey, TValue > left, Dictionary < TKey, TValue > right) {
+    var comp = EqualityComparer < TValue >.Default;
+    if (left.Count != right.Count) {
+        return false;
+    }
+    if (left.Keys.Intersect (right.Keys).Count () != left.Count)
+        return false;
+
+    var defaultValueComparer = EqualityComparer < TValue >.Default;
+    Func < TValue, TValue, bool > valueComparer;
+    if (typeof (TValue) is IEnumerable)
+        valueComparer = (first, second) = > ((IList) first).SequenceEqual ((IList) second);
+    else
+        valueComparer = (first, second) = > defaultValueComparer.Equals (first, second);
+
+    foreach (var key in left.Keys) {
+        if (! valueComparer (left [key], right [key]))
+            return false;
+
+    }
+    return true;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+13620264_13627573_1_20
+13620264_47456470_1_24
+Title: Cross join on two DataTables using LINQ 
+----------------------------------------
+
+public DataTable JoinTable (DataTable piTable1, DataTable piTable2) {
+    DataTable JoinTable = new DataTable ();
+    if (piTable1 == null || piTable2 == null)
+        return new DataTable ();
+
+    var q = from parent in piTable1.AsEnumerable ()
+        from child in piTable2.AsEnumerable ()
+        select new {property1 = parent.Field < T > ("PropertyName1"), property2 = parent.Field < T > ("PropertyName2"), property3 = child.Field < T > ("PropertyName3"), property4 = child.Field < T > ("PropertyName4")};
+    JoinTable.Rows.Add (q);
+    return JoinTable;
+}
+----------------------------------------
+
+public DataTable JoinTable (DataTable piTable1, string table1Column, DataTable piTable2, string table2Column) {
+    DataTable JoinTable = new DataTable ();
+    JoinTable.Columns.Add (table1Column);
+    JoinTable.Columns.Add (table2Column);
+    if (piTable1 == null || piTable2 == null)
+        return new DataTable ();
+
+    var q = from parent in piTable1.AsEnumerable ()
+        from child in piTable2.AsEnumerable ()
+        select new {table1Column = parent.Field < string > (table1Column), table1Column = child.Field < string > (table2Column),};
+    JoinTable = ToDataTable ((q.ToArray ()).ToList ());
+    JoinTable.TableName = "ResultTable";
+    return JoinTable;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+13633963_13634051_1_24
+13633963_13634131_1_12
+Title: Is This Proper Use of GOTO in C# 
+----------------------------------------
+
+public static IList < ClientEntity > FilterNoNeedSendBackToClients (IList < ClientEntity > src) {
+    if (src == null)
+        return null;
+
+    for (int i = src.Count - 1; i >= 0; i --) {
+        ClientEntity info = src [i];
+        if (info.ProductNumber != null && info.ProductNumber.ToLower ().Trim ().Length > 0 && info.CancelledByReliantSyncAB01 != null && info.CancelledByReliantSyncAB01.Value == true) {
+            src.RemoveAt (i);
+        } else if ((info.PartnerContract == null || info.PartnerContract.Trim ().Length == 0) && (info.ProductNumber == null || info.ProductNumber.Trim ().Length == 0)) {
+            src.RemoveAt (i);
+        }
+    }
+    return src;
+}
+----------------------------------------
+
+public static IList < ClientEntity > FilterNoNeedSendBackToClients (IList < ClientEntity > src) {
+    if (src == null)
+        return null;
+
+    return (from info in src.AsEnumerable < ClientEntity > ()
+        where ! (! String.IsNullOrWhiteSpace (info.ProductNumber) && info.CancelledByReliantSyncAB01 == (bool ?) true)
+        where ! (String.IsNullOrWhitespace (info.PartnerContract) && String.IsNullOrWhiteSpace (info.ProductNumber))
+        select info).ToList ();
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+13633963_13634063_1_27
+13633963_13634131_1_12
+Title: Is This Proper Use of GOTO in C# 
+----------------------------------------
+
+public static IList < ClientEntity > FilterNoNeedSendBackToClients (IList < ClientEntity > src) {
+    if (src == null)
+        return null;
+
+    for (int i = src.Count - 1; i >= 0; i --) {
+        ClientEntity info = src [i];
+        if (info.ProductNumber != null && info.ProductNumber.ToLower ().Trim ().Length > 0 && info.CancelledByReliantSyncAB01 != null && info.CancelledByReliantSyncAB01.Value == true) {
+            src.Remove (info);
+            continue;
+        }
+        if ((info.PartnerContract == null || info.PartnerContract.Trim ().Length == 0) && (info.ProductNumber == null || info.ProductNumber.Trim ().Length == 0)) {
+            src.Remove (info);
+            continue;
+        }
+    }
+    return src;
+}
+----------------------------------------
+
+public static IList < ClientEntity > FilterNoNeedSendBackToClients (IList < ClientEntity > src) {
+    if (src == null)
+        return null;
+
+    return (from info in src.AsEnumerable < ClientEntity > ()
+        where ! (! String.IsNullOrWhiteSpace (info.ProductNumber) && info.CancelledByReliantSyncAB01 == (bool ?) true)
+        where ! (String.IsNullOrWhitespace (info.PartnerContract) && String.IsNullOrWhiteSpace (info.ProductNumber))
+        select info).ToList ();
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+13659185_32016265_101_114
+13659185_32016265_28_49
+Title: Intercepting method calls in C# using Proxies 
+----------------------------------------
+
+public object Invoke (object target) {
+    if (target == null)
+        throw new ArgumentNullException ("target");
+
+    try {
+        return this.Method.Invoke (target, this.Arguments.ToArray ());
+    }
+    catch (TargetInvocationException ex) {
+        throw ex.InnerException;
+    }
+}
+----------------------------------------
+
+public override IMessage Invoke (IMessage msg) {
+    var methodCall = (IMethodCallMessage) msg;
+    var method = (MethodInfo) methodCall.MethodBase;
+    try {
+        var result = Interceptor.Invoke (new InternalRuntimeProxyInterceptorInvoker (Instance, method, methodCall.InArgs));
+        if (result == RuntimeProxy.Default)
+            result = method.ReturnType.IsPrimitive ? Activator.CreateInstance (method.ReturnType) : null;
+
+        return new ReturnMessage (result, null, 0, methodCall.LogicalCallContext, methodCall);
+    }
+    catch (Exception ex) {
+        if (ex is TargetInvocationException && ex.InnerException != null)
+            return new ReturnMessage (ex.InnerException, msg as IMethodCallMessage);
+
+        return new ReturnMessage (ex, msg as IMethodCallMessage);
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+1366214_29168517_15_34
+1366214_9534959_54_66
+Title: Castle project per session lifestyle with ASP.NET MVC 
+----------------------------------------
+
+public ILifetimeScope GetScope (CreationContext context) {
+    var current = HttpContext.Current;
+    if (current == null) {
+        throw new InvalidOperationException ("HttpContext.Current is null. PerWebSessionLifestyle can only be used in ASP.Net");
+    }
+    var lifetimeScope = (ILifetimeScope) current.Session [Key];
+    if (lifetimeScope == null) {
+        lifetimeScope = new DefaultLifetimeScope (new ScopeCache ());
+        current.Session [Key] = lifetimeScope;
+        return lifetimeScope;
+    }
+    return lifetimeScope;
+}
+----------------------------------------
+
+private static ILifetimeScope GetScope (HttpSessionState session, bool createIfNotPresent) {
+    var lifetimeScope = (ILifetimeScope) session [key];
+    if (lifetimeScope == null && createIfNotPresent) {
+        lifetimeScope = new DefaultLifetimeScope (new ScopeCache (), null);
+        session [key] = lifetimeScope;
+        return lifetimeScope;
+    }
+    return lifetimeScope;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+13675154_24512174_11_48
+13675154_50548676_1_27
+Title: "How to get cookies info inside of a CookieContainer? (All Of Them Not For A Specific Domain)" 
+----------------------------------------
+
+public static List < Cookie > List (this CookieContainer container) {
+    var cookies = new List < Cookie > ();
+    var table = (Hashtable) container.GetType ().InvokeMember ("m_domainTable", BindingFlags.NonPublic | BindingFlags.GetField | BindingFlags.Instance, null, container, new object [] {});
+    foreach (var key in table.Keys) {
+        Uri uri = null;
+        var domain = key as string;
+        if (domain == null)
+            continue;
+
+        if (domain.StartsWith ("."))
+            domain = domain.Substring (1);
+
+        var address = string.Format ("http://{0}/", domain);
+        if (Uri.TryCreate (address, UriKind.RelativeOrAbsolute, out uri) == false)
+            continue;
+
+        foreach (Cookie cookie in container.GetCookies (uri)) {
+            cookies.Add (cookie);
+        }
+    }
+    return cookies;
+}
+----------------------------------------
+
+public static List < Cookie > List (this CookieContainer container) {
+    var cookies = new List < Cookie > ();
+    var table = (Hashtable) container.GetType ().InvokeMember ("m_domainTable", BindingFlags.NonPublic | BindingFlags.GetField | BindingFlags.Instance, null, container, null);
+    foreach (string key in table.Keys) {
+        var item = table [key];
+        var items = (ICollection) item.GetType ().GetProperty ("Values").GetGetMethod ().Invoke (item, null);
+        foreach (CookieCollection cc in items) {
+            foreach (Cookie cookie in cc) {
+                cookies.Add (cookie);
+            }
+        }
+    }
+    return cookies;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+13682276_13682534_3_21
+13682276_13682669_3_10
+Title: Adding objects from one list to another 
+----------------------------------------
+
+public bool Equals (MyMessage x, MyMessage y) {
+    if (x == null && y == null) {
+        return true;
+    }
+    if (x == null) {
+        return false;
+    }
+    if (y == null) {
+        return false;
+    }
+    return x.Id == y.Id;
+}
+----------------------------------------
+
+public bool Equals (Msg x1, Msg x2) {
+    if (object.ReferenceEquals (x1, x2))
+        return true;
+
+    if (x1 == null || x2 == null)
+        return false;
+
+    return x1.ID.Equals (x2.ID);
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+13696997_13697172_1_14
+13696997_13699115_1_17
+Title: c# checkbox is not working 
+----------------------------------------
+
+protected void onAckTypeChanged3 (object sender, EventArgs e) {
+    foreach (ListItem item in chbxOwn.Items) {
+        if (item.Text == "2 wheeler" && item.Selected) {
+            Vis1 ();
+        }
+        if (item.Text == "4 wheeler" && item.Selected) {
+            Vis2 ();
+        }
+    }
+}
+----------------------------------------
+
+protected void onAckTypeChanged3 (object sender, EventArgs e) {
+    foreach (ListItem checkBoxItem in chbxOwn.Items) {
+        if (checkBoxItem.Selected == true) {
+            if (checkBoxItem.Text == "2 wheeler") {
+                Vis1 ();
+            }
+            if (checkBoxItem.Text == "4 wheeler") {
+                Vis2 ();
+            }
+        }
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+13721002_13721252_12_23
+13721002_13721252_24_35
+Title: Dynamically building queries 
+----------------------------------------
+
+static Expression < Func < T, bool > > OrElse < T > (this Expression < Func < T, bool > > x, Expression < Func < T, bool > > y) {
+    if (x == null)
+        return y;
+
+    if (y == null)
+        return x;
+
+    return Expression.Lambda < Func < T, bool > > (Expression.OrElse (x.Body, SwapVisitor.Replace (y.Body, y.Parameters [0], x.Parameters [0])), x.Parameters);
+}
+----------------------------------------
+
+static Expression < Func < T, bool > > AndAlso < T > (this Expression < Func < T, bool > > x, Expression < Func < T, bool > > y) {
+    if (x == null)
+        return y;
+
+    if (y == null)
+        return x;
+
+    return Expression.Lambda < Func < T, bool > > (Expression.AndAlso (x.Body, SwapVisitor.Replace (y.Body, y.Parameters [0], x.Parameters [0])), x.Parameters);
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+13758539_13759110_1_19
+13758539_13759211_3_36
+Title: "How to build Expression<Func<Tbool>> from Expression<Func<T>>" 
+----------------------------------------
+
+static Expression < Func < T, bool > > Munge < T > (Expression < Func < T > > selector) {
+    var memberInit = selector.Body as MemberInitExpression;
+    if (memberInit == null)
+        throw new InvalidOperationException ("MemberInitExpression is expected");
+
+    var p = Expression.Parameter (typeof (T), "x");
+    Expression body = null;
+    foreach (MemberAssignment binding in memberInit.Bindings) {
+        var comparer = Expression.Equal (Expression.MakeMemberAccess (p, binding.Member), binding.Expression);
+        body = body == null ? comparer : Expression.AndAlso (body, comparer);
+    }
+    if (body == null)
+        body = Expression.Constant (true);
+
+    return Expression.Lambda < Func < T, bool > > (body, p);
+}
+----------------------------------------
+
+static Expression < Func < T, bool > > Transform < T > (Expression < Func < T > > expression) {
+    var initExpression = expression.Body as MemberInitExpression;
+    if (initExpression == null) {
+        throw new ArgumentException ();
+    }
+    Expression bodyExpression = Expression.Constant (true);
+    IEnumerable < MemberBinding > bindings = initExpression.Bindings;
+    ParameterExpression param = Expression.Parameter (typeof (T));
+    foreach (var memberBinding in bindings) {
+        var memberAssigment = memberBinding as MemberAssignment;
+        if (memberAssigment == null) {
+            throw new ArgumentException ();
+        }
+        var member = memberAssigment.Member;
+        var value = memberAssigment.Expression;
+        bodyExpression = Expression.AndAlso (bodyExpression, Expression.Equal (Expression.MakeMemberAccess (param, member), value));
+    }
+    return Expression.Lambda < Func < T, bool > > (bodyExpression, param);
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+13764938_13765085_3_12
+13764938_13766013_3_18
+Title: Java Comparator override equivalent in c# 
+----------------------------------------
+
+public override int Compare (DataCol x, DataCol y) {
+    if (ReferenceEquals (x, y))
+        return 0;
+
+    if (x == null)
+        return - 1;
+
+    if (y == null)
+        return + 1;
+
+    return Comparer < TValue >.Default.Compare (y.Value, x.Value);
+}
+----------------------------------------
+
+public int Compare (object ob1, object ob2) {
+    int retval = 0;
+    if (ob1 is DataCol && ob2 is DataCol) {
+        DataCol c1 = (DataCol) ob1;
+        DataCol c2 = (DataCol) ob2;
+        if (c1.value < c2.value)
+            retval = 1;
+
+        if (c1.value > c2.value)
+            retval = - 1;
+
+    } else {
+        throw new ClassCastException ("ValueComparator: Illegal arguments!");
+    }
+    return (retval);
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+1380375_1388522_28_47
+1380375_6015753_52_76
+Title: Custom object factory extension for Unity 
+----------------------------------------
+
+public override void PreBuildUp (IBuilderContext context) {
+    var key = (NamedTypeBuildKey) context.OriginalBuildKey;
+    if (key.Type.IsInterface && typeof (T).IsAssignableFrom (key.Type)) {
+        object existing = baseContext.Locator.Get (key.Type);
+        if (existing == null) {
+            context.Existing = factory (key.Type);
+            baseContext.Locator.Add (key.Type, context.Existing);
+        } else {
+            context.Existing = existing;
+        }
+    }
+}
+----------------------------------------
+
+public override void PreBuildUp (IBuilderContext context) {
+    var key = (NamedTypeBuildKey) context.OriginalBuildKey;
+    if (factory.CanCreate (key.Type) && context.Existing == null) {
+        context.Existing = factory.Create (key.Type);
+        var ltm = new ContainerControlledLifetimeManager ();
+        ltm.SetValue (context.Existing);
+        IPolicyList parentPolicies;
+        var parentMarker = context.Policies.Get < ParentMarkerPolicy > (new NamedTypeBuildKey < ParentMarkerPolicy > (), out parentPolicies);
+        parentPolicies.Set < ILifetimePolicy > (ltm, new NamedTypeBuildKey (key.Type));
+        parentMarker.AddToLifetime (ltm);
+        context.BuildComplete = true;
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+1380610_33429458_1_12
+1380610_36180603_6_15
+Title: Checking string has balanced parentheses 
+----------------------------------------
+
+public static bool IsBalanced (string input) {
+    int count = 0;
+    for (int i = 0; i < input.Length; i ++) {
+        if (input [i] == '(')
+            count ++;
+
+        if (input [i] == ')')
+            count --;
+
+        if (count < 0)
+            return false;
+
+    }
+    if (count == 0)
+        return true;
+
+    return false;
+}
+----------------------------------------
+
+public bool IsBalanced (string input) {
+    int count = 0;
+    foreach (var character in input.ToCharArray ()) {
+        if (_leftBrackets.Contains (character))
+            count ++;
+
+        if (_rightBrackets.Contains (character))
+            count --;
+
+    }
+    return count == 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+13808623_13808720_4_65
+13808623_13809134_13_78
+Title: Create a stream reader in c# console to read only one student at a time instead of all of them using a .txt file 
+----------------------------------------
+
+static void Main (string [] args) {
+    string strInput = "";
+    while (strInput != "3") {
+        System.IO.DirectoryInfo dir = new System.IO.DirectoryInfo ("student_results.txt");
+        Console.WriteLine ("\nWhat do you want to do?\n 1.View Student(s)\n 2.Add a New Student\n 3.Exit program");
+        strInput = Console.ReadLine ();
+        switch (strInput) {
+            case "1" :
+                Console.Clear ();
+                Console.WriteLine ("Enter Student ID: \n");
+                string file = AppDomain.CurrentDomain.BaseDirectory + @"student_results.txt";
+                StreamReader sr = new StreamReader (file);
+                string StudentID = Console.ReadLine ();
+                string line = "";
+                bool found = false;
+                while ((line = sr.ReadLine ()) != null) {
+                    if (line.Split (',') [0] == StudentID) {
+                        found = true;
+                        Console.WriteLine (line);
+                        break;
+                    }
+                }
+                sr.Close ();
+                if (! found) {
+                    Console.WriteLine ("Not Found");
+                }
+                Console.WriteLine ("Press a key to continue...");
+                Console.ReadLine ();
+                break;
+            case "2" :
+                Console.WriteLine ("Enter Student ID : ");
+                string SID = Console.ReadLine ();
+                Console.WriteLine ("Enter Student Name : ");
+                string SName = Console.ReadLine ();
+                Console.WriteLine ("Enter Student Average : ");
+                string average = Console.ReadLine ();
+                string wLine = SID + "," + SName + ":" + average;
+                file = AppDomain.CurrentDomain.BaseDirectory + @"student_results.txt";
+                StreamWriter sw = File.Exists (file) ? File.AppendText (file) : new StreamWriter (file);
+                sw.WriteLine (wLine);
+                sw.Close ();
+                Console.WriteLine ("Student saved on file, press a key to continue ...");
+                Console.ReadLine ();
+                Console.Clear ();
+                break;
+            case "3" :
+                return;
+            default :
+                Console.Clear ();
+                Console.WriteLine ("Invalid Command!\n");
+                break;
+        }
+    }
+}
+----------------------------------------
+
+static void Main (string [] args) {
+    List < Student > students = new List < Student > ();
+    StreamReader reader = new StreamReader (_filename);
+    while (! reader.EndOfStream)
+        students.Add (new Student (reader.ReadLine ()));
+
+    reader.Close ();
+    string action;
+    bool showAgain = true;
+    do
+        {
+            Console.WriteLine ("");
+            Console.WriteLine ("1. See all students.");
+            Console.WriteLine ("2. See student by ID.");
+            Console.WriteLine ("3. Add new student.");
+            Console.WriteLine ("0. Exit.");
+            Console.WriteLine ("");
+            action = Console.ReadLine ();
+            switch (action) {
+                case "1" :
+                    foreach (Student item in students)
+                        item.Show ();
+
+                    break;
+                case "2" :
+                    Console.Write ("ID = ");
+                    int id = int.Parse (Console.ReadLine ());
+                    foreach (Student item in students)
+                        if (item.Id == id)
+                            item.Show ();
+
+                    break;
+                case "3" :
+                    Console.WriteLine ("ID-Name");
+                    Student newStudent = new Student (Console.ReadLine ());
+                    students.Add (newStudent);
+                    StreamWriter writer = new StreamWriter (_filename, true);
+                    writer.WriteLine (newStudent);
+                    writer.Close ();
+                    break;
+                case "0" :
+                    Console.WriteLine ("Bye!");
+                    showAgain = false;
+                    break;
+                default :
+                    Console.WriteLine ("Wrong action!");
+                    break;
+            }
+        } while (showAgain);
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+13810592_13816183_1_20
+13810592_13892137_1_31
+Title: "Getting error ""Updates are currently disallowed on GET requests"" in custom web part" 
+----------------------------------------
+
+public void WriteError (string errorTask, string errorMessage) {
+    string task = "Error Log Entry";
+    string fileName = "";
+    string fileTitle = "";
+    string fileType = "";
+    var errorLogWeb = SPContext.Current.Site.RootWeb;
+    errorLogWeb.AllowUnsafeUpdates = true;
+    var errorLogList = errorLogWeb.Lists ["ErrorLog"];
+    SPListItem oItem = errorLogList.Items.Add ();
+    oItem ["ErrorTask"] = task + ": " + errorTask;
+    oItem ["ErrorMessage"] = errorMessage;
+    oItem ["UserName"] = String.IsNullOrEmpty (UserName) ? "Not Available" : UserName;
+    oItem ["FileName"] = String.IsNullOrEmpty (fileName) ? "Not Available" : fileName;
+    oItem ["Title"] = String.IsNullOrEmpty (fileTitle) ? "Not Available" : fileTitle;
+    oItem ["FileType"] = String.IsNullOrEmpty (fileType) ? "Not Available" : fileType;
+    oItem.Update ();
+}
+----------------------------------------
+
+public void WriteError (string errorTask, string errorMessage) {
+    string task = "Error Log Entry";
+    string fileName = "";
+    string fileTitle = "";
+    string fileType = "";
+    using (SPSite oSiteCollection = new SPSite (SPContext.Current.Web.Url))
+    {
+        using (SPWeb oWebsite = oSiteCollection.RootWeb)
+        {
+            oWebsite.AllowUnsafeUpdates = true;
+            SPSite errorLogSite = new SPSite (oWebsite.ServerRelativeUrl);
+            SPListItemCollection oList = errorLogSite.RootWeb.Lists ["ErrorLog"].Items;
+            SPListItem oItem = oList.Add ();
+            oItem ["ErrorTask"] = task + ": " + errorTask;
+            oItem ["ErrorMessage"] = errorMessage;
+            oItem ["UserName"] = String.IsNullOrEmpty (UserName) ? "Not Available" : UserName;
+            oItem ["FileName"] = String.IsNullOrEmpty (fileName) ? "Not Available" : fileName;
+            oItem ["Title"] = String.IsNullOrEmpty (fileTitle) ? "Not Available" : fileTitle;
+            oItem ["FileType"] = String.IsNullOrEmpty (fileType) ? "Not Available" : fileType;
+            oItem.Update ();
+            oWebsite.Update ();
+            oWebsite.AllowUnsafeUpdates = false;
+        }}}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+13821980_13822349_15_21
+13821980_13822349_23_71
+Title: Two image compare using win32 api c# 
+----------------------------------------
+
+public static unsafe Bitmap PixelDiff (Image a, Image b) {
+    if (! a.Size.Equals (b.Size))
+        return null;
+
+    if (! (a is Bitmap) || ! (b is Bitmap))
+        return null;
+
+    return PixelDiff (a as Bitmap, b as Bitmap);
+}
+----------------------------------------
+
+public static unsafe Bitmap PixelDiff (Bitmap a, Bitmap b) {
+    Bitmap output = new Bitmap (Math.Max (a.Width, b.Width), Math.Max (a.Height, b.Height), PixelFormat.Format32bppArgb);
+    Rectangle recta = new Rectangle (Point.Empty, a.Size);
+    Rectangle rectb = new Rectangle (Point.Empty, b.Size);
+    Rectangle rectOutput = new Rectangle (Point.Empty, output.Size);
+    BitmapData aData = a.LockBits (recta, ImageLockMode.ReadOnly, PixelFormat.Format32bppArgb);
+    BitmapData bData = b.LockBits (rectb, ImageLockMode.ReadOnly, PixelFormat.Format32bppArgb);
+    BitmapData outputData = output.LockBits (rectOutput, ImageLockMode.ReadWrite, PixelFormat.Format32bppArgb);
+    try {
+        byte * aPtr = (byte *) aData.Scan0;
+        byte * bPtr = (byte *) bData.Scan0;
+        byte * outputPtr = (byte *) outputData.Scan0;
+        int len = aData.Stride * aData.Height;
+        for (int i = 0; i < len; i ++) {
+            if ((i + 1) % 4 == 0)
+                * outputPtr = (byte) ((* aPtr + * bPtr) / 2);
+            else
+                * outputPtr = (byte) ~ (* aPtr ^ * bPtr);
+
+            outputPtr ++;
+            aPtr ++;
+            bPtr ++;
+        }
+        return output;
+    }
+    catch (Exception ex) {
+        mLog.Error ("Error calculating image differences: " + ex.Message);
+        return null;
+    }
+    finally {
+        a.UnlockBits (aData);
+        b.UnlockBits (bData);
+        output.UnlockBits (outputData);
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+13838534_13838605_1_23
+13838534_13838829_1_16
+Title: Returning value from unkown type using FindControl in ASP.NET WebForms 
+----------------------------------------
+
+private string GetControlValue (string controlId) {
+    var control = FindControl (controlId);
+    var radTextBox = control as RadTextBox;
+    if (radTextBox != null) {
+        return radTextBox.Text;
+    }
+    var radComboBox = control as RadComboBox;
+    if (radComboBox != null) {
+        return radComboBox.SelectedValue;
+    }
+    var checkBox = control as CheckBox;
+    if (checkBox != null) {
+        return checkBox.Checked.ToString ();
+    }
+    return null;
+}
+----------------------------------------
+
+private string GetControlValue (string controlId) {
+    var control = FindControl (controlId);
+    if (control is ITextControl) {
+        return ((ITextControl) control).Text;
+    } else if (control is ICheckBoxControl) {
+        return ((ICheckBoxControl) control).Checked.ToString ();
+    } else {
+        return null;
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+13842152_13842603_50_70
+13842152_13843064_8_22
+Title: C# Traverse object hierarchy for execution of method 
+----------------------------------------
+
+private bool ValidateAll (object o) {
+    foreach (FieldInfo fieldInfo in o.GetType ().GetFields (BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public)) {
+        BaseDto current = fieldInfo.GetValue (o) as BaseDto;
+        if (current != null) {
+            bool result = current.ValidateObject ();
+            if (! result) {
+                return false;
+            }
+            return ValidateAll (current);
+        }
+    }
+    return true;
+}
+----------------------------------------
+
+public static bool ValidateAll (this IValidatable item) {
+    if (! item.ValidateObject ())
+        return false;
+
+    const BindingFlags flags = BindingFlags.GetProperty | BindingFlags.Instance | BindingFlags.Public;
+    var type = item.GetType ();
+    var props = type.GetProperties (flags).Select (x = > x.GetValue (item));
+    var fields = type.GetFields (flags).Select (x = > x.GetValue (item));
+    return props.Concat (fields).OfType < IValidatable > ().Select (x = > x.ValidateAll ()).All (x = > x);
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+13845650_13845675_1_22
+13845650_13846247_1_15
+Title: Use LINQ to Convert a List to a List of Lists 
+----------------------------------------
+
+public static IEnumerable < IEnumerable < T > > Batch < T > (this IEnumerable < T > source, int batchSize) {
+    List < T > buffer = new List < T > ();
+    foreach (T item in source) {
+        buffer.Add (item);
+        if (buffer.Count >= batchSize) {
+            yield return buffer;
+            buffer = new List < T > ();
+        }
+    }
+    if (buffer.Count >= 0) {
+        yield return buffer;
+    }
+}
+----------------------------------------
+
+IList < IList < T > > Batch < T > (IList < T > values, int batchSize) {
+    return values.Aggregate (new List < IList < T > > (), (state, next) = > {
+        IList < T > batch = (state.Count > 0) ? state [state.Count - 1] : null;
+        if ((batch == null) || (batch.Count == batchSize)) {
+            batch = new List < T > (batchSize);
+            state.Add (batch);
+        }
+        batch.Add (next);
+        return state;
+    });
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+13876372_14124048_19_33
+13876372_14124048_35_61
+Title: Using FileSystemMonitoring for reading changes in app.config and writing to app.config realtime 
+----------------------------------------
+
+[PermissionSet (SecurityAction.Demand, Name = "FullTrust")] private void InitializeInputFileWatchers () {
+    for (int i = 0; i < this.InputFiles.Count; i ++) {
+        if (File.Exists (this.InputFiles [i])) {
+            InputFileInfo info = new InputFileInfo ();
+            info.Fullpath = ((FileModuleSettings) this.Settings).InputFiles [i];
+            info.Watcher.Changed += this.OnFileChange;
+            this.inputFileList.AddOrUpdate (info.Fullpath, info, (e, v) = > {
+                return info;
+            });
+        }
+    }
+}
+----------------------------------------
+
+[PermissionSet (SecurityAction.Demand, Name = "FullTrust")] private void OnFileChange (object source, FileSystemEventArgs e) {
+    InputFileInfo info;
+    if (this.inputFileList.TryGetValue (e.FullPath, out info)) {
+        DateTime lastWriteTime = System.IO.File.GetLastWriteTime (e.FullPath);
+        if (info.LastHandledChange != lastWriteTime) {
+            TimeSpan span = lastWriteTime.Subtract (info.LastHandledChange);
+            if (span.Days == 0 && span.Hours == 0 && span.Minutes == 0 && span.Seconds == 0 && span.TotalMilliseconds < this.MinimumFileChangePeriod) {
+            } else {
+                info.LastHandledChange = lastWriteTime;
+                this.inputFileList.AddOrUpdate (e.FullPath, info, (a, v) = > {
+                    return info;
+                });
+                lock (this.readLockerObject)
+                {
+                    this.ReadFile (e.FullPath);
+                }}
+        }
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+13880618_13880719_1_26
+13880618_13881038_1_27
+Title: "C# If lastbutton tag equals currently clicked button disable both" 
+----------------------------------------
+
+private void button1_Click (object sender, EventArgs e) {
+    thisButton = sender as Button;
+    buttoncount ++;
+    SwitchTagWithText (thisButton);
+    if (buttoncount == 1) {
+        lastButton = thisButton;
+    } else if (buttoncount == 2) {
+        if (lastButton.Tag == thisButton.tag) {
+        } else {
+        }
+        buttoncount = 0;
+    }
+}
+----------------------------------------
+
+private void button1_Click (object sender, EventArgs e) {
+    if (lastButton != null) {
+        SwitchTagWithText ();
+        var thisButton = sender as Button;
+        if (thisButton.Text != lastButton.Text && thisButton.Tag.ToString () == lastButton.Tag.ToString ()) {
+            thisButton.Enabled = false;
+            lastButton.Enabled = false;
+            lastButton = null;
+            return;
+        }
+        lastButton = thisButton;
+    } else {
+        lastButton = sender as Button;
+    }
+    SwitchTagWithText ();
+    buttoncount ++;
+    label2.Text = buttoncount.ToString ();
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+13898809_13898953_1_19
+13898809_13898957_6_37
+Title: Read File and display contents 
+----------------------------------------
+
+public static IEnumerable < Customer > LoadCustomers (string filename) {
+    if (File.Exists (filename)) {
+        foreach (var line in File.ReadAllLines (filename).Where (l = > l.Contains (','))) {
+            var splitLine = line.Split (',');
+            if (splitLine.Count () >= 3) {
+                yield return new Customer {customerName = splitLine [0].Trim (), customerAddress = splitLine [1].Trim (), customerZip = Convert.ToInt32 (splitLine [2].Trim ())};
+            }
+        }
+    }
+}
+----------------------------------------
+
+public static void LoadCustomers () {
+    try {
+        if (File.Exists ("Customer.csv")) {
+            string temp = null;
+            var retList = new List < Customer > ();
+            using (StreamReader sr = File.OpenText (@"Customer.csv"))
+            {
+                while ((temp = sr.ReadLine ()) != null) {
+                    temp = temp.Trim ();
+                    string [] lineHolder = temp.Split (',');
+                    retlist.add (new Customer () {customerName = linerHolder [0], customerAddress = lineHolder [1], customerZip = Convert.ToInt32 (lineHolder [2])});
+                }
+            }} else {
+            File.Create ("Customer.csv");
+        }
+    }
+    catch (Exception e) {
+        System.Windows.Forms.MessageBox.Show ("File Loading Error: " + e.Message);
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+13903715_13904811_1_24
+13903715_13904811_25_58
+Title: How to loop over async methods without async/await 
+----------------------------------------
+
+public static Task ForEachAsync < T > (this TaskFactory factory, IEnumerable < T > items, Func < T, int, Task > getProcessItemTask) {
+    TaskCompletionSource < object > tcs = new TaskCompletionSource < object > ();
+    IEnumerator < T > enumerator = items.GetEnumerator ();
+    int i = 0;
+    Action < Task > continuationAction = null;
+    continuationAction = ante = > {
+        if (ante.IsFaulted)
+            tcs.SetException (ante.Exception);
+        else if (ante.IsCanceled)
+            tcs.TrySetCanceled ();
+        else
+            StartNextForEachIteration (factory, tcs, getProcessItemTask, enumerator, ref i, continuationAction);
+
+    };
+    StartNextForEachIteration (factory, tcs, getProcessItemTask, enumerator, ref i, continuationAction);
+    tcs.Task.ContinueWith (_ = > enumerator.Dispose (), TaskContinuationOptions.ExecuteSynchronously);
+    return tcs.Task;
+}
+----------------------------------------
+
+static void StartNextForEachIteration < T > (TaskFactory factory, TaskCompletionSource < object > tcs, Func < T, int, Task > getProcessItemTask, IEnumerator < T > enumerator, ref int i, Action < Task > continuationAction) {
+    bool moveNext;
+    try {
+        moveNext = enumerator.MoveNext ();
+    }
+    catch (Exception ex) {
+        tcs.SetException (ex);
+        return;
+    }
+    if (! moveNext) {
+        tcs.SetResult (null);
+        return;
+    }
+    Task iterationTask = null;
+    try {
+        iterationTask = getProcessItemTask (enumerator.Current, i);
+    }
+    catch (Exception ex) {
+        tcs.SetException (ex);
+    }
+    i ++;
+    if (iterationTask != null)
+        iterationTask.ContinueWith (continuationAction, CancellationToken.None, TaskContinuationOptions.ExecuteSynchronously, factory.Scheduler ?? TaskScheduler.Default);
+
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+13923193_13923302_1_17
+13923193_13923770_6_26
+Title: List all files from online FTP directory to a listview C# 
+----------------------------------------
+
+public string [] ListDirectory () {
+    var list = new List < string > ();
+    var request = createRequest (WebRequestMethods.Ftp.ListDirectory);
+    using (var response = (FtpWebResponse) request.GetResponse ())
+    {
+        using (var stream = response.GetResponseStream ())
+        {
+            using (var reader = new StreamReader (stream, true))
+            {
+                while (! reader.EndOfStream) {
+                    list.Add (reader.ReadLine ());
+                }
+            }}} return list.ToArray ();
+}
+----------------------------------------
+
+public string [] ListDirectory () {
+    var list = listView1;
+    var request = createRequest (TxtServer.Text, WebRequestMethods.Ftp.ListDirectory);
+    using (var response = (FtpWebResponse) request.GetResponse ())
+    {
+        using (var stream = response.GetResponseStream ())
+        {
+            using (var reader = new StreamReader (stream, true))
+            {
+                while (! reader.EndOfStream) {
+                    list.Items.Add (reader.ReadLine ());
+                }
+            }}} List < string > l = new List < string > ();
+    return l.ToArray ();
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+1393451_1393482_1_14
+1393451_1393593_1_12
+Title: Select a random element from IList<> other than this one 
+----------------------------------------
+
+public Element GetAnyoneElseFromTheList (Element el) {
+    Random rndElement = new Random ();
+    int index;
+    if (this.ElementList.Count > 1) {
+        index = rndElement.Next (0, this.ElementList.Count - 1);
+        if (this.ElementList [index] == el)
+            return this.ElementList [this.ElementList.Count - 1];
+        else
+            return this.ElementList [index];
+
+    } else
+        return null;
+
+}
+----------------------------------------
+
+public Element GetAnyoneElseFromTheList (Element el) {
+    int cnt = this.ElementList.Count (e = > e != el);
+    if (cnt < 1)
+        return null;
+
+    Random rand = new Random ();
+    int num = rand.Next (cnt);
+    index = 0;
+    while (num > 0) {
+        if (this.ElementList [index] != el)
+            num --;
+
+        index ++;
+    }
+    return this.ElementList [index];
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+13955859_13956282_41_51
+13955859_13956282_53_63
+Title: "Data type suitable for couple of List <string> objects as one container to hold both" 
+----------------------------------------
+
+private Kid foundAMatch (string name) {
+    var result = (from K in kids
+        where K.Name.ToLower () == name.ToLower ()
+        select K);
+    if (result.Count () != 0)
+        return result.First ();
+    else
+        return null;
+
+}
+----------------------------------------
+
+private Kid foundAMatch (string name, bool gender) {
+    var result = (from K in kids
+        where K.Name.ToLower () == name.ToLower () && K.Gender == gender
+        select K);
+    if (result.Count () != 0)
+        return result.First ();
+    else
+        return null;
+
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+139592_39109022_1_44
+139592_48249360_17_26
+Title: "What is the best way to clone/deep copy a .NET generic Dictionary<string T>?" 
+----------------------------------------
+
+public static Dictionary < K, V > CloneDictionary < K, V > (Dictionary < K, V > dict) where K : ICloneable where V : ICloneable {
+    Dictionary < K, V > newDict = null;
+    if (dict != null) {
+        if (((typeof (K).IsValueType || typeof (K) == typeof (string)) && (typeof (V).IsValueType) || typeof (V) == typeof (string))) {
+            newDict = new Dictionary < K, V > (dict);
+        } else {
+            newDict = new Dictionary < K, V > ();
+            foreach (KeyValuePair < K, V > kvp in dict) {
+                K key;
+                if (typeof (K).IsValueType || typeof (K) == typeof (string)) {
+                    key = kvp.Key;
+                } else {
+                    key = (K) kvp.Key.Clone ();
+                }
+                V value;
+                if (typeof (V).IsValueType || typeof (V) == typeof (string)) {
+                    value = kvp.Value;
+                } else {
+                    value = (V) kvp.Value.Clone ();
+                }
+                newDict [key] = value;
+            }
+        }
+    }
+    return newDict;
+}
+----------------------------------------
+
+public static Dictionary < T1, T2 > CloneValues < T1, T2 > (Dictionary < T1, T2 > dict) where T2 : ICloneable {
+    if (dict == null)
+        return null;
+
+    Dictionary < T1, T2 > ret = new Dictionary < T1, T2 > ();
+    foreach (var e in dict)
+        ret [e.Key] = (T2) (e.Value.Clone ());
+
+    return ret;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+139592_39109022_1_44
+139592_48249360_28_38
+Title: "What is the best way to clone/deep copy a .NET generic Dictionary<string T>?" 
+----------------------------------------
+
+public static Dictionary < K, V > CloneDictionary < K, V > (Dictionary < K, V > dict) where K : ICloneable where V : ICloneable {
+    Dictionary < K, V > newDict = null;
+    if (dict != null) {
+        if (((typeof (K).IsValueType || typeof (K) == typeof (string)) && (typeof (V).IsValueType) || typeof (V) == typeof (string))) {
+            newDict = new Dictionary < K, V > (dict);
+        } else {
+            newDict = new Dictionary < K, V > ();
+            foreach (KeyValuePair < K, V > kvp in dict) {
+                K key;
+                if (typeof (K).IsValueType || typeof (K) == typeof (string)) {
+                    key = kvp.Key;
+                } else {
+                    key = (K) kvp.Key.Clone ();
+                }
+                V value;
+                if (typeof (V).IsValueType || typeof (V) == typeof (string)) {
+                    value = kvp.Value;
+                } else {
+                    value = (V) kvp.Value.Clone ();
+                }
+                newDict [key] = value;
+            }
+        }
+    }
+    return newDict;
+}
+----------------------------------------
+
+public static Dictionary < T1, T2 > Clone < T1, T2 > (Dictionary < T1, T2 > dict) where T1 : ICloneable where T2 : ICloneable {
+    if (dict == null)
+        return null;
+
+    Dictionary < T1, T2 > ret = new Dictionary < T1, T2 > ();
+    foreach (var e in dict)
+        ret [(T1) e.Key.Clone ()] = (T2) (e.Value.Clone ());
+
+    return ret;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+139592_39109022_1_44
+139592_48249360_6_15
+Title: "What is the best way to clone/deep copy a .NET generic Dictionary<string T>?" 
+----------------------------------------
+
+public static Dictionary < K, V > CloneDictionary < K, V > (Dictionary < K, V > dict) where K : ICloneable where V : ICloneable {
+    Dictionary < K, V > newDict = null;
+    if (dict != null) {
+        if (((typeof (K).IsValueType || typeof (K) == typeof (string)) && (typeof (V).IsValueType) || typeof (V) == typeof (string))) {
+            newDict = new Dictionary < K, V > (dict);
+        } else {
+            newDict = new Dictionary < K, V > ();
+            foreach (KeyValuePair < K, V > kvp in dict) {
+                K key;
+                if (typeof (K).IsValueType || typeof (K) == typeof (string)) {
+                    key = kvp.Key;
+                } else {
+                    key = (K) kvp.Key.Clone ();
+                }
+                V value;
+                if (typeof (V).IsValueType || typeof (V) == typeof (string)) {
+                    value = kvp.Value;
+                } else {
+                    value = (V) kvp.Value.Clone ();
+                }
+                newDict [key] = value;
+            }
+        }
+    }
+    return newDict;
+}
+----------------------------------------
+
+public static Dictionary < T1, T2 > CloneKeys < T1, T2 > (Dictionary < T1, T2 > dict) where T1 : ICloneable {
+    if (dict == null)
+        return null;
+
+    Dictionary < T1, T2 > ret = new Dictionary < T1, T2 > ();
+    foreach (var e in dict)
+        ret [(T1) e.Key.Clone ()] = e.Value;
+
+    return ret;
+}
+----------------------------------------

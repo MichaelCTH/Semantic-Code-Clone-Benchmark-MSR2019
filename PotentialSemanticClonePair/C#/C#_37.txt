@@ -1,0 +1,4030 @@
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+7603245_7603355_11_24
+7603245_7603404_55_69
+Title: Dynamic callback method for System.Threading.ThreadPool.QueueUserWorkItem C# 
+----------------------------------------
+
+private void C (int i) {
+    switch (i) {
+        case 1 :
+            D (new System.Threading.WaitCallback (A));
+            break;
+        case 2 :
+            D (new System.Threading.WaitCallback (B));
+            break;
+        default :
+            break;
+    }
+}
+----------------------------------------
+
+private void C (int i) {
+    EventWaitHandle waitHandle = new ManualResetEvent (false);
+    switch (i) {
+        case 1 :
+            D (A, waitHandle);
+            break;
+        case 2 :
+            D (B, waitHandle);
+            break;
+        default :
+            throw new Exception ("Case not supported");
+    }
+    waitHandle.WaitOne ();
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+7618014_7618078_1_30
+7618014_7618565_1_21
+Title: identify if two or more elements in sequence have same property 
+----------------------------------------
+
+public static IEnumerable < IEnumerable < TSource > > ContinuouslyEqualSubSequences < TSource, TResult > (this IEnumerable < TSource > source, Func < TSource, TResult > func) {
+    var e = source.GetEnumerator ();
+    var currentSequence = default (List < TSource >);
+    var resultOfCurrentSequence = default (TResult);
+    if (e.MoveNext ()) {
+        currentSequence = new List < TSource > () {e.Current};
+        resultOfCurrentSequence = func (e.Current);
+    }
+    while (e.MoveNext ()) {
+        var currentResult = func (e.Current);
+        if (Object.Equals (resultOfCurrentSequence, currentResult)) {
+            currentSequence.Add (e.Current);
+        } else {
+            if (currentSequence.Count > 1) {
+                yield return currentSequence;
+            }
+            currentSequence = new List < TSource > () {e.Current};
+            resultOfCurrentSequence = currentResult;
+        }
+    }
+    if (currentSequence.Count > 1) {
+        yield return currentSequence;
+    }
+}
+----------------------------------------
+
+public static IEnumerable < T > Consecutives < T > (this IEnumerable < T > source, Func < T, T, bool > equals) {
+    T last = default (T);
+    bool first = true;
+    bool returnedLast = false;
+    foreach (T current in source) {
+        if (! first && equals (current, last)) {
+            if (! returnedLast)
+                yield return last;
+
+            returnedLast = true;
+            yield return current;
+        } else
+            returnedLast = false;
+
+        first = false;
+        last = current;
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+7619831_7619863_1_15
+7619831_7619881_1_19
+Title: catch error and return in method result 
+----------------------------------------
+
+string SaveData (Stream stream) {
+    string error;
+    try {
+        error = "Everything saved Successfully";
+    }
+    catch (Exception ex) {
+        error = ex.Message;
+    }
+    return error;
+}
+----------------------------------------
+
+string SaveData (Stream stream) {
+    string error = "";
+    try {
+        error += "Everything Save Saccefully";
+    }
+    catch (Exception ex) {
+        error += ex.ToString ();
+    }
+    finally {
+    }
+    return error;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+7620182_7641132_2_31
+7620182_7642198_1_32
+Title: Pause and Resume Subscription on cold IObservable 
+----------------------------------------
+
+public static IConnectableObservable < TSource > WhileResumable < TSource > (Func < bool > condition, IObservable < TSource > source) {
+    var buffer = new Queue < TSource > ();
+    var subscriptionsCount = 0;
+    var isRunning = System.Reactive.Disposables.Disposable.Create (() = > {
+        lock (buffer)
+        {
+            subscriptionsCount --;
+        }});
+    var raw = Observable.Create < TSource > (subscriber = > {
+        lock (buffer)
+        {
+            subscriptionsCount ++;
+            if (subscriptionsCount == 1) {
+                while (buffer.Count > 0) {
+                    subscriber.OnNext (buffer.Dequeue ());
+                }
+                Observable.While (() = > subscriptionsCount > 0 && condition (), source).Subscribe (v = > {
+                    if (subscriptionsCount == 0)
+                        buffer.Enqueue (v);
+                    else
+                        subscriber.OnNext (v);
+
+                }, e = > subscriber.OnError (e), () = > {
+                    if (subscriptionsCount > 0)
+                        subscriber.OnCompleted ();
+
+                });
+            }
+        } return isRunning;
+    });
+    return raw.Publish ();
+}
+----------------------------------------
+
+public static IObservable < T > Pausable < T > (this IObservable < T > source, IObservable < bool > pauser) {
+    return Observable.Create < T > (o = > {
+        var paused = new SerialDisposable ();
+        var subscription = Observable.Publish (source, ps = > {
+            var values = new ReplaySubject < T > ();
+            Func < bool, IObservable < T > > switcher = b = > {
+                if (b) {
+                    values.Dispose ();
+                    values = new ReplaySubject < T > ();
+                    paused.Disposable = ps.Subscribe (values);
+                    return Observable.Empty < T > ();
+                } else {
+                    return values.Concat (ps);
+                }
+            };
+            return pauser.StartWith (false).DistinctUntilChanged ().Select (p = > switcher (p)).Switch ();
+        }).Subscribe (o);
+        return new CompositeDisposable (subscription, paused);
+    });
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+7633260_13559804_12_20
+7633260_13559804_22_31
+Title: TypeDelegator equality inconsistency? 
+----------------------------------------
+
+public static void ConfigureEqualityComparer < T > (IEqualityComparer < T > equalityComparer) {
+    if (equalityComparer == null)
+        throw new ArgumentNullException ("equalityComparer");
+
+    if (EqualityComparer < T >.Default == equalityComparer)
+        return;
+
+    lock (Gate)
+    {
+        ConfiguredEqualityComparerTypes.Add (typeof (T));
+        FieldFor < T >.EqualityComparer.SetValue (null, equalityComparer);
+        FieldFor < T >.Comparer.SetValue (null, new EqualityComparerCompatibleComparerDecorator < T > (Comparer < T >.Default, equalityComparer));
+    }}
+----------------------------------------
+
+public static void ConfigureComparer < T > (IComparer < T > comparer) {
+    if (comparer == null)
+        throw new ArgumentNullException ("comparer");
+
+    if (Comparer < T >.Default == comparer)
+        return;
+
+    lock (Gate)
+    {
+        if (ConfiguredEqualityComparerTypes.Contains (typeof (T)))
+            FieldFor < T >.Comparer.SetValue (null, new EqualityComparerCompatibleComparerDecorator < T > (comparer, EqualityComparer < T >.Default));
+        else
+            FieldFor < T >.Comparer.SetValue (null, comparer);
+
+    }}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+7638432_7638515_1_12
+7638432_7638541_1_12
+Title: How can I get integer and char separately in such a simple string? 
+----------------------------------------
+
+static int GetNumber (string text) {
+    string pat = @"\d+";
+    int output;
+    Regex r = new Regex (pat, RegexOptions.IgnoreCase);
+    Match m = r.Match (text);
+    if (int.TryParse (m.Value, out output))
+        return output;
+    else
+        return int.MinValue;
+
+}
+----------------------------------------
+
+public int GetNumber (string input) {
+    string result = "";
+    foreach (Char c in input) {
+        if (Char.IsDigit (c))
+            result += c;
+
+    }
+    return Convert.ToInt32 (result);
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+7646036_7646069_1_32
+7646036_7646177_1_12
+Title: Combining arrays of strings together 
+----------------------------------------
+
+public static List < string > CombineWords (params string [] [] arraysOfWords) {
+    var strings = new List < string > ();
+    if (arraysOfWords.Length == 0) {
+        return strings;
+    }
+    Action < string, int > combineWordsInternal = null;
+    combineWordsInternal = (baseString, index) = > {
+        foreach (var str in arraysOfWords [index]) {
+            string str2 = baseString + " " + str;
+            if (index + 1 < arraysOfWords.Length) {
+                combineWordsInternal (str2, index + 1);
+            } else {
+                strings.Add (str2);
+            }
+        }
+    };
+    combineWordsInternal (string.Empty, 0);
+    return strings;
+}
+----------------------------------------
+
+static List < string > CombineWords (string [] wordsOne, string [] wordsTwo) {
+    var combinedWords = new List < string > ();
+    for (int x = 0; (x <= wordsOne.Length - 1); ++ x) {
+        for (int y = 0; (x <= wordsTwo.Length - 1); ++ y) {
+            combinedWords.Add (string.Format ("{0} {1}", wordsOne [x], wordsTwo [y]));
+        }
+    }
+    return combinedWords;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+7646036_7646069_1_32
+7646036_7646262_1_14
+Title: Combining arrays of strings together 
+----------------------------------------
+
+public static List < string > CombineWords (params string [] [] arraysOfWords) {
+    var strings = new List < string > ();
+    if (arraysOfWords.Length == 0) {
+        return strings;
+    }
+    Action < string, int > combineWordsInternal = null;
+    combineWordsInternal = (baseString, index) = > {
+        foreach (var str in arraysOfWords [index]) {
+            string str2 = baseString + " " + str;
+            if (index + 1 < arraysOfWords.Length) {
+                combineWordsInternal (str2, index + 1);
+            } else {
+                strings.Add (str2);
+            }
+        }
+    };
+    combineWordsInternal (string.Empty, 0);
+    return strings;
+}
+----------------------------------------
+
+List < string > CombineWords (params string [] [] wordsToCombine) {
+    if (wordsToCombine.Length == 0)
+        return new List < string > ();
+
+    IEnumerable < string > combinedWords = wordsToCombine [0].ToList ();
+    for (int i = 1; i < wordsToCombine.Length; ++ i) {
+        var temp = i;
+        combinedWords = (from x in combinedWords
+            from y in wordsToCombine [temp]
+            select x + " " + y);
+    }
+    return combinedWords.ToList ();
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+7646036_7646177_1_12
+7646036_7646262_1_14
+Title: Combining arrays of strings together 
+----------------------------------------
+
+static List < string > CombineWords (string [] wordsOne, string [] wordsTwo) {
+    var combinedWords = new List < string > ();
+    for (int x = 0; (x <= wordsOne.Length - 1); ++ x) {
+        for (int y = 0; (x <= wordsTwo.Length - 1); ++ y) {
+            combinedWords.Add (string.Format ("{0} {1}", wordsOne [x], wordsTwo [y]));
+        }
+    }
+    return combinedWords;
+}
+----------------------------------------
+
+List < string > CombineWords (params string [] [] wordsToCombine) {
+    if (wordsToCombine.Length == 0)
+        return new List < string > ();
+
+    IEnumerable < string > combinedWords = wordsToCombine [0].ToList ();
+    for (int i = 1; i < wordsToCombine.Length; ++ i) {
+        var temp = i;
+        combinedWords = (from x in combinedWords
+            from y in wordsToCombine [temp]
+            select x + " " + y);
+    }
+    return combinedWords.ToList ();
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+7653193_7653285_1_10
+7653193_7653393_1_17
+Title: C# Recursion to get the proper count 
+----------------------------------------
+
+public static double GetCost (int tot) {
+    int maxKey = list.Aggregate ((current, next) = > next.Key > current.Key ? next : current).Key;
+    double cost = 0;
+    if (tot > maxKey)
+        cost += ((int) tot / maxKey) * list.Where (kvp = > kvp.Key == maxKey).First ().Value;
+
+    if (tot % maxKey > 0)
+        cost += list.Where (kvp = > kvp.Key == tot % maxKey).First ().Value;
+
+    return cost;
+}
+----------------------------------------
+
+public double GetCost (int tot) {
+    int multipliers;
+    int count;
+    double cost;
+    var dictionary = list.ToDictionary (kvp = > kvp.Key, kvp = > kvp.Value);
+    count = list.Count;
+    multipliers = tot / count;
+    cost = multipliers * dictionary [count];
+    tot %= count;
+    if (dictionary.ContainsKey (tot)) {
+        cost += dictionary [tot];
+    }
+    return cost;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+767101_767162_129_150
+767101_767162_157_178
+Title: C# Generics 
+----------------------------------------
+
+public int Write < T > (T value) {
+    T [] t = new T [1];
+    t [0] = value;
+    int s = Marshal.SizeOf (typeof (T));
+    byte [] target = new byte [s];
+    GCHandle handle = GCHandle.Alloc (t, GCHandleType.Pinned);
+    Marshal.Copy (handle.AddrOfPinnedObject (), target, 0, s);
+    Write (target, 0, s);
+    return s;
+}
+----------------------------------------
+
+public T Read < T > () {
+    T [] t = new T [1];
+    int s = Marshal.SizeOf (typeof (T));
+    byte [] target = new byte [s];
+    if (Read (target, 0, s) != s)
+        throw new InvalidDataException ("Not enough data.");
+
+    GCHandle handle = GCHandle.Alloc (t, GCHandleType.Pinned);
+    Marshal.Copy (target, 0, handle.AddrOfPinnedObject (), s);
+    return t [0];
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+767101_767162_129_150
+767101_767171_1_17
+Title: C# Generics 
+----------------------------------------
+
+public int Write < T > (T value) {
+    T [] t = new T [1];
+    t [0] = value;
+    int s = Marshal.SizeOf (typeof (T));
+    byte [] target = new byte [s];
+    GCHandle handle = GCHandle.Alloc (t, GCHandleType.Pinned);
+    Marshal.Copy (handle.AddrOfPinnedObject (), target, 0, s);
+    Write (target, 0, s);
+    return s;
+}
+----------------------------------------
+
+public void Write < T > (T item) {
+    T [] t = new T [] {item};
+    int s = Marshal.SizeOf (typeof (T));
+    if (_index + s > _size)
+        throw new Exception ("Error 101 Celebrity");
+
+    GCHandle handle = GCHandle.Alloc (t, GCHandleType.Pinned);
+    Marshal.Copy (handle.AddrOfPinnedObject (), _stream, _index, s);
+    _index += s;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+767101_767162_157_178
+767101_767171_1_17
+Title: C# Generics 
+----------------------------------------
+
+public T Read < T > () {
+    T [] t = new T [1];
+    int s = Marshal.SizeOf (typeof (T));
+    byte [] target = new byte [s];
+    if (Read (target, 0, s) != s)
+        throw new InvalidDataException ("Not enough data.");
+
+    GCHandle handle = GCHandle.Alloc (t, GCHandleType.Pinned);
+    Marshal.Copy (target, 0, handle.AddrOfPinnedObject (), s);
+    return t [0];
+}
+----------------------------------------
+
+public void Write < T > (T item) {
+    T [] t = new T [] {item};
+    int s = Marshal.SizeOf (typeof (T));
+    if (_index + s > _size)
+        throw new Exception ("Error 101 Celebrity");
+
+    GCHandle handle = GCHandle.Alloc (t, GCHandleType.Pinned);
+    Marshal.Copy (handle.AddrOfPinnedObject (), _stream, _index, s);
+    _index += s;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+7672543_7672666_3_15
+7672543_7673335_41_48
+Title: Parallel Fibonacci Number Calculator 
+----------------------------------------
+
+static void Main (string [] args) {
+    var sw = new Stopwatch ();
+    sw.Start ();
+    foreach (var nbr in Fibo ().Take (5000)) {
+        Console.Write (nbr.ToString () + " ");
+    }
+    sw.Stop ();
+    Console.WriteLine ();
+    Console.WriteLine ("Ellapsed : " + sw.Elapsed.ToString ());
+    Console.ReadLine ();
+}
+----------------------------------------
+
+public static void Main (string [] args) {
+    for (int j = 0; j < 100000; j ++)
+        for (int i = 0; i < 90; i ++)
+            Fib1 (i);
+
+    for (int i = 0; i < 90; i ++)
+        Console.WriteLine (Fib1 (i));
+
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+7688445_41248027_1_21
+7688445_49840602_1_17
+Title: Extract Common Name from Distinguished Name 
+----------------------------------------
+
+private static string ExtractCN (string distinguishedName) {
+    string [] parts;
+    parts = distinguishedName.Split (new [] {",DC="}, StringSplitOptions.None);
+    var dc = parts.Skip (1);
+    parts = parts [0].Split (new [] {",OU="}, StringSplitOptions.None);
+    var ou = parts.Skip (1);
+    parts = parts [0].Split (new [] {",CN="}, StringSplitOptions.None);
+    var cnMulti = parts.Skip (1);
+    var cn = parts [0];
+    if (! Regex.IsMatch (cn, "^CN="))
+        throw new CustomException (string.Format ("Unable to parse distinguishedName for commonName ({0})", distinguishedName));
+
+    return Regex.Replace (cn, "^CN=", string.Empty);
+}
+----------------------------------------
+
+private static string ExtractCN (string dn) {
+    string [] parts = dn.Split (new char [] {','});
+    for (int i = 0; i < parts.Length; i ++) {
+        var p = parts [i];
+        var elems = p.Split (new char [] {'='});
+        var t = elems [0].Trim ().ToUpper ();
+        var v = elems [1].Trim ();
+        if (t == "CN") {
+            return v;
+        }
+    }
+    return null;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+7714254_7714283_19_27
+7714254_7714286_1_10
+Title: Passing a method as an argument 
+----------------------------------------
+
+protected void SaveChanges < T > (T arg, params Action < T > [] rollbacks) {
+    try {
+        this._db.SaveChanges ();
+    }
+    catch (Exception e) {
+        Console.WriteLine ("Error: " + e);
+        foreach (var rollback in rollbacks)
+            rollback (arg);
+
+    }
+}
+----------------------------------------
+
+protected void SaveChanges < T, TArg > (T mlaObject, TArg arg, Action undoFunction) where T : WebObject {
+    try {
+        this._db.SaveChanges ();
+    }
+    catch (Exception e) {
+        Console.WriteLine ("Error: " + e);
+        undoFunction (arg);
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+7714254_7714283_19_27
+7714254_7714291_1_10
+Title: Passing a method as an argument 
+----------------------------------------
+
+protected void SaveChanges < T > (T arg, params Action < T > [] rollbacks) {
+    try {
+        this._db.SaveChanges ();
+    }
+    catch (Exception e) {
+        Console.WriteLine ("Error: " + e);
+        foreach (var rollback in rollbacks)
+            rollback (arg);
+
+    }
+}
+----------------------------------------
+
+protected void SaveChanges < T, U > (T mlaObject, Action < U > action, U arg) where T : WebObject {
+    try {
+        this._db.SaveChanges ();
+    }
+    catch (Exception e) {
+        Console.WriteLine ("Error: " + e);
+        action (arg);
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+7714254_7714286_1_10
+7714254_7714291_1_10
+Title: Passing a method as an argument 
+----------------------------------------
+
+protected void SaveChanges < T, TArg > (T mlaObject, TArg arg, Action undoFunction) where T : WebObject {
+    try {
+        this._db.SaveChanges ();
+    }
+    catch (Exception e) {
+        Console.WriteLine ("Error: " + e);
+        undoFunction (arg);
+    }
+}
+----------------------------------------
+
+protected void SaveChanges < T, U > (T mlaObject, Action < U > action, U arg) where T : WebObject {
+    try {
+        this._db.SaveChanges ();
+    }
+    catch (Exception e) {
+        Console.WriteLine ("Error: " + e);
+        action (arg);
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+772107_772322_27_32
+772107_772322_33_41
+Title: "TypeDescriptor.GetProperties(thisType) to return properties which are write-only" 
+----------------------------------------
+
+public static ISetter Create (Type type, string propertyName) {
+    if (type == null)
+        throw new ArgumentNullException ("type");
+
+    if (propertyName == null)
+        throw new ArgumentNullException ("propertyName");
+
+    return Create (type.GetProperty (propertyName));
+}
+----------------------------------------
+
+public static ISetter Create (PropertyInfo property) {
+    if (property == null)
+        throw new ArgumentNullException ("property");
+
+    if (! property.CanWrite)
+        throw new InvalidOperationException ("Property cannot be written");
+
+    Type type = typeof (TypedSetter <, >).MakeGenericType (property.ReflectedType, property.PropertyType);
+    return (ISetter) Activator.CreateInstance (type, property.GetSetMethod ());
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+7723164_7723298_3_16
+7723164_7723547_1_25
+Title: C# how get maximum value from list of lists 
+----------------------------------------
+
+static void Main (string [] args) {
+    var l = new List < List < double > > () {new List < Double > () {0, 16.0000, 15.0000, 0, 2.7217, 3.7217}, new List < Double > () {0, 0, 15.0000, 15.0000, 5.6904, 5.6904}};
+    int i = 1;
+    var result = from sublist in l
+        select new {min = sublist.Min (), max = sublist.Max (), index = i ++};
+    foreach (var r in result)
+        Console.WriteLine (String.Format ("Index: {0} Min: {1} Max: {2}", r.index, r.min, r.max));
+
+    Console.ReadKey ();
+}
+----------------------------------------
+
+static void Main (string [] args) {
+    List < List < double > > lists = new List < List < double > > () {new List < double > () {0, 0}, new List < double > () {16.0000, 0}, new List < double > () {16.0000, 15.0000}, new List < double > () {0, 15.0000}, new List < double > () {2.7217, 5.6904}, new List < double > () {3.7217, 5.6904}};
+    var r = new {col1_max = (from x in lists
+        select x [0]).Max (), col1_min = (from x in lists
+        select x [0]).Min (), col2_max = (from x in lists
+        select x [1]).Max (), col2_min = (from x in lists
+        select x [1]).Min (),};
+    Console.WriteLine (string.Format ("col1_max = {0}\r\ncol1_min = {1}\r\ncol2_max = {2}\r\ncol3_max = {3}", r.col1_max, r.col1_min, r.col2_max, r.col2_min));
+    Console.Read ();
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+7735369_7735414_32_50
+7735369_7735414_58_71
+Title: Get the encoding of an string 
+----------------------------------------
+
+public bool IsUtf8 (Stream stream) {
+    int count = 4 * 1024;
+    byte [] buffer;
+    int read;
+    while (true) {
+        buffer = new byte [count];
+        stream.Seek (0, SeekOrigin.Begin);
+        read = stream.Read (buffer, 0, count);
+        if (read < count) {
+            break;
+        }
+        buffer = null;
+        count *= 2;
+    }
+    return IsUtf8 (buffer, read);
+}
+----------------------------------------
+
+public static bool IsUtf8 (byte [] buffer, int length) {
+    int position = 0;
+    int bytes = 0;
+    while (position < length) {
+        if (! IsValid (buffer, position, length, ref bytes)) {
+            return false;
+        }
+        position += bytes;
+    }
+    return true;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+7744046_7744252_10_19
+7744046_7744252_37_46
+Title: Using Inheritance in C# 
+----------------------------------------
+
+public virtual string Talk () {
+    switch (Sex) {
+        case SexType.Male :
+            return "I am a Male.";
+        case SexType.Female :
+            return "I am a Female.";
+        default :
+            return "I am a human.";
+    }
+}
+----------------------------------------
+
+public override string Talk () {
+    switch (Sex) {
+        case SexType.Male :
+            return "I am a boy.";
+        case SexType.Female :
+            return "I am a girl.";
+        default :
+            return "I am a child.";
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+7764088_41783380_11_31
+7764088_7764451_25_41
+Title: .NET console application as Windows service 
+----------------------------------------
+
+static void Main (string [] args) {
+    if (Environment.UserInteractive) {
+        Start (args);
+        Console.WriteLine ("Press any key to stop...");
+        Console.ReadKey (true);
+        Stop ();
+    } else {
+        using (var service = new Service ())
+        {
+            ServiceBase.Run (service);
+        }}
+}
+----------------------------------------
+
+static void Main (string [] args) {
+    if (! Environment.UserInteractive)
+        using (var service = new Service ())
+        ServiceBase.Run (service);
+    else {
+        Start (args);
+        Console.WriteLine ("Press any key to stop...");
+        Console.ReadKey (true);
+        Stop ();
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+7765249_7765331_1_11
+7765249_7765354_1_12
+Title: Calculating total Length of all string properties in an object 
+----------------------------------------
+
+public static int GetPropertiesMaxLength (object obj) {
+    int totalMaxLength = 0;
+    Type type = obj.GetType ();
+    PropertyInfo [] info = type.GetProperties ();
+    foreach (PropertyInfo property in info) {
+        totalMaxLength += property.GetValue (obj, null).ToString ().Length;
+    }
+    return totalMaxLength;
+}
+----------------------------------------
+
+public static int GetPropertiesMaxLength (object obj) {
+    int totalMaxLength = 0;
+    Type type = obj.GetType ();
+    PropertyInfo [] info = type.GetProperties ();
+    foreach (PropertyInfo property in info) {
+        if (property.PropertyType == typeof (string)) {
+            string value = property.GetValue (obj, null) as string;
+            totalMaxLength += value.Length;
+        }
+    }
+    return totalMaxLength;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+7765249_7765331_1_11
+7765249_7765377_1_15
+Title: Calculating total Length of all string properties in an object 
+----------------------------------------
+
+public static int GetPropertiesMaxLength (object obj) {
+    int totalMaxLength = 0;
+    Type type = obj.GetType ();
+    PropertyInfo [] info = type.GetProperties ();
+    foreach (PropertyInfo property in info) {
+        totalMaxLength += property.GetValue (obj, null).ToString ().Length;
+    }
+    return totalMaxLength;
+}
+----------------------------------------
+
+public static int GetPropertiesMaxLength (object obj) {
+    int totalMaxLength = 0;
+    Type type = obj.GetType ();
+    PropertyInfo [] info = type.GetProperties ();
+    foreach (PropertyInfo property in info) {
+        var value = property.GetValue (obj, null) as string;
+        if (! string.IsNullOrEmpty (value)) {
+            totalMaxLength += value.Length;
+        }
+    }
+    return totalMaxLength;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+776725_40826793_3_15
+776725_777152_1_13
+Title: List<> Get Next element or get the first 
+----------------------------------------
+
+public static TType Next < TType > (this IList < TType > list, TType item) {
+    if (list == null)
+        return default (TType);
+
+    var itemIndex = list.IndexOf (item);
+    if (itemIndex < 0)
+        return list.FirstOrDefault ();
+
+    var nextIndex = itemIndex + 1;
+    return nextIndex >= list.Count ? list.FirstOrDefault () : list [nextIndex];
+}
+----------------------------------------
+
+public static IEnumerable < T > AsCircularEnumerable < T > (this IEnumerable < T > enumerable) {
+    var enumerator = enumerable.GetEnumerator ();
+    if (! enumerator.MoveNext ())
+        yield break;
+
+    while (true) {
+        yield return enumerator.Current;
+        if (! enumerator.MoveNext ())
+            enumerator = enumerable.GetEnumerator ();
+
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+777548_35694899_1_45
+777548_777567_1_20
+Title: How do I determine the owner of a process in C#? 
+----------------------------------------
+
+public string GetProcessOwner (int processId) {
+    string MethodResult = null;
+    try {
+        StringBuilder sb = new StringBuilder ();
+        sb.Append (" SELECT ");
+        sb.Append ("     * ");
+        sb.Append (" FROM ");
+        sb.Append ("     WIN32_PROCESS");
+        sb.Append (" WHERE ");
+        sb.Append ("     ProcessId = " + processId);
+        string Query = sb.ToString ();
+        ManagementObjectCollection Processes = new ManagementObjectSearcher (Query).Get ();
+        foreach (ManagementObject Process in Processes) {
+            string [] Args = new string [] {"", ""};
+            int ReturnCode = Convert.ToInt32 (Process.InvokeMethod ("GetOwner", Args));
+            switch (ReturnCode) {
+                case 0 :
+                    MethodResult = Args [1] + "\\" + Args [0];
+                    break;
+                default :
+                    MethodResult = "None";
+                    break;
+            }
+        }
+    }
+    catch {
+    }
+    return MethodResult;
+}
+----------------------------------------
+
+public string GetProcessOwner (string processName) {
+    string query = "Select * from Win32_Process Where Name = \"" + processName + "\"";
+    ManagementObjectSearcher searcher = new ManagementObjectSearcher (query);
+    ManagementObjectCollection processList = searcher.Get ();
+    foreach (ManagementObject obj in processList) {
+        string [] argList = new string [] {string.Empty, string.Empty};
+        int returnVal = Convert.ToInt32 (obj.InvokeMethod ("GetOwner", argList));
+        if (returnVal == 0) {
+            string owner = argList [1] + "\\" + argList [0];
+            return owner;
+        }
+    }
+    return "NO OWNER";
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+7784251_7784338_1_12
+7784251_7785006_1_17
+Title: two 0 to 1 directions in a loop 
+----------------------------------------
+
+float func (float a, float b, bool side) {
+    float result = (a + b) / 2;
+    if (result > 0.5)
+        result = (a + b - 1) / 2;
+
+    if (side == true)
+        return result;
+    else
+        return result < 0.5 ? result + 0.5 : result - 0.5;
+
+}
+----------------------------------------
+
+float func (float a, float b, bool side) {
+    float seg_a = a - b;
+    if (seg_a < 0)
+        seg_a += 1;
+
+    float seg_b = 1 - seg_a;
+    float result;
+    if (side && seg_a > 0.5 || ! side && ! (seg_a > 0.5))
+        result = b + seg_a / 2;
+    else
+        result = a + seg_b / 2;
+
+    if (result > 1)
+        result -= 1;
+
+    return result;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+779363_21946445_52_62
+779363_779710_57_67
+Title: How to use use late binding to get excel instance? 
+----------------------------------------
+
+public static bool EnumChildProc (int hwndChild, ref int lParam) {
+    var buf = new StringBuilder (128);
+    GetClassName (hwndChild, buf, 128);
+    Console.WriteLine (buf.ToString ());
+    if (buf.ToString () == "_WwG") {
+        lParam = hwndChild;
+        return false;
+    }
+    return true;
+}
+----------------------------------------
+
+public static bool EnumChildProc (int hwndChild, ref int lParam) {
+    StringBuilder buf = new StringBuilder (128);
+    GetClassName (hwndChild, buf, 128);
+    if (buf.ToString () == "EXCEL7") {
+        lParam = hwndChild;
+        return false;
+    }
+    return true;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+779363_21946445_64_105
+779363_779710_69_112
+Title: How to use use late binding to get excel instance? 
+----------------------------------------
+
+static void Main () {
+    var hwnd = (int) FindWindow ("OpusApp", null);
+    if (hwnd == 0)
+        throw new Exception ("Can't find Word");
+
+    var hwndChild = 0;
+    var cb = new EnumChildCallback (EnumChildProc);
+    EnumChildWindows (hwnd, cb, ref hwndChild);
+    if (hwndChild == 0)
+        throw new Exception ("Can't find Automation Child Window");
+
+    const uint OBJID_NATIVEOM = 0xFFFFFFF0;
+    var IID_IDispatch = new Guid ("{00020400-0000-0000-C000-000000000046}");
+    IWordWindow ptr;
+    var hr = AccessibleObjectFromWindow (hwndChild, OBJID_NATIVEOM, IID_IDispatch.ToByteArray (), out ptr);
+    if (hr < 0)
+        throw new Exception ("Can't get Accessible Object");
+
+    using (new UiLanguageHelper ())
+    {
+        var wordApp = ptr.GetType ().InvokeMember ("Application", BindingFlags.GetProperty, null, ptr, null);
+        var version = wordApp.GetType ().InvokeMember ("Version", BindingFlags.GetField | BindingFlags.InvokeMethod | BindingFlags.GetProperty, null, wordApp, null);
+        Console.WriteLine ("Word version is: {0}", version);
+        dynamic wordAppd = ptr.GetType ().InvokeMember ("Application", BindingFlags.GetProperty, null, ptr, null);
+        Console.WriteLine ("Version: " + wordAppd.Version);
+    }}
+----------------------------------------
+
+static void Main (string [] args) {
+    int hwnd = (int) FindWindow ("XLMAIN", null);
+    if (hwnd != 0) {
+        int hwndChild = 0;
+        EnumChildCallback cb = new EnumChildCallback (EnumChildProc);
+        EnumChildWindows (hwnd, cb, ref hwndChild);
+        if (hwndChild != 0) {
+            const uint OBJID_NATIVEOM = 0xFFFFFFF0;
+            Guid IID_IDispatch = new Guid ("{00020400-0000-0000-C000-000000000046}");
+            ExcelWindow ptr;
+            int hr = AccessibleObjectFromWindow (hwndChild, OBJID_NATIVEOM, IID_IDispatch.ToByteArray (), out ptr);
+            if (hr >= 0) {
+                using (UILanguageHelper fix = new UILanguageHelper ())
+                {
+                    object xlApp = ptr.GetType ().InvokeMember ("Application", BindingFlags.GetProperty, null, ptr, null);
+                    object version = xlApp.GetType ().InvokeMember ("Version", BindingFlags.GetField | BindingFlags.InvokeMethod | BindingFlags.GetProperty, null, xlApp, null);
+                    Console.WriteLine (string.Format ("Excel version is: {0}", version));
+                }}
+        }
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+7815299_7815478_1_20
+7815299_7815552_1_25
+Title: "Store data within alphabetically ordered letters (A - D E - H I - L etc) using Dictionary" 
+----------------------------------------
+
+static void Main (string [] args) {
+    List < Discount > list = new List < Discount > ();
+    list.Add (new Discount {Id = 1, Title = "Adam"});
+    list.Add (new Discount {Id = 2, Title = "Ben"});
+    list.Add (new Discount {Id = 3, Title = "Alex"});
+    list.Add (new Discount {Id = 4, Title = "Daniel"});
+    list.Add (new Discount {Id = 5, Title = "Ethan"});
+    list.Add (new Discount {Id = 6, Title = "Howard"});
+    list.Add (new Discount {Id = 7, Title = "Peter"});
+    list.Add (new Discount {Id = 8, Title = "Tazz"});
+    list.Add (new Discount {Id = 9, Title = "Steve"});
+    list.Add (new Discount {Id = 10, Title = "Lyle"});
+    var query = list.GroupBy (d = > GetRange (d.Title));
+    foreach (var group in query)
+        Console.WriteLine ("{0}[{1}]", group.Key, group.Count ());
+
+}
+----------------------------------------
+
+static void Main (string [] args) {
+    List < Discount > list = new List < Discount > ();
+    list.Add (new Discount {Id = 1, Title = "Adam"});
+    list.Add (new Discount {Id = 2, Title = "Ben"});
+    list.Add (new Discount {Id = 3, Title = "Alex"});
+    list.Add (new Discount {Id = 4, Title = "Daniel"});
+    list.Add (new Discount {Id = 5, Title = "Ethan"});
+    list.Add (new Discount {Id = 6, Title = "Howard"});
+    list.Add (new Discount {Id = 7, Title = "Peter"});
+    list.Add (new Discount {Id = 8, Title = "Tazz"});
+    list.Add (new Discount {Id = 9, Title = "Steve"});
+    list.Add (new Discount {Id = 10, Title = "Lyle"});
+    Dictionary < string, List < Discount > > dic = new Dictionary < string, List < Discount > > ();
+    foreach (Discount d in list) {
+        string range = GetRange (d.Title);
+        if (dic.ContainsKey (range))
+            dic [range].Add (d);
+        else
+            dic.Add (range, new List < Discount > {d});
+
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+7852824_13754686_25_56
+7852824_29749715_17_40
+Title: UserControl: How to add MouseWheel Listener? 
+----------------------------------------
+
+public bool PreFilterMessage (ref Message m) {
+    var parent = _ctrl.Parent;
+    if (parent != null && m.Msg == 0x20a) {
+        var pos = new Point (m.LParam.ToInt32 () & 0xffff, m.LParam.ToInt32 () > > 16);
+        var clientPos = _ctrl.PointToClient (pos);
+        if (_ctrl.ClientRectangle.Contains (clientPos) && ReferenceEquals (_ctrl, parent.GetChildAtPoint (parent.PointToClient (pos)))) {
+            var wParam = m.WParam.ToInt32 ();
+            Func < int, MouseButtons, MouseButtons > getButton = (flag, button) = > ((wParam & flag) == flag) ? button : MouseButtons.None;
+            var buttons = getButton (wParam & 0x0001, MouseButtons.Left) | getButton (wParam & 0x0010, MouseButtons.Middle) | getButton (wParam & 0x0002, MouseButtons.Right) | getButton (wParam & 0x0020, MouseButtons.XButton1) | getButton (wParam & 0x0040, MouseButtons.XButton2);
+            var delta = wParam > > 16;
+            var e = new MouseEventArgs (buttons, 0, clientPos.X, clientPos.Y, delta);
+            _onMouseWheel (e);
+            return true;
+        }
+    }
+    return false;
+}
+----------------------------------------
+
+public bool PreFilterMessage (ref Message m) {
+    if (m.Msg != 0x20a)
+        return false;
+
+    Point mouseAbsolutePosition = new Point (m.LParam.ToInt32 ());
+    Point mouseRelativePosition = mCtrl.PointToClient (mouseAbsolutePosition);
+    IntPtr hControlUnderMouse = WindowFromPoint (mouseAbsolutePosition);
+    Control controlUnderMouse = Control.FromHandle (hControlUnderMouse);
+    if (controlUnderMouse != mCtrl)
+        return false;
+
+    MouseButtons buttons = GetMouseButtons (m.WParam.ToInt32 ());
+    int delta = m.WParam.ToInt32 () > > 16;
+    var e = new MouseEventArgs (buttons, 0, mouseRelativePosition.X, mouseRelativePosition.Y, delta);
+    mOnMouseWheel (e);
+    return true;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+7852824_13754686_25_56
+7852824_7858932_14_25
+Title: UserControl: How to add MouseWheel Listener? 
+----------------------------------------
+
+public bool PreFilterMessage (ref Message m) {
+    var parent = _ctrl.Parent;
+    if (parent != null && m.Msg == 0x20a) {
+        var pos = new Point (m.LParam.ToInt32 () & 0xffff, m.LParam.ToInt32 () > > 16);
+        var clientPos = _ctrl.PointToClient (pos);
+        if (_ctrl.ClientRectangle.Contains (clientPos) && ReferenceEquals (_ctrl, parent.GetChildAtPoint (parent.PointToClient (pos)))) {
+            var wParam = m.WParam.ToInt32 ();
+            Func < int, MouseButtons, MouseButtons > getButton = (flag, button) = > ((wParam & flag) == flag) ? button : MouseButtons.None;
+            var buttons = getButton (wParam & 0x0001, MouseButtons.Left) | getButton (wParam & 0x0010, MouseButtons.Middle) | getButton (wParam & 0x0002, MouseButtons.Right) | getButton (wParam & 0x0020, MouseButtons.XButton1) | getButton (wParam & 0x0040, MouseButtons.XButton2);
+            var delta = wParam > > 16;
+            var e = new MouseEventArgs (buttons, 0, clientPos.X, clientPos.Y, delta);
+            _onMouseWheel (e);
+            return true;
+        }
+    }
+    return false;
+}
+----------------------------------------
+
+public bool PreFilterMessage (ref Message m) {
+    if (m.Msg == 0x20a) {
+        Point pos = new Point (m.LParam.ToInt32 () & 0xffff, m.LParam.ToInt32 () > > 16);
+        IntPtr hWnd = WindowFromPoint (pos);
+        if (hWnd != IntPtr.Zero && hWnd != m.HWnd && Control.FromHandle (hWnd) != null) {
+            SendMessage (hWnd, m.Msg, m.WParam, m.LParam);
+            return true;
+        }
+    }
+    return false;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+7852824_29749715_17_40
+7852824_7858932_14_25
+Title: UserControl: How to add MouseWheel Listener? 
+----------------------------------------
+
+public bool PreFilterMessage (ref Message m) {
+    if (m.Msg != 0x20a)
+        return false;
+
+    Point mouseAbsolutePosition = new Point (m.LParam.ToInt32 ());
+    Point mouseRelativePosition = mCtrl.PointToClient (mouseAbsolutePosition);
+    IntPtr hControlUnderMouse = WindowFromPoint (mouseAbsolutePosition);
+    Control controlUnderMouse = Control.FromHandle (hControlUnderMouse);
+    if (controlUnderMouse != mCtrl)
+        return false;
+
+    MouseButtons buttons = GetMouseButtons (m.WParam.ToInt32 ());
+    int delta = m.WParam.ToInt32 () > > 16;
+    var e = new MouseEventArgs (buttons, 0, mouseRelativePosition.X, mouseRelativePosition.Y, delta);
+    mOnMouseWheel (e);
+    return true;
+}
+----------------------------------------
+
+public bool PreFilterMessage (ref Message m) {
+    if (m.Msg == 0x20a) {
+        Point pos = new Point (m.LParam.ToInt32 () & 0xffff, m.LParam.ToInt32 () > > 16);
+        IntPtr hWnd = WindowFromPoint (pos);
+        if (hWnd != IntPtr.Zero && hWnd != m.HWnd && Control.FromHandle (hWnd) != null) {
+            SendMessage (hWnd, m.Msg, m.WParam, m.LParam);
+            return true;
+        }
+    }
+    return false;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+790105_790128_129_147
+790105_790128_32_46
+Title: Is an ADO.NET 2.0 Transaction on SQL Server 2005 automatically rolled back on exception? 
+----------------------------------------
+
+public int AddFriend (Friend f, ISession session) {
+    Console.WriteLine (session.Connection.State.ToString ());
+    int ret = 0;
+    IDbCommand command = session.CreateCommand ();
+    command.CommandType = CommandType.Text;
+    command.CommandText = string.Format ("INSERT INTO Friend(FullName, Phone) values('{0}', '{1}')", f.FullName, f.Phone);
+    ret = command.ExecuteNonQuery ();
+    if (string.Compare (f.FullName, "Someone", true) == 0)
+        throw new Exception ("Fake exception. Friend value can't be 'Someone'");
+
+    return ret;
+}
+----------------------------------------
+
+public int AddFriend (Friend f) {
+    int ret = 0;
+    try {
+        ret = this._m.AddFriend (f);
+    }
+    catch (Exception ex) {
+        HandleException (ex);
+    }
+    return ret;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+790105_790128_129_147
+790105_790128_81_92
+Title: Is an ADO.NET 2.0 Transaction on SQL Server 2005 automatically rolled back on exception? 
+----------------------------------------
+
+public int AddFriend (Friend f, ISession session) {
+    Console.WriteLine (session.Connection.State.ToString ());
+    int ret = 0;
+    IDbCommand command = session.CreateCommand ();
+    command.CommandType = CommandType.Text;
+    command.CommandText = string.Format ("INSERT INTO Friend(FullName, Phone) values('{0}', '{1}')", f.FullName, f.Phone);
+    ret = command.ExecuteNonQuery ();
+    if (string.Compare (f.FullName, "Someone", true) == 0)
+        throw new Exception ("Fake exception. Friend value can't be 'Someone'");
+
+    return ret;
+}
+----------------------------------------
+
+public int AddFriend (Friend f) {
+    int ret = 0;
+    using (ISession session = SessionFactory.Create (SessionType.Ado, this._connectionString))
+    {
+        session.BeginTransaction ();
+        ret = this._m.AddFriend (f, session);
+        session.CommitTransaction ();
+    } return ret;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+790105_790128_32_46
+790105_790128_81_92
+Title: Is an ADO.NET 2.0 Transaction on SQL Server 2005 automatically rolled back on exception? 
+----------------------------------------
+
+public int AddFriend (Friend f) {
+    int ret = 0;
+    try {
+        ret = this._m.AddFriend (f);
+    }
+    catch (Exception ex) {
+        HandleException (ex);
+    }
+    return ret;
+}
+----------------------------------------
+
+public int AddFriend (Friend f) {
+    int ret = 0;
+    using (ISession session = SessionFactory.Create (SessionType.Ado, this._connectionString))
+    {
+        session.BeginTransaction ();
+        ret = this._m.AddFriend (f, session);
+        session.CommitTransaction ();
+    } return ret;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+790105_790128_48_62
+790105_790128_94_105
+Title: Is an ADO.NET 2.0 Transaction on SQL Server 2005 automatically rolled back on exception? 
+----------------------------------------
+
+public int UpdatePhone (string fullName, string phone) {
+    int ret = 0;
+    try {
+        ret = this._m.UpdatePhone (fullName, phone);
+    }
+    catch (Exception ex) {
+        HandleException (ex);
+    }
+    return ret;
+}
+----------------------------------------
+
+public int UpdatePhone (string fullName, string phone) {
+    int ret = 0;
+    using (ISession session = SessionFactory.Create (SessionType.Ado, this._connectionString))
+    {
+        session.BeginTransaction ();
+        ret = this._m.UpdateFriend (fullName, phone, session);
+        session.CommitTransaction ();
+    } return ret;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+7910114_7910189_1_19
+7910114_7910189_20_30
+Title: "C# making app support plugins run multiple instances possible?" 
+----------------------------------------
+
+public static List < T > GetFilePlugins < T > (string filename) {
+    List < T > ret = new List < T > ();
+    if (File.Exists (filename)) {
+        Type typeT = typeof (T);
+        Assembly ass = Assembly.LoadFrom (filename);
+        foreach (Type type in ass.GetTypes ()) {
+            if (! type.IsClass || type.IsNotPublic)
+                continue;
+
+            if (typeT.IsAssignableFrom (type)) {
+                T plugin = (T) Activator.CreateInstance (type);
+                ret.Add (plugin);
+            }
+        }
+    }
+    return ret;
+}
+----------------------------------------
+
+public static List < T > GetDirectoryPlugins < T > (string dirname) {
+    List < T > ret = new List < T > ();
+    string [] dlls = Directory.GetFiles (dirname, "*.dll");
+    foreach (string dll in dlls) {
+        List < T > dll_plugins = GetFilePlugins < T > (Path.GetFullPath (dll));
+        ret.AddRange (dll_plugins);
+    }
+    return ret;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+7911448_40124633_1_12
+7911448_7911591_1_11
+Title: C#: Get first directory name of a relative path 
+----------------------------------------
+
+private static string GetRootFolder (string path) {
+    var root = Path.GetPathRoot (path);
+    while (true) {
+        var temp = Path.GetDirectoryName (path);
+        if (temp != null && temp.Equals (root))
+            break;
+
+        path = temp;
+    }
+    return path;
+}
+----------------------------------------
+
+static string GetRootFolder (string path) {
+    while (true) {
+        string temp = Path.GetDirectoryName (path);
+        if (String.IsNullOrEmpty (temp))
+            break;
+
+        path = temp;
+    }
+    return path;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+7912695_7912765_1_15
+7912695_7913505_1_12
+Title: Randomizing elements of the List<> 
+----------------------------------------
+
+private List < E > ShuffleList < E > (List < E > inputList) {
+    List < E > randomList = new List < E > ();
+    Random r = new Random ();
+    int randomIndex = 0;
+    while (inputList.Count > 0) {
+        randomIndex = r.Next (0, inputList.Count);
+        randomList.Add (inputList [randomIndex]);
+        inputList.RemoveAt (randomIndex);
+    }
+    return randomList;
+}
+----------------------------------------
+
+public static IEnumerable < T > Shuffle < T > (this IList < T > list) {
+    var choices = Enumerable.Range (0, list.Count).ToList ();
+    var rng = new Random ();
+    for (int n = choices.Count; n > 1; n --) {
+        int k = rng.Next (n);
+        yield return list [choices [k]];
+        choices.RemoveAt (k);
+    }
+    yield return list [choices [0]];
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+7916776_7916818_1_18
+7916776_7918092_1_12
+Title: LINQ-to-entities generic == workaround 
+----------------------------------------
+
+IQueryable < History < T > > GetFirstOperationsForEveryId < T > (IQueryable < History < T > > ItemHistory) {
+    var grouped = (from h1 in ItemHistory
+        group t by h1.GenericId into tt
+        select new {GenericId = tt.Key, OperationId = tt.Min (ttt = > ttt.OperationId)});
+    var q = (from h in ItemHistory
+        join g in grouped on new {h.OperationId, h.GenericId} equals new {g.OperationId, g.GenericId}
+        select h);
+    return q;
+}
+----------------------------------------
+
+IQueryable < History < T > > GetFirstOperationsForEveryId < T > (IQueryable < History < T > > ItemHistory) {
+    var q = from h in ItemHistory
+        group h by h.GenericId into tt
+        let first = (from t in tt
+            orderby t.GenericId
+            select t).FirstOrDefault ()
+        select first;
+    return q;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+7922251_7922457_18_28
+7922251_7922600_23_31
+Title: Check for set of characters in a string 
+----------------------------------------
+
+static void Main (string [] args) {
+    string test = "INEEDTOGETAHAIRCUT";
+    string chars = "OEGT";
+    foreach (string to_find in GetPermutations (chars)) {
+        int i = test.IndexOf (to_find);
+        if (i != - 1) {
+            Console.WriteLine ("Found {0} at index {1}", to_find, i);
+        }
+    }
+}
+----------------------------------------
+
+static void Main (string [] args) {
+    string test = "INEEDTOGETAHAIRCUT";
+    string search = "AHRI";
+    int foundPos = findPermutation (test, search);
+    Console.WriteLine (foundPos);
+    if (foundPos != - 1)
+        Console.WriteLine (test.Substring (foundPos, search.Length));
+
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+7938860_7938882_1_19
+7938860_7938882_20_30
+Title: Load all provider classes from a solution folder 
+----------------------------------------
+
+public static List < T > GetFilePlugins < T > (string filename) {
+    List < T > ret = new List < T > ();
+    if (File.Exists (filename)) {
+        Type typeT = typeof (T);
+        Assembly ass = Assembly.LoadFrom (filename);
+        foreach (Type type in ass.GetTypes ()) {
+            if (! type.IsClass || type.IsNotPublic)
+                continue;
+
+            if (typeT.IsAssignableFrom (type)) {
+                T plugin = (T) Activator.CreateInstance (type);
+                ret.Add (plugin);
+            }
+        }
+    }
+    return ret;
+}
+----------------------------------------
+
+public static List < T > GetDirectoryPlugins < T > (string dirname) {
+    List < T > ret = new List < T > ();
+    string [] dlls = Directory.GetFiles (dirname, "*.dll");
+    foreach (string dll in dlls) {
+        List < T > dll_plugins = GetFilePlugins < T > (Path.GetFullPath (dll));
+        ret.AddRange (dll_plugins);
+    }
+    return ret;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+7948316_7960696_14_124
+7948316_7967550_1_105
+Title: how resume able file download in asp.net with c# -> best way (for large files too) 
+----------------------------------------
+
+public static bool DownloadFileMethod (HttpContext httpContext, string filePath, long speed) {
+    bool ret = true;
+    try {
+        switch (httpContext.Request.HttpMethod.ToUpper ()) {
+            case "GET" : case "HEAD" :
+                break;
+            default :
+                httpContext.Response.StatusCode = 501;
+                return false;
+        }
+        if (! File.Exists (filePath)) {
+            httpContext.Response.StatusCode = 404;
+            return false;
+        }
+        var fileInfo = new FileInfo (filePath);
+        long startBytes = 0;
+        int packSize = 1024 * 10;
+        string fileName = Path.GetFileName (filePath);
+        FileStream myFile = new FileStream (filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+        BinaryReader br = new BinaryReader (myFile);
+        long fileLength = myFile.Length;
+        int sleep = (int) Math.Ceiling (1000.0 * packSize / speed);
+        string lastUpdateTiemStr = File.GetLastWriteTimeUtc (filePath).ToString ("r");
+        string eTag = HttpUtility.UrlEncode (fileName, Encoding.UTF8) + lastUpdateTiemStr;
+        if (myFile.Length > Int32.MaxValue) {
+            httpContext.Response.StatusCode = 413;
+            return false;
+        }
+        if (httpContext.Request.Headers ["If-Range"] != null) {
+            if (httpContext.Request.Headers ["If-Range"].Replace ("\"", "") != eTag) {
+                httpContext.Response.StatusCode = 412;
+                return false;
+            }
+        }
+        try {
+            httpContext.Response.Clear ();
+            httpContext.Response.Buffer = false;
+            httpContext.Response.AddHeader ("Content-MD5", GetMD5Hash (fileInfo));
+            httpContext.Response.AddHeader ("Accept-Ranges", "bytes");
+            httpContext.Response.AppendHeader ("ETag", "\"" + eTag + "\"");
+            httpContext.Response.AppendHeader ("Last-Modified", lastUpdateTiemStr);
+            httpContext.Response.ContentType = "application/octet-stream";
+            httpContext.Response.AddHeader ("Content-Disposition", "attachment;filename=" + HttpUtility.UrlEncode (fileName, Encoding.UTF8).Replace ("+", "%20"));
+            httpContext.Response.AddHeader ("Content-Length", (fileLength - startBytes).ToString ());
+            httpContext.Response.AddHeader ("Connection", "Keep-Alive");
+            httpContext.Response.ContentEncoding = Encoding.UTF8;
+            if (httpContext.Request.Headers ["Range"] != null) {
+                httpContext.Response.StatusCode = 206;
+                string [] range = httpContext.Request.Headers ["Range"].Split (new char [] {'=', '-'});
+                startBytes = Convert.ToInt64 (range [1]);
+                if (startBytes < 0 || startBytes >= fileLength) {
+                    return false;
+                }
+            }
+            if (startBytes > 0) {
+                httpContext.Response.AddHeader ("Content-Range", string.Format (" bytes {0}-{1}/{2}", startBytes, fileLength - 1, fileLength));
+            }
+            br.BaseStream.Seek (startBytes, SeekOrigin.Begin);
+            int maxCount = (int) Math.Ceiling ((fileLength - startBytes + 0.0) / packSize);
+            for (int i = 0; i < maxCount && httpContext.Response.IsClientConnected; i ++) {
+                httpContext.Response.BinaryWrite (br.ReadBytes (packSize));
+                httpContext.Response.Flush ();
+                if (sleep > 1)
+                    Thread.Sleep (sleep);
+
+            }
+        }
+        catch {
+            ret = false;
+        }
+        finally {
+            br.Close ();
+            myFile.Close ();
+        }
+    }
+    catch {
+        ret = false;
+    }
+    return ret;
+}
+----------------------------------------
+
+public static bool DownloadFileMethod (HttpContext httpContext, string filePath, long speed) {
+    var response = httpContext.Response;
+    var request = httpContext.Request;
+    var method = request.HttpMethod.ToUpper ();
+    if (method != "GET" && method != "HEAD") {
+        response.StatusCode = 501;
+        return false;
+    }
+    if (! File.Exists (filePath)) {
+        response.StatusCode = 404;
+        return false;
+    }
+    using (var myFile = new FileStream (filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+    {
+        var fileLength = myFile.Length;
+        if (fileLength > Int32.MaxValue) {
+            response.StatusCode = 413;
+            return false;
+        }
+        var lastUpdateTiemStr = File.GetLastWriteTimeUtc (filePath).ToString ("r");
+        var fileName = Path.GetFileName (filePath);
+        var fileNameUrlEncoded = HttpUtility.UrlEncode (fileName, Encoding.UTF8);
+        var eTag = fileNameUrlEncoded + lastUpdateTiemStr;
+        var ifRange = request.Headers ["If-Range"];
+        if (ifRange != null && ifRange.Replace ("\"", "") != eTag) {
+            response.StatusCode = 412;
+            return false;
+        }
+        long startBytes = 0;
+        var rangeHeader = request.Headers ["Range"];
+        if (rangeHeader != null) {
+            response.StatusCode = 206;
+            var range = rangeHeader.Split (new [] {'=', '-'});
+            startBytes = Convert.ToInt64 (range [1]);
+            if (startBytes < 0 || startBytes >= fileLength) {
+                response.StatusCode = (int) HttpStatusCode.BadRequest;
+                response.StatusDescription = string.Format ("Invalid start of range: {0}", startBytes);
+                return false;
+            }
+        }
+        response.Clear ();
+        response.Buffer = false;
+        response.AddHeader ("Content-MD5", GetMD5Hash (filePath));
+        response.AddHeader ("Accept-Ranges", "bytes");
+        response.AppendHeader ("ETag", string.Format ("\"{0}\"", eTag));
+        response.AppendHeader ("Last-Modified", lastUpdateTiemStr);
+        response.ContentType = "application/octet-stream";
+        response.AddHeader ("Content-Disposition", "attachment;filename=" + fileNameUrlEncoded.Replace ("+", "%20"));
+        var remaining = fileLength - startBytes;
+        response.AddHeader ("Content-Length", remaining.ToString ());
+        response.AddHeader ("Connection", "Keep-Alive");
+        response.ContentEncoding = Encoding.UTF8;
+        if (startBytes > 0) {
+            response.AddHeader ("Content-Range", string.Format (" bytes {0}-{1}/{2}", startBytes, fileLength - 1, fileLength));
+        }
+        using (var br = new BinaryReader (myFile))
+        {
+            br.BaseStream.Seek (startBytes, SeekOrigin.Begin);
+            const int packSize = 1024 * 10;
+            var maxCount = (int) Math.Ceiling ((remaining + 0.0) / packSize);
+            for (var i = 0; i < maxCount && response.IsClientConnected; i ++) {
+                response.BinaryWrite (br.ReadBytes (packSize));
+                response.Flush ();
+                var sleep = (int) Math.Ceiling (1000.0 * packSize / speed);
+                if (sleep > 1)
+                    Thread.Sleep (sleep);
+
+            }
+        }} return true;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+7961580_7961870_1_28
+7961580_7967249_16_51
+Title: parsing of a string containing an array 
+----------------------------------------
+
+static string [] StringToArray (string str) {
+    Regex reg = new Regex (@"^\[(.*)\]$");
+    Match match = reg.Match (str);
+    if (! match.Success)
+        return null;
+
+    str = match.Groups [1].Value;
+    List < string > list = new List < string > ();
+    reg = new Regex (@"\[[^\[\]]*(((?'Open'\[)[^\[\]]*)+((?'-Open'\])[^\[\]]*)+)*(?(Open)(?!))\]");
+    Dictionary < string, string > dic = new Dictionary < string, string > ();
+    int index = 0;
+    str = reg.Replace (str, m = > {
+        string temp = "ojlovecd" + (index ++).ToString ();
+        dic.Add (temp, m.Value);
+        return temp;
+    });
+    string [] result = str.Split (',');
+    for (int i = 0; i < result.Length; i ++) {
+        string s = result [i].Trim ();
+        if (dic.ContainsKey (s))
+            result [i] = dic [s].Trim ();
+        else
+            result [i] = s;
+
+    }
+    return result;
+}
+----------------------------------------
+
+static string [] StringToArray (string data) {
+    string [] fields = null;
+    Regex innerPat = new Regex (@"\[\s*(.+)\s*\]");
+    string innerStr = innerPat.Matches (data) [0].Groups [1].Value;
+    StringBuilder wk = new StringBuilder ();
+    var balance = 0;
+    for (var i = 0; i < innerStr.Length; ++ i) {
+        char ch = innerStr [i];
+        switch (ch) {
+            case '[' :
+                if (balance == 0) {
+                    wk.Append ('"');
+                }
+                wk.Append (ch);
+                ++ balance;
+                continue;
+            case ']' :
+                wk.Append (ch);
+                -- balance;
+                if (balance == 0) {
+                    wk.Append ('"');
+                }
+                continue;
+            default :
+                wk.Append (ch);
+                break;
+        }
+    }
+    var reader = new StringReader (wk.ToString ());
+    using (var csvReader = new TextFieldParser (reader))
+    {
+        csvReader.SetDelimiters (new string [] {","});
+        csvReader.HasFieldsEnclosedInQuotes = true;
+        fields = csvReader.ReadFields ();
+    } return fields;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+7962882_7962911_4_27
+7962882_7963210_1_25
+Title: How to get a distinct count of variable within value of items in a dictionary using linq 
+----------------------------------------
+
+public static int DistinctCount (this IEnumerable < int > values) {
+    int min = values.Min ();
+    int max = values.Max ();
+    uint [] bitarray = new uint [(max - min + 31) / 32];
+    foreach (int value in values) {
+        int i = (value - min) / 32;
+        int j = (value - min) % 32;
+        bitarray [i] |= (uint) (1 << j);
+    }
+    uint count = 0;
+    for (int i = 0; i < bitarray.Length; ++ i) {
+        uint bits = bitarray [i];
+        while (bits != 0) {
+            count += bits & 1;
+            bits > >= 1;
+        }
+    }
+    return (int) count;
+}
+----------------------------------------
+
+public static int DistinctCount (this IEnumerable < int > values) {
+    int max = values.Max ();
+    int last = int.MinValue;
+    int result = 0;
+    do
+        {
+            int current = int.MaxValue;
+            foreach (int value in values) {
+                if (value < current && value > last) {
+                    current = value;
+                }
+            }
+            result ++;
+            last = current;
+        } while (last != max);
+    return result;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+7967644_13619891_1_25
+7967644_7967681_1_20
+Title: is it ok to have a try/catch in a finally? 
+----------------------------------------
+
+public static void Main (string [] args) {
+    try {
+        try {
+            throw new Exception ("first exception");
+        }
+        finally {
+            {
+                throw new Exception ("second exception");
+            } {
+            }}
+    }
+    catch (Exception e) {
+        Console.WriteLine (e);
+    }
+}
+----------------------------------------
+
+static void Main (string [] args) {
+    try {
+        try {
+            throw new ApplicationException ("A");
+        }
+        finally {
+            throw new ApplicationException ("B");
+        }
+    }
+    catch (Exception e) {
+        Console.WriteLine (e.Message);
+    }
+    Console.Read ();
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+7974205_7998564_22_41
+7974205_9026385_5_25
+Title: Validating model properties WCF Web APi 
+----------------------------------------
+
+protected override object [] OnHandle (object [] input) {
+    var model = input [0];
+    var validationResults = new List < ValidationResult > ();
+    var context = new ValidationContext (model, null, null);
+    Validator.TryValidateObject (model, context, validationResults, true);
+    if (validationResults.Count == 0) {
+        return input;
+    } else {
+        var response = new HttpResponseMessage () {Content = new StringContent ("Model Error"), StatusCode = HttpStatusCode.BadRequest};
+        throw new HttpResponseException (response);
+    }
+}
+----------------------------------------
+
+protected override HttpRequestMessage OnHandle (TResource model, HttpRequestMessage requestMessage) {
+    var results = new List < ValidationResult > ();
+    var context = new ValidationContext (model, null, null);
+    Validator.TryValidateObject (model, context, results, true);
+    if (results.Count == 0) {
+        return requestMessage;
+    }
+    var errorMessages = results.Select (x = > x.ErrorMessage).ToArray ();
+    var mediaType = requestMessage.Headers.Accept.FirstOrDefault ();
+    var response = new RestValidationFailure (errorMessages);
+    if (mediaType != null) {
+        response.Content = new ObjectContent (typeof (string []), errorMessages, mediaType);
+    }
+    throw new HttpResponseException (response);
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+798655_18434493_6_18
+798655_28674571_1_17
+Title: Embedding an external executable inside a C# program 
+----------------------------------------
+
+public static void extractResource (String embeddedFileName, String destinationPath) {
+    Assembly currentAssembly = Assembly.GetExecutingAssembly ();
+    string [] arrResources = currentAssembly.GetManifestResourceNames ();
+    foreach (string resourceName in arrResources)
+        if (resourceName.ToUpper ().EndsWith (embeddedFileName.ToUpper ())) {
+            Stream resourceToSave = currentAssembly.GetManifestResourceStream (resourceName);
+            var output = File.OpenWrite (destinationPath);
+            resourceToSave.CopyTo (output);
+            resourceToSave.Close ();
+        }
+
+}
+----------------------------------------
+
+public static void extractResource (String embeddedFileName, String destinationPath) {
+    var currentAssembly = Assembly.GetExecutingAssembly ();
+    var arrResources = currentAssembly.GetManifestResourceNames ();
+    foreach (var resourceName in arrResources) {
+        if (resourceName.ToUpper ().EndsWith (embeddedFileName.ToUpper ())) {
+            using (var resourceToSave = currentAssembly.GetManifestResourceStream (resourceName))
+            {
+                using (var output = File.OpenWrite (destinationPath))
+                resourceToSave.CopyTo (output);
+                resourceToSave.Close ();
+            }}
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+8011481_22780673_12_30
+8011481_8014994_24_62
+Title: How to sort a Column in DataGridView that is bound to a List in WinForm? 
+----------------------------------------
+
+public int Compare (student student1, student student2) {
+    if (_sortOrder != SortOrder.Ascending) {
+        var tmp = student1;
+        student1 = student2;
+        student2 = tmp;
+    }
+    switch (_memberName) {
+        case "Name" :
+            return student1.Name.CompareTo (student2.Name);
+        case "Sex" :
+            return student1.Sex.CompareTo (student2.Sex);
+        default :
+            return student1.Name.CompareTo (student2.Name);
+    }
+}
+----------------------------------------
+
+public int Compare (Student Student1, Student Student2) {
+    int returnValue = 1;
+    switch (memberName) {
+        case "Name" :
+            if (sortOrder == SortOrder.Ascending) {
+                returnValue = Student1.Name.CompareTo (Student2.Name);
+            } else {
+                returnValue = Student2.Name.CompareTo (Student1.Name);
+            }
+            break;
+        case "Sex" :
+            if (sortOrder == SortOrder.Ascending) {
+                returnValue = Student1.Sex.CompareTo (Student2.Sex);
+            } else {
+                returnValue = Student2.Sex.CompareTo (Student1.Sex);
+            }
+            break;
+        default :
+            if (sortOrder == SortOrder.Ascending) {
+                returnValue = Student1.Name.CompareTo (Student2.Name);
+            } else {
+                returnValue = Student2.Name.CompareTo (Student1.StudentId);
+            }
+            break;
+    }
+    return returnValue;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+8016477_8016620_1_26
+8016477_8016620_27_43
+Title: How can I get the FileVersion from an Assembly that has been loaded from bytes? 
+----------------------------------------
+
+public bool GetVersion (string fileName) {
+    Assembly asm = null;
+    try {
+        asm = Assembly.LoadFrom (fileName);
+    }
+    catch (Exception err) {
+        this._errMsg = err.Message;
+        return false;
+    }
+    if (asm != null) {
+        this._info = new AssemblyInformation ();
+        this._info.Name = asm.GetName ().Name;
+        this._info.Version = asm.GetName ().Version.ToString ();
+        this._info.FullName = asm.GetName ().ToString ();
+    } else {
+        this._errMsg = "Invalid assembly";
+        return false;
+    }
+    return GetReferenceAssembly (asm);
+}
+----------------------------------------
+
+public bool GetVersion (Assembly asm) {
+    if (asm != null) {
+        this._info = new AssemblyInformation ();
+        this._info.Name = asm.GetName ().Name;
+        this._info.Version = asm.GetName ().Version.ToString ();
+        this._info.FullName = asm.GetName ().ToString ();
+    } else {
+        this._errMsg = "Invalid assembly";
+        return false;
+    }
+    return GetReferenceAssembly (asm);
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+8018901_8018948_1_18
+8018901_8018974_1_18
+Title: How to insist that a textbox has a value 
+----------------------------------------
+
+public double getUnitStake (Form frontpage) {
+    double doubleresult = 0;
+    foreach (Control c in frontpage.Controls) {
+        if (c.Name == "tbUnitStake") {
+            double.TryParse ((c as TextBox).Text, out doubleresult);
+        }
+    }
+    return doubleresult;
+}
+----------------------------------------
+
+public double getUnitStake (Form frontpage) {
+    double doubleresult = 0;
+    bool unitStake;
+    foreach (Control c in frontpage.Controls) {
+        if (c.Name == "tbUnitStake") {
+            unitStake = double.TryParse ((c as TextBox).Text, out doubleresult);
+        }
+    }
+    return doubleresult;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+803853_803866_1_15
+803853_803868_1_11
+Title: Generic class factory problem 
+----------------------------------------
+
+public IControl < T > GetControl < T > () {
+    if (typeof (T) == typeof (Boolean)) {
+        return new BoolControl ();
+    } else if (typeof (T) == typeof (String)) {
+        return new StringControl ();
+    } else {
+        return null;
+    }
+}
+----------------------------------------
+
+public IControl < T > GetControl < T > () {
+    switch (typeof (T).Name) {
+        case "Bool" :
+            return (IControl < T >) new BoolControl ();
+        case "String" :
+            return (IControl < T >) new StringControl ();
+    }
+    return null;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+8045972_8045986_1_16
+8045972_8046226_1_19
+Title: Stopping a line of execution after it has been excuted in a do-while statement 
+----------------------------------------
+
+static void Main (string [] args) {
+    string choice = "";
+    displayMenu ();
+    do
+        {
+            choice = getChoice ();
+        } while (choice != "10");
+    {
+        Console.ReadLine ();
+    }}
+----------------------------------------
+
+static void Main (string [] args) {
+    bool isInt;
+    int intNumber;
+    int choice;
+    string stringInput = Console.ReadLine ();
+    isInt = int.TryParse (stringInput, out intNumber);
+    if (! isInt) {
+        Console.WriteLine ("Input is not a number");
+    } else {
+        choice = intNumber;
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+806944_2681056_1_12
+806944_807330_1_27
+Title: Escape Quote in C# for javascript consumption 
+----------------------------------------
+
+public static String dt2JSON (DataTable dt) {
+    var rows = new List < Object > ();
+    foreach (DataRow row in dt.Rows) {
+        var rowData = new Dictionary < string, object > ();
+        foreach (DataColumn col in dt.Columns)
+            rowData [col.ColumnName] = row [col];
+
+        rows.Add (rowData);
+    }
+    var js = new JavaScriptSerializer ();
+    return js.Serialize (new {rows = rows});
+}
+----------------------------------------
+
+public static String dt2JSON (DataTable dt) {
+    StringBuilder s = new StringBuilder ("{\"rows\":[");
+    bool firstLine = true;
+    foreach (DataRow dr in dt.Rows) {
+        if (firstLine) {
+            firstLine = false;
+        } else {
+            s.Append (',');
+        }
+        s.Append ('{');
+        for (int i = 0; i < dr.Table.Columns.Count; i ++) {
+            if (i > 0) {
+                s.Append (',');
+            }
+            string name = dt.Columns [i].ColumnName;
+            string value = dr [i].ToString ();
+            s.Append ('"').Append (name.Replace ("\\", "\\\\").Replace ("\"", "\\\"")).Append ("\":\"").Append (value.Replace ("\\", "\\\\").Replace ("\"", "\\\"")).Append ('"');
+        }
+        s.Append ("}");
+    }
+    s.Append ("]}");
+    return s.ToString ();
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+8079572_8079625_1_68
+8079572_8079750_7_63
+Title: C# if then else issues 
+----------------------------------------
+
+protected void btnSubmit_Click (object sender, EventArgs e) {
+    DateTime dt1;
+    DateTime dt2;
+    lblError.Text = "";
+    if (txtFirstName.Text == "") {
+        txtFirstName.BackColor = System.Drawing.Color.Yellow;
+        lblError.Text += "Please enter first name";
+    }
+    if (txtLastName.Text == "") {
+        txtLastName.BackColor = System.Drawing.Color.Yellow;
+        lblError.Text += "Please enter last name!";
+    }
+    if (txtPayRate.Text == "") {
+        txtPayRate.BackColor = System.Drawing.Color.Yellow;
+        lblError.Text += "Please enter pay rate!";
+    }
+    if (txtStartDate.Text == "") {
+        txtStartDate.BackColor = System.Drawing.Color.Yellow;
+        lblError.Text += "Please enter start date!";
+    }
+    if (txtEndDate.Text == "") {
+        txtEndDate.BackColor = System.Drawing.Color.Yellow;
+        lblError.Text += "Please enter end date!";
+    }
+    try {
+        dt1 = DateTime.Parse (txtStartDate.Text);
+        dt2 = DateTime.Parse (txtEndDate.Text);
+        if (DateTime.Compare (dt1, dt2) > 0) {
+            txtStartDate.BackColor = System.Drawing.Color.Yellow;
+            lblError.Text = "Start Date must not be greater than End Date.";
+        }
+    }
+    catch (Exception) {
+        lblError.Text = "Please enter valid data!";
+    }
+    if (string.IsNullOrEmpty (lblError.Text)) {
+        Session ["txtFirstName"] = txtFirstName.Text;
+        Session ["txtLastName"] = txtLastName.Text;
+        Session ["txtPayRate"] = txtPayRate.Text;
+        Session ["txtStartDate"] = txtStartDate.Text;
+        Session ["txtEndDate"] = txtEndDate.Text;
+        Server.Transfer ("frmPersonalVerified.aspx");
+    } else {
+    }
+}
+----------------------------------------
+
+protected void btnSubmit_Click (object sender, EventArgs e) {
+    try {
+        DateTime dt1;
+        DateTime dt2;
+        if (txtFirstName.Text == "") {
+            txtFirstName.BackColor = System.Drawing.Color.Yellow;
+            lblError.Text = "Please enter first name";
+        }
+        if (txtLastName.Text == "") {
+            txtLastName.BackColor = System.Drawing.Color.Yellow;
+            lblError.Text = "Please enter last name!";
+        }
+        if (txtPayRate.Text == "") {
+            txtPayRate.BackColor = System.Drawing.Color.Yellow;
+            lblError.Text = "Please enter pay rate!";
+        }
+        if (txtStartDate.Text == "") {
+            txtStartDate.BackColor = System.Drawing.Color.Yellow;
+            lblError.Text = "Please enter start date!";
+        }
+        if (txtEndDate.Text == "") {
+            txtEndDate.BackColor = System.Drawing.Color.Yellow;
+            lblError.Text = "Please enter end date!";
+        }
+        dt1 = DateTime.Parse (txtStartDate.Text);
+        dt2 = DateTime.Parse (txtEndDate.Text);
+        if (DateTime.Compare (dt1, dt2) > 0) {
+            txtStartDate.BackColor = System.Drawing.Color.Yellow;
+            lblError.Text = "Start Date must not be greater than End Date.";
+        } else {
+            Session ["txtFirstName"] = txtFirstName.Text;
+            Session ["txtLastName"] = txtLastName.Text;
+            Session ["txtPayRate"] = txtPayRate.Text;
+            Session ["txtStartDate"] = txtStartDate.Text;
+            Session ["txtEndDate"] = txtEndDate.Text;
+            Server.Transfer ("frmPersonalVerified.aspx");
+        }
+    }
+    catch (Exception ex) {
+        lblError.Text = "Please enter valid data!";
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+807998_808045_6_21
+807998_808400_1_13
+Title: How do I create a C# app that decides itself whether to show as a console or windowed app? 
+----------------------------------------
+
+[STAThread] static void Main (string [] args) {
+    if (args.Length > 0) {
+        if (! AttachConsole (- 1)) {
+            AllocConsole ();
+        }
+        ConsoleMain (args);
+    } else {
+        Application.EnableVisualStyles ();
+        Application.SetCompatibleTextRenderingDefault (false);
+        Application.Run (new Form1 ());
+    }
+}
+----------------------------------------
+
+static void Main (string [] args) {
+    if (args.Length == 0) {
+        Application.EnableVisualStyles ();
+        Application.SetCompatibleTextRenderingDefault (false);
+        Application.Run (new Form1 ());
+    } else {
+        Console.WriteLine ("Console!\r\n");
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+8088345_8088395_7_40
+8088345_8920045_1_40
+Title: Why is StringBuilder slower than string concatenation? 
+----------------------------------------
+
+static void Main (string [] args) {
+    int max = 1000000;
+    for (int times = 0; times < 5; times ++) {
+        {
+            Console.WriteLine ("\ntime: {0}", (times + 1).ToString ());
+            Stopwatch sw = Stopwatch.StartNew ();
+            for (int i = 0; i < max; i ++) {
+                string msg = "Your total is ";
+                msg += "$500 ";
+                msg += DateTime.Now;
+            }
+            sw.Stop ();
+            Console.WriteLine ("String +\t: {0}ms", ((int) sw.ElapsedMilliseconds).ToString ().PadLeft (6));
+        } {
+            Stopwatch sw = Stopwatch.StartNew ();
+            StringBuilder msg = new StringBuilder ();
+            for (int j = 0; j < max; j ++) {
+                msg.Clear ();
+                msg.Append ("Your total is ");
+                msg.Append ("$500 ");
+                msg.Append (DateTime.Now);
+            }
+            sw.Stop ();
+            Console.WriteLine ("StringBuilder\t: {0}ms", ((int) sw.ElapsedMilliseconds).ToString ().PadLeft (6));
+        }}
+    Console.Read ();
+}
+----------------------------------------
+
+static void Main (string [] args) {
+    const int sLen = 30, Loops = 10000;
+    DateTime sTime, eTime;
+    int i;
+    string sSource = new String ('X', sLen);
+    string sDest = "";
+    for (int times = 0; times < 5; times ++) {
+        sTime = DateTime.Now;
+        System.Text.StringBuilder sb = new System.Text.StringBuilder ((int) (sLen * Loops * 1.1));
+        Console.WriteLine ("Result # " + (times + 1).ToString ());
+        for (i = 0; i < Loops; i ++) {
+            sb.Append (sSource);
+        }
+        sDest = sb.ToString ();
+        eTime = DateTime.Now;
+        Console.WriteLine ("String Builder took :" + (eTime - sTime).TotalSeconds + " seconds.");
+        sTime = DateTime.Now;
+        for (i = 0; i < Loops; i ++) {
+            sDest += sSource;
+        }
+        eTime = DateTime.Now;
+        Console.WriteLine ("Concatenation took : " + (eTime - sTime).TotalSeconds + " seconds.");
+        Console.WriteLine ("\n");
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+8091457_8091521_15_27
+8091457_8091919_12_25
+Title: Objects in arrays are not getting garbage collected 
+----------------------------------------
+
+static void Main () {
+    TestDestructor testDestructor = new TestDestructor ();
+    var array = new object [] {testDestructor};
+    array = null;
+    testDestructor = null;
+    GC.Collect ();
+    GC.WaitForPendingFinalizers ();
+    Console.WriteLine (TestDestructor.DestructorCalled);
+}
+----------------------------------------
+
+static void Main () {
+    TestDestructor testDestructor = new TestDestructor ();
+    var array = new object [] {testDestructor};
+    Console.WriteLine (array [0].ToString ());
+    array = null;
+    testDestructor = null;
+    GC.Collect ();
+    GC.WaitForPendingFinalizers ();
+    Console.WriteLine (TestDestructor.DestructorCalled);
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+809945_809958_1_12
+809945_811122_1_11
+Title: Refactoring with Lambda's and Delegates 
+----------------------------------------
+
+private string ReadData (TcpClient s, Func < string, bool > predicate) {
+    var sb = new StringBuilder ();
+    do
+        {
+            var numBytesRead = s.GetStream ().Read (byteBuff, 0, byteBuff.Length);
+            sb.AppendFormat ("{0}", Encoding.ASCII.GetString (byteBuff, 0, numBytesRead));
+        } while (s.GetStream ().DataAvailable && ! predicate (sb));
+    return sb.ToString ();
+}
+----------------------------------------
+
+private string ReadData (TcpClient s, string [] terminators) {
+    var sb = new StringBuilder ();
+    do
+        {
+            var numBytesRead = s.GetStream ().Read (byteBuff, 0, byteBuff.Length);
+            sb.AppendFormat ("{0}", Encoding.ASCII.GetString (byteBuff, 0, numBytesRead));
+        } while (s.GetStream ().DataAvailable && ! sb.ToString ().Contains (terminators));
+    return sb.ToString ();
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+8101875_8102174_1_32
+8101875_8102288_2_33
+Title: Optimize C# Code Fragment 
+----------------------------------------
+
+[SecuritySafeCritical] public static unsafe long ToInt64 (byte [] value, int startIndex) {
+    if (value == null) {
+        ThrowHelper.ThrowArgumentNullException (ExceptionArgument.value);
+    }
+    if (((ulong) startIndex) >= value.Length) {
+        ThrowHelper.ThrowArgumentOutOfRangeException (ExceptionArgument.startIndex, ExceptionResource.ArgumentOutOfRange_Index);
+    }
+    if (startIndex > (value.Length - 8)) {
+        ThrowHelper.ThrowArgumentException (ExceptionResource.Arg_ArrayPlusOffTooSmall);
+    }
+    fixed (byte * numRef = & (value [startIndex])) {
+        if ((startIndex % 8) == 0) {
+            return * (((long *) numRef));
+        }
+        if (IsLittleEndian) {
+            int num = ((numRef [0] | (numRef [1] << 8)) | (numRef [2] << 0x10)) | (numRef [3] << 0x18);
+            int num2 = ((numRef [4] | (numRef [5] << 8)) | (numRef [6] << 0x10)) | (numRef [7] << 0x18);
+            return (((long) ((ulong) num)) | (num2 << 0x20));
+        }
+        int num3 = (((numRef [0] << 0x18) | (numRef [1] << 0x10)) | (numRef [2] << 8)) | numRef [3];
+        int num4 = (((numRef [4] << 0x18) | (numRef [5] << 0x10)) | (numRef [6] << 8)) | numRef [7];
+        return (((long) ((ulong) num4)) | (num3 << 0x20));
+    }}
+----------------------------------------
+
+[System.Security.SecuritySafeCritical] public static unsafe long ToInt64 (byte [] value, int startIndex) {
+    if (value == null) {
+        ThrowHelper.ThrowArgumentNullException (ExceptionArgument.value);
+    }
+    if ((uint) startIndex >= value.Length) {
+        ThrowHelper.ThrowArgumentOutOfRangeException (ExceptionArgument.startIndex, ExceptionResource.ArgumentOutOfRange_Index);
+    }
+    if (startIndex > value.Length - 8) {
+        ThrowHelper.ThrowArgumentException (ExceptionResource.Arg_ArrayPlusOffTooSmall);
+    }
+    fixed (byte * pbyte = & value [startIndex]) {
+        if (startIndex % 8 == 0) {
+            return * ((long *) pbyte);
+        } else {
+            if (IsLittleEndian) {
+                int i1 = (* pbyte) | (* (pbyte + 1) << 8) | (* (pbyte + 2) << 16) | (* (pbyte + 3) << 24);
+                int i2 = (* (pbyte + 4)) | (* (pbyte + 5) << 8) | (* (pbyte + 6) << 16) | (* (pbyte + 7) << 24);
+                return (uint) i1 | ((long) i2 << 32);
+            } else {
+                int i1 = (* pbyte << 24) | (* (pbyte + 1) << 16) | (* (pbyte + 2) << 8) | (* (pbyte + 3));
+                int i2 = (* (pbyte + 4) << 24) | (* (pbyte + 5) << 16) | (* (pbyte + 6) << 8) | (* (pbyte + 7));
+                return (uint) i2 | ((long) i1 << 32);
+            }
+        }
+    }}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+8113546_39120248_6_20
+8113546_45799579_9_26
+Title: how to determine whether an IP address in private? 
+----------------------------------------
+
+public static bool IsInternal (this IPAddress toTest) {
+    byte [] bytes = toTest.GetAddressBytes ();
+    switch (bytes [0]) {
+        case 10 :
+            return true;
+        case 172 :
+            return bytes [1] < 32 && bytes [1] >= 16;
+        case 192 :
+            return bytes [1] == 168;
+        default :
+            return false;
+    }
+}
+----------------------------------------
+
+public bool IsInternal (string testIp) {
+    if (testIp == "::1")
+        return true;
+
+    byte [] ip = IPAddress.Parse (testIp).GetAddressBytes ();
+    switch (ip [0]) {
+        case 10 : case 127 :
+            return true;
+        case 172 :
+            return ip [1] >= 16 && ip [1] < 32;
+        case 192 :
+            return ip [1] == 168;
+        default :
+            return false;
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+813560_1188777_2_13
+813560_813803_14_31
+Title: "Using C#  LINQ how to pick items between markers again and again?" 
+----------------------------------------
+
+public static IEnumerable < IEnumerable < T > > SplitBy < T > (this IEnumerable < T > src, T separator) {
+    var group = new List < T > ();
+    foreach (var elem in src) {
+        if (Equals (elem, separator)) {
+            yield return group;
+            group = new List < T > ();
+        } else {
+            group.Add (elem);
+        }
+    }
+    yield return group;
+}
+----------------------------------------
+
+private static IEnumerable < IEnumerable < TSource > > SplitImpl < TSource > (this IEnumerable < TSource > source, TSource splitter) {
+    var list = new List < TSource > ();
+    foreach (TSource item in source) {
+        if (! splitter.Equals (item)) {
+            list.Add (item);
+        } else if (list.Count > 0) {
+            yield return list.ToList ();
+            list.Clear ();
+        }
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+813560_1188777_2_13
+813560_813803_3_12
+Title: "Using C#  LINQ how to pick items between markers again and again?" 
+----------------------------------------
+
+public static IEnumerable < IEnumerable < T > > SplitBy < T > (this IEnumerable < T > src, T separator) {
+    var group = new List < T > ();
+    foreach (var elem in src) {
+        if (Equals (elem, separator)) {
+            yield return group;
+            group = new List < T > ();
+        } else {
+            group.Add (elem);
+        }
+    }
+    yield return group;
+}
+----------------------------------------
+
+public static IEnumerable < IEnumerable < TSource > > Split < TSource > (this IEnumerable < TSource > source, TSource splitter) {
+    if (source == null)
+        throw new ArgumentNullException ("source");
+
+    if (splitter == null)
+        throw new ArgumentNullException ("splitter");
+
+    return source.SplitImpl (splitter);
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+813560_813803_14_31
+813560_813803_3_12
+Title: "Using C#  LINQ how to pick items between markers again and again?" 
+----------------------------------------
+
+private static IEnumerable < IEnumerable < TSource > > SplitImpl < TSource > (this IEnumerable < TSource > source, TSource splitter) {
+    var list = new List < TSource > ();
+    foreach (TSource item in source) {
+        if (! splitter.Equals (item)) {
+            list.Add (item);
+        } else if (list.Count > 0) {
+            yield return list.ToList ();
+            list.Clear ();
+        }
+    }
+}
+----------------------------------------
+
+public static IEnumerable < IEnumerable < TSource > > Split < TSource > (this IEnumerable < TSource > source, TSource splitter) {
+    if (source == null)
+        throw new ArgumentNullException ("source");
+
+    if (splitter == null)
+        throw new ArgumentNullException ("splitter");
+
+    return source.SplitImpl (splitter);
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+8137391_8137455_1_15
+8137391_8137526_1_12
+Title: Percentile calculation 
+----------------------------------------
+
+public double Percentile (double [] sequence, double excelPercentile) {
+    Array.Sort (sequence);
+    int N = sequence.Length;
+    double n = (N - 1) * excelPercentile + 1;
+    if (n == 1d)
+        return sequence [0];
+    else if (n == N)
+        return sequence [N - 1];
+    else {
+        int k = (int) n;
+        double d = n - k;
+        return sequence [k - 1] + d * (sequence [k] - sequence [k - 1]);
+    }
+}
+----------------------------------------
+
+public static double Percentile (IEnumerable < double > seq, double percentile) {
+    var elements = seq.ToArray ();
+    Array.Sort (elements);
+    double realIndex = percentile * (elements.Length - 1);
+    int index = (int) realIndex;
+    double frac = realIndex - index;
+    if (index + 1 < elements.Length)
+        return elements [index] * (1 - frac) + elements [index + 1] * frac;
+    else
+        return elements [index];
+
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+8171865_26712988_18_39
+8171865_26712988_1_15
+Title: Performance Counter - System.InvalidOperationException: Category does not exist 
+----------------------------------------
+
+[Test, Ignore ("Run manually AFTER restarting IIS with 'iisreset' at cmd prompt.")] public void CreatingPerformanceCounterAfterWarmingUpServerDoesNotThrowException () {
+    Console.WriteLine ("Given a webserver that has been Warmed up");
+    using (var client = new WebClient ())
+    {
+        client.DownloadString ("http://localhost:8082/small1.json");
+    } Console.WriteLine ("When I create a performance counter and read next value");
+    using (var pc2 = new PerformanceCounter ())
+    {
+        pc2.CategoryName = @"W3SVC_W3WP";
+        pc2.InstanceName = @"_Total";
+        pc2.CounterName = @"Requests / Sec";
+        float ? result = null;
+        Action action2 = () = > result = pc2.NextValue ();
+        Console.WriteLine ("Then InvalidOperationException will not be thrown");
+        action2.ShouldNotThrow ();
+        Console.WriteLine ("And the counter value will be returned");
+        result.HasValue.Should ().BeTrue ();
+    }}
+----------------------------------------
+
+[Test, Ignore ("Run manually AFTER restarting IIS with 'iisreset' at cmd prompt.")] public void CreatingPerformanceCounterBeforeWarmingUpServerThrowsException () {
+    Console.WriteLine ("Given a webserver that is cold");
+    Console.WriteLine ("When I create a performance counter and read next value");
+    using (var pc1 = new PerformanceCounter ())
+    {
+        pc1.CategoryName = @"W3SVC_W3WP";
+        pc1.InstanceName = @"_Total";
+        pc1.CounterName = @"Requests / Sec";
+        Action action1 = () = > pc1.NextValue ();
+        Console.WriteLine ("Then InvalidOperationException will be thrown");
+        action1.ShouldThrow < InvalidOperationException > ();
+    }}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+8182598_8182731_1_24
+8182598_8183134_9_19
+Title: Correct IDisposable implementation for this code 
+----------------------------------------
+
+public static byte [] Compress (byte [] CompressMe) {
+    MemoryStream ms = null;
+    GZipStream gz = null;
+    try {
+        ms = new MemoryStream ();
+        gz = new GZipStream (ms, CompressionMode.Compress, true);
+        gz.Write (CompressMe, 0, CompressMe.Length);
+        gz.Flush ();
+        return ms.ToArray ();
+    }
+    finally {
+        if (gz != null) {
+            gz.Dispose ();
+        } else if (ms != null) {
+            ms.Dispose ();
+        }
+    }
+}
+----------------------------------------
+
+public static byte [] Compress (byte [] CompressMe, MemoryStream ms) {
+    using (GZipStream gz = new GZipStream (ms, CompressionMode.Compress, true))
+    {
+        gz.Write (CompressMe, 0, CompressMe.Length);
+        ms.Position = 0;
+        byte [] Result = new byte [ms.Length];
+        ms.Read (Result, 0, (int) ms.Length);
+        return Result;
+    }}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+8217063_10797709_1_16
+8217063_33101760_1_15
+Title: Scrolling DataGridView with Mouse 
+----------------------------------------
+
+void DataGridView1_MouseWheel (object sender, MouseEventArgs e) {
+    int currentIndex = this.DataGridView1.FirstDisplayedScrollingRowIndex;
+    int scrollLines = SystemInformation.MouseWheelScrollLines;
+    if (e.Delta > 0) {
+        this.DataGridView1.FirstDisplayedScrollingRowIndex = Math.Max (0, currentIndex - scrollLines);
+    } else if (e.Delta < 0) {
+        this.DataGridView1.FirstDisplayedScrollingRowIndex = currentIndex + scrollLines;
+    }
+}
+----------------------------------------
+
+void DataGridView1_MouseWheel (object sender, MouseEventArgs e) {
+    int currentIndex = this.DataGridView1.FirstDisplayedScrollingRowIndex;
+    int scrollLines = SystemInformation.MouseWheelScrollLines;
+    if (e.Delta > 0) {
+        this.DataGridView1.FirstDisplayedScrollingRowIndex = Math.Max (0, currentIndex - scrollLines);
+    } else if (e.Delta < 0) {
+        if (this.DataGridView1.Rows.Count > (currentIndex + scrollLines))
+            this.DataGridView1.FirstDisplayedScrollingRowIndex = currentIndex + scrollLines;
+
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+8225403_8225446_1_13
+8225403_8225617_3_14
+Title: C# string.split issue with my code 
+----------------------------------------
+
+static void Main (string [] args) {
+    string input = Console.ReadLine ();
+    string [] words = input.Split (' ');
+    for (int i = 0; i < words.Length; i ++) {
+        words [i] = Console.ReadLine ();
+        Console.WriteLine (words [i]);
+        Console.WriteLine ("test");
+    }
+}
+----------------------------------------
+
+static void Main (string [] args) {
+    string input = Console.ReadLine ();
+    string [] words = new string [10];
+    words = input.Split (' ');
+    for (int i = 0; i < words.Length; i ++) {
+        Console.WriteLine (words [i]);
+        Console.WriteLine ("test");
+    }
+    Console.ReadKey ();
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+8250609_8251184_1_19
+8250609_8258046_6_50
+Title: Building a hierarchical HTML list based on text with dots 
+----------------------------------------
+
+static void Main (string [] args) {
+    var list = new List < String > () {"child.child2.child3", "child7", "child10.child14.child15", "child10.child14.child16"};
+    var matrix = new List < List < String > > ();
+    foreach (var line in list) {
+        matrix.Add (line.Split ('.').ToList ());
+    }
+    StringBuilder html = new StringBuilder ();
+    WriteLevel (html, matrix, 0);
+    Console.WriteLine (html.ToString ());
+}
+----------------------------------------
+
+static void Main (string [] args) {
+    var doc = new XmlDocument ();
+    doc.LoadXml (@"
+            <!DOCTYPE root [
+              <!ELEMENT root (ul*) > 
+              <!ELEMENT ul (li+) > 
+              <!ELEMENT li ANY >
+              <!ATTLIST root id ID #REQUIRED>
+              <!ATTLIST li   id ID #REQUIRED>]>
+            <root id='root'></root>");
+    var relation = new List < String > () {"child.child2.child3", "child7", "child10.child14.child15", "child10.child14.child16"};
+    foreach (var path in relation) {
+        MakeTree (doc, path);
+    }
+    DeleteId (doc.DocumentElement);
+    string result = doc.DocumentElement.InnerXml;
+    Console.WriteLine (result);
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+827884_827906_1_22
+827884_837222_6_19
+Title: How do I structure a C# console application to efficiently use IDisposable database resources? 
+----------------------------------------
+
+static void Main (string [] args) {
+    Program shell = new Program ();
+    string sourceConnectionString = shell.getConnectionString (args);
+    string destinationConnectionString = shell.getConnectionString (args);
+    shell.setUpConnections (sourceConnectionString, destinationConnectionString);
+    try {
+        shell.doDatabaseWork ();
+    }
+    finally {
+        if (sourceConnection != null)
+            sourceConnection.Dispose ();
+
+        if (destinationConnection != null)
+            destinationConnection.Dispose ();
+
+    }
+}
+----------------------------------------
+
+static void Main (string [] args) {
+    Program shell = new Program ();
+    string sourceConnectionString = shell.getConnectionString (args);
+    string destinationConnectionString = shell.getConnectionString (args);
+    using (sourceConnection = new SQLiteConnection (sourceConnectionString))
+    using (destinationConnection = new SQLiteConnection (destinationConnectionString))
+    {
+        shell.doDatabaseWork ();
+    }}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+8292373_8292395_1_14
+8292373_8292421_1_13
+Title: Output a sequence of ten numbers to console 
+----------------------------------------
+
+static void Main (string [] args) {
+    int val;
+    Console.WriteLine ("Please enter a number!");
+    val = Int32.Parse (Console.ReadLine ());
+    for (int i = val; i <= (val + 10); i ++)
+        Console.WriteLine (i);
+
+    Console.ReadLine ();
+}
+----------------------------------------
+
+static void Main (string [] args) {
+    int val;
+    Console.WriteLine ("Please enter a number!");
+    val = Int32.Parse (Console.ReadLine ());
+    for (int i = val; i <= (val + 10); i ++)
+        Console.WriteLine (i);
+
+    Console.ReadLine ();
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+8292373_8292395_1_14
+8292373_8292482_1_22
+Title: Output a sequence of ten numbers to console 
+----------------------------------------
+
+static void Main (string [] args) {
+    int val;
+    Console.WriteLine ("Please enter a number!");
+    val = Int32.Parse (Console.ReadLine ());
+    for (int i = val; i <= (val + 10); i ++)
+        Console.WriteLine (i);
+
+    Console.ReadLine ();
+}
+----------------------------------------
+
+static void Main (string [] args) {
+    int val, isDecrement;
+    Console.WriteLine ("Please enter a number!");
+    val = Int32.Parse (Console.ReadLine ());
+    Console.WriteLine ("Please enter 1 to go Descending order!");
+    isDecrement = Int32.Parse (Console.ReadLine ());
+    if (isDecrement == 1) {
+        for (int i = val; i >= (val - 10); i --)
+            Console.WriteLine (i);
+
+    } else {
+        for (int i = val; i <= (val + 10); i ++)
+            Console.WriteLine (i);
+
+    }
+    Console.ReadLine ();
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+8292373_8292395_1_14
+8292373_8293929_5_17
+Title: Output a sequence of ten numbers to console 
+----------------------------------------
+
+static void Main (string [] args) {
+    int val;
+    Console.WriteLine ("Please enter a number!");
+    val = Int32.Parse (Console.ReadLine ());
+    for (int i = val; i <= (val + 10); i ++)
+        Console.WriteLine (i);
+
+    Console.ReadLine ();
+}
+----------------------------------------
+
+static void Main () {
+    const char down = '-';
+    Console.Write ("Please enter a number! n[{0}]:", down);
+    string input = Console.ReadLine ();
+    char ch = input.Last ();
+    int diff = (ch == down) ? - 1 : 1;
+    int val = Int32.Parse (input.TrimEnd (down));
+    for (var i = 1; i <= 10; i ++, val += diff)
+        Console.WriteLine (val);
+
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+8292373_8292421_1_13
+8292373_8292482_1_22
+Title: Output a sequence of ten numbers to console 
+----------------------------------------
+
+static void Main (string [] args) {
+    int val;
+    Console.WriteLine ("Please enter a number!");
+    val = Int32.Parse (Console.ReadLine ());
+    for (int i = val; i <= (val + 10); i ++)
+        Console.WriteLine (i);
+
+    Console.ReadLine ();
+}
+----------------------------------------
+
+static void Main (string [] args) {
+    int val, isDecrement;
+    Console.WriteLine ("Please enter a number!");
+    val = Int32.Parse (Console.ReadLine ());
+    Console.WriteLine ("Please enter 1 to go Descending order!");
+    isDecrement = Int32.Parse (Console.ReadLine ());
+    if (isDecrement == 1) {
+        for (int i = val; i >= (val - 10); i --)
+            Console.WriteLine (i);
+
+    } else {
+        for (int i = val; i <= (val + 10); i ++)
+            Console.WriteLine (i);
+
+    }
+    Console.ReadLine ();
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+8292373_8292421_1_13
+8292373_8293929_5_17
+Title: Output a sequence of ten numbers to console 
+----------------------------------------
+
+static void Main (string [] args) {
+    int val;
+    Console.WriteLine ("Please enter a number!");
+    val = Int32.Parse (Console.ReadLine ());
+    for (int i = val; i <= (val + 10); i ++)
+        Console.WriteLine (i);
+
+    Console.ReadLine ();
+}
+----------------------------------------
+
+static void Main () {
+    const char down = '-';
+    Console.Write ("Please enter a number! n[{0}]:", down);
+    string input = Console.ReadLine ();
+    char ch = input.Last ();
+    int diff = (ch == down) ? - 1 : 1;
+    int val = Int32.Parse (input.TrimEnd (down));
+    for (var i = 1; i <= 10; i ++, val += diff)
+        Console.WriteLine (val);
+
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+8292373_8292482_1_22
+8292373_8293929_5_17
+Title: Output a sequence of ten numbers to console 
+----------------------------------------
+
+static void Main (string [] args) {
+    int val, isDecrement;
+    Console.WriteLine ("Please enter a number!");
+    val = Int32.Parse (Console.ReadLine ());
+    Console.WriteLine ("Please enter 1 to go Descending order!");
+    isDecrement = Int32.Parse (Console.ReadLine ());
+    if (isDecrement == 1) {
+        for (int i = val; i >= (val - 10); i --)
+            Console.WriteLine (i);
+
+    } else {
+        for (int i = val; i <= (val + 10); i ++)
+            Console.WriteLine (i);
+
+    }
+    Console.ReadLine ();
+}
+----------------------------------------
+
+static void Main () {
+    const char down = '-';
+    Console.Write ("Please enter a number! n[{0}]:", down);
+    string input = Console.ReadLine ();
+    char ch = input.Last ();
+    int diff = (ch == down) ? - 1 : 1;
+    int val = Int32.Parse (input.TrimEnd (down));
+    for (var i = 1; i <= 10; i ++, val += diff)
+        Console.WriteLine (val);
+
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+8390986_8391587_1_36
+8390986_8392210_11_76
+Title: How to Retain the latest record and delete the older one using C# Interop 
+----------------------------------------
+
+static void Main (string [] args) {
+    using (var db = new DataClasses1DataContext ())
+    {
+        var query = db.Table1s.GroupBy (x = > x.Name).Select (x = > new {ID = x.Max (t = > t.ID), Name = x.Max (t = > t.Name), Date = x.Max (t = > t.Date)});
+        foreach (var n in query) {
+            Console.WriteLine (n.ID + " " + n.Name + " " + n.Date);
+        }
+        Console.WriteLine ("");
+        var deleteQuery = db.Table1s.Where (x = > ! query.Select (t = > t.ID).Contains (x.ID));
+        db.Table1s.DeleteAllOnSubmit (deleteQuery);
+        db.SubmitChanges ();
+        var testDeletion = db.Table1s;
+        foreach (var n in testDeletion) {
+            Console.WriteLine (n.ID + " " + n.Name + " " + n.Date);
+        }
+    }}
+----------------------------------------
+
+static void Main (string [] args) {
+    Application app = new Application ();
+    try {
+        FileInfo fiSource = new FileInfo (args [0]);
+        FileInfo fiDest = new FileInfo (args [1]);
+        Workbook wb = app.Workbooks.Open (fiSource.FullName, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing);
+        Worksheet sheet = (Worksheet) wb.Sheets [1];
+        Dictionary < string, DateTime > hashNewest = new Dictionary < string, DateTime > ();
+        for (int iRow = 1; iRow < (double) sheet.Cells.Height; ++ iRow) {
+            object oID = sheet.get_Range ("A" + (iRow + 1), Type.Missing).get_Value (Type.Missing);
+            if (oID == null || oID.ToString ().Trim ().Length <= 0)
+                break;
+
+            object oName = sheet.get_Range ("B" + (iRow + 1), Type.Missing).get_Value (Type.Missing);
+            string strName = "" + oName;
+            object oDate = sheet.get_Range ("C" + (iRow + 1), Type.Missing).get_Value (Type.Missing);
+            DateTime dt = Convert.ToDateTime (oDate);
+            if (! hashNewest.ContainsKey (strName))
+                hashNewest.Add (strName, dt);
+            else if (hashNewest [strName].CompareTo (dt) < 0)
+                hashNewest [strName] = dt;
+
+        }
+        for (int iRow = 1; iRow < (double) sheet.Cells.Height; ++ iRow) {
+            object oID = sheet.get_Range ("A" + (iRow + 1), Type.Missing).get_Value (Type.Missing);
+            if (oID == null || oID.ToString ().Trim ().Length <= 0)
+                break;
+
+            object oName = sheet.get_Range ("B" + (iRow + 1), Type.Missing).get_Value (Type.Missing);
+            string strName = "" + oName;
+            object oDate = sheet.get_Range ("C" + (iRow + 1), Type.Missing).get_Value (Type.Missing);
+            DateTime dt = Convert.ToDateTime (oDate);
+            if (! hashNewest [strName].Equals (dt)) {
+                sheet.get_Range (string.Format ("A{0}:D{0}", iRow + 1), Type.Missing).Delete (XlDeleteShiftDirection.xlShiftUp);
+                -- iRow;
+            }
+        }
+        File.Delete (fiDest.FullName);
+        wb.SaveAs (fiDest.FullName, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing, XlSaveAsAccessMode.xlExclusive, Type.Missing, Type.Missing, Type.Missing, Type.Missing, Type.Missing);
+        wb.Close (false, Type.Missing, Type.Missing);
+    }
+    finally {
+        app.Workbooks.Close ();
+        System.Runtime.InteropServices.Marshal.ReleaseComObject (app);
+    }
+    Console.WriteLine ("Hit any key to continue");
+    Console.ReadKey ();
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+83945_16350507_70_95
+83945_2678156_7_24
+Title: Listview Multiple Selection 
+----------------------------------------
+
+protected override void WndProc (ref Message m) {
+    switch (m.Msg) {
+        case WM_LBUTTONDOWN :
+            if (this.SelectedItems.Count == 0 || ! this.MultiSelect) {
+                break;
+            }
+            if (this.MultiSelectionLimit > 0 && this.SelectedItems.Count > this.MultiSelectionLimit) {
+                this.ClearSelections ();
+            }
+            int x = (m.LParam.ToInt32 () & 0xffff);
+            int y = (m.LParam.ToInt32 () > > 16) & 0xffff;
+            ListViewHitTestInfo hitTest = this.HitTest (x, y);
+            if (hitTest != null && hitTest.Item != null) {
+                hitTest.Item.Selected = ! hitTest.Item.Selected;
+            }
+            this.Focus ();
+            return;
+        case WM_RBUTTONDOWN :
+            if (this.SelectedItems.Count > 0) {
+                this.ClearSelections ();
+            }
+            break;
+    }
+    base.WndProc (ref m);
+}
+----------------------------------------
+
+protected override void WndProc (ref Message m) {
+    switch (m.Msg) {
+        case WM_LBUTTONDOWN :
+            if (! this.MultiSelect)
+                break;
+
+            int x = (m.LParam.ToInt32 () & 0xffff);
+            int y = (m.LParam.ToInt32 () > > 16) & 0xffff;
+            var hitTest = this.HitTest (x, y);
+            if (hitTest != null && hitTest.Item != null)
+                hitTest.Item.Selected = ! hitTest.Item.Selected;
+
+            return;
+    }
+    base.WndProc (ref m);
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+8403866_10469369_1_35
+8403866_8403930_1_18
+Title: Values in a pie chart 
+----------------------------------------
+
+public ActionResult Chart () {
+    Chart chart = new Chart ();
+    chart.ChartAreas.Add (new ChartArea ());
+    chart.Series.Add (new Series ("Data"));
+    chart.Legends.Add (new Legend ("Stores"));
+    chart.Series ["Data"].ChartType = SeriesChartType.Spline;
+    chart.Series ["Data"].Points.AddXY (1.0, 5.0);
+    chart.Series ["Data"].Points.AddXY (2.0, 9.0);
+    var returnStream = new MemoryStream ();
+    chart.ImageType = ChartImageType.Png;
+    chart.SaveImage (returnStream);
+    returnStream.Position = 0;
+    return new FileStreamResult (returnStream, "image/png");
+}
+----------------------------------------
+
+public ActionResult Chart () {
+    Chart chart = new Chart ();
+    chart.ChartAreas.Add (new ChartArea ());
+    chart.Series.Add (new Series ("Data"));
+    chart.Series ["Data"].ChartType = SeriesChartType.Pie;
+    chart.Series ["Data"] ["PieLabelStyle"] = "Outside";
+    chart.Series ["Data"] ["PieLineColor"] = "Black";
+    chart.Series ["Data"].Points.DataBindXY (data.Select (data = > data.Name.ToString ()).ToArray (), data.Select (data = > data.Count).ToArray ());
+    MemoryStream ms = new MemoryStream ();
+    chart.SaveImage (ms, ChartImageFormat.Png);
+    return File (ms.ToArray (), "image/png");
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+840813_4868073_1_19
+840813_7391963_1_21
+Title: How to use WebBrowser control DocumentCompleted event in C#? 
+----------------------------------------
+
+private void WebBrowser_DocumentCompleted (object sender, WebBrowserDocumentCompletedEventArgs e) {
+    string url = e.Url.ToString ();
+    var browser = (WebBrowser) sender;
+    if (! (url.StartsWith ("http://") || url.StartsWith ("https://"))) {
+    }
+    if (e.Url.AbsolutePath != this.webBrowser.Url.AbsolutePath) {
+    } else {
+    }
+}
+----------------------------------------
+
+void WebBrowser_DocumentCompleted (object sender, WebBrowserDocumentCompletedEventArgs e) {
+    string url = e.Url.ToString ();
+    var browser = (WebBrowser) sender;
+    if (! (url.StartsWith ("http://") || url.StartsWith ("https://"))) {
+    }
+    if (e.Url.AbsolutePath != this.webBrowser.Url.AbsolutePath) {
+    } else if (browser.Document != null && (bool) browser.Document.InvokeScript ("eval", new object [] {@"typeof window.YourLandMarkJavascriptVariableHere === 'undefined'"})) {
+        ((IHTMLWindow2) browser.Document.Window.DomWindow).execScript ("var window.YourLandMarkJavascriptVariableHere = true;");
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+8416925_8451283_63_81
+8416925_8451283_8_42
+Title: Deserializing JSON response consisting of list of objects into C# class 
+----------------------------------------
+
+public void ReadJson (JsonReader reader) {
+    while (reader.Read ()) {
+        if (reader.TokenType == JsonToken.EndObject)
+            break;
+
+        if (reader.TokenType == JsonToken.PropertyName && (string) reader.Value == "feed_address") {
+            reader.Read ();
+            feed_address = (string) reader.Value;
+        } else if (reader.TokenType == JsonToken.PropertyName && (string) reader.Value == "updated") {
+            reader.Read ();
+            updated = (string) reader.Value;
+        }
+    }
+}
+----------------------------------------
+
+public void ReadJson (JsonReader reader) {
+    while (reader.Read ()) {
+        if (reader.TokenType == JsonToken.EndObject)
+            break;
+
+        if (reader.TokenType == JsonToken.PropertyName && (string) reader.Value == "authenticated") {
+            reader.Read ();
+            authenticated = (bool) reader.Value;
+        } else if (reader.TokenType == JsonToken.PropertyName && (string) reader.Value == "user") {
+            reader.Read ();
+            user = (string) reader.Value;
+        } else if (reader.TokenType == JsonToken.PropertyName && (string) reader.Value == "feeds") {
+            feeds = new Dictionary < string, Feed > ();
+            while (reader.Read ()) {
+                if (reader.TokenType == JsonToken.EndObject)
+                    break;
+
+                if (reader.TokenType == JsonToken.PropertyName) {
+                    string key = (string) reader.Value;
+                    feeds.Add (key, Feed.ReadFromJson (reader));
+                }
+            }
+        }
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+8426218_8428999_5_13
+8426218_8434426_7_34
+Title: "User input string equation converted to an int answer C#" 
+----------------------------------------
+
+static void Main () {
+    int ? answer = null;
+    String equation = Console.ReadLine ();
+    Console.WriteLine ("your equation is {0}", equation);
+    if (Regex.IsMatch (equation, @"^[0-9\.\*\-\+\/\(\) ]+$")) {
+        answer = (int) BLUEPIXY.Math.Evaluate (equation);
+    }
+    Console.WriteLine ("answer is {0}", answer);
+}
+----------------------------------------
+
+static void Main () {
+    CSharpCodeProvider csCompiler = new CSharpCodeProvider ();
+    CompilerParameters compilerParameters = new CompilerParameters ();
+    compilerParameters.GenerateInMemory = true;
+    compilerParameters.GenerateExecutable = false;
+    string temp = @"static public class Eval {
+    static public int calc() {
+        int exp = $exp;
+        return exp;
+    }
+}";
+    Console.Write ("input expression: ");
+    string equation = Console.ReadLine ();
+    Console.WriteLine ("your equation is {0}", equation);
+    temp = temp.Replace ("$exp", equation);
+    CompilerResults results = csCompiler.CompileAssemblyFromSource (compilerParameters, new string [1] {temp});
+    if (results.Errors.Count == 0) {
+        Assembly assembly = results.CompiledAssembly;
+        MethodInfo calc = assembly.GetType ("Eval").GetMethod ("calc");
+        int answer = (int) calc.Invoke (null, null);
+        Console.WriteLine ("answer is {0}", answer);
+    } else {
+        Console.WriteLine ("expression errors!");
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+8433776_8433833_10_35
+8433776_8433921_6_15
+Title: C# throwing dice method 
+----------------------------------------
+
+static void Main (string [] args) {
+    Random r = new Random ();
+    int sum = 0;
+    for (int i = 0; i < 4; i ++) {
+        var roll = r.Next (1, 7);
+        sum += roll;
+    }
+    Console.WriteLine ("the sum of the first 4 throws is {0}", sum);
+    if (sum > 20) {
+        Console.WriteLine ("place your message in here stating that sum gas greater than 20");
+    } else if (sum < 10) {
+        Console.WriteLine ("sum is less than 10");
+    } else {
+        Console.WriteLine ("some other message");
+    }
+}
+----------------------------------------
+
+public static void Main () {
+    Random rand1 = new Random ();
+    Random rand2 = new Random ();
+    Thread.Sleep (2000);
+    Random rand3 = new Random ();
+    ShowRandomNumbers (rand1);
+    ShowRandomNumbers (rand2);
+    ShowRandomNumbers (rand3);
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+8434355_8434695_1_21
+8434355_8435153_6_15
+Title: C# frame method 
+----------------------------------------
+
+private static string Frame (int width, int height) {
+    if (width < 2) {
+        throw new ArgumentOutOfRangeException ("width", width, "Width must be greater or equal to 2");
+    }
+    if (height < 2) {
+        throw new ArgumentOutOfRangeException ("height", height, "Height must be greater or equal to 2");
+    }
+    var topOrBottom = new string ('*', width);
+    var side = string.Concat ('*', new string (' ', width - 2), '*');
+    var builder = new System.Text.StringBuilder ();
+    builder.AppendLine (topOrBottom);
+    for (var i = 0; i < height - 2; i ++) {
+        builder.AppendLine (side);
+    }
+    builder.AppendLine (topOrBottom);
+    return builder.ToString ();
+}
+----------------------------------------
+
+static string Frame (int width, int height) {
+    var wk = new List < string > ();
+    string term = new String ('*', width);
+    string inner = "*" + new String (' ', width - 2) + "*";
+    wk.Add (term);
+    wk.AddRange (Enumerable.Repeat (inner, height - 2));
+    wk.Add (term);
+    return String.Join ("\n", wk);
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+8442193_8442430_1_15
+8442193_8443315_1_17
+Title: SPSite.Exists(url) return false although the url exists 
+----------------------------------------
+
+public static bool SiteExists (string path) {
+    SPSite site;
+    try {
+        site = new SPSite (path);
+    }
+    catch (FileNotFoundException e) {
+        return false;
+    }
+    finally {
+        if (site != null)
+            site.Dispose ();
+
+    }
+    return true;
+}
+----------------------------------------
+
+public static bool SiteExists (string url) {
+    try {
+        using (SPSite site = new SPSite (url))
+        {
+            using (SPWeb web = site.OpenWeb (url, true))
+            {
+                return true;
+            }}}
+    catch (FileNotFoundException) {
+        return false;
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+8448147_24618276_1_24
+8448147_35495631_1_18
+Title: Problems with X509Store Certificates.Find FindByThumbprint 
+----------------------------------------
+
+public static X509Certificate2 GetCertificate (string thumbprint) {
+    thumbprint = Regex.Replace (thumbprint, @"[^\da-fA-F]", string.Empty).ToUpper ();
+    var store = new X509Store (StoreName.My, StoreLocation.LocalMachine);
+    try {
+        store.Open (OpenFlags.ReadOnly);
+        var certCollection = store.Certificates;
+        var signingCert = certCollection.Find (X509FindType.FindByThumbprint, thumbprint, false);
+        if (signingCert.Count == 0) {
+            throw new FileNotFoundException (string.Format ("Cert with thumbprint: '{0}' not found in local machine cert store.", thumbprint));
+        }
+        return signingCert [0];
+    }
+    finally {
+        store.Close ();
+    }
+}
+----------------------------------------
+
+private X509Certificate2 GetCertificate () {
+    var certStore = new X509Store ("my");
+    certStore.Open (OpenFlags.ReadOnly);
+    try {
+        const string thumbprint = "18 33 fe 3a 67 d1 9e 0d f6 1e e5 d5 58 aa 8a 97 8c c4 d8 c3";
+        var certCollection = certStore.Certificates.Find (X509FindType.FindByThumbprint, Regex.Replace (thumbprint, @"\s+", "").ToUpper (), false);
+        if (certCollection.Count > 0)
+            return certCollection [0];
+
+    }
+    finally {
+        certStore.Close ();
+    }
+    return null;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+8472344_8472568_1_16
+8472344_8539595_1_14
+Title: A tricky one involving List<T> and object casting 
+----------------------------------------
+
+internal static string ToString (Ancestor root) {
+    Func < Parent, string, string > inner = (x, y) = > string.Empty;
+    inner = (p, indentation) = > {
+        var parents = p.Children.OfType < Parent > ();
+        var children = p.Children.OfType < Child > ();
+        var childString = string.Concat (children.Select (c = > indentation + "-" + c.Name + Environment.NewLine));
+        return indentation + "-" + p.Name + Environment.NewLine + childString + string.Concat (parents.Select (par = > inner (par, " " + indentation)));
+    };
+    return inner (root, string.Empty);
+}
+----------------------------------------
+
+internal void ToString (Ancestor root) {
+    Trace.WriteLine (root.Name);
+    Trace.Indent ();
+    foreach (var child in root.Children) {
+        if (child is Parent)
+            ToString (new Ancestor () {Name = child.Name, Children = ((Parent) child).Children});
+        else
+            Trace.WriteLine (child.Name);
+
+    }
+    Trace.Unindent ();
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+849245_849273_1_18
+849245_855704_1_16
+Title: C# Stripping / converting one or more characters 
+----------------------------------------
+
+public static String ChrTran (String input, String source, String destination) {
+    StringBuilder result = new StringBuilder (input);
+    Int32 minLength = Math.Min (source.Length, destination.Length);
+    for (Int32 i = 0; i < minLength; i ++) {
+        result.Replace (source [i], destination [i]);
+    }
+    for (Int32 i = minLength; i < searchPattern.Length; i ++) {
+        result.Replace (source [i].ToString (), String.Empty);
+    }
+    return result.ToString ();
+}
+----------------------------------------
+
+public static String ChrTran (String ToBeCleaned, String ChangeThese, String IntoThese) {
+    String CurRepl = String.Empty;
+    for (int lnI = 0; lnI < ChangeThese.Length; lnI ++) {
+        if (lnI < IntoThese.Length)
+            CurRepl = IntoThese.Substring (lnI, 1);
+        else
+            CurRepl = String.Empty;
+
+        ToBeCleaned = ToBeCleaned.Replace (ChangeThese.Substring (lnI, 1), CurRepl);
+    }
+    return ToBeCleaned;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+8502513_8502585_1_13
+8502513_8502618_1_12
+Title: How can I simplify my validation check code? 
+----------------------------------------
+
+public IDictionary < string, string > ValidateForDeletion (Account ac) {
+    var account = _accountRepository.GetPkRk (ac.PartitionKey, ac.RowKey);
+    if (account == null) {
+        _errors.Add ("", "Account does not exist");
+    } else if (_productRepository.GetPk ("0000" + ac.RowKey).Count () != 0) {
+        _errors.Add ("", "Account contains products");
+    }
+    return _errors;
+}
+----------------------------------------
+
+public IEnumerable < ValidationResult > ValidateForDeletion (Account ac) {
+    var account = _accountRepository.GetPkRk (ac.PartitionKey, ac.RowKey);
+    if (account == null) {
+        yield return new ValidationResult ("Account does not exist");
+    }
+    if (_productRepository.GetPk ("0000" + ac.RowKey).Count () != 0) {
+        yield return new ValidationResult ("Account contains products");
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+8502513_8502585_1_13
+8502513_8502671_1_15
+Title: How can I simplify my validation check code? 
+----------------------------------------
+
+public IDictionary < string, string > ValidateForDeletion (Account ac) {
+    var account = _accountRepository.GetPkRk (ac.PartitionKey, ac.RowKey);
+    if (account == null) {
+        _errors.Add ("", "Account does not exist");
+    } else if (_productRepository.GetPk ("0000" + ac.RowKey).Count () != 0) {
+        _errors.Add ("", "Account contains products");
+    }
+    return _errors;
+}
+----------------------------------------
+
+public IEnumerable < string > ValidateForDeletion (Account ac) {
+    var account = _accountRepository.GetPkRk (ac.PartitionKey, ac.RowKey);
+    if (account == null) {
+        yield return "Account does not exist";
+    }
+    if (_productRepository.GetPk ("0000" + ac.RowKey).Count () != 0) {
+        yield return "Account contains products";
+    }
+    return;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+8502513_8502618_1_12
+8502513_8502671_1_15
+Title: How can I simplify my validation check code? 
+----------------------------------------
+
+public IEnumerable < ValidationResult > ValidateForDeletion (Account ac) {
+    var account = _accountRepository.GetPkRk (ac.PartitionKey, ac.RowKey);
+    if (account == null) {
+        yield return new ValidationResult ("Account does not exist");
+    }
+    if (_productRepository.GetPk ("0000" + ac.RowKey).Count () != 0) {
+        yield return new ValidationResult ("Account contains products");
+    }
+}
+----------------------------------------
+
+public IEnumerable < string > ValidateForDeletion (Account ac) {
+    var account = _accountRepository.GetPkRk (ac.PartitionKey, ac.RowKey);
+    if (account == null) {
+        yield return "Account does not exist";
+    }
+    if (_productRepository.GetPk ("0000" + ac.RowKey).Count () != 0) {
+        yield return "Account contains products";
+    }
+    return;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+850650_1561067_5_29
+850650_47473947_1_25
+Title: Reliable method to get machine's MAC address in C# 
+----------------------------------------
+
+private string GetMacAddress () {
+    const int MIN_MAC_ADDR_LENGTH = 12;
+    string macAddress = string.Empty;
+    long maxSpeed = - 1;
+    foreach (NetworkInterface nic in NetworkInterface.GetAllNetworkInterfaces ()) {
+        log.Debug ("Found MAC Address: " + nic.GetPhysicalAddress () + " Type: " + nic.NetworkInterfaceType);
+        string tempMac = nic.GetPhysicalAddress ().ToString ();
+        if (nic.Speed > maxSpeed && ! string.IsNullOrEmpty (tempMac) && tempMac.Length >= MIN_MAC_ADDR_LENGTH) {
+            log.Debug ("New Max Speed = " + nic.Speed + ", MAC: " + tempMac);
+            maxSpeed = nic.Speed;
+            macAddress = tempMac;
+        }
+    }
+    return macAddress;
+}
+----------------------------------------
+
+public string GetMacAddress () {
+    const int MIN_MAC_ADDR_LENGTH = 12;
+    string macAddress = string.Empty;
+    Dictionary < string, long > macPlusSpeed = new Dictionary < string, long > ();
+    try {
+        foreach (NetworkInterface nic in NetworkInterface.GetAllNetworkInterfaces ()) {
+            System.Diagnostics.Debug.WriteLine ("Found MAC Address: " + nic.GetPhysicalAddress () + " Type: " + nic.NetworkInterfaceType);
+            string tempMac = nic.GetPhysicalAddress ().ToString ();
+            if (! string.IsNullOrEmpty (tempMac) && tempMac.Length >= MIN_MAC_ADDR_LENGTH)
+                macPlusSpeed.Add (tempMac, nic.Speed);
+
+        }
+        macAddress = macPlusSpeed.OrderByDescending (row = > row.Value).ThenBy (row = > row.Key).FirstOrDefault ().Key;
+    }
+    catch {
+    }
+    System.Diagnostics.Debug.WriteLine ("Fastest MAC address: " + macAddress);
+    return macAddress;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+8537997_8538895_40_54
+8537997_8538895_55_89
+Title: Should a regular expression used to break up lines account for unix/dos issue? 
+----------------------------------------
+
+public override int Read () {
+    int i = _source.Read ();
+    if (i == - 1)
+        return - 1;
+
+    if (i == '\r') {
+        if (_source.Peek () == '\n')
+            _source.Read ();
+
+        return i;
+    }
+    if (isNewLine (i))
+        return '\n';
+
+    return i;
+}
+----------------------------------------
+
+public override int Read (char [] buffer, int index, int count) {
+    char [] tmpBuffer = new char [count];
+    int cChars = count = _source.Read (tmpBuffer, 0, count);
+    if (cChars == 0)
+        return 0;
+
+    for (int i = 0; i != cChars; ++ i) {
+        char cur = tmpBuffer [i];
+        if (cur == '\r') {
+            if (i == cChars - 1) {
+                if (_source.Peek () == '\n') {
+                    _source.Read ();
+                    -- count;
+                }
+            } else if (tmpBuffer [i + 1] == '\r') {
+                ++ i;
+                -- count;
+            }
+            buffer [index ++] = '\n';
+        } else if (isNewLine (cur))
+            buffer [index ++] = '\n';
+        else
+            buffer [index ++] = '\n';
+
+    }
+    return count;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+854371_854411_1_13
+854371_854631_1_18
+Title: how to make an array size cap 
+----------------------------------------
+
+public static T [] CopyEvenly < T > (T [] from, int size) {
+    if (from.Length <= size) {
+        return (T []) from.Clone ();
+    }
+    T [] ret = new T [size];
+    for (int i = 0; i < size; i ++) {
+        ret [i] = from [(i * (from.Length + size - 1)) / size];
+    }
+    return ret;
+}
+----------------------------------------
+
+static T [] CopyEvenly < T > (T [] source, int size) {
+    if (size >= source.Length)
+        return source;
+
+    T [] ret = new T [size];
+    double factor = (double) (source.Length - 1) / (double) (size - 1);
+    for (int i = 0; i < ret.Length; i ++) {
+        int inputIndex = (int) ((double) i * factor);
+        ret [i] = source [inputIndex];
+    }
+    return ret;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+854371_854411_1_13
+854371_854754_1_19
+Title: how to make an array size cap 
+----------------------------------------
+
+public static T [] CopyEvenly < T > (T [] from, int size) {
+    if (from.Length <= size) {
+        return (T []) from.Clone ();
+    }
+    T [] ret = new T [size];
+    for (int i = 0; i < size; i ++) {
+        ret [i] = from [(i * (from.Length + size - 1)) / size];
+    }
+    return ret;
+}
+----------------------------------------
+
+static T [] CopyEvenly < T > (T [] srcArray, int size) {
+    int factor = srcArray.Length / size;
+    T [] retArray = new T [size];
+    int counter = 0;
+    while (counter < size - 1 && counter < srcArray.Length) {
+        retArray [counter] = srcArray [counter * factor];
+        counter ++;
+    }
+    retArray [size] = srcArray [srcArray.Length - 1];
+    return retArray;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+854371_854631_1_18
+854371_854754_1_19
+Title: how to make an array size cap 
+----------------------------------------
+
+static T [] CopyEvenly < T > (T [] source, int size) {
+    if (size >= source.Length)
+        return source;
+
+    T [] ret = new T [size];
+    double factor = (double) (source.Length - 1) / (double) (size - 1);
+    for (int i = 0; i < ret.Length; i ++) {
+        int inputIndex = (int) ((double) i * factor);
+        ret [i] = source [inputIndex];
+    }
+    return ret;
+}
+----------------------------------------
+
+static T [] CopyEvenly < T > (T [] srcArray, int size) {
+    int factor = srcArray.Length / size;
+    T [] retArray = new T [size];
+    int counter = 0;
+    while (counter < size - 1 && counter < srcArray.Length) {
+        retArray [counter] = srcArray [counter * factor];
+        counter ++;
+    }
+    retArray [size] = srcArray [srcArray.Length - 1];
+    return retArray;
+}
+----------------------------------------

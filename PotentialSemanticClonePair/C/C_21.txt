@@ -1,0 +1,4841 @@
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+27400423_27401613_1_26
+27400423_27401762_5_33
+Title: convert each digit of a decimal number to correcsponding binary 
+----------------------------------------
+
+void reduce (char string []) {
+    unsigned int in = atoi (string);
+    int i = 0, result [32], k, j;
+    while (in > 0) {
+        j = in % 10;
+        k = 0;
+        while (j > 0) {
+            result[i++] = j % 2;
+            j = j >> 1;
+            k++;
+        }
+        while (k < 4) {
+            result[i++] = 0;
+            k++;
+        }
+        in = in / 10;
+    }
+    printf ("Result\n");
+    for (--i; i >= 0; i--) {
+        printf ("%d", result [i]);
+    }
+    printf ("\n");
+}
+----------------------------------------
+
+void reduce (char string []) {
+    int i = 0, j = 0, k = 0, cnt = 0, tmp = 4, num;
+    char arr [5], result [4 * strlen (string) + 1];
+    for (i = 0; i < strlen (string); i++) {
+        num = string[i] - '0';
+        while (num != 0) {
+            arr[j++] = '0' + num % 2;
+            num = num / 2;
+            tmp--;
+        }
+        while (tmp != 0) {
+            arr[j++] = '0';
+            tmp--;
+        }
+        arr[j] = 0;
+        j--;
+        for (k = i * 4; k < (i * 4 + 4); k++) {
+            result[k] = arr[j--];
+        }
+        j = 0;
+        tmp = 4;
+    }
+    result[k] = 0;
+    printf ("The result is: \n");
+    for (i = 0; i < strlen (result); i++) {
+        printf ("%c", result [i]);
+    }
+    printf ("\n");
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+27409655_27410989_7_48
+27409655_27431938_8_63
+Title: Use a here-document with execvp 
+----------------------------------------
+
+int main (int argc, char *argv []) {
+    pid_t pid;
+    int status;
+    if (argc < 2) {
+        printf ("expected format example /usr/bin/wc -l << END\n");
+        return (-1);
+    }
+    if ((pid = fork ()) < 0)
+        err (1, "fork() error");
+    if (pid == 0) {
+        if (execvp (argv[1], &argv[1]) < 0)
+            err (1, "execvp() error");
+    }
+    else {
+        printf ("><![CDATA[> father waiting child..\n");
+        while (wait (&status) != pid)
+            ;
+        printf ("><![CDATA[> child finished\n");
+    }
+    return (0);
+}
+----------------------------------------
+
+int main (int argc, char *argv []) {
+    pid_t rdr, cmd, wres;
+    int pipefd [2] = {0};
+    char *command = "wc";
+    char *cmdargs [] = {"wc", "-l", NULL};
+    char *endinp = "END\n";
+    pipe (pipefd);
+    cmd = fork ();
+    if (!cmd) {
+        dup2 (pipefd [0], 0);
+        close (pipefd [1]);
+        execvp (command, cmdargs);
+    }
+    rdr = fork ();
+    if (!rdr) {
+        close (pipefd [0]);
+        char buf [1024];
+        while (fgets (buf, sizeof (buf), stdin)) {
+            if (!strcmp (buf, endinp))
+                break;
+            write (pipefd [1], buf, strlen (buf));
+        }
+        return 0;
+    }
+    close (pipefd [0]);
+    close (pipefd [1]);
+    do {
+        wres = wait (NULL);
+        if (wres == rdr)
+            rdr = 0;
+        if (wres == cmd)
+            cmd = 0;
+    }
+    while (rdr || cmd);
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+27414647_27415795_5_36
+27414647_27791649_6_38
+Title: C Character Array Pointer is not a valid statement 
+----------------------------------------
+
+void main (int argc, char *argv []) {
+    int f_des [2];
+    if (pipe (f_des) == -1) {
+        perror ("pipe");
+        exit (1);
+    }
+    switch (fork ()) {
+    case -1 :
+        perror ("fork");
+        exit (2);
+    case 0 :
+        {
+            dup2 (f_des [1], fileno (stdout));
+            close (f_des [0]);
+            close (f_des [1]);
+            char *cmd = "/usr/bin/";
+            char * const path [] = {"HOME=/usr/home/", "LOGNAME=home", (char *) 0};
+            int ret;
+            ret = execvp (cmd, path);
+            exit (3);
+        }
+    default :
+        {
+            dup2 (f_des [0], fileno (stdin));
+            close (f_des [0]);
+            close (f_des [1]);
+            char *cmd = "/usr/bin/";
+            char *path [] = {"HOME=/usr/home/", "LOGNAME=home", (char *) 0};
+            int ret;
+            ret = execvp (cmd, path);
+            exit (4);
+        }
+    }
+}
+----------------------------------------
+
+int main (int argc, char *argv []) {
+    int f_des [2];
+    if (pipe (f_des) == -1) {
+        perror ("pipe");
+        exit (1);
+    }
+    char *cmd;
+    char *cmdargs [];
+    int ret;
+    switch (fork ()) {
+    case -1 :
+        perror ("fork");
+        exit (2);
+    case 0 :
+        dup2 (f_des[1], fileno (stdout));
+        close (f_des [0]);
+        close (f_des [1]);
+        cmd = strcat ("/usr/bin", argv[1]);
+        cmd = strcat (cmd, '\0');
+        ret = execvp (cmd, cmdargs);
+        exit (3);
+    default :
+        dup2 (f_des[0], fileno (stdin));
+        close (f_des [0]);
+        close (f_des [1]);
+        cmd = strcat ("/usr/bin/", argv[2]);
+        cmd = strcat (cmd, '\0');
+        ret = execvp (cmd, cmdargs);
+        exit (4);
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+27414696_27414717_14_34
+27414696_27414828_4_15
+Title: Remove last four characters from a string in C 
+----------------------------------------
+
+int main (void) {
+    char name [] = "Photo1.jpg";
+    printf ("Before: name = \"%s\"\n", name);
+    trim_end (name, 4);
+    printf ("After: name = \"%s\"\n", name);
+    trim_end (name, 4);
+    printf ("After: name = \"%s\"\n", name);
+    trim_end (name, 4);
+    printf ("After: name = \"%s\"\n", name);
+    return 0;
+}
+----------------------------------------
+
+int main (void) {
+    char fullname [] = "Photo1.jpg";
+    char *name;
+    size_t len;
+    len = strlen (fullname);
+    name = strndup (fullname, len >= 4 ? len - 4 : 0);
+    printf ("%s\n", name);
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+2741683_2741896_3_15
+2741683_2742234_3_16
+Title: How to format a function pointer? 
+----------------------------------------
+
+int main () {
+    int (*funcptr) () = main;
+    unsigned char *p = (unsigned char *) &funcptr;
+    size_t i;
+    for (i = 0; i < sizeof funcptr; i++) {
+        printf ("%02x ", p [i]);
+    }
+    putchar ('\n');
+    return 0;
+}
+----------------------------------------
+
+int main (void) {
+    union {
+        int (*funcptr) (void);
+        void *objptr;
+    } u;
+    u.funcptr = main;
+    printf ("%p\n", u.objptr);
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+2741683_2742234_3_16
+2741683_2742948_5_24
+Title: How to format a function pointer? 
+----------------------------------------
+
+int main (void) {
+    union {
+        int (*funcptr) (void);
+        void *objptr;
+    } u;
+    u.funcptr = main;
+    printf ("%p\n", u.objptr);
+    return 0;
+}
+----------------------------------------
+
+int main () {
+    int (*funcptr) () = main;
+    unsigned char *p = (unsigned char *) &funcptr;
+    int i;
+    printf ("%016" PRIxPTR "\n", (uintptr_t) main);
+    printf ("%016" PRIxPTR "\n", (uintptr_t) funcptr);
+    for (i = 0; i < sizeof funcptr; i++) {
+        printf ("%02x ", p [i]);
+    }
+    putchar ('\n');
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+2741859_2741874_1_13
+2741859_2741888_1_17
+Title: How fast can you make linear search? 
+----------------------------------------
+
+static int linear (const int *array, int arraySize, int key) {
+    int i;
+    for (i = 0; i < arraySize; ++i) {
+        if (*array >= key) {
+            return i;
+        }
+        ++array;
+    }
+    return arraySize;
+}
+----------------------------------------
+
+static int linear (const int *arr, int n, int key) {
+    assert (arr [n] >= key);
+    int i = 0;
+    while (true) {
+        if (arr[i++] >= key)
+            break;
+        if (arr[i++] >= key)
+            break;
+        if (arr[i++] >= key)
+            break;
+        if (arr[i++] >= key)
+            break;
+    }
+    return --i;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+2741859_2741874_1_13
+2741859_2743149_1_14
+Title: How fast can you make linear search? 
+----------------------------------------
+
+static int linear (const int *array, int arraySize, int key) {
+    int i;
+    for (i = 0; i < arraySize; ++i) {
+        if (*array >= key) {
+            return i;
+        }
+        ++array;
+    }
+    return arraySize;
+}
+----------------------------------------
+
+int linear (const int *array, int n, int key) {
+    int i = 0;
+    if (array[n - 1] >= key) {
+        do {
+            if (array[0] >= key)
+                return i + 0;
+            if (array[1] >= key)
+                return i + 1;
+            if (array[2] >= key)
+                return i + 2;
+            if (array[3] >= key)
+                return i + 3;
+            array += 4;
+            i += 4;
+        }
+        while (true);
+    }
+    return -1;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+2741859_2741874_1_13
+2741859_2743250_1_40
+Title: How fast can you make linear search? 
+----------------------------------------
+
+static int linear (const int *array, int arraySize, int key) {
+    int i;
+    for (i = 0; i < arraySize; ++i) {
+        if (*array >= key) {
+            return i;
+        }
+        ++array;
+    }
+    return arraySize;
+}
+----------------------------------------
+
+int linear (const int *array, int n, int key) {
+    const int *end = &array[n];
+    int result = 0;
+    switch (n % 8) {
+        do {
+        case 0 :
+            if (*(array++) >= key)
+                break;
+            ++result;
+        case 7 :
+            if (*(array++) >= key)
+                break;
+            ++result;
+        case 6 :
+            if (*(array++) >= key)
+                break;
+            ++result;
+        case 5 :
+            if (*(array++) >= key)
+                break;
+            ++result;
+        case 4 :
+            if (*(array++) >= key)
+                break;
+            ++result;
+        case 3 :
+            if (*(array++) >= key)
+                break;
+            ++result;
+        case 2 :
+            if (*(array++) >= key)
+                break;
+            ++result;
+        case 1 :
+            if (*(array++) >= key)
+                break;
+            ++result;
+        }
+        while (array < end);
+    }
+    return result;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+2741859_2741874_1_13
+2741859_2744200_1_19
+Title: How fast can you make linear search? 
+----------------------------------------
+
+static int linear (const int *array, int arraySize, int key) {
+    int i;
+    for (i = 0; i < arraySize; ++i) {
+        if (*array >= key) {
+            return i;
+        }
+        ++array;
+    }
+    return arraySize;
+}
+----------------------------------------
+
+static int linear (const int *arr, int n, int key) {
+    assert (arr [n] >= key);
+    assert (arr [n + 7] >= key);
+    int i = 0;
+    while (arr[i] < key) {
+        int j = i;
+        i += (arr[j] < key);
+        i += (arr[j + 1] < key);
+        i += (arr[j + 2] < key);
+        i += (arr[j + 3] < key);
+        i += (arr[j + 4] < key);
+        i += (arr[j + 5] < key);
+        i += (arr[j + 6] < key);
+        i += (arr[j + 7] < key);
+    }
+    return i;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+2741859_2741874_1_13
+2741859_2747910_1_18
+Title: How fast can you make linear search? 
+----------------------------------------
+
+static int linear (const int *array, int arraySize, int key) {
+    int i;
+    for (i = 0; i < arraySize; ++i) {
+        if (*array >= key) {
+            return i;
+        }
+        ++array;
+    }
+    return arraySize;
+}
+----------------------------------------
+
+static int linear (const int *arr, int n, int key) {
+    static int previous_key = INT_MIN;
+    static int previous_i = 0;
+    i = key >= previous_key ? previous_i : 0;
+    while (i < n) {
+        if (arr[i] >= key)
+            break;
+        ++i;
+    }
+    previous_key = key;
+    previous_i = i;
+    return i;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+2741859_2741888_1_17
+2741859_2743149_1_14
+Title: How fast can you make linear search? 
+----------------------------------------
+
+static int linear (const int *arr, int n, int key) {
+    assert (arr [n] >= key);
+    int i = 0;
+    while (true) {
+        if (arr[i++] >= key)
+            break;
+        if (arr[i++] >= key)
+            break;
+        if (arr[i++] >= key)
+            break;
+        if (arr[i++] >= key)
+            break;
+    }
+    return --i;
+}
+----------------------------------------
+
+int linear (const int *array, int n, int key) {
+    int i = 0;
+    if (array[n - 1] >= key) {
+        do {
+            if (array[0] >= key)
+                return i + 0;
+            if (array[1] >= key)
+                return i + 1;
+            if (array[2] >= key)
+                return i + 2;
+            if (array[3] >= key)
+                return i + 3;
+            array += 4;
+            i += 4;
+        }
+        while (true);
+    }
+    return -1;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+2741859_2741888_1_17
+2741859_2743250_1_40
+Title: How fast can you make linear search? 
+----------------------------------------
+
+static int linear (const int *arr, int n, int key) {
+    assert (arr [n] >= key);
+    int i = 0;
+    while (true) {
+        if (arr[i++] >= key)
+            break;
+        if (arr[i++] >= key)
+            break;
+        if (arr[i++] >= key)
+            break;
+        if (arr[i++] >= key)
+            break;
+    }
+    return --i;
+}
+----------------------------------------
+
+int linear (const int *array, int n, int key) {
+    const int *end = &array[n];
+    int result = 0;
+    switch (n % 8) {
+        do {
+        case 0 :
+            if (*(array++) >= key)
+                break;
+            ++result;
+        case 7 :
+            if (*(array++) >= key)
+                break;
+            ++result;
+        case 6 :
+            if (*(array++) >= key)
+                break;
+            ++result;
+        case 5 :
+            if (*(array++) >= key)
+                break;
+            ++result;
+        case 4 :
+            if (*(array++) >= key)
+                break;
+            ++result;
+        case 3 :
+            if (*(array++) >= key)
+                break;
+            ++result;
+        case 2 :
+            if (*(array++) >= key)
+                break;
+            ++result;
+        case 1 :
+            if (*(array++) >= key)
+                break;
+            ++result;
+        }
+        while (array < end);
+    }
+    return result;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+2741859_2741888_1_17
+2741859_2744200_1_19
+Title: How fast can you make linear search? 
+----------------------------------------
+
+static int linear (const int *arr, int n, int key) {
+    assert (arr [n] >= key);
+    int i = 0;
+    while (true) {
+        if (arr[i++] >= key)
+            break;
+        if (arr[i++] >= key)
+            break;
+        if (arr[i++] >= key)
+            break;
+        if (arr[i++] >= key)
+            break;
+    }
+    return --i;
+}
+----------------------------------------
+
+static int linear (const int *arr, int n, int key) {
+    assert (arr [n] >= key);
+    assert (arr [n + 7] >= key);
+    int i = 0;
+    while (arr[i] < key) {
+        int j = i;
+        i += (arr[j] < key);
+        i += (arr[j + 1] < key);
+        i += (arr[j + 2] < key);
+        i += (arr[j + 3] < key);
+        i += (arr[j + 4] < key);
+        i += (arr[j + 5] < key);
+        i += (arr[j + 6] < key);
+        i += (arr[j + 7] < key);
+    }
+    return i;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+2741859_2741888_1_17
+2741859_2747910_1_18
+Title: How fast can you make linear search? 
+----------------------------------------
+
+static int linear (const int *arr, int n, int key) {
+    assert (arr [n] >= key);
+    int i = 0;
+    while (true) {
+        if (arr[i++] >= key)
+            break;
+        if (arr[i++] >= key)
+            break;
+        if (arr[i++] >= key)
+            break;
+        if (arr[i++] >= key)
+            break;
+    }
+    return --i;
+}
+----------------------------------------
+
+static int linear (const int *arr, int n, int key) {
+    static int previous_key = INT_MIN;
+    static int previous_i = 0;
+    i = key >= previous_key ? previous_i : 0;
+    while (i < n) {
+        if (arr[i] >= key)
+            break;
+        ++i;
+    }
+    previous_key = key;
+    previous_i = i;
+    return i;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+2741859_2743149_1_14
+2741859_2743250_1_40
+Title: How fast can you make linear search? 
+----------------------------------------
+
+int linear (const int *array, int n, int key) {
+    int i = 0;
+    if (array[n - 1] >= key) {
+        do {
+            if (array[0] >= key)
+                return i + 0;
+            if (array[1] >= key)
+                return i + 1;
+            if (array[2] >= key)
+                return i + 2;
+            if (array[3] >= key)
+                return i + 3;
+            array += 4;
+            i += 4;
+        }
+        while (true);
+    }
+    return -1;
+}
+----------------------------------------
+
+int linear (const int *array, int n, int key) {
+    const int *end = &array[n];
+    int result = 0;
+    switch (n % 8) {
+        do {
+        case 0 :
+            if (*(array++) >= key)
+                break;
+            ++result;
+        case 7 :
+            if (*(array++) >= key)
+                break;
+            ++result;
+        case 6 :
+            if (*(array++) >= key)
+                break;
+            ++result;
+        case 5 :
+            if (*(array++) >= key)
+                break;
+            ++result;
+        case 4 :
+            if (*(array++) >= key)
+                break;
+            ++result;
+        case 3 :
+            if (*(array++) >= key)
+                break;
+            ++result;
+        case 2 :
+            if (*(array++) >= key)
+                break;
+            ++result;
+        case 1 :
+            if (*(array++) >= key)
+                break;
+            ++result;
+        }
+        while (array < end);
+    }
+    return result;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+2741859_2743149_1_14
+2741859_2744200_1_19
+Title: How fast can you make linear search? 
+----------------------------------------
+
+int linear (const int *array, int n, int key) {
+    int i = 0;
+    if (array[n - 1] >= key) {
+        do {
+            if (array[0] >= key)
+                return i + 0;
+            if (array[1] >= key)
+                return i + 1;
+            if (array[2] >= key)
+                return i + 2;
+            if (array[3] >= key)
+                return i + 3;
+            array += 4;
+            i += 4;
+        }
+        while (true);
+    }
+    return -1;
+}
+----------------------------------------
+
+static int linear (const int *arr, int n, int key) {
+    assert (arr [n] >= key);
+    assert (arr [n + 7] >= key);
+    int i = 0;
+    while (arr[i] < key) {
+        int j = i;
+        i += (arr[j] < key);
+        i += (arr[j + 1] < key);
+        i += (arr[j + 2] < key);
+        i += (arr[j + 3] < key);
+        i += (arr[j + 4] < key);
+        i += (arr[j + 5] < key);
+        i += (arr[j + 6] < key);
+        i += (arr[j + 7] < key);
+    }
+    return i;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+2741859_2743149_1_14
+2741859_2747910_1_18
+Title: How fast can you make linear search? 
+----------------------------------------
+
+int linear (const int *array, int n, int key) {
+    int i = 0;
+    if (array[n - 1] >= key) {
+        do {
+            if (array[0] >= key)
+                return i + 0;
+            if (array[1] >= key)
+                return i + 1;
+            if (array[2] >= key)
+                return i + 2;
+            if (array[3] >= key)
+                return i + 3;
+            array += 4;
+            i += 4;
+        }
+        while (true);
+    }
+    return -1;
+}
+----------------------------------------
+
+static int linear (const int *arr, int n, int key) {
+    static int previous_key = INT_MIN;
+    static int previous_i = 0;
+    i = key >= previous_key ? previous_i : 0;
+    while (i < n) {
+        if (arr[i] >= key)
+            break;
+        ++i;
+    }
+    previous_key = key;
+    previous_i = i;
+    return i;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+2741859_2743250_1_40
+2741859_2744200_1_19
+Title: How fast can you make linear search? 
+----------------------------------------
+
+int linear (const int *array, int n, int key) {
+    const int *end = &array[n];
+    int result = 0;
+    switch (n % 8) {
+        do {
+        case 0 :
+            if (*(array++) >= key)
+                break;
+            ++result;
+        case 7 :
+            if (*(array++) >= key)
+                break;
+            ++result;
+        case 6 :
+            if (*(array++) >= key)
+                break;
+            ++result;
+        case 5 :
+            if (*(array++) >= key)
+                break;
+            ++result;
+        case 4 :
+            if (*(array++) >= key)
+                break;
+            ++result;
+        case 3 :
+            if (*(array++) >= key)
+                break;
+            ++result;
+        case 2 :
+            if (*(array++) >= key)
+                break;
+            ++result;
+        case 1 :
+            if (*(array++) >= key)
+                break;
+            ++result;
+        }
+        while (array < end);
+    }
+    return result;
+}
+----------------------------------------
+
+static int linear (const int *arr, int n, int key) {
+    assert (arr [n] >= key);
+    assert (arr [n + 7] >= key);
+    int i = 0;
+    while (arr[i] < key) {
+        int j = i;
+        i += (arr[j] < key);
+        i += (arr[j + 1] < key);
+        i += (arr[j + 2] < key);
+        i += (arr[j + 3] < key);
+        i += (arr[j + 4] < key);
+        i += (arr[j + 5] < key);
+        i += (arr[j + 6] < key);
+        i += (arr[j + 7] < key);
+    }
+    return i;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+2741859_2743250_1_40
+2741859_2747910_1_18
+Title: How fast can you make linear search? 
+----------------------------------------
+
+int linear (const int *array, int n, int key) {
+    const int *end = &array[n];
+    int result = 0;
+    switch (n % 8) {
+        do {
+        case 0 :
+            if (*(array++) >= key)
+                break;
+            ++result;
+        case 7 :
+            if (*(array++) >= key)
+                break;
+            ++result;
+        case 6 :
+            if (*(array++) >= key)
+                break;
+            ++result;
+        case 5 :
+            if (*(array++) >= key)
+                break;
+            ++result;
+        case 4 :
+            if (*(array++) >= key)
+                break;
+            ++result;
+        case 3 :
+            if (*(array++) >= key)
+                break;
+            ++result;
+        case 2 :
+            if (*(array++) >= key)
+                break;
+            ++result;
+        case 1 :
+            if (*(array++) >= key)
+                break;
+            ++result;
+        }
+        while (array < end);
+    }
+    return result;
+}
+----------------------------------------
+
+static int linear (const int *arr, int n, int key) {
+    static int previous_key = INT_MIN;
+    static int previous_i = 0;
+    i = key >= previous_key ? previous_i : 0;
+    while (i < n) {
+        if (arr[i] >= key)
+            break;
+        ++i;
+    }
+    previous_key = key;
+    previous_i = i;
+    return i;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+2741859_2744200_1_19
+2741859_2747910_1_18
+Title: How fast can you make linear search? 
+----------------------------------------
+
+static int linear (const int *arr, int n, int key) {
+    assert (arr [n] >= key);
+    assert (arr [n + 7] >= key);
+    int i = 0;
+    while (arr[i] < key) {
+        int j = i;
+        i += (arr[j] < key);
+        i += (arr[j + 1] < key);
+        i += (arr[j + 2] < key);
+        i += (arr[j + 3] < key);
+        i += (arr[j + 4] < key);
+        i += (arr[j + 5] < key);
+        i += (arr[j + 6] < key);
+        i += (arr[j + 7] < key);
+    }
+    return i;
+}
+----------------------------------------
+
+static int linear (const int *arr, int n, int key) {
+    static int previous_key = INT_MIN;
+    static int previous_i = 0;
+    i = key >= previous_key ? previous_i : 0;
+    while (i < n) {
+        if (arr[i] >= key)
+            break;
+        ++i;
+    }
+    previous_key = key;
+    previous_i = i;
+    return i;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+27441007_27441157_3_15
+27441007_27441192_3_15
+Title: making a matrix with for loop in C 
+----------------------------------------
+
+int main () {
+    double a [100];
+    int i;
+    for (i = 0; i < 100; i++) {
+        a[i] = 3.08e-7 + (i - 1) * 0.9e-7;
+        printf ("%.10lf\n", a [i]);
+    }
+    return 0;
+}
+----------------------------------------
+
+int main () {
+    float a [100];
+    int i;
+    for (i = 1; i <= 100; i++) {
+        a[i - 1] = 3.08e-7 + i * 0.9e-7;
+        printf ("%f\n", a [i - 1]);
+    }
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+27454800_27455042_16_41
+27454800_27457604_255_282
+Title: Reading from file to dynamic struct 
+----------------------------------------
+
+int main (int argc, char *argv []) {
+    struct Node *head;
+    if (argc != 2) {
+        printf ("Invalid arguments.\n");
+        return 1;
+    }
+    head = convertToList (argv[1]);
+    if (head != NULL) {
+        struct Node *current;
+        current = head;
+        while (current != NULL) {
+            fprintf (stderr, "%s %s %d\n", current -> firstName, current -> lastName, current -> age);
+            current = current->next;
+        }
+        freeList (head);
+    }
+    return 0;
+}
+----------------------------------------
+
+int main (int argc, char *argv []) {
+    char *in_file, *out_file, sort;
+    struct Node *head = NULL;
+    int err = 0;
+    if (argc < 4)
+        return usage (argv[0], "Missing arguments.");
+    if (argc > 4)
+        return usage (argv[0], "Unknown arguments.");
+    if (argv[3][1] != '\0')
+        return usage (argv[0], "Invalid sorting type.");
+    in_file = argv[1];
+    out_file = argv[2];
+    sort = argv[3][0];
+    if (sort != 'f' && sort != 'l' && sort != 'a')
+        return usage (argv[0], "Invalid sorting type.");
+    if ((err = file_to_llist (in_file, &head)) != 0)
+        return err;
+    prnt_llist (stdout, head);
+    free_ll (head);
+    return err;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+27459340_27460816_10_26
+27459340_27462394_25_54
+Title: Initialize C array with struct 
+----------------------------------------
+
+int main (void) {
+    dev sample = (dev) {123, 456};
+    uint8_t *b_sample = (uint8_t *) (&sample);
+    uint8_t *bytes [1024];
+    int size = (int) (sizeof (dev) / sizeof (uint8_t)), i;
+    for (i = 0; i < size; i++) {
+        bytes[i] = b_sample[i];
+        printf ("%x ", bytes [i]);
+    }
+    return 0;
+}
+----------------------------------------
+
+int main () {
+    struct Device dev [] = {{0x4009f0, 0}, {0x4009f1, 1}, {0x4009f2, 2}, {0x4009f3, 3}, {0x4009f4, 4}, {0x4009f5, 5}, {0x4009f6, 6}, {0x4009f7, 7}, {0x4009f8, 8}, {0x4009f9, 9}, {0x4009fa, 10}, {0x4009fb, 11}, {0x4009fc, 12}, {0x4009fd, 13}, {0x4009fe, 14}, {0x4009ff, 15}, {0x400a00, 16}, {0x400a01, 17}, {0x400a02, 18}, {0x400a03, 19}};
+    int it = 0;
+    size_t sz = sizeof (dev) / sizeof (*dev);
+    uibitfield *bytes = calloc (sz, sizeof (*bytes));
+    if (!bytes) {
+        fprintf (stderr, "error: allocation failed.\n");
+        return 1;
+    }
+    memcpy (bytes, dev, sz * sizeof (dev));
+    for (it = 0; it < sz; it++)
+        printf ("\n  addr[%2d]:  0x%02x, 0x%02x, 0x%02x, 0x%02x\n    id[%2d]:  0x%02x, 0x%02x, 0x%02x, 0x%02x\n", it, (bytes + it)->a1, (bytes + it)->a2, (bytes + it)->a3, (bytes + it)->a4, it, (bytes + it)->b1, (bytes + it)->b2, (bytes + it)->b3, (bytes + it)->b4);
+    printf ("\n");
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+27461361_27461509_4_42
+27461361_27461789_4_38
+Title: C - Write in plain text file struct variables in newline 
+----------------------------------------
+
+int main () {
+    typedef struct {
+        char cp [1 + 1 + 4];
+        char id [1 + 1 + 2];
+        char correlative [1 + 1 + 6];
+        char digit [1 + 1 + 1];
+    } log;
+    FILE *fl;
+    log new_log;
+    fl = fopen ("config.dat", "w");
+    if (fl == NULL)
+        return 1;
+    printf ("\nCP: ");
+    fgets (new_log.cp, sizeof (new_log.cp), stdin);
+    fprintf (fl, "%s", new_log.cp);
+    printf ("ID: ");
+    fgets (new_log.id, sizeof (new_log.id), stdin);
+    fprintf (fl, "%s", new_log.id);
+    printf ("Correlative: ");
+    fgets (new_log.correlative, sizeof (new_log.correlative), stdin);
+    fprintf (fl, "%s", new_log.correlative);
+    printf ("Digit: ");
+    fgets (new_log.digit, sizeof (new_log.digit), stdin);
+    fprintf (fl, "%s", new_log.digit);
+    fclose (fl);
+    return 0;
+}
+----------------------------------------
+
+int main () {
+    typedef struct {
+        char cp [5];
+        char id [3];
+        char correlative [7];
+        char digit [2];
+    } log;
+    FILE *fl;
+    log new_log;
+    if (!(fl = fopen ("config.dat", "w"))) {
+        printf ("An error occurred while opening file.\n");
+    }
+    else {
+        printf ("\nIntroducir codigo postal (5 digitos): ");
+        scanf ("%s", new_log.cp);
+        printf ("Introducir identificador de la administracion (2 digitos): ");
+        scanf ("%s", new_log.id);
+        printf ("Introducir numero correlativo (7 digitos): ");
+        scanf ("%s", new_log.correlative);
+        printf ("Introducir precio de la apuesta: ");
+        scanf ("%s", new_log.digit);
+        fprintf (fl, "%s %s %s %s", new_log.cp, new_log.id, new_log.correlative, new_log.digit);
+    }
+    fclose (fl);
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+27461565_27461617_2_12
+27461565_27461621_2_12
+Title: How character arrays work in C 
+----------------------------------------
+
+int main () {
+    puts ("Hello World!");
+    puts ("Enter your favorite Number:");
+    char arrayOfNumbers [3];
+    scanf ("%2s", arrayOfNumbers);
+    char s [] = {'a', 'b', 'c', 'd', 'e', '\0'};
+    printf (s);
+    return 0;
+}
+----------------------------------------
+
+int main () {
+    puts ("Hello World!");
+    puts ("Enter your favorite Number:");
+    char arrayOfNumbers [3];
+    scanf ("%2s", arrayOfNumbers);
+    printf ("%s\n", arrayOfNumbers);
+    char s [] = {'a', 'b', 'c', 'd', 'e', '\0'};
+    printf ("%s", s);
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+27462515_27462750_6_77
+27462515_27462776_4_33
+Title: need to get better code to read file into variables 
+----------------------------------------
+
+int main () {
+    int lineCount;
+    char filename [512];
+    char menu_choices [100] [100 + 1];
+    int extraLines;
+    int lineLength;
+    FILE *p_datafile;
+    int character;
+    int skipLine;
+    printf ("enter filename please: ");
+    scanf ("%511s", filename);
+    printf ("\topening:%s\n", filename);
+    lineCount = 0;
+    p_datafile = fopen (filename, "r");
+    if (p_datafile == NULL)
+        return 0;
+    memset (menu_choices [0], 0, 101);
+    extraLines = 0;
+    lineLength = 0;
+    skipLine = 0;
+    while ((p_datafile != NULL) && ((character = getc (p_datafile)) != EOF)) {
+        if (character == '\n') {
+            if ((lineLength > 0) && (skipLine == 0)) {
+                menu_choices[lineCount][lineLength] = 0;
+                lineCount += 1;
+                printf ("valid line %d [length -> %d] -> %s\n", lineCount, lineLength, menu_choices [lineCount - 1]);
+                memset (menu_choices [lineCount], 0, 101);
+            }
+            else if (skipLine != 0) {
+                fprintf (stderr, "line starts with #\n");
+                extraLines += 1;
+            }
+            else if (lineLength == 0) {
+                fprintf (stderr, "line is empty\n");
+                extraLines += 1;
+            }
+            skipLine = 0;
+            lineLength = 0;
+        }
+        else if ((lineLength == 0) && (isspace (character) != 0)) {
+        }
+        else {
+            if ((lineLength == 0) && (character == '#'))
+                skipLine = 1;
+            else if (lineLength < 100) {
+                menu_choices[lineCount][lineLength] = (char) character;
+                lineLength += 1;
+            }
+        }
+    }
+    fclose (p_datafile);
+    return 0;
+}
+----------------------------------------
+
+int main () {
+    int x, len;
+    char inputfile [512] = "lines.txt";
+    char menu_number [100];
+    char menu_choices [100] [100];
+    FILE *p_datafile;
+    printf ("\nopening:%s\n", inputfile);
+    p_datafile = fopen (inputfile, "rt");
+    if (p_datafile == NULL) {
+        printf ("Can't open file %s\n", inputfile);
+        exit (1);
+    }
+    x = 0;
+    while (x < 100 && fgets (menu_choices[x], 100, p_datafile)) {
+        if (menu_choices[x][0] != '\n' && menu_choices[x][0] != '#') {
+            len = strlen (menu_choices[x]);
+            if (menu_choices[x][len - 1] == '\n')
+                menu_choices[x][len - 1] = 0;
+            printf ("%s\n", menu_choices [x]);
+            x++;
+        }
+    }
+    fclose (p_datafile);
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+27466407_27467673_4_11
+27466407_47731626_4_28
+Title: Is there any function to get an unlimited input string from standard input 
+----------------------------------------
+
+int main (void) {
+    char *str = NULL;
+    printf (" enter a string of any length, whitespace is OK: ");
+    scanf ("%m[^\n]%*c", & str);
+    printf ("\n str: %s\n\n", str);
+    if (str)
+        free (str);
+    return 0;
+}
+----------------------------------------
+
+void main () {
+    int size = 10;
+    char *str;
+    str = (char *) calloc (size, sizeof (char));
+    char c;
+    c = getchar ();
+    int t = 0;
+    int cnt = 0;
+    int len;
+    while (c != '\n') {
+        if (cnt > size) {
+            str = (char *) realloc (str, 2 * cnt);
+        }
+        str[t] = c;
+        c = getchar ();
+        t++;
+        cnt++;
+    }
+    str[t] = '\0';
+    printf ("The string is %s\n", str);
+    len = strlen (str);
+    printf ("The size is %d", len);
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+27495346_27495433_1_13
+27495346_27495579_1_16
+Title: Compraring Char array without using strcmp in C 
+----------------------------------------
+
+int compare_info (char *array1, char *array2) {
+    int i;
+    i = 0;
+    if ((array1 == NULL) || (array2 == NULL))
+        return 0;
+    while ((array1[i] != '\0') && (array2[i] != '\0') && (array1[i] == array2[i])) {
+        i++;
+    }
+    return (array1[i] == array2[i]);
+}
+----------------------------------------
+
+int compare_info (char *array1, char *array2) {
+    int i;
+    int response = 0;
+    i = 0;
+    while (array1[i] == array2[i] && response == 0) {
+        if (array1[i] == '\0' || array2[i] == '\0') {
+            response = 1;
+        }
+        i++;
+    }
+    return response;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+27495346_27495433_1_13
+27495346_27498882_1_16
+Title: Compraring Char array without using strcmp in C 
+----------------------------------------
+
+int compare_info (char *array1, char *array2) {
+    int i;
+    i = 0;
+    if ((array1 == NULL) || (array2 == NULL))
+        return 0;
+    while ((array1[i] != '\0') && (array2[i] != '\0') && (array1[i] == array2[i])) {
+        i++;
+    }
+    return (array1[i] == array2[i]);
+}
+----------------------------------------
+
+int compare_info (const char *array1, const char *array2) {
+    int i;
+    for (i = 0; array1[i] != 0 && array2[i] != 0; i++) {
+        if (array1[i] > array2[i])
+            return +1;
+        if (array1[i] < array2[i])
+            return -1;
+    }
+    if (array1[i] != 0)
+        return +1;
+    if (array2[i] != 0)
+        return -1;
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+27495346_27495579_1_16
+27495346_27498882_1_16
+Title: Compraring Char array without using strcmp in C 
+----------------------------------------
+
+int compare_info (char *array1, char *array2) {
+    int i;
+    int response = 0;
+    i = 0;
+    while (array1[i] == array2[i] && response == 0) {
+        if (array1[i] == '\0' || array2[i] == '\0') {
+            response = 1;
+        }
+        i++;
+    }
+    return response;
+}
+----------------------------------------
+
+int compare_info (const char *array1, const char *array2) {
+    int i;
+    for (i = 0; array1[i] != 0 && array2[i] != 0; i++) {
+        if (array1[i] > array2[i])
+            return +1;
+        if (array1[i] < array2[i])
+            return -1;
+    }
+    if (array1[i] != 0)
+        return +1;
+    if (array2[i] != 0)
+        return -1;
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+27497346_27497843_5_28
+27497346_52482447_4_31
+Title: Shuffle characters in an array in C programming 
+----------------------------------------
+
+int main () {
+    char word [15];
+    int i, length, j, temp;
+    srand (time (NULL));
+    printf ("Insert word\n");
+    scanf ("%s", word);
+    for (length = 0; word[length++] != '\0';)
+        ;
+    for (i = 0; i < length; i++) {
+        j = (rand () % length);
+        word[i] = word[i] ^ word[j];
+        word[j] = word[i] ^ word[j];
+        word[i] = word[i] ^ word[j];
+    }
+    for (i = 0; i < length; i++) {
+        printf ("%c", word [i]);
+    }
+}
+----------------------------------------
+
+int main () {
+    char word [100];
+    srand (time (NULL));
+    int i, j, length, temp;
+    printf ("Enter a string: ");
+    scanf ("%s", & word);
+    for (i = 0; word[i] != '\0'; ++i) {
+        length = i;
+    }
+    length += 1;
+    i = length;
+    while (--i > 0) {
+        j = (rand () % length);
+        temp = word[j];
+        word[j] = word[i];
+        word[i] = temp;
+    }
+    for (i = 0; i <= length; i++) {
+        printf ("%c", word [i]);
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+27498560_27498682_22_74
+27498560_27499136_3_57
+Title: "C programming help how to use the fopen and the fprintf functions in C to save the given output in a text file?" 
+----------------------------------------
+
+int main () {
+    struct details item [50];
+    int n, i;
+    printf ("Enter number of items:");
+    scanf ("%d", & n);
+    for (i = 0; i < n; i++) {
+        getchar ();
+        printf ("Item name:");
+        scanf ("%[^\n]", item [i].name);
+        printf ("Item code:");
+        scanf ("%d", & item [i].code);
+        printf ("Quantity:");
+        scanf ("%d", & item [i].qty);
+        printf ("price:");
+        scanf ("%d", & item [i].price);
+        printf ("Manufacturing date(dd-mm-yyyy):");
+        scanf ("%d-%d-%d", & item [i].mfg.day, & item [i].mfg.month, & item [i].mfg.year);
+    }
+    {
+        FILE *fptr;
+        fptr = (fopen ("draftday.txt", "a"));
+        if (fptr == NULL) {
+            printf ("Error!");
+            exit (1);
+        }
+        fprintf (fptr, "             *****  INVENTORY *****\n\n\n" "------------------------------------------------------------------\n\n" "S.N.|    NAME           |   CODE   |  QUANTITY |  PRICE  |MFG.DATE\n\n" "------------------------------------------------------------------\n\n");
+        for (i = 0; i < n; i++)
+            fprintf (fptr, "%d     %-15s        %-d          %-5d     %-5d     %d/%d/%d\n", i +1, item[i].name, item[i].code, item[i].qty, item[i].price, item[i].mfg.day, item[i].mfg.month, item[i].mfg.year);
+        fclose (fptr);
+    }
+}
+----------------------------------------
+
+int main () {
+    struct date {
+        int day;
+        int month;
+        int year;
+    };
+    struct details {
+        char name [50];
+        int price;
+        int code;
+        int qty;
+        struct date mfg;
+    };
+    struct details item [50];
+    int n, i;
+    printf ("Enter number of items:");
+    scanf ("%d", & n);
+    FILE *fptr;
+    fptr = (fopen ("draftday.txt", "a"));
+    if (fptr == NULL) {
+        printf ("Error!");
+        exit (1);
+    }
+    fprintf (fptr, "             *****  INVENTORY *****\n\n\n" "------------------------------------------------------------------\n\n" "S.N.|    NAME           |   CODE   |  QUANTITY |  PRICE  |MFG.DATE\n\n" "------------------------------------------------------------------\n\n");
+    for (i = 0; i < n; i++) {
+        printf ("Item name:");
+        scanf (" %[^\n]", item [i].name);
+        printf ("Item code:");
+        scanf (" %d", & item [i].code);
+        printf ("Quantity:");
+        scanf (" %d", & item [i].qty);
+        printf ("price:");
+        scanf (" %d", & item [i].price);
+        printf ("Manufacturing date(dd-mm-yyyy):");
+        scanf (" %d-%d-%d", & item [i].mfg.day, & item [i].mfg.month, & item [i].mfg.year);
+        fprintf (fptr, "%d     %-15s        %-d          %-5d     %-5d     %d/%d/%d\n", i + 1, item [i].name, item [i].code, item [i].qty, item [i].price, item [i].mfg.day, item [i].mfg.month, item [i].mfg.year);
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+27509426_27509781_4_21
+27509426_27509912_3_25
+Title: C - strcat in for loop 
+----------------------------------------
+
+int main (int argc, char *argv []) {
+    int i, j;
+    char string [] = "abc";
+    char output [8];
+    int length = strlen (string);
+    for (i = 0; i < length - 1; i++) {
+        for (j = i + 1; j < length; j++) {
+            output[0] = string[i];
+            output[1] = string[j];
+            output[2] = 0;
+            printf ("%s\n", output);
+        }
+    }
+    return 0;
+}
+----------------------------------------
+
+int main (int argc, char *argv []) {
+    char string [] = "abc";
+    char output [3];
+    size_t length = sizeof (string) - 1;
+    for (size_t i = 0; i < length; i++) {
+        for (size_t j = 0; j < length; j++) {
+            if (i != j) {
+                output[0] = string[i];
+                output[1] = string[j];
+                output[2] = '\0';
+                puts (output);
+            }
+        }
+    }
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+27509426_27509781_4_21
+27509426_27510119_5_37
+Title: C - strcat in for loop 
+----------------------------------------
+
+int main (int argc, char *argv []) {
+    int i, j;
+    char string [] = "abc";
+    char output [8];
+    int length = strlen (string);
+    for (i = 0; i < length - 1; i++) {
+        for (j = i + 1; j < length; j++) {
+            output[0] = string[i];
+            output[1] = string[j];
+            output[2] = 0;
+            printf ("%s\n", output);
+        }
+    }
+    return 0;
+}
+----------------------------------------
+
+int main (int argc, char *argv []) {
+    int i;
+    int j;
+    char string [] = "abc";
+    int length = strlen (&string[0]);
+    for (i = 0; i < length; i++) {
+        for (j = i + 1; j < length; j++) {
+            char output [3] = {0};
+            char a [2] = {string[i], 0};
+            strcat (output, a);
+            char b [2] = {string[j], 0};
+            strcat (output, b);
+            printf ("%s\n", output);
+        }
+    }
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+27509426_27509912_3_25
+27509426_27510119_5_37
+Title: C - strcat in for loop 
+----------------------------------------
+
+int main (int argc, char *argv []) {
+    char string [] = "abc";
+    char output [3];
+    size_t length = sizeof (string) - 1;
+    for (size_t i = 0; i < length; i++) {
+        for (size_t j = 0; j < length; j++) {
+            if (i != j) {
+                output[0] = string[i];
+                output[1] = string[j];
+                output[2] = '\0';
+                puts (output);
+            }
+        }
+    }
+    return 0;
+}
+----------------------------------------
+
+int main (int argc, char *argv []) {
+    int i;
+    int j;
+    char string [] = "abc";
+    int length = strlen (&string[0]);
+    for (i = 0; i < length; i++) {
+        for (j = i + 1; j < length; j++) {
+            char output [3] = {0};
+            char a [2] = {string[i], 0};
+            strcat (output, a);
+            char b [2] = {string[j], 0};
+            strcat (output, b);
+            printf ("%s\n", output);
+        }
+    }
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+27510155_27510644_1_18
+27510155_27510908_12_33
+Title: Can't create a list of structs 
+----------------------------------------
+
+int main () {
+    int x;
+    d_t *root, *head;
+    scanf ("%d", & x);
+    head = NULL;
+    while (x == 1) {
+        root = (d_t *) malloc (sizeof (d_t));
+        root->x = 1;
+        root->next = head;
+        head = root;
+        scanf ("%d", & x);
+    }
+    root = head;
+    while (root) {
+        printf ("%d\n", root -> x);
+        root = root->next;
+    }
+}
+----------------------------------------
+
+int main (void) {
+    d_t *head = NULL;
+    d_t **current = &head;
+    int x;
+    while (scanf ("%d", &x) == 1 && x == 1) {
+        *current = malloc (sizeof (d_t));
+        (*current)->x = x;
+        (*current)->next = NULL;
+        current = &(*current)->next;
+    }
+    for (current = &head; *current != NULL; *current = (*current)->next) {
+        printf ("%d --> ", (* current) -> x);
+    }
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+27521899_27522017_7_49
+27521899_27522090_6_30
+Title: C: Trying to read characters from a file as float 
+----------------------------------------
+
+int main () {
+    FILE *fp = NULL;
+    int read = 0;
+    int i = 0;
+    char *token = NULL;
+    char buffer [MAXVAL] = {0};
+    float bufferFloat [10] = {0};
+    fp = fopen ("Xvalues.txt", "r");
+    if (fp == NULL) {
+        printf ("error opening the file");
+        return -1;
+    }
+    if (!fgets (buffer, MAXVAL, fp)) {
+        printf ("error reading the file");
+        return -2;
+    }
+    const char *s = " \n";
+    token = strtok (buffer, s);
+    i = 0;
+    while (token != NULL) {
+        bufferFloat[i++] = strtof (token, NULL);
+        token = strtok (NULL, s);
+    }
+    for (i = 0; i < 10; i++) {
+        printf ("float values are%f\n", bufferFloat [i]);
+    }
+    fclose (fp);
+    return 0;
+}
+----------------------------------------
+
+int main () {
+    FILE *fp;
+    char read;
+    fp = fopen ("Xvalues.txt", "r");
+    float array [10];
+    int i;
+    do {
+        read = fscanf (fp, "%f %f %f %f %f %f %f %f %f %f", &array[0], &array[1], &array[2], &array[3], &array[4], &array[5], &array[6], &array[7], &array[8], &array[9]);
+        fclose (fp);
+        for (i = 0; i < 10; i++) {
+            printf ("%f ", array [i]);
+        }
+        printf ("\n");
+    }
+    while (read != EOF);
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+27555965_27556083_3_23
+27555965_27556432_1_17
+Title: "Output of program that counts blanks tabs and newlines" 
+----------------------------------------
+
+int main () {
+    int c;
+    int blank, tab, newl;
+    blank = tab = newl = 0;
+    while ((c = getchar ()) != EOF) {
+        if (c == ' ') {
+            ++blank;
+        }
+        else if (c == '\t') {
+            ++tab;
+        }
+        else if (c == '\n') {
+            ++newl;
+        }
+    }
+    printf ("There are %d blank lines, %d tabs, and %d new lines\n", blank, tab, newl);
+    return 0;
+}
+----------------------------------------
+
+int main () {
+    int c;
+    int count [255] = {0};
+    while ((c = getchar ()) != EOF) {
+        count[c]++;
+    }
+    printf ("There are %d blank lines, %d tabs, and %d new lines\n", count [' '], count ['\t'], count ['\n']);
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+27566960_27567482_1_123
+27566960_27567548_6_128
+Title: How to do arithmetic operation on very large numbers 
+----------------------------------------
+
+int main (int argc, char **argv) {
+    int i;
+    char *num [100] = {"37107287533902102798797998220837590246510135740250", "46376937677490009712648124896970078050417018260538", "74324986199524741059474233309513058123726617309629", "91942213363574161572522430563301811072406154908250", "23067588207539346171171980310421047513778063246676", "89261670696623633820136378418383684178734361726757", "28112879812849979408065481931592621691275889832738", "44274228917432520321923589422876796487670272189318", "47451445736001306439091167216856844588711603153276", "70386486105843025439939619828917593665686757934951", "62176457141856560629502157223196586755079324193331", "64906352462741904929101432445813822663347944758178", "92575867718337217661963751590579239728245598838407", "58203565325359399008402633568948830189458628227828", "80181199384826282014278194139940567587151170094390", "35398664372827112653829987240784473053190104293586", "86515506006295864861532075273371959191420517255829", "71693888707715466499115593487603532921714970056938", "54370070576826684624621495650076471787294438377604", "53282654108756828443191190634694037855217779295145", "36123272525000296071075082563815656710885258350721", "45876576172410976447339110607218265236877223636045", "17423706905851860660448207621209813287860733969412", "81142660418086830619328460811191061556940512689692", "51934325451728388641918047049293215058642563049483", "62467221648435076201727918039944693004732956340691", "15732444386908125794514089057706229429197107928209", "55037687525678773091862540744969844508330393682126", "18336384825330154686196124348767681297534375946515", "80386287592878490201521685554828717201219257766954", "78182833757993103614740356856449095527097864797581", "16726320100436897842553539920931837441497806860984", "48403098129077791799088218795327364475675590848030", "87086987551392711854517078544161852424320693150332", "59959406895756536782107074926966537676326235447210", "69793950679652694742597709739166693763042633987085", "41052684708299085211399427365734116182760315001271", "65378607361501080857009149939512557028198746004375", "35829035317434717326932123578154982629742552737307", "94953759765105305946966067683156574377167401875275", "88902802571733229619176668713819931811048770190271", "25267680276078003013678680992525463401061632866526", "36270218540497705585629946580636237993140746255962", "24074486908231174977792365466257246923322810917141", "91430288197103288597806669760892938638285025333403", "34413065578016127815921815005561868836468420090470", "23053081172816430487623791969842487255036638784583", "11487696932154902810424020138335124462181441773470", "63783299490636259666498587618221225225512486764533", "67720186971698544312419572409913959008952310058822", "95548255300263520781532296796249481641953868218774", "76085327132285723110424803456124867697064507995236", "37774242535411291684276865538926205024910326572967", "23701913275725675285653248258265463092207058596522", "29798860272258331913126375147341994889534765745501", "18495701454879288984856827726077713721403798879715", "38298203783031473527721580348144513491373226651381", "34829543829199918180278916522431027392251122869539", "40957953066405232632538044100059654939159879593635", "29746152185502371307642255121183693803580388584903", "41698116222072977186158236678424689157993532961922", "62467957194401269043877107275048102390895523597457", "23189706772547915061505504953922979530901129967519", "86188088225875314529584099251203829009407770775672", "11306739708304724483816533873502340845647058077308", "82959174767140363198008187129011875491310547126581", "97623331044818386269515456334926366572897563400500", "42846280183517070527831839425882145521227251250327", "55121603546981200581762165212827652751691296897789", "32238195734329339946437501907836945765883352399886", "75506164965184775180738168837861091527357929701337", "62177842752192623401942399639168044983993173312731", "32924185707147349566916674687634660915035914677504", "99518671430235219628894890102423325116913619626622", "73267460800591547471830798392868535206946944540724",
+      "76841822524674417161514036427982273348055556214818", "97142617910342598647204516893989422179826088076852", "87783646182799346313767754307809363333018982642090", "10848802521674670883215120185883543223812876952786", "71329612474782464538636993009049310363619763878039", "62184073572399794223406235393808339651327408011116", "66627891981488087797941876876144230030984490851411", "60661826293682836764744779239180335110989069790714", "85786944089552990653640447425576083659976645795096", "66024396409905389607120198219976047599490197230297", "64913982680032973156037120041377903785566085089252", "16730939319872750275468906903707539413042652315011", "94809377245048795150954100921645863754710598436791", "78639167021187492431995700641917969777599028300699", "15368713711936614952811305876380278410754449733078", "40789923115535562561142322423255033685442488917353", "44889911501440648020369068063960672322193204149535", "41503128880339536053299340368006977710650566631954", "81234880673210146739058568557934581403627822703280", "82616570773948327592232845941706525094512325230608", "22918802058777319719839450180888072429661980811197", "77158542502016545090413245809786882778948721859617", "72107838435069186155435662884062257473692284509516", "20849603980134001723930671666823555245252804609722", "53503534226472524250874054075591789781264330331690",};
+    long int sum = 0;
+    for (i = 0; i < 100; i++) {
+        char firstDigits [15];
+        memcpy (firstDigits, num [i], 14);
+        firstDigits[14] = 0;
+        sum += strtol (firstDigits, NULL, 10);
+    }
+    char string [11];
+    snprintf (string, 11, "%ld", sum);
+    fprintf (stderr, "%s\n", string);
+    return 0;
+}
+----------------------------------------
+
+int main () {
+    const int nnum = 100, idigits = 50, odigits = 100;
+    string num [nnum] = {"37107287533902102798797998220837590246510135740250", "46376937677490009712648124896970078050417018260538", "74324986199524741059474233309513058123726617309629", "91942213363574161572522430563301811072406154908250", "23067588207539346171171980310421047513778063246676", "89261670696623633820136378418383684178734361726757", "28112879812849979408065481931592621691275889832738", "44274228917432520321923589422876796487670272189318", "47451445736001306439091167216856844588711603153276", "70386486105843025439939619828917593665686757934951", "62176457141856560629502157223196586755079324193331", "64906352462741904929101432445813822663347944758178", "92575867718337217661963751590579239728245598838407", "58203565325359399008402633568948830189458628227828", "80181199384826282014278194139940567587151170094390", "35398664372827112653829987240784473053190104293586", "86515506006295864861532075273371959191420517255829", "71693888707715466499115593487603532921714970056938", "54370070576826684624621495650076471787294438377604", "53282654108756828443191190634694037855217779295145", "36123272525000296071075082563815656710885258350721", "45876576172410976447339110607218265236877223636045", "17423706905851860660448207621209813287860733969412", "81142660418086830619328460811191061556940512689692", "51934325451728388641918047049293215058642563049483", "62467221648435076201727918039944693004732956340691", "15732444386908125794514089057706229429197107928209", "55037687525678773091862540744969844508330393682126", "18336384825330154686196124348767681297534375946515", "80386287592878490201521685554828717201219257766954", "78182833757993103614740356856449095527097864797581", "16726320100436897842553539920931837441497806860984", "48403098129077791799088218795327364475675590848030", "87086987551392711854517078544161852424320693150332", "59959406895756536782107074926966537676326235447210", "69793950679652694742597709739166693763042633987085", "41052684708299085211399427365734116182760315001271", "65378607361501080857009149939512557028198746004375", "35829035317434717326932123578154982629742552737307", "94953759765105305946966067683156574377167401875275", "88902802571733229619176668713819931811048770190271", "25267680276078003013678680992525463401061632866526", "36270218540497705585629946580636237993140746255962", "24074486908231174977792365466257246923322810917141", "91430288197103288597806669760892938638285025333403", "34413065578016127815921815005561868836468420090470", "23053081172816430487623791969842487255036638784583", "11487696932154902810424020138335124462181441773470", "63783299490636259666498587618221225225512486764533", "67720186971698544312419572409913959008952310058822", "95548255300263520781532296796249481641953868218774", "76085327132285723110424803456124867697064507995236", "37774242535411291684276865538926205024910326572967", "23701913275725675285653248258265463092207058596522", "29798860272258331913126375147341994889534765745501", "18495701454879288984856827726077713721403798879715", "38298203783031473527721580348144513491373226651381", "34829543829199918180278916522431027392251122869539", "40957953066405232632538044100059654939159879593635", "29746152185502371307642255121183693803580388584903", "41698116222072977186158236678424689157993532961922", "62467957194401269043877107275048102390895523597457", "23189706772547915061505504953922979530901129967519", "86188088225875314529584099251203829009407770775672", "11306739708304724483816533873502340845647058077308", "82959174767140363198008187129011875491310547126581", "97623331044818386269515456334926366572897563400500", "42846280183517070527831839425882145521227251250327", "55121603546981200581762165212827652751691296897789", "32238195734329339946437501907836945765883352399886", "75506164965184775180738168837861091527357929701337", "62177842752192623401942399639168044983993173312731", "32924185707147349566916674687634660915035914677504", "99518671430235219628894890102423325116913619626622", "73267460800591547471830798392868535206946944540724",
+      "76841822524674417161514036427982273348055556214818", "97142617910342598647204516893989422179826088076852", "87783646182799346313767754307809363333018982642090", "10848802521674670883215120185883543223812876952786", "71329612474782464538636993009049310363619763878039", "62184073572399794223406235393808339651327408011116", "66627891981488087797941876876144230030984490851411", "60661826293682836764744779239180335110989069790714", "85786944089552990653640447425576083659976645795096", "66024396409905389607120198219976047599490197230297", "64913982680032973156037120041377903785566085089252", "16730939319872750275468906903707539413042652315011", "94809377245048795150954100921645863754710598436791", "78639167021187492431995700641917969777599028300699", "15368713711936614952811305876380278410754449733078", "40789923115535562561142322423255033685442488917353", "44889911501440648020369068063960672322193204149535", "41503128880339536053299340368006977710650566631954", "81234880673210146739058568557934581403627822703280", "82616570773948327592232845941706525094512325230608", "22918802058777319719839450180888072429661980811197", "77158542502016545090413245809786882778948721859617", "72107838435069186155435662884062257473692284509516", "20849603980134001723930671666823555245252804609722", "53503534226472524250874054075591789781264330331690",};
+    int sum [odigits];
+    int carry = 0, d;
+    for (d = 0; d < odigits; d++) {
+        int ipos = idigits - 1 - d;
+        int opos = odigits - 1 - d;
+        int total = carry;
+        if (ipos >= 0)
+            for (int k = 0; k < nnum; k++)
+                total += num[k][ipos] - 48;
+        else if (carry == 0)
+            break;
+        sum[opos] = total % 10;
+        carry = total / 10;
+    }
+    for (int i = 0; i < 10; i++)
+        cout << sum[odigits - d + i];
+    cout << "\n";
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+27580854_27580889_3_14
+27580854_27580893_4_20
+Title: Reversing a number that has a zero at the last place 
+----------------------------------------
+
+int main () {
+    int number = 150, temp = number, digit;
+    while (temp != 0) {
+        digit = temp % 10;
+        temp = temp / 10;
+        printf ("%d", digit);
+    }
+    return 0;
+}
+----------------------------------------
+
+int main (void) {
+    int n = 150, reverse = 0;
+    bool ranonce = false;
+    while (n) {
+        if (ranonce == false && n % 10 == 0)
+            putchar ('0');
+        reverse = reverse * 10;
+        reverse = reverse + (n % 10);
+        n = n / 10;
+        if (n % 10 != 0)
+            ranonce = true;
+    }
+    printf ("%d\n", reverse);
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+27580854_27580889_3_14
+27580854_27589713_4_22
+Title: Reversing a number that has a zero at the last place 
+----------------------------------------
+
+int main () {
+    int number = 150, temp = number, digit;
+    while (temp != 0) {
+        digit = temp % 10;
+        temp = temp / 10;
+        printf ("%d", digit);
+    }
+    return 0;
+}
+----------------------------------------
+
+int main () {
+    int n = 15000;
+    char reverse [11];
+    int ind = 0;
+    while (n) {
+        int digit = n % 10;
+        reverse[ind++] = digit + '0';
+        n = n / 10;
+    }
+    reverse[ind] = '\0';
+    printf ("%s\n", reverse);
+    int decimal_val = atoi (reverse);
+    printf ("%d\n", decimal_val);
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+27580854_27580893_4_20
+27580854_27589713_4_22
+Title: Reversing a number that has a zero at the last place 
+----------------------------------------
+
+int main (void) {
+    int n = 150, reverse = 0;
+    bool ranonce = false;
+    while (n) {
+        if (ranonce == false && n % 10 == 0)
+            putchar ('0');
+        reverse = reverse * 10;
+        reverse = reverse + (n % 10);
+        n = n / 10;
+        if (n % 10 != 0)
+            ranonce = true;
+    }
+    printf ("%d\n", reverse);
+    return 0;
+}
+----------------------------------------
+
+int main () {
+    int n = 15000;
+    char reverse [11];
+    int ind = 0;
+    while (n) {
+        int digit = n % 10;
+        reverse[ind++] = digit + '0';
+        n = n / 10;
+    }
+    reverse[ind] = '\0';
+    printf ("%s\n", reverse);
+    int decimal_val = atoi (reverse);
+    printf ("%d\n", decimal_val);
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+27583307_27583947_30_46
+27583307_27584054_81_99
+Title: Why my output isn't correct? 
+----------------------------------------
+
+int main () {
+    int V = 5;
+    int *graph;
+    if (graph = createGraph (V)) {
+        addEdge (graph, V, 'a', 'b');
+        addEdge (graph, V, 'a', 'e');
+        addEdge (graph, V, 'b', 'c');
+        addEdge (graph, V, 'b', 'd');
+        addEdge (graph, V, 'b', 'e');
+        addEdge (graph, V, 'c', 'd');
+        addEdge (graph, V, 'd', 'e');
+        printGraph (graph, V);
+        free (graph);
+    }
+    return 0;
+}
+----------------------------------------
+
+int main () {
+    int V = 5;
+    struct Graph *graph = createGraph (V);
+    addEdge (graph, "a", "b");
+    addEdge (graph, "a", "e");
+    addEdge (graph, "b", "c");
+    addEdge (graph, "b", "d");
+    addEdge (graph, "b", "e");
+    addEdge (graph, "c", "d");
+    addEdge (graph, "d", "e");
+    printGraph (graph);
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+27583307_27583947_5_15
+27583307_27584054_65_79
+Title: Why my output isn't correct? 
+----------------------------------------
+
+void printGraph (int *graph, int V) {
+    int v, n;
+    for (v = 0; v < V; ++v) {
+        printf ("%c", v + 'a');
+        for (n = 0; n < V; ++n) {
+            if (graph[v * V + n])
+                printf ("->%c", n +'a');
+        }
+        printf ("\n");
+    }
+}
+----------------------------------------
+
+void printGraph (struct Graph *graph) {
+    int v;
+    for (v = 0; v < graph->V; ++v) {
+        struct AdjListNode *pCrawl = graph->array[v].head;
+        printf ("\n Adjacency list of vertex %d\n head %c", v, v + 'a');
+        while (pCrawl) {
+            printf ("-> %s", pCrawl -> dest);
+            pCrawl = pCrawl->next;
+        }
+        printf ("\n");
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+27594096_27594231_3_21
+27594096_27594272_3_17
+Title: Binary numbers to MLT-3 
+----------------------------------------
+
+int main (void) {
+    int direction = 1;
+    int state = 0;
+    char *seq = "10010111";
+    while (*seq) {
+        if (*seq == '1') {
+            state += direction;
+            if (state == 1 || state == -1)
+                direction = -direction;
+        }
+        switch (state) {
+        case 1 :
+            putchar ('+');
+            break;
+        case 0 :
+            putchar ('0');
+            break;
+        case -1 :
+            putchar ('-');
+            break;
+        }
+        ++seq;
+    }
+    return 0;
+}
+----------------------------------------
+
+int main () {
+    char states [4] = {'+', '0', '-', '0'};
+    int index = 3;
+    int b = 0x97;
+    int i;
+    for (i = 0; i < 8; i++) {
+        if (b & 0x80)
+            index = (index + 1) % 4;
+        printf ("%c", states [index]);
+        b <<= 1;
+    }
+    printf ("\n");
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+27601488_27601616_1_23
+27601488_27602049_1_27
+Title: C-create a file 
+----------------------------------------
+
+int writeRecordToFile (char *fileName, int numberRecord) {
+    FILE *file = fopen (fileName, "a");
+    if (file == NULL) {
+        puts ("Error handled when appending file");
+        return -1;
+    }
+    int i;
+    for (i = numberRecord; i > 0; i--) {
+        struct record newRecord;
+        strcpy (newRecord.numbers, "gg");
+        strcpy (newRecord.letters, "ww");
+        strcpy (newRecord.date, "tt");
+        fprintf (file, "%s,%s,%s\n", newRecord.numbers, newRecord.letters, newRecord.date);
+    }
+    fclose (file);
+    return 0;
+}
+----------------------------------------
+
+int writeRecordToFile (char *fileName, int numberRecord) {
+    int i;
+    FILE *file = fopen (fileName, "a");
+    if (file == NULL)
+        return -1;
+    struct record *newRecord = malloc (sizeof (struct record));
+    if (newRecord == NULL) {
+        fclose (file);
+        return -1;
+    }
+    for (i = numberRecord; i > 0; i--) {
+        strcpy (newRecord -> numbers, randstring (10, 1));
+        strcpy (newRecord -> letters, randstring (10, 0));
+        strcpy (newRecord -> date, randomDate ());
+        fprintf (file, "%s,%s,%s\n", newRecord -> numbers, newRecord -> letters, newRecord -> date);
+    }
+    fclose (file);
+    free (newRecord);
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+27622512_27623318_4_27
+27622512_27647353_4_38
+Title: Version string comparision using the ternary operator in C 
+----------------------------------------
+
+int compare_versions (const char *a, const char *b) {
+    size_t len1, len2, shortest;
+    if (!a || !b) {
+        return -1;
+    }
+    len1 = strlen (a);
+    len2 = strlen (b);
+    shortest = len1 < len2 ? len1 : len2;
+    if (strncmp (a, b, shortest) != 0) {
+        return 0;
+    }
+    if (a[shortest] && strcmp (&a[shortest], ".0") != 0) {
+        return 0;
+    }
+    if (b[shortest] && strcmp (&b[shortest], ".0") != 0) {
+        return 0;
+    }
+    return 1;
+}
+----------------------------------------
+
+int compare_versions (const char *a, const char *b) {
+    size_t lena, lenb, len;
+    int rc;
+    if (!a || !b) {
+        return (a) ? 1 : (b) ? -1 : 0;
+    }
+    while (1) {
+        lena = strcspn (a, "0123456789");
+        lenb = strcspn (b, "0123456789");
+        len = (lena < lenb) ? lena : lenb;
+        rc = (len) ? memcmp (a, b, len) : 0;
+        if (rc)
+            return rc;
+        for (a += lena; *a == '0'; a++) {
+        }
+        for (b += lenb; *b == '0'; b++) {
+        }
+        if (!*a || !*b)
+            break;
+        lena = strspn (a, "0123456789");
+        lenb = strspn (b, "0123456789");
+        if (lena != lenb)
+            return lena - lenb;
+        rc = (len) ? memcmp (a, b, lena) : 0;
+        if (rc)
+            return rc;
+        a += lena;
+        b += lenb;
+    }
+    return *a - *b;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+27622512_27626015_5_64
+27622512_27647353_59_70
+Title: Version string comparision using the ternary operator in C 
+----------------------------------------
+
+int main () {
+    int a [10], b [10];
+    char str1 [20];
+    char str2 [20];
+    int kase;
+    printf ("Enter number of cases : ");
+    scanf ("%d", & kase);
+    getchar ();
+    while (kase--) {
+        memset (a, 0, sizeof (a));
+        memset (b, 0, sizeof (b));
+        printf ("Enter first string : ");
+        gets (str1);
+        printf ("Enter second string : ");
+        gets (str2);
+        int ind1 = 0, ind2 = 0;
+        char *token = strtok (str1, ".");
+        while (token != NULL) {
+            a[ind1++] = atoi (token);
+            token = strtok (NULL, ".");
+        }
+        token = strtok (str2, ".");
+        while (token != NULL) {
+            b[ind2++] = atoi (token);
+            token = strtok (NULL, ".");
+        }
+        int same = 1, n = ind1;
+        if (ind2 > n)
+            n = ind2;
+        for (int i = 0; i < n; i++) {
+            if (a[i] != b[i]) {
+                same = 0;
+                break;
+            }
+        }
+        if (same)
+            printf ("value = 1 . Strings are same\n");
+        else
+            printf ("value = 0 . Strings not same\n");
+    }
+    return 0;
+}
+----------------------------------------
+
+int main (int argc, char *argv []) {
+    int ii;
+    for (ii = 0; ii < 12; ii++) {
+        int rc;
+        rc = compare_versions (pairs[ii].l, pairs[ii].r);
+        printf ("(%s <-->> %s)  compare value= %d\n", pairs [ii].l, pairs [ii].r, rc);
+    }
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+27625436_27625619_1_28
+27625436_27625939_9_100
+Title: "C function print to buffer" 
+----------------------------------------
+
+void printdir (char *dir, int depth, char *output) {
+    DIR *dp;
+    struct dirent *entry;
+    struct stat statbuf;
+    char tmp [100];
+    if ((dp = opendir (dir)) == NULL) {
+        fprintf (stderr, "cannot open directory: %s\n", dir);
+        return;
+    }
+    chdir (dir);
+    while ((entry = readdir (dp)) != NULL) {
+        lstat (entry -> d_name, & statbuf);
+        if (S_ISDIR (statbuf.st_mode)) {
+            if (strcmp (".", entry->d_name) == 0 || strcmp ("..", entry->d_name) == 0)
+                continue;
+            sprintf (tmp, "%*s%s/\n", depth, "", entry -> d_name);
+            strcpy (buffer, tmp);
+            printdir (entry -> d_name, depth + 4, buffer + strlen (tmp));
+        }
+        else
+            printf ("%*s%s\n", depth, "", entry->d_name);
+    }
+    chdir ("..");
+    closedir (dp);
+}
+----------------------------------------
+
+void printdir (char **output, const char * const dir, int depth) {
+    DIR *dp;
+    struct dirent *entry;
+    struct stat statbuf;
+    if ((dp = opendir (dir)) == NULL) {
+        fprintf (stderr, "cannot open directory: %s\n", dir);
+        return;
+    }
+    chdir (dir);
+    while ((entry = readdir (dp)) != NULL) {
+        if (lstat (entry->d_name, &statbuf) == -1)
+            continue;
+        if (S_ISDIR (statbuf.st_mode) != 0) {
+            char *buffer;
+            size_t length;
+            if (strcmp (".", entry->d_name) == 0 || strcmp ("..", entry->d_name) == 0)
+                continue;
+            length = 4 + depth + strlen (entry->d_name);
+            if (*output != NULL)
+                length += strlen (*output);
+            buffer = realloc (*output, length);
+            if (buffer != NULL) {
+                char current [length];
+                if (*output == NULL)
+                    buffer[0] = '\0';
+                *output = buffer;
+                snprintf (current, length, "%*s%s/\n", depth, " ", entry -> d_name);
+                strcat (* output, current);
+            }
+            else {
+                fprintf (stderr, "Out of memory\n");
+                free (*output);
+                *output = NULL;
+                closedir (dp);
+                return;
+            }
+            printdir (output, entry -> d_name, depth + 4);
+        }
+        else {
+            char *buffer;
+            size_t length;
+            length = 4 + depth + strlen (entry->d_name);
+            if (*output != NULL)
+                length += strlen (*output);
+            buffer = realloc (*output, length);
+            if (buffer != NULL) {
+                char current [length];
+                if (*output == NULL)
+                    buffer[0] = '\0';
+                *output = buffer;
+                snprintf (current, length, "%*s%s/\n", depth, " ", entry -> d_name);
+                strcat (* output, current);
+            }
+            else {
+                fprintf (stderr, "Out of memory\n");
+                free (*output);
+                *output = NULL;
+                closedir (dp);
+                return;
+            }
+        }
+    }
+    chdir ("..");
+    closedir (dp);
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+27634085_27634155_12_25
+27634085_27634171_12_29
+Title: Erroneous output on recursive function in C 
+----------------------------------------
+
+void printnumber (int n) {
+    char ch;
+    int x;
+    if (n == 0)
+        return;
+    else {
+        x = n % 10;
+        n = n / 10;
+        ch = x + '0';
+        printnumber (n);
+        putchar (ch);
+    }
+}
+----------------------------------------
+
+void printnumber (int n) {
+    if (n / 10 == 0) {
+        if (n < 0) {
+            putchar ('-');
+            n = -n;
+        }
+        putchar (n + '0');
+        return;
+    }
+    int x, y;
+    x = n % 10;
+    if (x < 0)
+        x = -x;
+    printnumber (n / 10);
+    putchar (x + '0');
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+27634085_27634155_12_25
+27634085_27641183_11_19
+Title: Erroneous output on recursive function in C 
+----------------------------------------
+
+void printnumber (int n) {
+    char ch;
+    int x;
+    if (n == 0)
+        return;
+    else {
+        x = n % 10;
+        n = n / 10;
+        ch = x + '0';
+        printnumber (n);
+        putchar (ch);
+    }
+}
+----------------------------------------
+
+void printnumber (int n) {
+    if (n < 0) {
+        putchar ('-');
+    }
+    else {
+        n = -n;
+    }
+    printdigit (n);
+    putchar ('\n');
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+27634085_27634171_12_29
+27634085_27641183_11_19
+Title: Erroneous output on recursive function in C 
+----------------------------------------
+
+void printnumber (int n) {
+    if (n / 10 == 0) {
+        if (n < 0) {
+            putchar ('-');
+            n = -n;
+        }
+        putchar (n + '0');
+        return;
+    }
+    int x, y;
+    x = n % 10;
+    if (x < 0)
+        x = -x;
+    printnumber (n / 10);
+    putchar (x + '0');
+}
+----------------------------------------
+
+void printnumber (int n) {
+    if (n < 0) {
+        putchar ('-');
+    }
+    else {
+        n = -n;
+    }
+    printdigit (n);
+    putchar ('\n');
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+27660427_27662788_6_31
+27660427_27663684_7_47
+Title: Increment numbers in char array separated by different delimiters 
+----------------------------------------
+
+int main () {
+std :
+    : string input ("1-2,4^,14-56");
+std :
+    : regex number ("\\d+");
+    auto ri_begin = std : : sregex_iterator (input.begin (), input.end (), number);
+    auto ri_end = std : : sregex_iterator ();
+    for (auto i = ri_begin; i != ri_end; ++i) {
+    std :
+        : smatch match = * i;
+        int value = std : : stoi (match.str ());
+    std :
+        : string replacement = std : : to_string (++ value);
+        input.replace (match.position (), match.length (), replacement);
+    }
+std :
+    : cout << input << std : : endl;
+    return 0;
+}
+----------------------------------------
+
+int main (void) {
+    char *inputString = "1-2,4^,14-56";
+    char *next_code_at = inputString;
+    long result;
+    char dest [100], *dest_ptr;
+    printf ("%s\n", inputString);
+    dest[0] = 0;
+    dest_ptr = dest;
+    while (next_code_at && *next_code_at) {
+        while (*next_code_at && !(isdigit (*next_code_at))) {
+            dest_ptr += sprintf (dest_ptr, "%c", *next_code_at);
+            next_code_at++;
+        }
+        if (*next_code_at) {
+            result = strtol (next_code_at, &next_code_at, 10);
+            if (errno) {
+                perror ("strtol failed");
+                return EXIT_FAILURE;
+            }
+            else {
+                if (result < LONG_MAX)
+                    dest_ptr += sprintf (dest_ptr, "%ld", result +1);
+                else {
+                    fprintf (stderr, "number too large!\n");
+                    return EXIT_FAILURE;
+                }
+            }
+        }
+    }
+    printf ("%s\n", dest);
+    return EXIT_SUCCESS;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+27664387_27664534_3_15
+27664387_27664539_1_21
+Title: "scanf("" %450[^\n]""str) not reading line by line" 
+----------------------------------------
+
+int main () {
+    int T, i;
+    char str2 [1024];
+    fgets (str2, 1024, stdin);
+    sscanf (str2, "%d", & T);
+    printf ("%d\n", T);
+    for (i = 0; i < T; i++) {
+        fgets (str2, 1024, stdin);
+        printf ("%s", str2);
+    }
+    return EXIT_SUCCESS;
+}
+----------------------------------------
+
+int main () {
+    int T;
+    char str2 [450] = {0};
+    int i;
+    scanf ("%d", & T);
+    scanf ("%*[^\n]");
+    fgetc (stdin);
+    printf ("%d\n", T);
+    for (i = 0; i < T; i++) {
+        scanf ("%450[^\n]", str2);
+        fgetc (stdin);
+        printf ("%s\n", str2);
+    }
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+27670208_27670395_104_118
+27670208_27702525_116_131
+Title: "read integer values from a CSV file how to get only the last two values of the record?" 
+----------------------------------------
+
+int main () {
+    int **matrix;
+    int rows;
+    int columns;
+    matrix = fileToMatrix ("data.dat", &rows, &columns, 2);
+    if (matrix != NULL) {
+        printMatrix (matrix, rows, columns);
+        freeMatrix (matrix, rows, columns);
+    }
+    return 0;
+}
+----------------------------------------
+
+int main () {
+    int **matrix;
+    int rows;
+    matrix = fileToMatrix ("data.dat", &rows);
+    if (matrix != NULL) {
+        printf ("|AreaCode|Total Distace|Area Count|Mean");
+        printf ("------------------------------------------");
+        printMatrix (matrix, rows);
+        freeMatrix (matrix, rows);
+    }
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+27670208_27670395_1_79
+27670208_27702525_18_80
+Title: "read integer values from a CSV file how to get only the last two values of the record?" 
+----------------------------------------
+
+int **fileToMatrix (const char * const filename, int *readRowCount, int *readColumnCount, int skipColumns) {
+    char part [256];
+    FILE *file;
+    int rowIndex;
+    int columnIndex;
+    int index;
+    int **values;
+    file = fopen (filename, "r");
+    if (file == NULL)
+        return NULL;
+    values = NULL;
+    rowIndex = 0;
+    while (fgets (part, sizeof part, file) != NULL) {
+        char *token;
+        int **pointer;
+        char *saveptr;
+        pointer = realloc (values, (1 + rowIndex) * sizeof (int *));
+        if (pointer == NULL)
+            goto abort;
+        values = pointer;
+        values[rowIndex] = NULL;
+        columnIndex = 0;
+        token = strtok_r (part, ",", &saveptr);
+        while ((token = strtok_r (NULL, ",", &saveptr)) != NULL) {
+            columnIndex += 1;
+            if (columnIndex > (skipColumns - 1)) {
+                int value;
+                char *endptr;
+                int *currentRow;
+                int columnCount;
+                endptr = NULL;
+                value = strtol (token, &endptr, 10);
+                if ((endptr != NULL) && (*endptr != '\0') && (*endptr != '\n'))
+                    value = -1;
+                columnCount = columnIndex - skipColumns + 1;
+                currentRow = realloc (values[rowIndex], columnCount * sizeof (int));
+                if (currentRow == NULL)
+                    goto abort;
+                currentRow[columnIndex - skipColumns] = value;
+                values[rowIndex] = currentRow;
+            }
+        }
+        columnIndex++;
+        rowIndex++;
+    }
+    fprintf (stderr, "%d rows and %d columns parsed\n", rowIndex, columnIndex - skipColumns);
+    fclose (file);
+    *readRowCount = rowIndex;
+    *readColumnCount = columnIndex - skipColumns;
+    return values;
+abort :
+    *readRowCount = -1;
+    *readColumnCount = -1;
+    for (index = rowIndex - 1; index >= 0; index--)
+        free (values[index]);
+    free (values);
+    fclose (file);
+    return NULL;
+}
+----------------------------------------
+
+int **fileToMatrix (const char * const filename, int *readRowCount) {
+    char part [256];
+    FILE *file;
+    int rowIndex;
+    int index;
+    int **values;
+    size_t partLength;
+    int v1, v2;
+    int CheckValue;
+    file = fopen (filename, "r");
+    if (file == NULL)
+        return NULL;
+    values = NULL;
+    rowIndex = 0;
+    while (fgets (part, sizeof part, file) != NULL) {
+        int **pointer;
+        pointer = realloc (values, (1 + rowIndex) * sizeof (int *));
+        if (pointer == NULL)
+            goto abort;
+        partLength = strlen (part);
+        if (part[partLength - 1] == '\n')
+            rowIndex++;
+        sscanf (part, "%*[^,],%*[^,],%d,%d", & v1, & v2);
+        CheckValue = CheckMatrix (Values, rowIndex, V1);
+        If (CheckValue != - 1) {Values[CheckValue]
+            [1] = Values[CheckValue][1] + V2 Values[CheckValue]
+            [2] = Values[CheckValue][2]
+        }
+        else {
+            Values[CheckValue][0] = V1;
+            Values[CheckValue][1] = V2;
+            Values[CheckValue][2] = 1;
+        }
+    }
+    return values;
+abort :
+    *readRowCount = -1;
+    *readColumnCount = -1;
+    for (index = rowIndex - 1; index >= 0; index--)
+        free (values[index]);
+    free (values);
+    fclose (file);
+    return NULL;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+27670208_27670395_89_102
+27670208_27702525_90_110
+Title: "read integer values from a CSV file how to get only the last two values of the record?" 
+----------------------------------------
+
+void printMatrix (int **matrix, int rows, int columns) {
+    int row;
+    int column;
+    for (row = 0; row < rows; row++) {
+        int *currentRow;
+        currentRow = matrix[row];
+        for (column = 0; column < columns; column++)
+            printf ("%8d", currentRow[column]);
+        printf ("\n");
+    }
+}
+----------------------------------------
+
+void printMatrix (int **matrix, int rows) {
+    int row;
+    for (row = 0; row < rows; row++) {
+        for (column = 0; column < 4; column++) {
+            if (column == 3) {
+                double Mean = double (matrix [row] [1]) / double (matrix [row] [2]);
+                printf ("%f", matrix [row] [column];
+            }
+            printf ("%d |", matrix [row] [column]);
+        }
+        printf ("\n");
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+27671115_27671508_30_47
+27671115_27671589_30_46
+Title: fwrite and fread structs 
+----------------------------------------
+
+void finalizar (tLista *l) {
+    FILE *fichero;
+    fichero = fopen ("listaImpresoras.bin", "w");
+    if (fichero == NULL) {
+        printf ("No se puede abrir listaImpresoras.bin");
+    }
+    else {
+        fwrite (l, sizeof (* l), 1, fichero);
+        fclose (fichero);
+    }
+}
+----------------------------------------
+
+void finalizar (struct tLista *l) {
+    FILE *fichero;
+    if (NULL == (fichero = fopen ("listaImpresoras.bin", "wb"))) {
+        perror ("fopen failed");
+        printf ("No se puede abrir listaImpresoras.bin\n");
+        exit (EXIT_FAILURE);
+    }
+    fwrite (l, sizeof (struct tLista), 1, fichero);
+    fclose (fichero);
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+27671115_27671508_49_66
+27671115_27671589_50_65
+Title: fwrite and fread structs 
+----------------------------------------
+
+void inicializarLista (tLista *l) {
+    FILE *fichero;
+    fichero = fopen ("listaImpresoras.bin", "r");
+    if (fichero == NULL) {
+        printf ("No existe el fichero listaImpresoras.bin\n");
+        l->oc = 0;
+    }
+    else {
+        fread (l, sizeof (* l), 1, fichero);
+        fclose (fichero);
+    }
+}
+----------------------------------------
+
+void inicializarLista (struct tLista *l) {
+    FILE *fichero;
+    if (NULL == (fichero = fopen ("listaImpresoras.bin", "r"))) {
+        perror (" fopen failed");
+        printf ("No existe el fichero listaImpresoras.bin\n");
+        exit (EXIT_FAILURE);
+    }
+    fread (l, sizeof (* l), 1, fichero);
+    fclose (fichero);
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+27671884_27672012_1_27
+27671884_27672227_1_22
+Title: Why is my code returning an incorrect value? 
+----------------------------------------
+
+int main () {
+    int rng1, rng2, inc;
+    printf ("Welcome to my number generator! \n");
+    printf ("What is the first number in the range? \n");
+    if (1 != scanf ("%d", &rng1)) {
+        exit (EXIT_FAILURE);
+    }
+    printf ("What is the second number in the range? \n");
+    scanf ("%d", & rng2);
+    printf ("What would increment would you like to go up in? \n");
+    scanf ("%d", & inc);
+    do {
+        printf ("%d\n", rng1);
+        rng1 += inc;
+    }
+    while (rng1 <= rng2);
+    return 0;
+}
+----------------------------------------
+
+int main (int argc, char **argv) {
+    printf ("Welcome to my number generator! \n");
+    printf ("What is the first number in the range? \n");
+    int rng1;
+    int t = scanf ("%d", &rng1);
+    printf ("What is the second number in the range? \n");
+    int rng2;
+    int t1 = scanf ("%d", &rng2);
+    printf ("What would increment would you like to go up in? \n");
+    int inc;
+    int t2 = scanf ("%d", &inc);
+    do {
+        printf ("%d\n", rng1);
+        rng1 += inc;
+    }
+    while (rng1 <= rng2);
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+27673700_27673727_34_51
+27673700_27673951_61_77
+Title: Passing an array of structs to a function? 
+----------------------------------------
+
+int main (void) {
+    int i;
+    HEAD c [12];
+    for (i = 0; i < 12; i++) {
+        c[i].face = i + 30;
+        c[i].nose = i + 60;
+    }
+    passByReference (c, sizeof (c) / sizeof (c [0]));
+    return 0;
+}
+----------------------------------------
+
+int main () {
+    int i = 0;
+    static struct card cards [MAX_CARDS];
+    for (i = 0; i < MAX_CARDS; i++) {
+        cards[i].face = i + 30;
+        cards[i].nose = i + 60;
+    }
+    passByReference (& cards [0]);
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+27680693_27680845_4_40
+27680693_27680951_4_34
+Title: converting decimal-number to binary-number 
+----------------------------------------
+
+int main (void) {
+    int i;
+    int bits [16];
+    int bits_2 [16];
+    int number;
+    int decimal;
+    int rest;
+    int msb;
+    int result = 1;
+    printf ("Input number smaller than 65536: ");
+    scanf ("%d", & decimal);
+    if (decimal >= 65536) {
+        printf ("\n\nincorrect input!");
+        return EXIT_FAILURE;
+    }
+    number = decimal;
+    for (i = 0; result != 0; i++) {
+        result = number / 2;
+        rest = number % 2;
+        number = result;
+        bits[i] = rest;
+        msb = i;
+    }
+    printf ("\n\n %d as binary number : ", decimal);
+    for (i = msb; i + 1; i--) {
+        printf ("%d", bits [i]);
+    }
+    return 0;
+}
+----------------------------------------
+
+int main (void) {
+    int i;
+    int bits [16];
+    unsigned int decimal;
+    int rest;
+    int result = 1;
+    printf ("Input number smaller than 65536: ");
+    scanf ("%d", & decimal);
+    if (decimal >= 65536) {
+        printf ("\n\nincorrect input!");
+        return EXIT_FAILURE;
+    }
+    else
+        printf ("\n\n %d as binary number : ", decimal);
+    for (i = 0; result != 0; i++) {
+        result = decimal / 2;
+        rest = decimal % 2;
+        decimal = result;
+        bits[i] = rest;
+    }
+    i--;
+    for (; i + 1; i--) {
+        printf ("%d", bits [i]);
+    }
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+27698021_27698170_4_50
+27698021_27700110_14_59
+Title: Printing multi-line strings together 
+----------------------------------------
+
+int main (void) {
+    char a [] = "      &&\n" "     & &\n" "    &  &\n" "   &   &\n" "  &    &\n" " &     &\n" "&      &\n" "       &\n" "       &\n" "       &\n" "       &\n" "       &\n" "       &\n";
+    char b [] = "    & & & &    \n" "   &       &   \n" "  &         &  \n" " &           & \n" "&             &\n" "&             &\n" "&             &\n" "&             &\n" "&             &\n" " &           & \n" "  &         &  \n" "   &       &   \n" "    & & & &    \n";
+    char *a_line = a;
+    char *b_line = b;
+    char *a_end;
+    char *b_end;
+    while ((a_end = strchr (a_line, '\n')) != 0 && (b_end = strchr (b_line, '\n')) != 0) {
+        int a_len = a_end - a_line;
+        int b_len = b_end - b_line;
+        printf ("%.*s   %.*s\n", a_len, a_line, b_len, b_line);
+        a_line = a_end + 1;
+        b_line = b_end + 1;
+    }
+    return 0;
+}
+----------------------------------------
+
+int main () {
+    char a [] = "      &&\n" "     & &\n" "    &  &\n" "   &   &\n" "  &    &\n" " &     &\n" "&      &\n" "       &\n" "       &\n" "       &\n" "       &\n" "       &\n" "       &";
+    char b [] = "    & & & &    $" "   &       &   $" "  &         &  $" " &           & $" "&             &$" "&             &$" "&             &$" "&             &$" "&             &$" " &           & $" "  &         &  $" "   &       &   $" "    & & & &    $";
+    COORD first = getxy ();
+    printf ("%s", a);
+    COORD last = getxy ();
+    gotoxy (last.X + 1, first.Y);
+    COORD current = getxy ();
+    int i = 0;
+    while (b[i] != '\0') {
+        if (b[i] == '$') {
+            gotoxy (current.X, current.Y + 1);
+            current = getxy ();
+        }
+        else
+            printf ("%c", b[i]);
+        i++;
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+27709595_27710058_3_34
+27709595_27710124_5_37
+Title: How to put text from file into array 
+----------------------------------------
+
+int main (void) {
+    int i, j, flag;
+    char mas [50];
+    size_t n = 0;
+    FILE *in = fopen ("test.txt", "r");
+    if (in) {
+        int ch;
+        while ((ch = getc (in)) != EOF && n < 50) {
+            mas[n++] = (char) ch;
+        }
+        fclose (in);
+    }
+    for (i = 0; i < n; i++) {
+        flag = 0;
+        for (j = i + 1; j < n; j++) {
+            if (mas[i] == mas[j]) {
+                flag = 1;
+                break;
+            }
+        }
+        if (!flag) {
+            printf ("%c\n", mas [i]);
+        }
+    }
+    return 0;
+}
+----------------------------------------
+
+int main () {
+    int x, i, n, v = 1;
+    char s [256], str;
+    for (i = 1; i <= 255; i++)
+        s[i] = '0';
+    x = open ("out.txt", O_RDONLY);
+    if (x == -1) {
+        printf ("Invalid file path");
+        return 0;
+    }
+    while (n != 0) {
+        n = read (x, &str, 1);
+        s[(int) str] = '1';
+        v = 0;
+    }
+    close (x);
+    for (i = 1; i <= 255; i++)
+        if (s[i] == '1')
+            printf ("%c", (char) i);
+    if (v)
+        printf ("Blank file!");
+    close (x);
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+27712268_27714035_14_33
+27712268_27714302_11_28
+Title: Passing a 3D array ( 2D array of strings ) to a function and edit it there 
+----------------------------------------
+
+void main (int c, char **v) {
+    int i, j, k, x = 3, y = 5, z = 17;
+    char ***array = (char ***) malloc (sizeof (char **) * x);
+    for (i = 0; i < x; i++) {
+        array[i] = (char **) malloc (sizeof (char *) * y);
+        for (j = 0; j < y; j++) {
+            array[i][j] = (char *) malloc (z);
+        }
+    }
+    doit (array, x, y, z);
+    for (i = 0; i < x; i++) {
+        for (j = 0; j < y; j++) {
+            printf ("%d/%d %s\n", i, j, array [i] [j]);
+        }
+    }
+    for (i = 0; i < x; free (array[i++])) {
+        for (j = 0; j < y; free (array[i][j++]))
+            ;
+    }
+    free (array);
+}
+----------------------------------------
+
+int main () {
+    size_t height = 5, width = 7;
+    char *stringMatrix [height] [width];
+    foo (height, width, stringMatrix);
+    for (size_t y = 0; y < height; y++) {
+        for (size_t x = 0; x < width; x++) {
+            free (stringMatrix [y] [x]);
+        }
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+27718330_27718786_3_25
+27718330_27719182_4_27
+Title: Online judgeProblem (Wrong Answer) 
+----------------------------------------
+
+int main () {
+    int c = 0;
+    int maxi = 10;
+    scanf ("%d", & c);
+    int t [c];
+    for (int i = 0; i < c; i++)
+        scanf ("%d", &t[i]);
+    for (int i = 0; i < c; i++) {
+        int com1 = t[i], com2 = 0;
+        if (t[i] > 10) {
+            com1 = 10 com2 = t [i] - com1;
+        }
+        printf ("%d %d\n", com1, com2);
+    }
+    return 0;
+}
+----------------------------------------
+
+int main () {
+    int c = 0, mini, maxi, i, com1, com2, *t;
+    scanf ("%d", & c);
+    t = malloc (c * sizeof (int));
+    for (i = 0; i < c; i++)
+        scanf ("%d", &t[i]);
+    printf ("\n");
+    for (i = 0; i < c; i++) {
+        if (t[i] > 10) {
+            maxi = 10;
+            mini = t[i] - 10;
+        }
+        else {
+            maxi = t[i];
+            mini = 0;
+        }
+        com1 = rand () % (maxi - mini + 1) + mini;
+        com2 = t[i] - com1;
+        printf ("%d %d\n", com1, com2);
+    }
+    free (t);
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+27729979_27730258_5_28
+27729979_27730524_10_45
+Title: Communication with Arduino using Linux 
+----------------------------------------
+
+int main () {
+    char data [] = {'f', 'b', 'r'};
+    int fd;
+    int i;
+    fd = open ("/dev/ttyACM0", O_WRONLY);
+    if (fd == -1) {
+        perror ("cannot open /dev/ttyACM0");
+        return -1;
+    }
+    for (i = 0; i < 3; i++) {
+        write (fd, & (data [i]), 1);
+        write (fd, ",", 1);
+        sleep (1);
+    }
+    close (fd);
+    return 0;
+}
+----------------------------------------
+
+int main () {
+    char data [] = {'f', 'b', 'r'};
+    FILE *file;
+    if (NULL == (file = fopen ("/dev/ttyACM0", "w"))) {
+        perror ("fopen failed for ttyACM0");
+        exit (EXIT_FAILURE);
+    }
+    int i = 0;
+    for (i = 0; i < 3; i++) {
+        if (0 >= fprintf (file, "%c", data[i])) {
+            perror ("fprintf data failed");
+            exit (EXIT_FAILURE);
+        }
+        if (0 >= fprintf (file, "%c", ',')) {
+            perror ("fprintf for comma failed");
+            exit (EXIT_FAILURE);
+        }
+        sleep (1);
+    }
+    fclose (file);
+    return (0);
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+27730828_27730880_5_21
+27730828_27731244_6_36
+Title: how to get sub string from another string in ( C ) 
+----------------------------------------
+
+char *SQLParser_GetTable (char *query) {
+    char *str;
+    char *FROM = "FROM ";
+    if ((str = strstr (query, FROM)) == NULL)
+        return NULL;
+    str = strchr (str, ' ');
+    if (str == NULL)
+        return NULL;
+    str += 1;
+    return strdup (str);
+}
+----------------------------------------
+
+char *SQLParser_GetTable (const char *query) {
+    const char FROM [] = "FROM";
+    char *p;
+    int found;
+    found = (p = strstr (query, FROM)) != NULL;
+    found = found && (p == query || isblank ((unsigned char) p[-1]));
+    found = found && (*(p += sizeof (FROM) - 1) == '\0' || isblank ((unsigned char) p[0]));
+    if (found) {
+        const char *q = p;
+        size_t n = 0;
+        while (isblank ((unsigned char) *q))
+            ++q;
+        while (q[n] && !isblank ((unsigned char) q[n]))
+            ++n;
+        p = malloc ((n + 1) * sizeof (char));
+        memcpy (p, q, n);
+        p[n] = '\0';
+    }
+    else {
+        p = NULL;
+    }
+    return p;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+27732684_27732730_3_22
+27732684_27732957_1_34
+Title: C Convert decimal scanf input to binary array 
+----------------------------------------
+
+int main () {
+    int d [20];
+    int decimalno, i = 0;
+    printf ("Enter the decimal number you want to conver to binary: \n");
+    scanf ("%d", & decimalno);
+    while (decimalno > 0) {
+        d[i] = decimalno % 2;
+        i++;
+        decimalno = decimalno / 2;
+    }
+    printf ("The binary version of the number you input, %d, is = ", decimalno);
+    for (int j = i - 1; j >= 0; j--) {
+        printf ("%d", d [j]);
+    }
+    return 0;
+}
+----------------------------------------
+
+int main () {
+    int displayNumber;
+    int pins [6] = {3, 0, 1, 2};
+    int i;
+    wiringPiSetup ();
+    pinMode (0, OUTPUT);
+    pinMode (1, OUTPUT);
+    pinMode (2, OUTPUT);
+    pinMode (3, OUTPUT);
+    pinMode (6, OUTPUT);
+    digitalWrite (0, LOW);
+    digitalWrite (1, LOW);
+    digitalWrite (2, LOW);
+    digitalWrite (3, LOW);
+    digitalWrite (6, LOW);
+    displayNumber = -1;
+    while ((displayNumber < 0) || (displayNumber > 9)) {
+        printf ("Please select a number to display! 0-9\n");
+        scanf ("%i", & displayNumber);
+    }
+    digitalWrite (6, LOW);
+    for (i = 0; i < 4; i++)
+        digitalWrite (pins[i], displayNumber &(1 << i) ? HIGH : LOW);
+    digitalWrite (6, HIGH);
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+27745676_27746118_1_19
+27745676_27746148_4_18
+Title: Iterate until encountering the value has the fractional part 0 
+----------------------------------------
+
+void int_or_float (const float *arr, int n) {
+    int j;
+    float counter = 0.0f;
+    char str [10];
+    while (n-- > 0) {
+        printf ("%f\n", * arr);
+        sprintf (str, "%f", * arr ++);
+        for (j = 0; j < 9; j++) {
+            printf ("%c\n", str [j]);
+            if (str[j] == '.' && str[j + 1] == '0') {
+                printf ("Aborted!");
+                printf ("\n\nBefore the first integer: %f elements\n", counter);
+                j = 11;
+                n = 0;
+            }
+        }
+        counter = counter + 1.0f;
+    }
+}
+----------------------------------------
+
+void int_or_float (float arr []) {
+    float *ptr = arr;
+    int ival;
+    while (*ptr >= 0) {
+        printf ("%f\n", * ptr);
+        ival = (int) *ptr;
+        if (*ptr == (float) ival) {
+            printf ("Aborted!");
+            printf ("\n\nBefore the first integer: %d elements", ptr - arr);
+            return;
+        }
+        ptr++;
+    }
+    printf ("\n\nNo integer values found");
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+27762518_27764992_1_23
+27762518_27765469_11_48
+Title: OpenCv - Memory leak when capturing frames from webcam 
+----------------------------------------
+
+int main () {
+    CvCapture *capture;
+    IplImage *frame;
+    IplImage *tmp;
+    capture = cvCreateCameraCapture (0);
+    while (1) {
+        if (capture) {
+            frame = cvQueryFrame (capture);
+        }
+        if (frame) {
+            CvSize size = cvSize (100, 100);
+            tmp = cvCreateImage (size, IPL_DEPTH_8U, 3);
+            cvResize (frame, tmp, CV_INTER_CUBIC);
+            cvReleaseImage (& tmp);
+        }
+    }
+    cvReleaseCapture (& capture);
+}
+----------------------------------------
+
+int main (int argc, char * const argv []) {
+    struct rusage usage;
+    long max_resident_set_size = 0;
+    long frame_no = 0;
+    CvCapture *capture;
+    IplImage *frame;
+    capture = cvCreateCameraCapture (0);
+    if (!capture) {
+        return 1;
+    }
+    while (frame_no < 100) {
+        frame = cvQueryFrame (capture);
+        frame_no++;
+        errno = 0;
+        getrusage (RUSAGE_SELF, & usage);
+        if (errno == EFAULT)
+            printf ("Error: EFAULT\n");
+        else if (errno == EINVAL)
+            printf ("Error: EINVAL\n");
+        else if (max_resident_set_size != usage.ru_maxrss) {
+            printf ("frame %ld maximum resident set size: %ld\n", frame_no, usage.ru_maxrss);
+            printf ("frame %ld maximum resident set size diff : %ld\n", frame_no, (usage.ru_maxrss - max_resident_set_size));
+            max_resident_set_size = usage.ru_maxrss;
+        }
+    }
+    cvReleaseCapture (& capture);
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+27762518_27765469_11_48
+27762518_27768678_1_23
+Title: OpenCv - Memory leak when capturing frames from webcam 
+----------------------------------------
+
+int main (int argc, char * const argv []) {
+    struct rusage usage;
+    long max_resident_set_size = 0;
+    long frame_no = 0;
+    CvCapture *capture;
+    IplImage *frame;
+    capture = cvCreateCameraCapture (0);
+    if (!capture) {
+        return 1;
+    }
+    while (frame_no < 100) {
+        frame = cvQueryFrame (capture);
+        frame_no++;
+        errno = 0;
+        getrusage (RUSAGE_SELF, & usage);
+        if (errno == EFAULT)
+            printf ("Error: EFAULT\n");
+        else if (errno == EINVAL)
+            printf ("Error: EINVAL\n");
+        else if (max_resident_set_size != usage.ru_maxrss) {
+            printf ("frame %ld maximum resident set size: %ld\n", frame_no, usage.ru_maxrss);
+            printf ("frame %ld maximum resident set size diff : %ld\n", frame_no, (usage.ru_maxrss - max_resident_set_size));
+            max_resident_set_size = usage.ru_maxrss;
+        }
+    }
+    cvReleaseCapture (& capture);
+    return 0;
+}
+----------------------------------------
+
+int main () {
+    CvCapture *capture;
+    IplImage *frame;
+    IplImage *tmp;
+    capture = cvCreateCameraCapture (0);
+    while (1) {
+        if (capture) {
+            frame = cvQueryFrame (capture);
+        }
+        if (frame) {
+            CvSize size = cvSize (100, 100);
+            tmp = cvCreateImage (size, IPL_DEPTH_8U, 3);
+            cvResize (frame, tmp, CV_INTER_CUBIC);
+            cvReleaseImage (& tmp);
+        }
+    }
+    cvReleaseCapture (& capture);
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+2776397_36434719_2_23
+2776397_46790183_7_48
+Title: Create a basic matrix in C (input by user !) 
+----------------------------------------
+
+int main () {
+    int mat [100] [100];
+    int row, column, i, j;
+    printf ("enter how many row and colmn you want:\n \n");
+    scanf ("%d", & row);
+    scanf ("%d", & column);
+    printf ("enter the matrix:");
+    for (i = 0; i < row; i++) {
+        for (j = 0; j < column; j++) {
+            scanf ("%d", & mat [i] [j]);
+        }
+        printf ("\n");
+    }
+    for (i = 0; i < row; i++) {
+        for (j = 0; j < column; j++) {
+            printf ("%d \t", mat [i] [j]);
+        }
+        printf ("\n");
+    }
+}
+----------------------------------------
+
+int main () {
+    int M [100] [100];
+    int R, C, i, j;
+    printf ("Please enter how many rows you want:\n");
+    scanf ("%d", & R);
+    printf ("Please enter how column you want:\n");
+    scanf ("%d", & C);
+    printf ("Please enter your matrix:\n");
+    for (i = 0; i < R; i++) {
+        for (j = 0; j < C; j++) {
+            scanf ("%d", & M [i] [j]);
+        }
+        printf ("\n");
+    }
+    for (i = 0; i < R; i++) {
+        for (j = 0; j < C; j++) {
+            printf ("%d\t", M [i] [j]);
+        }
+        printf ("\n");
+    }
+    getch ();
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+2776397_36434719_2_23
+2776397_5204381_2_22
+Title: Create a basic matrix in C (input by user !) 
+----------------------------------------
+
+int main () {
+    int mat [100] [100];
+    int row, column, i, j;
+    printf ("enter how many row and colmn you want:\n \n");
+    scanf ("%d", & row);
+    scanf ("%d", & column);
+    printf ("enter the matrix:");
+    for (i = 0; i < row; i++) {
+        for (j = 0; j < column; j++) {
+            scanf ("%d", & mat [i] [j]);
+        }
+        printf ("\n");
+    }
+    for (i = 0; i < row; i++) {
+        for (j = 0; j < column; j++) {
+            printf ("%d \t", mat [i] [j]);
+        }
+        printf ("\n");
+    }
+}
+----------------------------------------
+
+int main (void) {
+    int mat [10] [10], i, j;
+    printf ("Enter your matrix\n");
+    for (i = 0; i < 2; i++)
+        for (j = 0; j < 2; j++) {
+            scanf ("%d", & mat [i] [j]);
+        }
+    printf ("\nHere is your matrix:\n");
+    for (i = 0; i < 2; i++) {
+        for (j = 0; j < 2; j++) {
+            printf ("%d ", mat [i] [j]);
+        }
+        printf ("\n");
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+2776397_46790183_7_48
+2776397_5204381_2_22
+Title: Create a basic matrix in C (input by user !) 
+----------------------------------------
+
+int main () {
+    int M [100] [100];
+    int R, C, i, j;
+    printf ("Please enter how many rows you want:\n");
+    scanf ("%d", & R);
+    printf ("Please enter how column you want:\n");
+    scanf ("%d", & C);
+    printf ("Please enter your matrix:\n");
+    for (i = 0; i < R; i++) {
+        for (j = 0; j < C; j++) {
+            scanf ("%d", & M [i] [j]);
+        }
+        printf ("\n");
+    }
+    for (i = 0; i < R; i++) {
+        for (j = 0; j < C; j++) {
+            printf ("%d\t", M [i] [j]);
+        }
+        printf ("\n");
+    }
+    getch ();
+    return 0;
+}
+----------------------------------------
+
+int main (void) {
+    int mat [10] [10], i, j;
+    printf ("Enter your matrix\n");
+    for (i = 0; i < 2; i++)
+        for (j = 0; j < 2; j++) {
+            scanf ("%d", & mat [i] [j]);
+        }
+    printf ("\nHere is your matrix:\n");
+    for (i = 0; i < 2; i++) {
+        for (j = 0; j < 2; j++) {
+            printf ("%d ", mat [i] [j]);
+        }
+        printf ("\n");
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+277772_33448480_39_60
+277772_4247516_5_34
+Title: Avoid trailing zeroes in printf() 
+----------------------------------------
+
+int main (int argc, char **argv) {
+    printTruncatedDouble (- 1.999, 2);
+    printTruncatedDouble (- 1.006, 2);
+    printTruncatedDouble (- 1.005, 2);
+    printf ("\n");
+    printTruncatedDouble (1.005, 2);
+    printTruncatedDouble (1.006, 2);
+    printTruncatedDouble (1.999, 2);
+    printf ("\n");
+    printTruncatedDouble (- 1.999, 3);
+    printTruncatedDouble (- 1.001, 3);
+    printTruncatedDouble (- 1.0005, 3);
+    printTruncatedDouble (- 1.0004, 3);
+    printf ("\n");
+    printTruncatedDouble (1.0004, 3);
+    printTruncatedDouble (1.0005, 3);
+    printTruncatedDouble (1.001, 3);
+    printTruncatedDouble (1.999, 3);
+    printf ("\n");
+    exit (0);
+}
+----------------------------------------
+
+int main (void) {
+    double f = 1234.05678900;
+    char s [100];
+    int decimals;
+    decimals = 10;
+    sprintf (s, "%.*g", decimals, ((int) (pow (10, decimals) * (fabs (f) - abs ((int) f)) + 0.5)) / pow (10, decimals));
+    printf ("10 decimals: %d%s\n", (int) f, s + 1);
+    decimals = 3;
+    sprintf (s, "%.*g", decimals, ((int) (pow (10, decimals) * (fabs (f) - abs ((int) f)) + 0.5)) / pow (10, decimals));
+    printf (" 3 decimals: %d%s\n", (int) f, s + 1);
+    f = -f;
+    decimals = 10;
+    sprintf (s, "%.*g", decimals, ((int) (pow (10, decimals) * (fabs (f) - abs ((int) f)) + 0.5)) / pow (10, decimals));
+    printf (" negative 10: %d%s\n", (int) f, s + 1);
+    decimals = 3;
+    sprintf (s, "%.*g", decimals, ((int) (pow (10, decimals) * (fabs (f) - abs ((int) f)) + 0.5)) / pow (10, decimals));
+    printf (" negative  3: %d%s\n", (int) f, s + 1);
+    decimals = 2;
+    f = 1.012;
+    sprintf (s, "%.*g", decimals, ((int) (pow (10, decimals) * (fabs (f) - abs ((int) f)) + 0.5)) / pow (10, decimals));
+    printf (" additional : %d%s\n", (int) f, s + 1);
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+27789631_27789780_1_11
+27789631_27791461_1_16
+Title: From Recursive To Iterative Function 
+----------------------------------------
+
+int f_iter (int n) {
+    int last3 [3] = {1, 1, 1};
+    for (int i = 3; i <= n; ++i) {
+        int new_value = last3[0] + 2 * last3[1] + last3[2];
+        last3[0] = last3[1];
+        last3[1] = last3[2];
+        last3[2] = new_value;
+    }
+    return last3[2];
+}
+----------------------------------------
+
+int f_iter (int n) {
+    int a = 1, b = 1, c = 1;
+    if (n < 3)
+        return (1);
+    switch (n % 3) {
+        for (; n > 2; n -= 3) {
+        case 2 :
+            b = c + 2 * a + b;
+        case 1 :
+            a = b + 2 * c + a;
+        case 0 :
+            c = a + 2 * b + c;
+        }
+    }
+    return c;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+27800314_27800779_39_61
+27800314_27800871_14_27
+Title: Writing a recursive function that counts vowels in an array 
+----------------------------------------
+
+int main (void) {
+    int i, len;
+    int pom;
+    char *str [10];
+    int count = sizeof (str) / sizeof (str[0]);
+    for (i = 0; i < count; i++) {
+        str[i] = (char *) malloc (255);
+        fgets (str [i], 255, stdin);
+        pom = vowels (str[i]);
+        printf ("%d\n", pom);
+        free (str [i]);
+    }
+    return 0;
+}
+----------------------------------------
+
+int main (void) {
+    int i, t, pom;
+    char str [32];
+    scanf ("%d", & t);
+    for (i = 0; i < t; i++) {
+        scanf ("%31s", str);
+        pom = vowels (str, 0);
+        printf ("%d\n", pom);
+    }
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+27800653_27804706_15_60
+27800653_27805057_16_49
+Title: array sorting in randomly 
+----------------------------------------
+
+int main () {
+    int i = 0;
+    int j = 0;
+    FILE *file_in = NULL;
+    if (NULL == (file_in = fopen ("test.txt", "r"))) {
+        perror ("fopen for test.txt failed");
+        exit (EXIT_FAILURE);
+    }
+    i = 0;
+    while ((i < 10) && (fgets (buffer, 150, file_in))) {
+        strcpy (message [i], buffer);
+        i++;
+    }
+    for (i = 1; i < 3; i++) {
+        for (j = 1; j < 3; j++) {
+            if (strcmp (message[j - 1], message[j]) > 0) {
+                strcpy (t, message [j - 1]);
+                strcpy (message [j - 1], message [j]);
+                strcpy (message [j], t);
+            }
+        }
+    }
+    printf ("\nStrings in order are : ");
+    for (i = 0; i < 3; i++) {
+        printf ("message: %d: %s\n", i + 1, message [j]);
+    }
+    getchar ();
+    return 0;
+}
+----------------------------------------
+
+int main () {
+    int i = 0;
+    int j;
+    FILE *file_in;
+    if (NULL == (file_in = fopen ("test.txt", "r"))) {
+        perror ("fopen failed for test.txt");
+        exit (EXIT_FAILURE);
+    }
+    srand (time (NULL));
+    while ((i < MAX_MESSAGES) && fgets (buffer, 150, file_in)) {
+        strcpy (message [i], buffer);
+        i++;
+    }
+    printf ("\ndisplay %d messages in random order\n", MAX_MESSAGES);
+    printf ("with possible repeated messages and skipped messages\n");
+    for (i = 0; i < MAX_MESSAGES; i++) {
+        j = rand () % MAX_MESSAGES;
+        printf ("message: %d: %s\n", j, message [j]);
+    }
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+27816345_27816395_1_19
+27816345_27817437_1_13
+Title: Adding to the back a a linked List 
+----------------------------------------
+
+void add_back (Node *s, int x) {
+    if (s == NULL)
+        return;
+    Node *new_node = malloc (sizeof (Node));
+    new_node->value = x;
+    Node *start = s;
+    while (start->next != NULL) {
+        start = start->next;
+    }
+    new_node->next = NULL;
+    start->next = newnode;
+}
+----------------------------------------
+
+void add_back (Node **head, int x) {
+    Node **tail = head;
+    Node *new_node;
+    while (*tail != NULL)
+        tail = &(*tail)->next;
+    new_node = malloc (sizeof (Node));
+    new_node->value = x;
+    new_node->next = NULL;
+    *tail = new_node;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+27825082_27825128_14_44
+27825082_27825135_1_50
+Title: Why my program won't show each element with printf();? 
+----------------------------------------
+
+int main () {
+    struct family *family;
+    int familyCount, i, j;
+    printf ("\nEnter family count: ");
+    scanf ("%d", & familyCount);
+    family = malloc (familyCount * sizeof (*family));
+    for (i = 0; i < familyCount; i++) {
+        printf ("Enter family member count: ");
+        scanf ("%d", & family [i].size);
+        family[i].member = malloc (family[i].size * sizeof (*(family[i].member)));
+        for (j = 0; j < family[i].size; ++j) {
+            printf ("\nEnter person and the age:\n");
+            scanf ("%s%d", family [i].member [j].name, & family [i].member [j].age);
+        }
+    }
+    for (i = 0; i < familyCount; ++i) {
+        printf ("Family %d:\n", 1 + i);
+        for (j = 0; j < family[i].size; ++j)
+            printf ("\tmember %d: %s, %d\n", 1 + j, family[i].member[j].name, family[i].member[j].age);
+    }
+    return 0;
+}
+----------------------------------------
+
+int main () {
+    struct family *family_array = NULL;
+    int j, k;
+    int i, n;
+    printf ("\nEnter family count: ");
+    scanf ("%d", & j);
+    family_array = malloc (j * sizeof (struct family));
+    for (k = 0; k < j; k++) {
+        printf ("Enter family member count: ");
+        scanf ("%d", & n);
+        family_array[k].size = n;
+        family_array[k].member = malloc (n * sizeof (struct person));
+        for (i = 0; i < n; ++i) {
+            printf ("\nEnter person and the age:\n");
+            scanf ("%s%d", family_array [k].member [i].name, & (family_array [k].member [i].age));
+        }
+    }
+    printf ("\nDisplaying Infromation:\n");
+    for (k = 0; k < j; k++) {
+        n = family_array[k].size;
+        for (i = 0; i < n; ++i) {
+            printf ("%s\t%d\t\n", family_array [k].member [i].name, family_array [k].member [i].age);
+        }
+    }
+    for (k = 0; k < j; k++) {
+        free (family_array [k].member);
+    }
+    free (family_array);
+    _getch ();
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+27836116_27836550_3_20
+27836116_27836685_31_49
+Title: Sum of digits at Even and Odd Places in C 
+----------------------------------------
+
+int main (void) {
+    char p [20];
+    int i = 0, even = 0, odd = 0, n;
+    scanf ("%d", & n);
+    sprintf (p, "%d", n);
+    while (p[i] != '\0') {
+        if (i % 2 == 0)
+            odd += (p[i] - '0');
+        else
+            even += (p[i] - '0');
+        i++;
+    }
+    printf ("%d\n", even);
+    printf ("%d\n", odd);
+    return 0;
+}
+----------------------------------------
+
+int main (void) {
+    while (1) {
+        unsigned int x;
+        pair_t sums;
+        printf ("\nEnter a non-negative number (0 - exit): ");
+        if (scanf ("%u", &x) != 1 || x == 0)
+            break;
+        sums = GetSums (x);
+        printf ("\nSum of digits in odd  positions is %u\n", sums.odd);
+        printf ("Sum of digits in even positions is %u\n", sums.even);
+    }
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+27836116_27836550_3_20
+27836116_33688154_1_30
+Title: Sum of digits at Even and Odd Places in C 
+----------------------------------------
+
+int main (void) {
+    char p [20];
+    int i = 0, even = 0, odd = 0, n;
+    scanf ("%d", & n);
+    sprintf (p, "%d", n);
+    while (p[i] != '\0') {
+        if (i % 2 == 0)
+            odd += (p[i] - '0');
+        else
+            even += (p[i] - '0');
+        i++;
+    }
+    printf ("%d\n", even);
+    printf ("%d\n", odd);
+    return 0;
+}
+----------------------------------------
+
+void main () {
+    int n, m, oddSum = 0, evenSum = 0;
+    printf ("Please insert the number for the program:");
+    scanf ("%d", & n);
+    int flag = 0;
+    int counter = 1;
+    while (n != 0) {
+        if (counter % 2 == 0) {
+            evenSum += n % 10;
+            n /= 10;
+        }
+        else {
+            oddSum += n % 10;
+            n /= 10;
+        }
+        counter++;
+    }
+    if (counter % 2 == 0) {
+        int temp = oddSum;
+        oddSum = evenSum;
+        evenSum = temp;
+    }
+    printf ("Sum of digits in even  places:%d\n", evenSum);
+    printf ("Sum of digits in odd  places:%d\n", oddSum);
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+27836116_27836550_3_20
+27836116_52900699_2_21
+Title: Sum of digits at Even and Odd Places in C 
+----------------------------------------
+
+int main (void) {
+    char p [20];
+    int i = 0, even = 0, odd = 0, n;
+    scanf ("%d", & n);
+    sprintf (p, "%d", n);
+    while (p[i] != '\0') {
+        if (i % 2 == 0)
+            odd += (p[i] - '0');
+        else
+            even += (p[i] - '0');
+        i++;
+    }
+    printf ("%d\n", even);
+    printf ("%d\n", odd);
+    return 0;
+}
+----------------------------------------
+
+void main () {
+    int a [10], n, j = 0, x = 0, y = 0;
+    for (int i = 0; i < 10; i++)
+        a[i] = 0;
+    scanf ("%d", & n);
+    while (n) {
+        a[j] = n % 10;
+        ++j;
+        n /= 10;
+    }
+    for (int i = 0; i < 10; i += 2)
+        x += a[i];
+    for (int i = 1; i < 10; i += 2)
+        y += a[i];
+    printf ("%d\n", y);
+    printf ("%d", x);
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+27836116_27836685_31_49
+27836116_33688154_1_30
+Title: Sum of digits at Even and Odd Places in C 
+----------------------------------------
+
+int main (void) {
+    while (1) {
+        unsigned int x;
+        pair_t sums;
+        printf ("\nEnter a non-negative number (0 - exit): ");
+        if (scanf ("%u", &x) != 1 || x == 0)
+            break;
+        sums = GetSums (x);
+        printf ("\nSum of digits in odd  positions is %u\n", sums.odd);
+        printf ("Sum of digits in even positions is %u\n", sums.even);
+    }
+    return 0;
+}
+----------------------------------------
+
+void main () {
+    int n, m, oddSum = 0, evenSum = 0;
+    printf ("Please insert the number for the program:");
+    scanf ("%d", & n);
+    int flag = 0;
+    int counter = 1;
+    while (n != 0) {
+        if (counter % 2 == 0) {
+            evenSum += n % 10;
+            n /= 10;
+        }
+        else {
+            oddSum += n % 10;
+            n /= 10;
+        }
+        counter++;
+    }
+    if (counter % 2 == 0) {
+        int temp = oddSum;
+        oddSum = evenSum;
+        evenSum = temp;
+    }
+    printf ("Sum of digits in even  places:%d\n", evenSum);
+    printf ("Sum of digits in odd  places:%d\n", oddSum);
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+27836116_27836685_31_49
+27836116_52900699_2_21
+Title: Sum of digits at Even and Odd Places in C 
+----------------------------------------
+
+int main (void) {
+    while (1) {
+        unsigned int x;
+        pair_t sums;
+        printf ("\nEnter a non-negative number (0 - exit): ");
+        if (scanf ("%u", &x) != 1 || x == 0)
+            break;
+        sums = GetSums (x);
+        printf ("\nSum of digits in odd  positions is %u\n", sums.odd);
+        printf ("Sum of digits in even positions is %u\n", sums.even);
+    }
+    return 0;
+}
+----------------------------------------
+
+void main () {
+    int a [10], n, j = 0, x = 0, y = 0;
+    for (int i = 0; i < 10; i++)
+        a[i] = 0;
+    scanf ("%d", & n);
+    while (n) {
+        a[j] = n % 10;
+        ++j;
+        n /= 10;
+    }
+    for (int i = 0; i < 10; i += 2)
+        x += a[i];
+    for (int i = 1; i < 10; i += 2)
+        y += a[i];
+    printf ("%d\n", y);
+    printf ("%d", x);
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+27836116_33688154_1_30
+27836116_52900699_2_21
+Title: Sum of digits at Even and Odd Places in C 
+----------------------------------------
+
+void main () {
+    int n, m, oddSum = 0, evenSum = 0;
+    printf ("Please insert the number for the program:");
+    scanf ("%d", & n);
+    int flag = 0;
+    int counter = 1;
+    while (n != 0) {
+        if (counter % 2 == 0) {
+            evenSum += n % 10;
+            n /= 10;
+        }
+        else {
+            oddSum += n % 10;
+            n /= 10;
+        }
+        counter++;
+    }
+    if (counter % 2 == 0) {
+        int temp = oddSum;
+        oddSum = evenSum;
+        evenSum = temp;
+    }
+    printf ("Sum of digits in even  places:%d\n", evenSum);
+    printf ("Sum of digits in odd  places:%d\n", oddSum);
+}
+----------------------------------------
+
+void main () {
+    int a [10], n, j = 0, x = 0, y = 0;
+    for (int i = 0; i < 10; i++)
+        a[i] = 0;
+    scanf ("%d", & n);
+    while (n) {
+        a[j] = n % 10;
+        ++j;
+        n /= 10;
+    }
+    for (int i = 0; i < 10; i += 2)
+        x += a[i];
+    for (int i = 1; i < 10; i += 2)
+        y += a[i];
+    printf ("%d\n", y);
+    printf ("%d", x);
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+27838539_27839474_24_36
+27838539_27840603_9_39
+Title: how to remove duplicate numbers 
+----------------------------------------
+
+int main (void) {
+    int a [] = {1, 1, 2, 3, 3, 3, 4, 5, 6, 6};
+    const size_t N = sizeof (a) / sizeof (*a);
+    int *q;
+    int *p = RemoveDup (a, N);
+    for (q = a; q != p; ++q)
+        printf (" %d", *q);
+    printf ("\n");
+    return 0;
+}
+----------------------------------------
+
+void main () {
+    int arr [10];
+    int i, size;
+    printf ("please enter size of array: ");
+    scanf ("%d", & size);
+    printf ("please enter %d numbers: ", size);
+    for (i = 0; i < size; i++)
+        scanf ("%d", &arr[i]);
+    printf ("the original array is: ");
+    for (i = 0; i < size; i++)
+        printf ("%d ", arr[i]);
+    printf ("\n");
+    sortAsending (arr, size);
+    printf ("the sorted array is: ");
+    for (i = 0; i < size; i++)
+        printf ("%d ", arr[i]);
+    printf ("\n");
+    RemoveDup (arr, & size);
+    printf ("the nonduplicated array is: ");
+    for (i = 0; i < size; i++)
+        printf ("%d ", arr[i]);
+    printf ("\n");
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+27841638_27843031_1_28
+27841638_27846305_12_26
+Title: Node deletion in a chained list 
+----------------------------------------
+
+void suppresion (int n) {
+    personne *tmp1 = NULL, *tmp2 = NULL;
+    tmp1 = first;
+    while (tmp1 != NULL) {
+        if ((tmp1->next != NULL) && (tmp1->next->note > n)) {
+            tmp2 = tmp1->next;
+            tmp1->next = tmp2->next;
+            free (tmp2);
+        }
+        else {
+            tmp1 = tmp1->next;
+        }
+    }
+    if (first != NULL && first->note > n) {
+        tmp1 = first;
+        first = tmp1->next;
+        free (tmp1);
+    }
+}
+----------------------------------------
+
+void suppresion (personne **ppfirst, int n) {
+    personne **ppnode = ppfirst;
+    personne *pnode;
+    while (*ppnode != NULL) {
+        if ((*ppnode)->note > n) {
+            pnode = *ppnode;
+            *ppnode = (*ppnode)->next;
+            free (pnode);
+        }
+        else {
+            ppnode = &((*ppnode)->next);
+        }
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+27852822_27852894_17_32
+27852822_27854523_12_27
+Title: How to return an array from a function with pointers 
+----------------------------------------
+
+int main () {
+    int i, n = 5;
+    int *array = initArray (n);
+    if (array == NULL)
+        return 1;
+    printf ("Here is the array: ");
+    for (i = 0; i < n; i++) {
+        printf ("%d ", array [i]);
+    }
+    free (array);
+    printf ("\n\n");
+    return 0;
+}
+----------------------------------------
+
+void main (void) {
+    int i, n = 5;
+    int array [n];
+    initArray (array, n);
+    printf ("Here is the array: ");
+    for (i = 0; i < n; i++) {
+        printf ("%d ", array [i]);
+    }
+    printf ("\n\n");
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+27852822_27852921_18_34
+27852822_27854523_12_27
+Title: How to return an array from a function with pointers 
+----------------------------------------
+
+int main () {
+    int i, n = 5;
+    int *array;
+    array = initArray (n);
+    if (array == NULL)
+        return -1;
+    printf ("Here is the array: ");
+    for (i = 0; i < n; i++) {
+        printf ("%d ", array [i]);
+    }
+    free (array);
+    printf ("\n\n");
+    return 0;
+}
+----------------------------------------
+
+void main (void) {
+    int i, n = 5;
+    int array [n];
+    initArray (array, n);
+    printf ("Here is the array: ");
+    for (i = 0; i < n; i++) {
+        printf ("%d ", array [i]);
+    }
+    printf ("\n\n");
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+27863675_27863813_4_20
+27863675_27863926_8_18
+Title: How to add a character in a string by checking the delimiter? 
+----------------------------------------
+
+void append (char *s, char del, char *substring) {
+    char origin [256];
+    strcpy (origin, s);
+    int i = 0, j = 0, z = 0;
+    for (; origin[i]; ++i) {
+        if (origin[i] != del) {
+            s[j++] = origin[i];
+        }
+        else {
+            for (; substring[z]; ++z) {
+                s[j++] = substring[z];
+            }
+            s[j++] = origin[i];
+        }
+    }
+    s[j] = '\0';
+}
+----------------------------------------
+
+void append (char *str, char c) {
+    char firststr [60];
+    char therest [30];
+    strcpy (firststr, strtok (str, "/"));
+    strcpy (therest, strtok (NULL, "/"));
+    strcat (firststr, & c);
+    strcat (firststr, "/");
+    strcat (firststr, therest);
+    strcpy (str, firststr);
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+27866563_27866614_55_85
+27866563_27868459_70_138
+Title: Error in Output 
+----------------------------------------
+
+int score (int timerem, int time) {
+    int k, ka;
+    ka = ((timerem / time) * 100);
+    k = 0;
+    if (ka > 90 && ka <= 100)
+        k = 10;
+    else if (ka > 80 && ka <= 90)
+        k = 9;
+    else if (ka > 70 && ka <= 80)
+        k = 8;
+    else if (ka > 60 && ka <= 70)
+        k = 7;
+    else if (ka > 50 && ka <= 60)
+        k = 6;
+    else if (ka > 40 && ka <= 50)
+        k = 5;
+    else if (ka > 30 && ka <= 40)
+        k = 4;
+    else if (ka > 20 && ka <= 30)
+        k = 3;
+    else if (ka > 10 && ka <= 20)
+        k = 2;
+    else if (ka > 50 && ka <= 10)
+        k = 1;
+    else if (ka > 0 && ka <= 5)
+        k = 0;
+    return (k);
+}
+----------------------------------------
+
+int score (int timerem, int time) {
+    int k;
+    int ka;
+    ka = (timerem * 100) / time;
+    if (ka > 90 && ka <= 100) {
+        k = 10;
+    }
+    else if (ka > 80 && ka <= 90) {
+        k = 9;
+    }
+    else if (ka > 70 && ka <= 80) {
+        k = 8;
+    }
+    else if (ka > 60 && ka <= 70) {
+        k = 7;
+    }
+    else if (ka > 50 && ka <= 60) {
+        k = 6;
+    }
+    else if (ka > 40 && ka <= 50) {
+        k = 5;
+    }
+    else if (ka > 30 && ka <= 40) {
+        k = 4;
+    }
+    else if (ka > 20 && ka <= 30) {
+        k = 3;
+    }
+    else if (ka > 10 && ka <= 20) {
+        k = 2;
+    }
+    else if (ka > 50 && ka <= 10) {
+        k = 1;
+    }
+    else if (ka > 0 && ka <= 5) {
+        k = 0;
+    }
+    else {
+        k = 0;
+    }
+    return (k);
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+27866563_27866614_8_38
+27866563_27868459_22_54
+Title: Error in Output 
+----------------------------------------
+
+int main () {
+    time_t t1;
+    int e;
+    printf ("how many seconds\n");
+    scanf ("%d", & e);
+    (void) time (&t1);
+    while (1) {
+        printf ("timer will run for %d seconds\n", e);
+        printf ("Time remaining = %d\n", timer (t1, e));
+        printf ("Current Score = %d\n", score (timer (t1, e), e));
+        if (timer (t1, e) == 0) {
+            break;
+        }
+        system ("cls");
+    }
+    return 0;
+}
+----------------------------------------
+
+int main () {
+    time_t t1;
+    int e;
+    printf ("how many seconds\n");
+    if (1 != scanf (" %d", &e)) {
+        perror ("scanf for seconds failed");
+        return (-1);
+    }
+    t1 = time (NULL);
+    while (1) {
+        time_t t2 = timer (t1, e);
+        printf ("timer will run for %d seconds\n", e);
+        printf ("Time remaining = %d\n", (int) t2);
+        printf ("Current Score = %d\n", score (t2, e));
+        if (!t2) {
+            break;
+        }
+    }
+    return (0);
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+27867248_27867571_7_21
+27867248_27868539_27_44
+Title: how to make a random generation number between 1 to 9 without repitition 
+----------------------------------------
+
+int main () {
+    int pool [RANGE];
+    int size, n;
+    for (size = 0; size < RANGE; size++) {
+        pool[size] = size + 1;
+    }
+    srand ((unsigned) time (NULL));
+    while (size) {
+        n = rand () % size;
+        printf ("%d ", pool [n]);
+        pool[n] = pool[--size];
+    }
+    printf ("\n");
+    return 0;
+}
+----------------------------------------
+
+int main (void) {
+    int i;
+    int pack [PACK_LENGTH];
+    srand (time (0));
+    shuffle (pack, pack_length);
+    for (i = 0; i < pack_length; i++) {
+        printf ("%d ", pack [i]);
+    }
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+27868052_27868094_3_19
+27868052_27868214_4_18
+Title: Calling the function as a float in C 
+----------------------------------------
+
+float taxCalculator (float income) {
+    float tax;
+    if (income < 750.00f) {
+        tax = income * 0.01f;
+    }
+    else if (income <= 2250.00f) {
+        tax = 7.50f + (income - 750) * 0.02f;
+    }
+    else if (income <= 3750.00f) {
+        tax = 37.50f + (income - 2250) * 0.03f;
+    }
+    else if (income <= 5250) {
+        tax = 82.50f + (income - 3750) * 0.04f;
+    }
+    else if (income <= 7000) {
+        tax = 142.50f + (income - 5250) * 0.05f;
+    }
+    else if (income > 7000.00f) {
+        tax = 230.00f + (income - 7000) * 0.06f;
+    }
+    return tax;
+}
+----------------------------------------
+
+int taxCalculator (float income, float *ptax) {
+    float tax;
+    if ((0.> income) || (NULL == ptax)) {
+        errno = EINVAL;
+        return -1;
+    }
+    ...* ptax = tax;
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+27868784_27869250_4_21
+27868784_34585722_3_18
+Title: printing a word per line 
+----------------------------------------
+
+int main (int argc, char *argv []) {
+    char line [1000] = "";
+    printf ("Input the line:\n>>");
+    scanf ("%[^\n]", line);
+    char *p = strtok (line, " !#$%&'()*+,-./'");
+    printf ("\nThese are the words written in the line :\n");
+    printf ("----------------------------------------\n");
+    while (p != NULL) {
+        printf ("%s\n", p);
+        p = strtok (NULL, " !#$%&'()*+,-./'");
+    }
+    return 0;
+}
+----------------------------------------
+
+int main (void) {
+    int c;
+    while ((c = getchar ()) != EOF) {
+        if (c == ' ' || c == '\t' || c == '\b') {
+            printf ("\n");
+            while (c == ' ' || c == '\t' || c == '\b')
+                c = getchar ();
+        }
+        if (c != EOF)
+            putchar (c);
+    }
+    return 0;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+27876372_27876549_1_24
+27876372_27876758_1_16
+Title: A function searching through an array of structures (C) 
+----------------------------------------
+
+int search (struct Adress **array, int size_of_the_addressbook, char *string_to_search) {
+    int index;
+    struct Adress *pointer;
+    if ((size_of_the_addressbook == 0) || (array == NULL) || (*array == NULL))
+        return -1;
+    pointer = *array;
+    index = 0;
+    while (strstr (pointer->name, string_to_search) == 0 && strstr (pointer->lastname, string_to_search) == 0) {
+        if (++index == size_of_the_addressbook)
+            return -1;
+        (*array)++;
+        pointer = *array;
+    }
+    return index;
+}
+----------------------------------------
+
+int search (const struct Adress array [], int size_of_the_addressbook, const char *string_to_search) {
+    const struct Adress *end = array + size_of_the_addressbook;
+    const struct Adress *i = array;
+    for (; i != end; ++i) {
+        if (strstr (i->name, string_to_search) != NULL || strstr (i->lastname, string_to_search) != NULL)
+            break;
+    }
+    return i == end ? -1 : (int) (i - array);
+}
+----------------------------------------

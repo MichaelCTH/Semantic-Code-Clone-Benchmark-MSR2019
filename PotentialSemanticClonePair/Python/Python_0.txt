@@ -1,0 +1,4748 @@
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+10106083_10106171_3_10
+10106083_10106316_4_14
+Title: Creating a triangle of numbers from user-input  
+----------------------------------------
+
+def triangle(rows) :
+INDENT
+    for rownum in range(rows) :
+    INDENT
+        PrintingList = list()
+        print "row #%d" % rownum
+        for iteration in range(rownum) :
+        INDENT
+            newValue = raw_input("Please enter the number for row #%d:" % rownum)
+            PrintingList.append(int(newValue))
+            print ()
+        DEDENT
+    DEDENT
+DEDENT
+----------------------------------------
+
+def triangle(rows) :
+INDENT
+    PrintingList = list()
+    for rownum in range(1, rows + 1) :
+    INDENT
+        PrintingList.append([])
+        for iteration in range(rownum) :
+        INDENT
+            newValue = raw_input("Please enter the next number:")
+            PrintingList [rownum - 1].append(int(newValue))
+            print ()
+        DEDENT
+    DEDENT
+    for item in PrintingList :
+    INDENT
+        print item
+    DEDENT
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+10114224_10114266_36_105
+10114224_46394228_34_122
+Title: How to properly send HTTP response with Python using socket library only? 
+----------------------------------------
+
+def run() :
+INDENT
+    r'''Main loop'''
+
+    server_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM, socket.IPPROTO_TCP)
+    server_sock.bind(('0.0.0.0', 13000))
+    server_sock.listen(1)
+    while True :
+    INDENT
+
+        client_sock, client_addr = server_sock.accept()
+
+        request = normalize_line_endings(recv_all(client_sock))
+        request_head, request_body = request.split('\n\n', 1)
+
+        request_head = request_head.splitlines()
+        request_headline = request_head [0]
+
+        request_headers = dict(x.split(': ', 1) for x in request_head [1 :])
+
+        request_method, request_uri, request_proto = request_headline.split(' ', 3)
+        response_body = [
+            '<html><body><h1>Hello, world!</h1>',
+            '<p>This page is in location %(request_uri)r, was requested ' % locals(),
+            'using %(request_method)r, and with %(request_proto)r.</p>' % locals(),
+            '<p>Request body is %(request_body)r</p>' % locals(),
+            '<p>Actual set of headers received:</p>',
+            '<ul>',
+            ]
+        for request_header_name, request_header_value in request_headers.iteritems() :
+        INDENT
+            response_body.append('<li><b>%r</b> == %r</li>' % (request_header_name, request_header_value))
+        DEDENT
+        response_body.append('</ul></body></html>')
+        response_body_raw = ''.join(response_body)
+
+        response_headers = {
+            'Content-Type' : 'text/html; encoding=utf8',
+            'Content-Length' : len(response_body_raw),
+            'Connection' : 'close',
+            }
+        response_headers_raw = ''.join('%s: %s\n' % (k, v) for k, v in response_headers.iteritems())
+
+        response_proto = 'HTTP/1.1'
+        response_status = '200'
+        response_status_text = 'OK'
+
+        client_sock.send('%s %s %s' % (response_proto, response_status, response_status_text))
+        client_sock.send(response_headers_raw)
+        client_sock.send('\n')
+        client_sock.send(response_body_raw)
+
+        client_sock.close()
+    DEDENT
+DEDENT
+----------------------------------------
+
+def run() :
+INDENT
+    r'''Main loop'''
+
+    server_sock = socket.socket(socket.AF_INET,
+        socket.SOCK_STREAM,
+        socket.IPPROTO_TCP)
+
+    try :
+    INDENT
+        server_sock.bind(('0.0.0.0', 13000))
+        print ('PORT 13000')
+    DEDENT
+    except :
+    INDENT
+        server_sock.bind(('0.0.0.0', 13001))
+        print ('PORT 13001')
+    DEDENT
+    server_sock.listen(1)
+    while True :
+    INDENT
+        try :
+        INDENT
+            client_sock, client_addr = server_sock.accept()
+
+            request = normalize_line_endings(recv_all(client_sock))
+            request_head, request_body = request.split('\n\n', 1)
+
+            request_head = request_head.splitlines()
+            request_headline = request_head [0]
+
+            request_headers = dict(x.split(': ', 1) for x in request_head [1 :])
+
+            request_method, request_uri, request_proto = request_headline.split(' ', 3)
+            response_body = [
+                '<html><body><h1 style="color:red"><![CDATA[Hello, world!</h1>',
+                '<p>This page is in location %(request_uri)r, was requested ' % locals(),
+                'using %(request_method)r, and with %(request_proto)r.</p>' % locals(),
+                '<p>Request body is %(request_body)r</p>' % locals(),
+                '<p>Actual set of headers received:</p>',
+                '<ul>',
+                ]
+            for request_header_name, request_header_value in request_headers.items() :
+            INDENT
+                response_body.append('<li><b>%r</b> == %r</li>' % (request_header_name,
+                        request_header_value))
+            DEDENT
+            response_body.append('</ul></body></html>')
+            response_body_raw = ''.join(response_body)
+
+            response_headers = {
+                'Content-Type' : 'text/html; encoding=utf8',
+                'Content-Length' : len(response_body_raw),
+                'Connection' : 'close',
+                }
+            response_headers_raw = ''.join('%s: %s\n' % (k, v) for k, v in response_headers.items())
+
+            response_proto = 'HTTP/1.1'.encode()
+            response_status = '200'.encode()
+            response_status_text = 'OK'.encode()
+
+            client_sock.send(b'%s %s %s' % (response_proto, response_status,
+                    response_status_text))
+            client_sock.send(response_headers_raw.encode())
+            client_sock.send(b'\n')
+            client_sock.send(response_body_raw.encode())
+
+        DEDENT
+        finally :
+        INDENT
+            client_sock.close()
+        DEDENT
+    DEDENT
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+1011938_1012017_1_10
+1011938_1012169_11_17
+Title: Python - Previous and next values inside a loop 
+----------------------------------------
+
+def find_prev_next(elem, elements) :
+INDENT
+    previous, next = None, None
+    index = elements.index(elem)
+    if index > 0 :
+    INDENT
+        previous = elements [index - 1]
+    DEDENT
+    if index < (len(elements) - 1) :
+    INDENT
+        next = elements [index + 1]
+    DEDENT
+    return previous, next
+
+DEDENT
+----------------------------------------
+
+def find_prev_next(objects, foo) :
+INDENT
+    prev, next = 0, 0
+    for temp_prev, current, temp_next in trios(objects) :
+    INDENT
+        if current == foo :
+        INDENT
+            prev, next = temp_prev, temp_next
+        DEDENT
+    DEDENT
+    return prev, next
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+10152230_10153676_1_14
+10152230_10162284_13_22
+Title: Setting the rows to variables in Tkinter 
+----------------------------------------
+
+def initUI(self) :
+INDENT
+    self.activeRow = 0
+    for i in range(5) :
+    INDENT
+        b = Button(self, text = "normal variable {0}".format(self.activeRow))
+        b.grid(row = self.activeRow, column = 0)
+        self.activeRow += 1
+
+    DEDENT
+    self.activeRow = IntVar()
+    for i in range(5) :
+    INDENT
+        b = Button(self, text = "IntVar {0}".format(self.activeRow.get()))
+        b.grid(row = self.activeRow.get(), column = 1)
+        self.activeRow.set(self.activeRow.get() + 1)
+    DEDENT
+DEDENT
+----------------------------------------
+
+def initUI(self) :
+INDENT
+    for i in range(5) :
+    INDENT
+        l = Label(self, text = "Row {0}".format(i))
+        l.grid(row = i, column = 0)
+    DEDENT
+    self.b = Button(self, text = "Moving button", command = self.move)
+    self.b.grid(row = 0, column = 1)
+    self.pack()
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+10184714_10184768_1_10
+10184714_10184774_1_11
+Title: looking for a more elegant solution to this 
+----------------------------------------
+
+def sum67(xs) :
+INDENT
+    xs = iter(xs)
+    s = 0
+    for x in xs :
+    INDENT
+        if x == 6 :
+        INDENT
+            while x ! = 7 :
+            INDENT
+                x = xs.next()
+            DEDENT
+        DEDENT
+        else :
+        INDENT
+            s += x
+        DEDENT
+    DEDENT
+    return s
+DEDENT
+----------------------------------------
+
+def sum67(nums) :
+INDENT
+    i = 0
+    sum = 0
+    n = len(nums)
+    while i < n :
+    INDENT
+        if nums [i] == 6 :
+        INDENT
+            i = nums.index(7, i)
+        DEDENT
+        else :
+        INDENT
+            sum += nums [i]
+        DEDENT
+        i += 1
+    DEDENT
+    return sum
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+10184714_10184768_1_10
+10184714_10184878_1_10
+Title: looking for a more elegant solution to this 
+----------------------------------------
+
+def sum67(xs) :
+INDENT
+    xs = iter(xs)
+    s = 0
+    for x in xs :
+    INDENT
+        if x == 6 :
+        INDENT
+            while x ! = 7 :
+            INDENT
+                x = xs.next()
+            DEDENT
+        DEDENT
+        else :
+        INDENT
+            s += x
+        DEDENT
+    DEDENT
+    return s
+DEDENT
+----------------------------------------
+
+def sum67(nbrs) :
+INDENT
+    total = 0
+    accum = 1
+    for nbr in nbrs :
+    INDENT
+        if nbr == 6 :
+        INDENT
+            accum = 0
+        DEDENT
+        total += nbr * accum
+        if accum == 0 and nbr == 7 :
+        INDENT
+            accum = 1
+        DEDENT
+    DEDENT
+    return total
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+10184714_10184768_1_10
+10184714_10184880_1_13
+Title: looking for a more elegant solution to this 
+----------------------------------------
+
+def sum67(xs) :
+INDENT
+    xs = iter(xs)
+    s = 0
+    for x in xs :
+    INDENT
+        if x == 6 :
+        INDENT
+            while x ! = 7 :
+            INDENT
+                x = xs.next()
+            DEDENT
+        DEDENT
+        else :
+        INDENT
+            s += x
+        DEDENT
+    DEDENT
+    return s
+DEDENT
+----------------------------------------
+
+def sum67(nums) :
+INDENT
+    found6 = False
+    result = 0
+    for n in nums :
+    INDENT
+        if n == 6 :
+        INDENT
+            found6 = True
+            continue
+        DEDENT
+        if n == 7 and found6 :
+        INDENT
+            found6 = False
+            continue
+        DEDENT
+        if not found6 :
+        INDENT
+            result += n
+        DEDENT
+    DEDENT
+    return result
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+10184714_10184774_1_11
+10184714_10184878_1_10
+Title: looking for a more elegant solution to this 
+----------------------------------------
+
+def sum67(nums) :
+INDENT
+    i = 0
+    sum = 0
+    n = len(nums)
+    while i < n :
+    INDENT
+        if nums [i] == 6 :
+        INDENT
+            i = nums.index(7, i)
+        DEDENT
+        else :
+        INDENT
+            sum += nums [i]
+        DEDENT
+        i += 1
+    DEDENT
+    return sum
+DEDENT
+----------------------------------------
+
+def sum67(nbrs) :
+INDENT
+    total = 0
+    accum = 1
+    for nbr in nbrs :
+    INDENT
+        if nbr == 6 :
+        INDENT
+            accum = 0
+        DEDENT
+        total += nbr * accum
+        if accum == 0 and nbr == 7 :
+        INDENT
+            accum = 1
+        DEDENT
+    DEDENT
+    return total
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+10184714_10184774_1_11
+10184714_10184880_1_13
+Title: looking for a more elegant solution to this 
+----------------------------------------
+
+def sum67(nums) :
+INDENT
+    i = 0
+    sum = 0
+    n = len(nums)
+    while i < n :
+    INDENT
+        if nums [i] == 6 :
+        INDENT
+            i = nums.index(7, i)
+        DEDENT
+        else :
+        INDENT
+            sum += nums [i]
+        DEDENT
+        i += 1
+    DEDENT
+    return sum
+DEDENT
+----------------------------------------
+
+def sum67(nums) :
+INDENT
+    found6 = False
+    result = 0
+    for n in nums :
+    INDENT
+        if n == 6 :
+        INDENT
+            found6 = True
+            continue
+        DEDENT
+        if n == 7 and found6 :
+        INDENT
+            found6 = False
+            continue
+        DEDENT
+        if not found6 :
+        INDENT
+            result += n
+        DEDENT
+    DEDENT
+    return result
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+10184714_10184878_1_10
+10184714_10184880_1_13
+Title: looking for a more elegant solution to this 
+----------------------------------------
+
+def sum67(nbrs) :
+INDENT
+    total = 0
+    accum = 1
+    for nbr in nbrs :
+    INDENT
+        if nbr == 6 :
+        INDENT
+            accum = 0
+        DEDENT
+        total += nbr * accum
+        if accum == 0 and nbr == 7 :
+        INDENT
+            accum = 1
+        DEDENT
+    DEDENT
+    return total
+DEDENT
+----------------------------------------
+
+def sum67(nums) :
+INDENT
+    found6 = False
+    result = 0
+    for n in nums :
+    INDENT
+        if n == 6 :
+        INDENT
+            found6 = True
+            continue
+        DEDENT
+        if n == 7 and found6 :
+        INDENT
+            found6 = False
+            continue
+        DEDENT
+        if not found6 :
+        INDENT
+            result += n
+        DEDENT
+    DEDENT
+    return result
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+10184941_10185403_10_20
+10184941_34359275_8_19
+Title: How to detect mouse click on images displayed in GUI created using PySide 
+----------------------------------------
+
+def __init__(self, parent = None) :
+INDENT
+    super(Main, self).__init__(parent)
+    layout = QHBoxLayout(self)
+    picture = PictureLabel("pic.png", self)
+    picture.pictureClicked.connect(self.anotherSlot)
+    layout.addWidget(picture)
+    layout.addWidget(QLabel("click on the picture"))
+DEDENT
+----------------------------------------
+
+def __init__(self, parent = None) :
+INDENT
+    super(Main, self).__init__(parent)
+    layout = QHBoxLayout(self)
+    picture = QLabel()
+    picture.setPixmap("pic.png")
+    layout.addWidget(picture)
+    layout.addWidget(QLabel("click on the picture"))
+    makeClickable(picture)
+    QObject.connect(picture, SIGNAL("clicked()"), self.anotherSlot)
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+1023719_1023740_1_14
+1023719_1023872_1_26
+Title: smoothing irregularly sampled time data 
+----------------------------------------
+
+def getAvgValues(data) :
+INDENT
+    lastTime = 0
+    prevValues = []
+    avgSampleTime = 100
+    for t, v in data :
+    INDENT
+        if t - lastTime < avgSampleTime :
+        INDENT
+            prevValues.append(v)
+        DEDENT
+        else :
+        INDENT
+            avgV = sum(prevValues) / len(prevValues)
+            lastTime = t
+            prevValues = [v]
+            yield (t, avgV)
+        DEDENT
+    DEDENT
+DEDENT
+----------------------------------------
+
+def getAvgValues(data, avgSampleTime) :
+INDENT
+    lastTime = 0
+    prevValsBuf = []
+    prevValsStart = 0
+    tot = 0
+    for t, v in data :
+    INDENT
+        avgStart = t - avgSampleTime
+        while prevValsStart < len(prevValsBuf) :
+        INDENT
+            pt, pv = prevValsBuf [prevValsStart]
+            if pt > avgStart :
+            INDENT
+                break
+            DEDENT
+            tot -= pv
+            prevValsStart += 1
+        DEDENT
+        tot += v
+        prevValsBuf.append((t, v))
+        numItems = len(prevValsBuf) - prevValsStart
+        yield (t, tot / numItems)
+        if prevValsStart * 2 > len(prevValsBuf) :
+        INDENT
+            prevValsBuf = prevValsBuf [prevValsStart :]
+            prevValsStart = 0
+            tot = sum(v for (t, v) in prevValsBuf)
+        DEDENT
+    DEDENT
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+1023719_1023740_1_14
+1023719_1024066_1_13
+Title: smoothing irregularly sampled time data 
+----------------------------------------
+
+def getAvgValues(data) :
+INDENT
+    lastTime = 0
+    prevValues = []
+    avgSampleTime = 100
+    for t, v in data :
+    INDENT
+        if t - lastTime < avgSampleTime :
+        INDENT
+            prevValues.append(v)
+        DEDENT
+        else :
+        INDENT
+            avgV = sum(prevValues) / len(prevValues)
+            lastTime = t
+            prevValues = [v]
+            yield (t, avgV)
+        DEDENT
+    DEDENT
+DEDENT
+----------------------------------------
+
+def getAvgValues(makeIter, avgSampleTime) :
+INDENT
+    leftIter = makeIter()
+    leftT, leftV = leftIter.next()
+    tot = 0
+    count = 0
+    for rightT, rightV in makeIter() :
+    INDENT
+        tot += rightV
+        count += 1
+        while leftT < = rightT - avgSampleTime :
+        INDENT
+            tot -= leftV
+            count -= 1
+            leftT, leftV = leftIter.next()
+        DEDENT
+        yield rightT, tot / count
+    DEDENT
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+1023719_1023872_1_26
+1023719_1024066_1_13
+Title: smoothing irregularly sampled time data 
+----------------------------------------
+
+def getAvgValues(data, avgSampleTime) :
+INDENT
+    lastTime = 0
+    prevValsBuf = []
+    prevValsStart = 0
+    tot = 0
+    for t, v in data :
+    INDENT
+        avgStart = t - avgSampleTime
+        while prevValsStart < len(prevValsBuf) :
+        INDENT
+            pt, pv = prevValsBuf [prevValsStart]
+            if pt > avgStart :
+            INDENT
+                break
+            DEDENT
+            tot -= pv
+            prevValsStart += 1
+        DEDENT
+        tot += v
+        prevValsBuf.append((t, v))
+        numItems = len(prevValsBuf) - prevValsStart
+        yield (t, tot / numItems)
+        if prevValsStart * 2 > len(prevValsBuf) :
+        INDENT
+            prevValsBuf = prevValsBuf [prevValsStart :]
+            prevValsStart = 0
+            tot = sum(v for (t, v) in prevValsBuf)
+        DEDENT
+    DEDENT
+DEDENT
+----------------------------------------
+
+def getAvgValues(makeIter, avgSampleTime) :
+INDENT
+    leftIter = makeIter()
+    leftT, leftV = leftIter.next()
+    tot = 0
+    count = 0
+    for rightT, rightV in makeIter() :
+    INDENT
+        tot += rightV
+        count += 1
+        while leftT < = rightT - avgSampleTime :
+        INDENT
+            tot -= leftV
+            count -= 1
+            leftT, leftV = leftIter.next()
+        DEDENT
+        yield rightT, tot / count
+    DEDENT
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+10240059_10240156_1_17
+10240059_10240171_1_15
+Title: Updating a dict value in Python 
+----------------------------------------
+
+def evaluateBallot(voterPreferences, candidates) :
+INDENT
+    d = {}
+    voterPrefCandOnly = []
+
+    for voterPref in voterPreferences.values() :
+    INDENT
+        filtered = filter(lambda x : x in cand, voterPref)
+        voterPrefCandOnly.append(filtered)
+
+    DEDENT
+    for candidate in candidates :
+    INDENT
+        d [candidate] = 0
+        for voterPref in voterPrefCandOnly :
+        INDENT
+            if candidate == voterPref [0] :
+            INDENT
+                d [candidate] += 1
+            DEDENT
+        DEDENT
+    DEDENT
+    return d
+DEDENT
+----------------------------------------
+
+def evaluateBallot(voterPreferences, candidates) :
+INDENT
+    votes = collections.Counter()
+    for voter, prefOrdering in voterPreferences.items() :
+    INDENT
+        for desiredCandidate in prefOrdering :
+        INDENT
+            if desiredCandidate in candidates :
+            INDENT
+
+                votes [desiredCandidate] += 1
+                break
+            DEDENT
+        DEDENT
+    DEDENT
+    return dict(votes)
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+10242096_10242167_3_10
+10242096_10242602_1_14
+Title: Trying to recursively add the square of numbers 
+----------------------------------------
+
+def recursive_add(s) :
+INDENT
+    global sum
+    if len(s) == 1 :
+    INDENT
+        sum += s [0] ** 2
+    DEDENT
+    else :
+    INDENT
+        recursive_add(s [1 :])
+        sum += s [0] ** 2
+    DEDENT
+DEDENT
+----------------------------------------
+
+def recursive_add(s) :
+INDENT
+    print "DEBUG: recursive_add(%s)" % repr(s)
+    sum = 0
+    print "DEBUG: sum: %d" % sum
+    if len(s) == 1 :
+    INDENT
+        sum += s [0] ** 2
+        print "DEBUG: sum: %d" % sum
+    DEDENT
+    else :
+    INDENT
+        recursive_add(s [1 :])
+        sum += s [0] ** 2
+        print "DEBUG: sum: %d" % sum
+    DEDENT
+    return sum
+
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+10261141_10261229_2_25
+10261141_10261475_1_17
+Title: "determine ""type of value"" from a string in python" 
+----------------------------------------
+
+def dataType(str) :
+INDENT
+    str = str.strip()
+    if len(str) == 0 : return 'BLANK'
+    try :
+    INDENT
+        t = ast.literal_eval(str)
+    DEDENT
+    except ValueError :
+    INDENT
+        return 'TEXT'
+    DEDENT
+    except SyntaxError :
+    INDENT
+        return 'TEXT'
+    DEDENT
+    else :
+    INDENT
+        if type(t) in [int, long, float, bool] :
+        INDENT
+            if t in set((True, False)) :
+            INDENT
+                return 'BIT'
+            DEDENT
+            if type(t) is int or type(t) is long :
+            INDENT
+                return 'INT'
+            DEDENT
+            if type(t) is float :
+            INDENT
+                return 'FLOAT'
+            DEDENT
+        DEDENT
+        else :
+        INDENT
+            return 'TEXT'
+
+        DEDENT
+    DEDENT
+DEDENT
+----------------------------------------
+
+def dataType(string) :
+INDENT
+    odp = ''
+    patternBIT = re.compile('[01]')
+    patternINT = re.compile('[0-9]+')
+    patternFLOAT = re.compile('[0-9]+\.[0-9]+')
+    patternTEXT = re.compile('[a-zA-Z0-9]+')
+    if patternTEXT.match(string) :
+    INDENT
+        odp = "text"
+    DEDENT
+    if patternFLOAT.match(string) :
+    INDENT
+        odp = "FLOAT"
+    DEDENT
+    if patternINT.match(string) :
+    INDENT
+        odp = "INT"
+    DEDENT
+    if patternBIT.match(string) :
+    INDENT
+        odp = "BIT"
+    DEDENT
+    return odp
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+10270970_10271069_1_9
+10270970_14473091_1_9
+Title: python: How do I capture a variable declared in a non global ancestral outer scope? 
+----------------------------------------
+
+def f() :
+INDENT
+    x = [0]
+    def g() :
+    INDENT
+        h()
+    DEDENT
+    def h() :
+    INDENT
+        x [0] += 1
+        print x [0]
+    DEDENT
+    g()
+DEDENT
+----------------------------------------
+
+def f() :
+INDENT
+    x = 0
+    def g() :
+    INDENT
+        h(x)
+    DEDENT
+    def h(x) :
+    INDENT
+        x += 1
+        print (x)
+    DEDENT
+    g()
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+10270970_10271069_1_9
+10270970_14731392_4_12
+Title: python: How do I capture a variable declared in a non global ancestral outer scope? 
+----------------------------------------
+
+def f() :
+INDENT
+    x = [0]
+    def g() :
+    INDENT
+        h()
+    DEDENT
+    def h() :
+    INDENT
+        x [0] += 1
+        print x [0]
+    DEDENT
+    g()
+DEDENT
+----------------------------------------
+
+def f() :
+INDENT
+    closure1 = dict(x = 0)
+    closure2 = Empty()
+    def g() : h(x)
+    def h(x) :
+    INDENT
+        closure1 ["x"] += 1
+        closure2.x += 1
+    DEDENT
+    g()
+    print closure1 ["x"], closure2.x
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+10270970_14473091_1_9
+10270970_14731392_4_12
+Title: python: How do I capture a variable declared in a non global ancestral outer scope? 
+----------------------------------------
+
+def f() :
+INDENT
+    x = 0
+    def g() :
+    INDENT
+        h(x)
+    DEDENT
+    def h(x) :
+    INDENT
+        x += 1
+        print (x)
+    DEDENT
+    g()
+DEDENT
+----------------------------------------
+
+def f() :
+INDENT
+    closure1 = dict(x = 0)
+    closure2 = Empty()
+    def g() : h(x)
+    def h(x) :
+    INDENT
+        closure1 ["x"] += 1
+        closure2.x += 1
+    DEDENT
+    g()
+    print closure1 ["x"], closure2.x
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+1030293_1033333_43_67
+1030293_1033333_73_84
+Title: Simple User management example for Google App Engine? 
+----------------------------------------
+
+def wrapper(self, * args, ** kwargs) :
+INDENT
+    auth_id = self.request.cookies.get('auth_id', '')
+    session_id = self.request.cookies.get('session_id', '')
+
+    session = Session.GetSession(session_id, auth_id)
+    if session is None :
+    INDENT
+        session = Session()
+        session.session_id = Session.MakeId()
+        session.auth_token = Session.MakeId()
+        session.put()
+
+    DEDENT
+    self.SessionObj = session
+
+    result = method(self, * args, ** kwargs)
+    self.response.headers.add_header('Set-Cookie', 'auth_id=%s; path=/; HttpOnly' % str(session.auth_token))
+    self.response.headers.add_header('Set-Cookie', 'session_id=%s; path=/; HttpOnly' % str(session.session_id))
+    return result
+DEDENT
+----------------------------------------
+
+def wrapper(self, * args, ** kwargs) :
+INDENT
+    try :
+    INDENT
+        if self.SessionObj is not None :
+        INDENT
+            if self.SessionObj.settings is not None :
+            INDENT
+
+                username = self.SessionObj.settings.key().name()
+                self.redirect(redirect + username)
+                return
+            DEDENT
+        DEDENT
+    DEDENT
+    except :
+    INDENT
+        pass
+    DEDENT
+    return method(self, * args, ** kwargs)
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+1030293_1033333_43_67
+1030293_1033333_9_36
+Title: Simple User management example for Google App Engine? 
+----------------------------------------
+
+def wrapper(self, * args, ** kwargs) :
+INDENT
+    auth_id = self.request.cookies.get('auth_id', '')
+    session_id = self.request.cookies.get('session_id', '')
+
+    session = Session.GetSession(session_id, auth_id)
+    if session is None :
+    INDENT
+        session = Session()
+        session.session_id = Session.MakeId()
+        session.auth_token = Session.MakeId()
+        session.put()
+
+    DEDENT
+    self.SessionObj = session
+
+    result = method(self, * args, ** kwargs)
+    self.response.headers.add_header('Set-Cookie', 'auth_id=%s; path=/; HttpOnly' % str(session.auth_token))
+    self.response.headers.add_header('Set-Cookie', 'session_id=%s; path=/; HttpOnly' % str(session.session_id))
+    return result
+DEDENT
+----------------------------------------
+
+def wrapper(self, * args, ** kwargs) :
+INDENT
+    auth_id = self.request.cookies.get('auth_id', '')
+    session_id = self.request.cookies.get('session_id', '')
+
+    session = Session.GetSession(session_id, auth_id)
+    if session is None :
+    INDENT
+        self.redirect(redirectTo)
+        return
+    DEDENT
+    else :
+    INDENT
+        if session.settings is None :
+        INDENT
+            self.redirect(redirectTo)
+            return
+        DEDENT
+        username = session.settings.key().name()
+        if len(args) > 0 :
+        INDENT
+            if username ! = args [0] :
+            INDENT
+
+                self.redirect(redirectTo)
+                return
+            DEDENT
+        DEDENT
+    DEDENT
+    result = method(self, * args, ** kwargs)
+    return result
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+1030293_1033333_73_84
+1030293_1033333_9_36
+Title: Simple User management example for Google App Engine? 
+----------------------------------------
+
+def wrapper(self, * args, ** kwargs) :
+INDENT
+    try :
+    INDENT
+        if self.SessionObj is not None :
+        INDENT
+            if self.SessionObj.settings is not None :
+            INDENT
+
+                username = self.SessionObj.settings.key().name()
+                self.redirect(redirect + username)
+                return
+            DEDENT
+        DEDENT
+    DEDENT
+    except :
+    INDENT
+        pass
+    DEDENT
+    return method(self, * args, ** kwargs)
+DEDENT
+----------------------------------------
+
+def wrapper(self, * args, ** kwargs) :
+INDENT
+    auth_id = self.request.cookies.get('auth_id', '')
+    session_id = self.request.cookies.get('session_id', '')
+
+    session = Session.GetSession(session_id, auth_id)
+    if session is None :
+    INDENT
+        self.redirect(redirectTo)
+        return
+    DEDENT
+    else :
+    INDENT
+        if session.settings is None :
+        INDENT
+            self.redirect(redirectTo)
+            return
+        DEDENT
+        username = session.settings.key().name()
+        if len(args) > 0 :
+        INDENT
+            if username ! = args [0] :
+            INDENT
+
+                self.redirect(redirectTo)
+                return
+            DEDENT
+        DEDENT
+    DEDENT
+    result = method(self, * args, ** kwargs)
+    return result
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+1035340_1035456_1_11
+1035340_18652697_1_9
+Title: Reading binary file and looping over each byte 
+----------------------------------------
+
+def bytes_from_file(filename, chunksize = 8192) :
+INDENT
+    with open(filename, "rb") as f :
+    INDENT
+        while True :
+        INDENT
+            chunk = f.read(chunksize)
+            if chunk :
+            INDENT
+                for b in chunk :
+                INDENT
+                    yield b
+                DEDENT
+            DEDENT
+            else :
+            INDENT
+                break
+            DEDENT
+        DEDENT
+    DEDENT
+DEDENT
+----------------------------------------
+
+def bytes_from_file(filename) :
+INDENT
+    with open(filename, "rb") as f :
+    INDENT
+        while True :
+        INDENT
+            byte = f.read(1)
+            if not byte :
+            INDENT
+                break
+            DEDENT
+            yield (ord(byte))
+
+        DEDENT
+    DEDENT
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+10366424_10366479_9_24
+10366424_10366590_3_18
+Title: "Python function quit if it has been run the last 5 minutes" 
+----------------------------------------
+
+def timeout(seconds_before_timeout) :
+INDENT
+    def decorate(f) :
+    INDENT
+        def handler(signum, frame) :
+        INDENT
+            raise TimeoutError()
+        DEDENT
+        def new_f(* args, ** kwargs) :
+        INDENT
+            old = signal.signal(signal.SIGALRM, handler)
+            signal.alarm(seconds_before_timeout)
+            try :
+            INDENT
+                result = f(* args, ** kwargs)
+            DEDENT
+            finally :
+            INDENT
+                signal.signal(signal.SIGALRM, old)
+            DEDENT
+            signal.alarm(0)
+            return result
+        DEDENT
+        new_f.func_name = f.func_name
+        return new_f
+    DEDENT
+    return decorate
+DEDENT
+----------------------------------------
+
+def timeout(f, k, n) :
+INDENT
+    last_time = [time.time()]
+    count = [0]
+    def inner(* args, ** kwargs) :
+    INDENT
+        distance = time.time() - last_time [0]
+        if distance > k :
+        INDENT
+            last_time [0] = time.time()
+            count [0] = 0
+            return f(* args, ** kwargs)
+        DEDENT
+        elif distance < k and (count [0] + 1) == n :
+        INDENT
+            return False
+        DEDENT
+        else :
+        INDENT
+            count [0] += 1
+            return f(* args, ** kwargs)
+        DEDENT
+    DEDENT
+    return inner
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+10371144_10374215_12_28
+10371144_10374215_91_108
+Title: Autodetect file or folder path in wx.TextCtrl 
+----------------------------------------
+
+def __init__(self, parent, id = wx.ID_ANY, value = "",
+pos = wx.DefaultPosition, size = wx.DefaultSize,
+style = 0, validator = wx.DefaultValidator,
+name = "") :
+INDENT
+    style = style | wx.TE_RICH
+    super(PathTextCtrl, self).__init__(parent, id, value, pos, size,
+        style, validator, name)
+    self.groups = []
+    self.SetDefaultStyle(wx.TextAttr(wx.BLACK, wx.NullColor))
+    self.Bind(wx.EVT_TEXT, self.OnText, self)
+    self.Bind(wx.EVT_MOTION, self.OnMotion, self)
+DEDENT
+----------------------------------------
+
+def __init__(self, parent, id = wx.ID_ANY, title = "") :
+INDENT
+    super(TestFrame, self).__init__(parent, id, title)
+    panel = wx.Panel(self)
+    text = PathTextCtrl(panel, size = (400, - 1))
+    sizer = wx.BoxSizer(wx.VERTICAL)
+    sizer.Add(text, 0, wx.ALL, 10)
+    panel.SetSizer(sizer)
+    sizer = wx.BoxSizer(wx.VERTICAL)
+    sizer.Add(panel)
+    self.SetSizer(sizer)
+    self.Fit()
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+10424078_10424404_9_15
+10424078_10434383_7_13
+Title: PyMongo Cursor Iteration 
+----------------------------------------
+
+def next(self) :
+INDENT
+    if self.cursor.hasNext() :
+    INDENT
+        data = self.cursor.next()
+        self.set_data(data)
+        return self
+    DEDENT
+    else :
+    INDENT
+        raise StopIteration
+    DEDENT
+DEDENT
+----------------------------------------
+
+def next(self) :
+INDENT
+    try :
+    INDENT
+        self._doc = self._cursor.next()
+    DEDENT
+    except StopIteration :
+    INDENT
+        self._doc = None
+    DEDENT
+    return self
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+104420_104426_1_17
+104420_104436_1_24
+Title: How to generate all permutations of a list in Python 
+----------------------------------------
+
+def permutations(orig_list) :
+INDENT
+    if not isinstance(orig_list, list) :
+    INDENT
+        orig_list = list(orig_list)
+    DEDENT
+    yield orig_list
+    if len(orig_list) == 1 :
+    INDENT
+        return
+    DEDENT
+    for n in sorted(orig_list) :
+    INDENT
+        new_list = orig_list [:]
+        pos = new_list.index(n)
+        del (new_list [pos])
+        new_list.insert(0, n)
+        for resto in permutations(new_list [1 :]) :
+        INDENT
+            if new_list [: 1] + resto < > orig_list :
+            INDENT
+                yield new_list [: 1] + resto
+            DEDENT
+        DEDENT
+    DEDENT
+DEDENT
+----------------------------------------
+
+def permutations(iterable, r = None) :
+INDENT
+    pool = tuple(iterable)
+    n = len(pool)
+    r = n if r is None else r
+    if r > n :
+    INDENT
+        return
+    DEDENT
+    indices = range(n)
+    cycles = range(n, n - r, - 1)
+    yield tuple(pool [i] for i in indices [: r])
+    while n :
+    INDENT
+        for i in reversed(range(r)) :
+        INDENT
+            cycles [i] -= 1
+            if cycles [i] == 0 :
+            INDENT
+                indices [i :] = indices [i + 1 :] + indices [i : i + 1]
+                cycles [i] = n - i
+            DEDENT
+            else :
+            INDENT
+                j = cycles [i]
+                indices [i], indices [- j] = indices [- j], indices [i]
+                yield tuple(pool [i] for i in indices [: r])
+                break
+            DEDENT
+        DEDENT
+        else :
+        INDENT
+            return
+        DEDENT
+    DEDENT
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+104420_104426_1_17
+104420_18135428_2_15
+Title: How to generate all permutations of a list in Python 
+----------------------------------------
+
+def permutations(orig_list) :
+INDENT
+    if not isinstance(orig_list, list) :
+    INDENT
+        orig_list = list(orig_list)
+    DEDENT
+    yield orig_list
+    if len(orig_list) == 1 :
+    INDENT
+        return
+    DEDENT
+    for n in sorted(orig_list) :
+    INDENT
+        new_list = orig_list [:]
+        pos = new_list.index(n)
+        del (new_list [pos])
+        new_list.insert(0, n)
+        for resto in permutations(new_list [1 :]) :
+        INDENT
+            if new_list [: 1] + resto < > orig_list :
+            INDENT
+                yield new_list [: 1] + resto
+            DEDENT
+        DEDENT
+    DEDENT
+DEDENT
+----------------------------------------
+
+def permutations(l) :
+INDENT
+    permutations = []
+    length = len(l)
+    for x in xrange(factorial(length)) :
+    INDENT
+        available = list(l)
+        newPermutation = []
+        for radix in xrange(length, 0, - 1) :
+        INDENT
+            placeValue = factorial(radix - 1)
+            index = x / placeValue
+            newPermutation.append(available.pop(index))
+            x -= index * placeValue
+        DEDENT
+        permutations.append(newPermutation)
+    DEDENT
+    return permutations
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+104420_104436_1_24
+104420_18135428_2_15
+Title: How to generate all permutations of a list in Python 
+----------------------------------------
+
+def permutations(iterable, r = None) :
+INDENT
+    pool = tuple(iterable)
+    n = len(pool)
+    r = n if r is None else r
+    if r > n :
+    INDENT
+        return
+    DEDENT
+    indices = range(n)
+    cycles = range(n, n - r, - 1)
+    yield tuple(pool [i] for i in indices [: r])
+    while n :
+    INDENT
+        for i in reversed(range(r)) :
+        INDENT
+            cycles [i] -= 1
+            if cycles [i] == 0 :
+            INDENT
+                indices [i :] = indices [i + 1 :] + indices [i : i + 1]
+                cycles [i] = n - i
+            DEDENT
+            else :
+            INDENT
+                j = cycles [i]
+                indices [i], indices [- j] = indices [- j], indices [i]
+                yield tuple(pool [i] for i in indices [: r])
+                break
+            DEDENT
+        DEDENT
+        else :
+        INDENT
+            return
+        DEDENT
+    DEDENT
+DEDENT
+----------------------------------------
+
+def permutations(l) :
+INDENT
+    permutations = []
+    length = len(l)
+    for x in xrange(factorial(length)) :
+    INDENT
+        available = list(l)
+        newPermutation = []
+        for radix in xrange(length, 0, - 1) :
+        INDENT
+            placeValue = factorial(radix - 1)
+            index = x / placeValue
+            newPermutation.append(available.pop(index))
+            x -= index * placeValue
+        DEDENT
+        permutations.append(newPermutation)
+    DEDENT
+    return permutations
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+104420_11962517_3_11
+104420_16446022_3_30
+Title: How to generate all permutations of a list in Python 
+----------------------------------------
+
+def perm(a, k = 0) :
+INDENT
+    if k == len(a) :
+    INDENT
+        print a
+    DEDENT
+    else :
+    INDENT
+        for i in xrange(k, len(a)) :
+        INDENT
+            a [k], a [i] = a [i], a [k]
+            perm(a, k + 1)
+            a [k], a [i] = a [i], a [k]
+        DEDENT
+    DEDENT
+DEDENT
+----------------------------------------
+
+def perm(n) :
+INDENT
+    p = []
+    for i in range(0, n + 1) :
+    INDENT
+        p.append(i)
+    DEDENT
+    while True :
+    INDENT
+        for i in range(1, n + 1) :
+        INDENT
+            print(p [i], end = ' ')
+        DEDENT
+        print ("")
+        i = n - 1
+        found = 0
+        while (not found and i > 0) :
+        INDENT
+            if p [i] < p [i + 1] :
+            INDENT
+                found = 1
+            DEDENT
+            else :
+            INDENT
+                i = i - 1
+            DEDENT
+        DEDENT
+        k = n
+        while p [i] > p [k] :
+        INDENT
+            k = k - 1
+        DEDENT
+        aux = p [i]
+        p [i] = p [k]
+        p [k] = aux
+        for j in range(1, (n - i) / 2 + 1) :
+        INDENT
+            aux = p [i + j]
+            p [i + j] = p [n - j + 1]
+            p [n - j + 1] = aux
+        DEDENT
+        if not found :
+        INDENT
+            break
+        DEDENT
+    DEDENT
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+104420_11962517_3_11
+104420_30112080_9_14
+Title: How to generate all permutations of a list in Python 
+----------------------------------------
+
+def perm(a, k = 0) :
+INDENT
+    if k == len(a) :
+    INDENT
+        print a
+    DEDENT
+    else :
+    INDENT
+        for i in xrange(k, len(a)) :
+        INDENT
+            a [k], a [i] = a [i], a [k]
+            perm(a, k + 1)
+            a [k], a [i] = a [i], a [k]
+        DEDENT
+    DEDENT
+DEDENT
+----------------------------------------
+
+def perm(line) :
+INDENT
+    seq = [c for c in line]
+    if len(seq) < = 1 :
+    INDENT
+        return seq
+    DEDENT
+    else :
+    INDENT
+        return pzip(seq [0], perm(seq [1 :]))
+    DEDENT
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+104420_16446022_3_30
+104420_30112080_9_14
+Title: How to generate all permutations of a list in Python 
+----------------------------------------
+
+def perm(n) :
+INDENT
+    p = []
+    for i in range(0, n + 1) :
+    INDENT
+        p.append(i)
+    DEDENT
+    while True :
+    INDENT
+        for i in range(1, n + 1) :
+        INDENT
+            print(p [i], end = ' ')
+        DEDENT
+        print ("")
+        i = n - 1
+        found = 0
+        while (not found and i > 0) :
+        INDENT
+            if p [i] < p [i + 1] :
+            INDENT
+                found = 1
+            DEDENT
+            else :
+            INDENT
+                i = i - 1
+            DEDENT
+        DEDENT
+        k = n
+        while p [i] > p [k] :
+        INDENT
+            k = k - 1
+        DEDENT
+        aux = p [i]
+        p [i] = p [k]
+        p [k] = aux
+        for j in range(1, (n - i) / 2 + 1) :
+        INDENT
+            aux = p [i + j]
+            p [i + j] = p [n - j + 1]
+            p [n - j + 1] = aux
+        DEDENT
+        if not found :
+        INDENT
+            break
+        DEDENT
+    DEDENT
+DEDENT
+----------------------------------------
+
+def perm(line) :
+INDENT
+    seq = [c for c in line]
+    if len(seq) < = 1 :
+    INDENT
+        return seq
+    DEDENT
+    else :
+    INDENT
+        return pzip(seq [0], perm(seq [1 :]))
+    DEDENT
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+104420_17504089_1_12
+104420_28256360_1_13
+Title: How to generate all permutations of a list in Python 
+----------------------------------------
+
+def permute(xs, low = 0) :
+INDENT
+    if low + 1 > = len(xs) :
+    INDENT
+        yield xs
+    DEDENT
+    else :
+    INDENT
+        for p in permute(xs, low + 1) :
+        INDENT
+            yield p
+        DEDENT
+        for i in range(low + 1, len(xs)) :
+        INDENT
+            xs [low], xs [i] = xs [i], xs [low]
+            for p in permute(xs, low + 1) :
+            INDENT
+                yield p
+            DEDENT
+            xs [low], xs [i] = xs [i], xs [low]
+        DEDENT
+    DEDENT
+DEDENT
+----------------------------------------
+
+def permute(items) :
+INDENT
+    length = len(items)
+    def inner(ix = []) :
+    INDENT
+        do_yield = len(ix) == length - 1
+        for i in range(0, length) :
+        INDENT
+            if i in ix :
+            INDENT
+                continue
+            DEDENT
+            if do_yield :
+            INDENT
+                yield tuple([items [y] for y in ix + [i]])
+            DEDENT
+            else :
+            INDENT
+                for p in inner(ix + [i]) :
+                INDENT
+                    yield p
+                DEDENT
+            DEDENT
+        DEDENT
+    DEDENT
+    return inner()
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+104420_20014561_1_6
+104420_43018229_1_11
+Title: How to generate all permutations of a list in Python 
+----------------------------------------
+
+def permutation(list) :
+INDENT
+    if len(list) == 0 :
+    INDENT
+        return [[]]
+    DEDENT
+    else :
+    INDENT
+        return [[x] + ys for x in list for ys in permutation(delete(list, x))]
+    DEDENT
+DEDENT
+----------------------------------------
+
+def permutation(flag, k = 1) :
+INDENT
+    N = len(flag)
+    for i in xrange(0, N) :
+    INDENT
+        if flag [i] ! = 0 :
+        INDENT
+            continue
+        DEDENT
+        flag [i] = k
+        if k == N :
+        INDENT
+            print flag
+        DEDENT
+        permutation(flag, k + 1)
+        flag [i] = 0
+    DEDENT
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+104420_20014561_1_6
+104420_50311529_1_10
+Title: How to generate all permutations of a list in Python 
+----------------------------------------
+
+def permutation(list) :
+INDENT
+    if len(list) == 0 :
+    INDENT
+        return [[]]
+    DEDENT
+    else :
+    INDENT
+        return [[x] + ys for x in list for ys in permutation(delete(list, x))]
+    DEDENT
+DEDENT
+----------------------------------------
+
+def permutation(word, first_char = None) :
+INDENT
+    if word == None or len(word) == 0 : return []
+    if len(word) == 1 : return [word]
+    result = []
+    first_char = word [0]
+    for sub_word in permutation(word [1 :], first_char) :
+    INDENT
+        result += insert(first_char, sub_word)
+    DEDENT
+    return sorted(result)
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+104420_43018229_1_11
+104420_50311529_1_10
+Title: How to generate all permutations of a list in Python 
+----------------------------------------
+
+def permutation(flag, k = 1) :
+INDENT
+    N = len(flag)
+    for i in xrange(0, N) :
+    INDENT
+        if flag [i] ! = 0 :
+        INDENT
+            continue
+        DEDENT
+        flag [i] = k
+        if k == N :
+        INDENT
+            print flag
+        DEDENT
+        permutation(flag, k + 1)
+        flag [i] = 0
+    DEDENT
+DEDENT
+----------------------------------------
+
+def permutation(word, first_char = None) :
+INDENT
+    if word == None or len(word) == 0 : return []
+    if len(word) == 1 : return [word]
+    result = []
+    first_char = word [0]
+    for sub_word in permutation(word [1 :], first_char) :
+    INDENT
+        result += insert(first_char, sub_word)
+    DEDENT
+    return sorted(result)
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+10447818_28572207_108_113
+10447818_28572207_124_132
+Title: Python context manager: conditionally executing body? 
+----------------------------------------
+
+def run(self) :
+INDENT
+    print '>>>> skip body by not yielding (does not work)'
+    with self.drivercontext(self.driverfactory) as driver :
+    INDENT
+        self.dostuff(driver)
+
+    DEDENT
+DEDENT
+----------------------------------------
+
+def run(self) :
+INDENT
+    print '>>>> skip body manually by returning flag with context'
+    with self.drivercontext(self.driverfactory) as (driver, ok) :
+    INDENT
+        if ok :
+        INDENT
+            self.dostuff(driver)
+        DEDENT
+        else :
+        INDENT
+            print 'skip because driver not ok'
+        DEDENT
+    DEDENT
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+10447818_28572207_108_113
+10447818_28572207_145_150
+Title: Python context manager: conditionally executing body? 
+----------------------------------------
+
+def run(self) :
+INDENT
+    print '>>>> skip body by not yielding (does not work)'
+    with self.drivercontext(self.driverfactory) as driver :
+    INDENT
+        self.dostuff(driver)
+
+    DEDENT
+DEDENT
+----------------------------------------
+
+def run(self) :
+INDENT
+    print '>>>> abuse generator as context manager'
+    for driver in self.drivergenerator(self.driverfactory) :
+    INDENT
+        self.dostuff(driver)
+
+    DEDENT
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+10447818_28572207_108_113
+10447818_28572207_71_80
+Title: Python context manager: conditionally executing body? 
+----------------------------------------
+
+def run(self) :
+INDENT
+    print '>>>> skip body by not yielding (does not work)'
+    with self.drivercontext(self.driverfactory) as driver :
+    INDENT
+        self.dostuff(driver)
+
+    DEDENT
+DEDENT
+----------------------------------------
+
+def run(self) :
+INDENT
+    print '>>>> check driver ok but not ensure driver quit'
+    driver, ok = self.driverfactory()
+    if ok :
+    INDENT
+        self.dostuff(driver)
+    DEDENT
+    else :
+    INDENT
+        print 'skip because driver not ok'
+    DEDENT
+    driver.quit()
+
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+10447818_28572207_108_113
+10447818_28572207_83_94
+Title: Python context manager: conditionally executing body? 
+----------------------------------------
+
+def run(self) :
+INDENT
+    print '>>>> skip body by not yielding (does not work)'
+    with self.drivercontext(self.driverfactory) as driver :
+    INDENT
+        self.dostuff(driver)
+
+    DEDENT
+DEDENT
+----------------------------------------
+
+def run(self) :
+INDENT
+    print '>>>> check driver ok and ensure driver quit'
+    driver, ok = self.driverfactory()
+    try :
+    INDENT
+        if ok :
+        INDENT
+            self.dostuff(driver)
+        DEDENT
+        else :
+        INDENT
+            print 'skip because driver not ok'
+        DEDENT
+    DEDENT
+    finally :
+    INDENT
+        driver.quit()
+
+    DEDENT
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+10447818_28572207_117_123
+10447818_28572207_98_107
+Title: Python context manager: conditionally executing body? 
+----------------------------------------
+
+def drivercontext(self, driverfactory) :
+INDENT
+    driver, ok = driverfactory()
+    try :
+    INDENT
+        yield driver, ok
+    DEDENT
+    finally :
+    INDENT
+        driver.quit()
+    DEDENT
+DEDENT
+----------------------------------------
+
+def drivercontext(self, driverfactory) :
+INDENT
+    driver, ok = driverfactory()
+    try :
+    INDENT
+        if ok :
+        INDENT
+            yield driver
+        DEDENT
+        else :
+        INDENT
+            print 'skip because driver not ok'
+        DEDENT
+    DEDENT
+    finally :
+    INDENT
+        driver.quit()
+    DEDENT
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+10447818_28572207_124_132
+10447818_28572207_145_150
+Title: Python context manager: conditionally executing body? 
+----------------------------------------
+
+def run(self) :
+INDENT
+    print '>>>> skip body manually by returning flag with context'
+    with self.drivercontext(self.driverfactory) as (driver, ok) :
+    INDENT
+        if ok :
+        INDENT
+            self.dostuff(driver)
+        DEDENT
+        else :
+        INDENT
+            print 'skip because driver not ok'
+        DEDENT
+    DEDENT
+DEDENT
+----------------------------------------
+
+def run(self) :
+INDENT
+    print '>>>> abuse generator as context manager'
+    for driver in self.drivergenerator(self.driverfactory) :
+    INDENT
+        self.dostuff(driver)
+
+    DEDENT
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+10447818_28572207_124_132
+10447818_28572207_83_94
+Title: Python context manager: conditionally executing body? 
+----------------------------------------
+
+def run(self) :
+INDENT
+    print '>>>> skip body manually by returning flag with context'
+    with self.drivercontext(self.driverfactory) as (driver, ok) :
+    INDENT
+        if ok :
+        INDENT
+            self.dostuff(driver)
+        DEDENT
+        else :
+        INDENT
+            print 'skip because driver not ok'
+        DEDENT
+    DEDENT
+DEDENT
+----------------------------------------
+
+def run(self) :
+INDENT
+    print '>>>> check driver ok and ensure driver quit'
+    driver, ok = self.driverfactory()
+    try :
+    INDENT
+        if ok :
+        INDENT
+            self.dostuff(driver)
+        DEDENT
+        else :
+        INDENT
+            print 'skip because driver not ok'
+        DEDENT
+    DEDENT
+    finally :
+    INDENT
+        driver.quit()
+
+    DEDENT
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+10447818_28572207_145_150
+10447818_28572207_71_80
+Title: Python context manager: conditionally executing body? 
+----------------------------------------
+
+def run(self) :
+INDENT
+    print '>>>> abuse generator as context manager'
+    for driver in self.drivergenerator(self.driverfactory) :
+    INDENT
+        self.dostuff(driver)
+
+    DEDENT
+DEDENT
+----------------------------------------
+
+def run(self) :
+INDENT
+    print '>>>> check driver ok but not ensure driver quit'
+    driver, ok = self.driverfactory()
+    if ok :
+    INDENT
+        self.dostuff(driver)
+    DEDENT
+    else :
+    INDENT
+        print 'skip because driver not ok'
+    DEDENT
+    driver.quit()
+
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+10447818_28572207_145_150
+10447818_28572207_83_94
+Title: Python context manager: conditionally executing body? 
+----------------------------------------
+
+def run(self) :
+INDENT
+    print '>>>> abuse generator as context manager'
+    for driver in self.drivergenerator(self.driverfactory) :
+    INDENT
+        self.dostuff(driver)
+
+    DEDENT
+DEDENT
+----------------------------------------
+
+def run(self) :
+INDENT
+    print '>>>> check driver ok and ensure driver quit'
+    driver, ok = self.driverfactory()
+    try :
+    INDENT
+        if ok :
+        INDENT
+            self.dostuff(driver)
+        DEDENT
+        else :
+        INDENT
+            print 'skip because driver not ok'
+        DEDENT
+    DEDENT
+    finally :
+    INDENT
+        driver.quit()
+
+    DEDENT
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+10447818_28572207_71_80
+10447818_28572207_83_94
+Title: Python context manager: conditionally executing body? 
+----------------------------------------
+
+def run(self) :
+INDENT
+    print '>>>> check driver ok but not ensure driver quit'
+    driver, ok = self.driverfactory()
+    if ok :
+    INDENT
+        self.dostuff(driver)
+    DEDENT
+    else :
+    INDENT
+        print 'skip because driver not ok'
+    DEDENT
+    driver.quit()
+
+DEDENT
+----------------------------------------
+
+def run(self) :
+INDENT
+    print '>>>> check driver ok and ensure driver quit'
+    driver, ok = self.driverfactory()
+    try :
+    INDENT
+        if ok :
+        INDENT
+            self.dostuff(driver)
+        DEDENT
+        else :
+        INDENT
+            print 'skip because driver not ok'
+        DEDENT
+    DEDENT
+    finally :
+    INDENT
+        driver.quit()
+
+    DEDENT
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+10466449_14364527_1_13
+10466449_25961128_1_22
+Title: Checking if an object is in a repo in gitpython 
+----------------------------------------
+
+def fileInRepo(repo, path_to_file) :
+INDENT
+    pathdir = os.path.dirname(path_to_file)
+
+    rsub = repo.head.commit.tree
+    for path_element in pathdir.split(os.path.sep) :
+    INDENT
+        rsub = rsub [path_element]
+    DEDENT
+    return (path_to_file in rsub)
+DEDENT
+----------------------------------------
+
+def fileInRepo(repo, filePath) :
+INDENT
+    pathdir = os.path.dirname(filePath)
+
+    rsub = repo.head.commit.tree
+    for path_element in pathdir.split(os.path.sep) :
+    INDENT
+        try :
+        INDENT
+            rsub = rsub [path_element]
+        DEDENT
+        except KeyError :
+        INDENT
+            return False
+        DEDENT
+    DEDENT
+    return (filePath in rsub)
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+10480806_10480929_1_13
+10480806_48561348_1_32
+Title: Compare dictionaries ignoring specific keys 
+----------------------------------------
+
+def equal_dicts(d1, d2, ignore_keys = ()) :
+INDENT
+    d1_, d2_ = d1.copy(), d2.copy()
+    for k in ignore_keys :
+    INDENT
+        try :
+        INDENT
+            del d1_ [k]
+        DEDENT
+        except KeyError :
+        INDENT
+            pass
+        DEDENT
+        try :
+        INDENT
+            del d2_ [k]
+        DEDENT
+        except KeyError :
+        INDENT
+            pass
+        DEDENT
+    DEDENT
+    return d1_ == d2_
+DEDENT
+----------------------------------------
+
+def equal_dicts(d1, d2, ignore_keys, equal) :
+INDENT
+    if isinstance(d1, str) :
+    INDENT
+        if not isinstance(d2, str) :
+        INDENT
+            return False
+        DEDENT
+        return d1 == d2
+    DEDENT
+    for k in d1 :
+    INDENT
+        if k in ignore_keys :
+        INDENT
+            continue
+        DEDENT
+        if not isinstance(d1 [k], dict) and not isinstance(d1 [k], list) and d2.get(k) ! = d1 [k] :
+        INDENT
+            print (k)
+            equal = False
+        DEDENT
+        elif isinstance(d1 [k], list) :
+        INDENT
+            if not isinstance(d2.get(k), list) :
+            INDENT
+                equal = False
+            DEDENT
+            if len(d1 [k]) ! = len(d2 [k]) :
+            INDENT
+                return False
+            DEDENT
+            if len(d1 [k]) > 0 and isinstance(d1 [k] [0], dict) :
+            INDENT
+                if not isinstance(d2 [k] [0], dict) :
+                INDENT
+                    return False
+                DEDENT
+                d1_sorted = sorted(d1 [k], key = lambda item : item.get('created'))
+                d2_sorted = sorted(d2 [k], key = lambda item : item.get('created'))
+                equal = all(equal_dicts(x, y, ignore_keys, equal) for x, y in zip(d1_sorted, d2_sorted)) and equal
+            DEDENT
+            else :
+            INDENT
+                equal = all(equal_dicts(x, y, ignore_keys, equal) for x, y in zip(d1 [k], d2 [k])) and equal
+            DEDENT
+        DEDENT
+        elif isinstance(d1 [k], dict) :
+        INDENT
+            if not isinstance(d2.get(k), dict) :
+            INDENT
+                equal = False
+            DEDENT
+            print (k)
+            equal = equal_dicts(d1 [k], d2 [k], ignore_keys, equal) and equal
+        DEDENT
+    DEDENT
+    return equal
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+10508021_10510078_226_233
+10508021_10510078_235_242
+Title: Matrix Multiplication in python? 
+----------------------------------------
+
+def _solve(self, b) :
+INDENT
+    'Solve an upper triangular matrix using backward substitution'
+    x = Vec([])
+    for i in range(self.rows - 1, - 1, - 1) :
+    INDENT
+        assert NPRE or self [i] [i], 'Backsub requires non-zero elements on the diagonal'
+        x.insert(0, (b [i] - x.dot(self [i] [i + 1 :])) / self [i] [i])
+    DEDENT
+    return x
+DEDENT
+----------------------------------------
+
+def _solve(self, b) :
+INDENT
+    'Solve a lower triangular matrix using forward substitution'
+    x = Vec([])
+    for i in range(self.rows) :
+    INDENT
+        assert NPRE or self [i] [i], 'Forward sub requires non-zero elements on the diagonal'
+        x.append((b [i] - x.dot(self [i] [: i])) / self [i] [i])
+    DEDENT
+    return x
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+10520788_10522076_27_37
+10520788_10522076_8_22
+Title: Python WX - Returning user input from wx Dialog 
+----------------------------------------
+
+def __init__(self) :
+INDENT
+    wx.Frame.__init__(self, None, title = "Main Program")
+    panel = wx.Panel(self)
+    btn = wx.Button(panel, label = "Open dialog")
+    btn.Bind(wx.EVT_BUTTON, self.onDialog)
+    self.Show()
+
+DEDENT
+----------------------------------------
+
+def __init__(self) :
+INDENT
+    wx.Dialog.__init__(self, None, title = "Dialog")
+    self.comboBox1 = wx.ComboBox(self,
+        choices = ['test1', 'test2'],
+        value = "")
+    okBtn = wx.Button(self, wx.ID_OK)
+    sizer = wx.BoxSizer(wx.VERTICAL)
+    sizer.Add(self.comboBox1, 0, wx.ALL | wx.CENTER, 5)
+    sizer.Add(okBtn, 0, wx.ALL | wx.CENTER, 5)
+    self.SetSizer(sizer)
+
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+10540917_10545799_10_18
+10540917_10545876_10_16
+Title: Walking Path in Python using a Decorator 
+----------------------------------------
+
+def countL(outside, filename, dirname, extension = '.wrd') :
+INDENT
+    if (filename [- 4 :] == extension) :
+    INDENT
+        with open(os.path.join(dirname, filename), 'r') as input :
+        INDENT
+            data = input.readlines()
+        DEDENT
+        for i in range(len(data)) :
+        INDENT
+            temp = data [i].split()
+            if (int(temp [1]) - int(temp [0]) > outside) :
+            INDENT
+                outside = int(temp [1]) - int(temp [0])
+            DEDENT
+        DEDENT
+    DEDENT
+    return outside
+DEDENT
+----------------------------------------
+
+def countL(filename, dirname, extension = '.wrd') :
+INDENT
+    if os.path.splitext(filename) [1] == extension :
+    INDENT
+        with open(os.path.join(dirname, filename), 'r') as input :
+        INDENT
+            data = input.readlines()
+        DEDENT
+        for i in range(len(data)) :
+        INDENT
+            temp = data [i].split()
+            return int(temp [1]) - int(temp [0])
+        DEDENT
+    DEDENT
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+10540917_10545799_2_6
+10540917_10545876_2_6
+Title: Walking Path in Python using a Decorator 
+----------------------------------------
+
+def wrapper(outside, * args, ** kwargs) :
+INDENT
+    for dirname, dirnames, filenames in os.walk(args [0]) :
+    INDENT
+        for filename in filenames :
+        INDENT
+            outside = fn(outside, filename, dirname, * args, ** kwargs)
+        DEDENT
+    DEDENT
+    return outside
+DEDENT
+----------------------------------------
+
+def wrapper(walkroot, * args, ** kwargs) :
+INDENT
+    for dirname, dirnames, filenames in os.walk(walkroot) :
+    INDENT
+        for filename in filenames :
+        INDENT
+            res = fn(filename, dirname, * args, ** kwargs)
+            if res is not None : yield res
+        DEDENT
+    DEDENT
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+1055410_1055440_2_6
+1055410_39757186_2_7
+Title: Python: linking/binding variables together in a dictionary 
+----------------------------------------
+
+def __getitem__(self, key) :
+INDENT
+    if key == 'density' :
+    INDENT
+        return self ['mass'] / self ['volume']
+    DEDENT
+    else :
+    INDENT
+        return dict.__getitem__(self, key)
+    DEDENT
+DEDENT
+----------------------------------------
+
+def __getitem__(self, key) :
+INDENT
+    value = dict.__getitem__(self, key)
+    if callable(value) :
+    INDENT
+        value = value(self)
+    DEDENT
+    return value
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+10567726_10567850_4_14
+10567726_10585439_8_24
+Title: Call functions from within a wxPython event handler 
+----------------------------------------
+
+def __init__(self) :
+INDENT
+    wx.Frame.__init__(self, None, - 1, 'Button Example',
+        size = (300, 100))
+    panel = wx.Panel(self, - 1)
+    self.radio = wx.RadioButton(panel, - 1, "Accept user agreement", pos = (50, 10))
+    self.button = wx.Button(panel, - 1, "Run", pos = (50, 30))
+    self.Bind(wx.EVT_BUTTON, self.OnRun, self.button)
+    self.button.SetDefault()
+    self.btn2 = wx.Button(panel, - 1, "Walk", pos = (150, 30))
+    self.Bind(wx.EVT_BUTTON, self.OnWalk, self.btn2)
+DEDENT
+----------------------------------------
+
+def __init__(self) :
+INDENT
+    wx.Frame.__init__(self, None, title = "Test")
+    panel = wx.Panel(self)
+    self.radios = wx.RadioBox(panel, label = "Choices",
+        choices = ["None", "Accept", "Reject"])
+    button = wx.Button(panel, label = "Run")
+    button.Bind(wx.EVT_BUTTON, self.onBtn)
+    sizer = wx.BoxSizer(wx.VERTICAL)
+    sizer.Add(self.radios, 0, wx.ALL, 5)
+    sizer.Add(button, 0, wx.ALL, 5)
+    panel.SetSizer(sizer)
+
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+10570560_11203092_11_22
+10570560_11203092_43_66
+Title: wxPython StyleSetSpec and SetLexer not working? 
+----------------------------------------
+
+def __init__(self, control) :
+INDENT
+    super(SCT_LEX_ERLANG_IDNOISE, self).__init__(control)
+    self.typeFormatDict = {}
+    self.typeFormatDict ["other"] = SCT_LEX_ERLANG_IDNOISE.STC_ERLANG_IDNOISE_DEFAULT
+    self.typeFormatDict ["variable"] = SCT_LEX_ERLANG_IDNOISE.STC_ERLANG_IDNOISE_VARIABLE
+    self.typeFormatDict ["atom"] = SCT_LEX_ERLANG_IDNOISE.STC_ERLANG_IDNOISE_ATOM
+    self.typeFormatDict ["module"] = SCT_LEX_ERLANG_IDNOISE.STC_ERLANG_IDNOISE_MODULE
+    self.typeFormatDict ["keyword"] = SCT_LEX_ERLANG_IDNOISE.STC_ERLANG_IDNOISE_KEYWORD
+    self.typeFormatDict ["comment"] = SCT_LEX_ERLANG_IDNOISE.STC_ERLANG_IDNOISE_COMMENT
+    self.typeFormatDict ["macros"] = SCT_LEX_ERLANG_IDNOISE.STC_ERLANG_IDNOISE_MACROS
+    self.typeFormatDict ["number"] = SCT_LEX_ERLANG_IDNOISE.STC_ERLANG_IDNOISE_NUMBER
+DEDENT
+----------------------------------------
+
+def __init__(self, parent) :
+INDENT
+    super(CustomSTC, self).__init__(parent)
+    self.custlex = SCT_LEX_ERLANG_IDNOISE(self)
+
+    self.SetLexer(stc.STC_LEX_CONTAINER)
+    self.EnableLineNumbers()
+    self.StyleSetSpec(stc.STC_STYLE_DEFAULT, ColorSchema.formats ["other"])
+    self.StyleClearAll()
+    self.StyleSetSpec(stc.STC_STYLE_LINENUMBER, ColorSchema.lineFont)
+    self.StyleSetSpec(SCT_LEX_ERLANG_IDNOISE.STC_ERLANG_IDNOISE_DEFAULT, ColorSchema.formats ["other"])
+    self.StyleSetSpec(SCT_LEX_ERLANG_IDNOISE.STC_ERLANG_IDNOISE_VARIABLE, ColorSchema.formats ["variable"])
+    self.StyleSetSpec(SCT_LEX_ERLANG_IDNOISE.STC_ERLANG_IDNOISE_ATOM, ColorSchema.formats ["atom"])
+    self.StyleSetSpec(SCT_LEX_ERLANG_IDNOISE.STC_ERLANG_IDNOISE_MODULE, ColorSchema.formats ["module"])
+    self.StyleSetSpec(SCT_LEX_ERLANG_IDNOISE.STC_ERLANG_IDNOISE_KEYWORD, ColorSchema.formats ["keyword"])
+    self.StyleSetSpec(SCT_LEX_ERLANG_IDNOISE.STC_ERLANG_IDNOISE_COMMENT, ColorSchema.formats ["comment"])
+    self.StyleSetSpec(SCT_LEX_ERLANG_IDNOISE.STC_ERLANG_IDNOISE_MACROS, ColorSchema.formats ["macros"])
+    self.StyleSetSpec(SCT_LEX_ERLANG_IDNOISE.STC_ERLANG_IDNOISE_NUMBER, ColorSchema.formats ["number"])
+
+    self.Bind(stc.EVT_STC_STYLENEEDED, self.OnStyle)
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+10608956_10609007_4_13
+10608956_10609205_2_10
+Title: Python Lambda Mutability 
+----------------------------------------
+
+def __init__(self) :
+INDENT
+    self.value = 100
+    if HATE_LAMBDAS :
+    INDENT
+        def x() :
+        INDENT
+            self.value += 100
+        DEDENT
+        self.x = x
+    DEDENT
+    else :
+    INDENT
+        self.x = lambda : setattr(self, "value", self.value + 100)
+    DEDENT
+    self.run()
+DEDENT
+----------------------------------------
+
+def __init__(self) :
+INDENT
+    self.value = 100
+    self.methods = {'add' : self.w,
+        'subtract' : self.x,
+        'mult' : self.y,
+        'div' : self.z,
+        }
+    self.run()
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+10609711_10609829_5_12
+10609711_10609987_7_11
+Title: "For loop repetitive calculation in Python" 
+----------------------------------------
+
+def onetrial(prob) :
+INDENT
+    u = uniform(0, 1)
+    return_values = [11, 23, 39]
+    total_prob = 0
+    for i in range(3) :
+    INDENT
+        total_prob += prob [i]
+        if u < = total_prob :
+        INDENT
+            return return_values [i]
+        DEDENT
+    DEDENT
+DEDENT
+----------------------------------------
+
+def onetrial(vals, cdf) :
+INDENT
+    u = uniform(0, 1)
+    for i in range(3) :
+    INDENT
+        if u < = cdf [i] :
+        INDENT
+            return vals [i]
+        DEDENT
+    DEDENT
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+10609711_10609856_5_11
+10609711_10609987_7_11
+Title: "For loop repetitive calculation in Python" 
+----------------------------------------
+
+def onetrial(prob) :
+INDENT
+    u = uniform(0, 1)
+    total_prob = 0
+    for i in range(3) :
+    INDENT
+        total_prob += prob [i] [0]
+        if u < = total_prob :
+        INDENT
+            return prob [i] [1]
+        DEDENT
+    DEDENT
+DEDENT
+----------------------------------------
+
+def onetrial(vals, cdf) :
+INDENT
+    u = uniform(0, 1)
+    for i in range(3) :
+    INDENT
+        if u < = cdf [i] :
+        INDENT
+            return vals [i]
+        DEDENT
+    DEDENT
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+10611393_10622367_32_47
+10611393_10622367_53_72
+Title: how to make text a class object in python 
+----------------------------------------
+
+def draw(self, win, rows, columns) :
+INDENT
+    for day, (start, length) in self.schedule :
+    INDENT
+
+        box = Rectangle(
+            Point(columns [day], rows [start]),
+            Point(columns [day + 1], rows [start + length]))
+        box.setFill(self.bg)
+        box.setOutline(self.border)
+        box.draw(win)
+        label = Text(Point(columns [day] + 10, rows [start] + 40), self.name)
+        label.fontSize = 9
+        label.setFill(self.text)
+        label.draw(win)
+    DEDENT
+DEDENT
+----------------------------------------
+
+def draw(self, win, left, top, width, height) :
+INDENT
+    label_space = 40
+
+    label = Text(Point(Point(left + 0.5 * width, top + 0.5 * label_space)), self.label)
+    label.fontSize = 20
+    label.setFill(Black)
+    label.draw(win)
+
+    days = 5
+    columns = [left + width * n / days for n in range(days + 1)]
+    periods = 5
+    rows = [top + label_space + (height - label_space) * n / periods for n in range(periods + 1)]
+
+    for p in self.periods :
+    INDENT
+        p.draw(win, rows, columns)
+    DEDENT
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+1061590_1062810_5_11
+1061590_1062908_1_10
+Title: KenKen puzzle addends: REDUX A (corrected) non-recursive algorithm 
+----------------------------------------
+
+def latinSquares(max_val, target_sum, n_cells) :
+INDENT
+    possibilities = itertools.product(range(1, max_val + 1), repeat = n_cells)
+    for square in possibilities :
+    INDENT
+        if descending(square) and sum(square) == target_sum :
+        INDENT
+            yield square
+        DEDENT
+    DEDENT
+DEDENT
+----------------------------------------
+
+def latinSquares(max_val, target_sum, n_cells) :
+INDENT
+    if n_cells == 1 :
+    INDENT
+        assert (max_val > = target_sum > = 1)
+        return ((target_sum,),)
+    DEDENT
+    else :
+    INDENT
+        lower_bound = max(- (- target_sum / n_cells), 1)
+        upper_bound = min(max_val, target_sum - n_cells + 1)
+        assert (lower_bound < = upper_bound)
+        return ((v,) + w for v in xrange(upper_bound, lower_bound - 1, - 1)
+            for w in latinSquares(v, target_sum - v, n_cells - 1))
+    DEDENT
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+10661046_10661376_3_9
+10661046_10661380_6_12
+Title: CARP hash in Python 
+----------------------------------------
+
+def key_hash(data) :
+INDENT
+    hashed = uint32()
+    for char in data :
+    INDENT
+        hashed += hashed < < uint32(19) + uint32(ord(char))
+    DEDENT
+    return hashed
+DEDENT
+----------------------------------------
+
+def key_hash(data) :
+INDENT
+    hashed = 0
+    for char in data :
+    INDENT
+        hashed = (hashed + rotate_left(hashed, 19) + ord(char))
+    DEDENT
+    return hashed
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+10672215_13502478_3_32
+10672215_16761293_4_47
+Title: parsing ERF capture files in python 
+----------------------------------------
+
+def erf_records(f) :
+INDENT
+    while True :
+    INDENT
+
+        hdr = f.read(16)
+        if hdr :
+        INDENT
+            rec = {}
+            rec ['ts'] = struct.unpack('<Q', hdr [: 8]) [0]
+            rec.update(zip(('type',
+                        'flags',
+                        'rlen',
+                        'lctr',
+                        'wlen'),
+                    struct.unpack('>BBHHH', hdr [8 :])))
+            rec ['iface'] = rec ['flags'] & 0x03
+            rec ['rx_err'] = rec ['flags'] & 0x10 ! = 0
+            rec ['pkt'] = f.read(rec ['rlen'] - 16)
+            if rec ['type'] == 2 :
+            INDENT
+
+                rec ['pkt'] = rec ['pkt'] [2 :]
+                rec ['pkt'] = sl.Ether(rec ['pkt'])
+            DEDENT
+            yield rec
+        DEDENT
+        else :
+        INDENT
+            return
+        DEDENT
+    DEDENT
+DEDENT
+----------------------------------------
+
+def erf_records(f) :
+INDENT
+    while True :
+    INDENT
+
+        hdr = f.read(16)
+        if hdr :
+        INDENT
+            rec = {}
+            rec ['ts'] = struct.unpack('<Q', hdr [: 8]) [0]
+            rec.update(zip(('type',
+                        'flags',
+                        'rlen',
+                        'lctr',
+                        'wlen'),
+                    struct.unpack('>BBHHH', hdr [8 :])))
+            rec ['iface'] = rec ['flags'] & 0x03
+            rec ['rx_err'] = rec ['flags'] & 0x10 ! = 0
+
+            if rec ['type'] & 0x80 :
+            INDENT
+                ext_hdr = f.read(8)
+                rec.update(zip((
+                            'ext_hdr_signature',
+                            'ext_hdr_payload_hash',
+                            'ext_hdr_filter_color',
+                            'ext_hdr_flow_hash'),
+                        struct.unpack('>B3sB3s', ext_hdr)))
+                rec ['pkt'] = f.read(rec ['rlen'] - 24)
+            DEDENT
+            else :
+            INDENT
+                rec ['pkt'] = f.read(rec ['rlen'] - 16)
+            DEDENT
+            if rec ['type'] & 0x02 :
+            INDENT
+
+                rec ['pkt'] = rec ['pkt'] [2 :]
+                rec ['pkt'] = sl.Ether(rec ['pkt'])
+            DEDENT
+            yield rec
+        DEDENT
+        else :
+        INDENT
+            return
+        DEDENT
+    DEDENT
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+1068812_1069233_2_11
+1068812_1072091_3_12
+Title: Problem using os.system() with sed command 
+----------------------------------------
+
+def updateExportConfigId(id) :
+INDENT
+    stringId = "%s" % id
+    cmd1 = "sed '1,$s/MANAGER_ID=[0-9]*/MANAGER_ID=" + stringId + "/g' path/file.old > path/file.new"
+    stringId = "GRRRRRRRRR"
+    cmd2 = "sed '1,$s/MANAGER_ID=[0-9]*/MANAGER_ID=" + stringId + "/g' path/file.old > path/file.new"
+    print "cmd1:", cmd1
+    print "cmd2:", cmd2
+    print cmd1 == cmd2
+DEDENT
+----------------------------------------
+
+def updateExportConfigId(m_id, source = 'path/file.old',
+destination = 'path/file.new') :
+INDENT
+    if isinstance(m_id, unicode) :
+    INDENT
+        m_id = m_id.encode('utf-8')
+    DEDENT
+    cmd = [
+        "sed",
+        ",$s/MANAGER_ID=[0-9]*/MANAGER_ID=%s/g" % m_id,
+        source,
+        ]
+    subprocess.call(cmd, stdout = open(destination, 'w'))
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+10724854_21174048_1_11
+10724854_53414180_2_17
+Title: how to do a conditional decorator in python 2.6 
+----------------------------------------
+
+def timed(f) :
+INDENT
+    def wrapper(* args, ** kwargs) :
+    INDENT
+        start = datetime.datetime.utcnow()
+        return_value = f(* args, ** kwargs)
+        end = datetime.datetime.utcnow()
+        duration = end - start
+        log_function_call(module = f.__module__, function = f.__name__, start = __start__, end = __end__, duration = duration.total_seconds())
+    DEDENT
+    if config.get('RUN_TIMED_FUNCTIONS') :
+    INDENT
+        return wrapper
+    DEDENT
+    return f
+DEDENT
+----------------------------------------
+
+def timed(* args, ** kw) :
+INDENT
+    if 'usetimer' not in kw :
+    INDENT
+        return method(* args, ** kw)
+    DEDENT
+    elif ('usetimer' in kw and kw.get('usetimer') is None) :
+    INDENT
+        return method(* args, ** kw)
+    DEDENT
+    else :
+    INDENT
+        import time
+        ts = time.time()
+        result = method(* args, ** kw)
+        te = time.time()
+        if 'log_time' in kw :
+        INDENT
+            name = kw.get('log_name', method.__name__.upper())
+            kw ['log_time'] [name] = int((te - ts) * 1000)
+        DEDENT
+        else :
+        INDENT
+            print '%r took %2.2f ms' % (method.__name__, (te - ts) * 1000)
+        DEDENT
+        return result
+    DEDENT
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+10737273_10737666_1_12
+10737273_10737960_1_9
+Title: Recursive function to create hierarchical JSON object? 
+----------------------------------------
+
+def get_child_nodes(node_id) :
+INDENT
+    request = urllib2.Request(ROOT_URL + node_id)
+    response = json.loads(urllib2.urlopen(request).read())
+    nodes = []
+    for childnode in response ['childNode'] :
+    INDENT
+        temp_obj = {}
+        temp_obj ['id'] = childnode ['id']
+        temp_obj ['name'] = childnode ['name']
+        temp_obj ['children'] = get_child_nodes(temp_obj ['id'])
+        nodes.append(temp_obj)
+    DEDENT
+    return nodes
+DEDENT
+----------------------------------------
+
+def get_child_nodes(node_id) :
+INDENT
+    request = urllib2.Request(ROOT_URL + node_id)
+    response = json.loads(urllib2.urlopen(request).read())
+    return {
+        "id" : response ['id'],
+        "name" : response ['name'],
+        "children" : map(lambda childId : get_child_nodes(childId), response ['childNode'])}
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+10748331_10748431_1_8
+10748331_10748500_1_22
+Title: Can yield produce multiple consecutive generators? 
+----------------------------------------
+
+def cleave_by_change(stream) :
+INDENT
+    def generator() :
+    INDENT
+        head = stream [0]
+        while stream and stream [0] == head :
+        INDENT
+            yield stream.pop(0)
+        DEDENT
+    DEDENT
+    while stream :
+    INDENT
+        yield generator()
+    DEDENT
+DEDENT
+----------------------------------------
+
+def cleave_by_change(stream, key_fn, filter = None) :
+INDENT
+    S = object()
+    skip = False
+    prev = S
+    buf = []
+    for item in stream :
+    INDENT
+        iden = key_fn(item)
+        if prev is S :
+        INDENT
+            prev = iden
+        DEDENT
+        if prev ! = iden :
+        INDENT
+            if not skip :
+            INDENT
+                yield buf
+            DEDENT
+            buf = []
+            prev = iden
+            skip = False
+        DEDENT
+        if not skip and filter is not None :
+        INDENT
+            skip = not filter(item)
+        DEDENT
+        if not skip :
+        INDENT
+            buf.append(item)
+        DEDENT
+    DEDENT
+    if buf : yield buf
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+10788430_10788454_1_7
+10788430_10788460_2_6
+Title: Why doesn't program print value? 
+----------------------------------------
+
+def a() :
+INDENT
+    global b
+    if b > 10 :
+    INDENT
+        print 'b'
+        sys.exit(1)
+
+    DEDENT
+DEDENT
+----------------------------------------
+
+def a(value) :
+INDENT
+    if value > 10 :
+    INDENT
+        print value
+        print "Greater than 10!"
+        sys.exit(0)
+    DEDENT
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+10788430_10788454_1_7
+10788430_10788549_2_7
+Title: Why doesn't program print value? 
+----------------------------------------
+
+def a() :
+INDENT
+    global b
+    if b > 10 :
+    INDENT
+        print 'b'
+        sys.exit(1)
+
+    DEDENT
+DEDENT
+----------------------------------------
+
+def a() :
+INDENT
+    global b
+    if b > 10 :
+    INDENT
+        print 'b'
+        sys.exit(1)
+    DEDENT
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+10788430_10788454_1_7
+10788430_10788571_1_6
+Title: Why doesn't program print value? 
+----------------------------------------
+
+def a() :
+INDENT
+    global b
+    if b > 10 :
+    INDENT
+        print 'b'
+        sys.exit(1)
+
+    DEDENT
+DEDENT
+----------------------------------------
+
+def a() :
+INDENT
+    if b > 10 :
+    INDENT
+        print 'b'
+        sys.exit(1)
+
+    DEDENT
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+10788430_10788460_2_6
+10788430_10788549_2_7
+Title: Why doesn't program print value? 
+----------------------------------------
+
+def a(value) :
+INDENT
+    if value > 10 :
+    INDENT
+        print value
+        print "Greater than 10!"
+        sys.exit(0)
+    DEDENT
+DEDENT
+----------------------------------------
+
+def a() :
+INDENT
+    global b
+    if b > 10 :
+    INDENT
+        print 'b'
+        sys.exit(1)
+    DEDENT
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+10788430_10788460_2_6
+10788430_10788571_1_6
+Title: Why doesn't program print value? 
+----------------------------------------
+
+def a(value) :
+INDENT
+    if value > 10 :
+    INDENT
+        print value
+        print "Greater than 10!"
+        sys.exit(0)
+    DEDENT
+DEDENT
+----------------------------------------
+
+def a() :
+INDENT
+    if b > 10 :
+    INDENT
+        print 'b'
+        sys.exit(1)
+
+    DEDENT
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+10788430_10788549_2_7
+10788430_10788571_1_6
+Title: Why doesn't program print value? 
+----------------------------------------
+
+def a() :
+INDENT
+    global b
+    if b > 10 :
+    INDENT
+        print 'b'
+        sys.exit(1)
+    DEDENT
+DEDENT
+----------------------------------------
+
+def a() :
+INDENT
+    if b > 10 :
+    INDENT
+        print 'b'
+        sys.exit(1)
+
+    DEDENT
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+10820069_10820421_2_13
+10820069_10824567_1_11
+Title: Pythonic equivalent of this function? 
+----------------------------------------
+
+def get_projects_of_tasks(task_list) :
+INDENT
+    projects = {}
+    for task in task_list :
+    INDENT
+        try :
+        INDENT
+            if not task.project.identifier in projects :
+            INDENT
+                projects [task.project.identifier] = task.project
+            DEDENT
+        DEDENT
+        except AttributeError :
+        INDENT
+            pass
+        DEDENT
+    DEDENT
+    return projects.values()
+DEDENT
+----------------------------------------
+
+def get_projects_of_tasks(task_list) :
+INDENT
+    projects = (task.project for task in task_list)
+    ids_projects = ((p.identifier, p) for p in projects if p is not None)
+    seen = set()
+    unique_projects = []
+    for id, p in ids_projects :
+    INDENT
+        if id not in seen :
+        INDENT
+            seen.add(id)
+            unique_projects.append(p)
+        DEDENT
+    DEDENT
+    return unique_projects
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+10823877_10824420_3_10
+10823877_10824484_6_25
+Title: What is the fastest way to flatten arbitrarily nested lists in Python? 
+----------------------------------------
+
+def flatten(container) :
+INDENT
+    for i in container :
+    INDENT
+        if isinstance(i, (list, tuple)) :
+        INDENT
+            for j in flatten(i) :
+            INDENT
+                yield j
+            DEDENT
+        DEDENT
+        else :
+        INDENT
+            yield i
+        DEDENT
+    DEDENT
+DEDENT
+----------------------------------------
+
+def flatten(iterable) :
+INDENT
+    iterator, sentinel, stack = iter(iterable), object(), []
+    while True :
+    INDENT
+        value = next(iterator, sentinel)
+        if value is sentinel :
+        INDENT
+            if not stack :
+            INDENT
+                break
+            DEDENT
+            iterator = stack.pop()
+        DEDENT
+        elif isinstance(value, str) :
+        INDENT
+            yield value
+        DEDENT
+        else :
+        INDENT
+            try :
+            INDENT
+                new_iterator = iter(value)
+            DEDENT
+            except TypeError :
+            INDENT
+                yield value
+            DEDENT
+            else :
+            INDENT
+                stack.append(iterator)
+                iterator = new_iterator
+
+            DEDENT
+        DEDENT
+    DEDENT
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+10838982_10839496_43_60
+10838982_10839496_8_25
+Title: Writing to numpy array from dictionary 
+----------------------------------------
+
+def __init__(self, infile) :
+INDENT
+    dtype = dict(names = self.header_fields, formats = self.header_formats)
+    self.header = np.fromfile(infile, dtype = dtype, count = 1)
+
+    for field in self.header_fields :
+    INDENT
+        setattr(self, field, self.header [field])
+
+    DEDENT
+    ncols, nrows = self.width, self.height
+
+    self.data = np.fromfile(infile, self.data_format, count = ncols * nrows)
+
+    self.data = self.data.reshape((nrows, ncols))
+DEDENT
+----------------------------------------
+
+def __init__(self, filename) :
+INDENT
+    self.infile = open(filename, 'r')
+    dtype = dict(names = self.header_fields, formats = self.header_formats)
+
+    self.header = np.fromfile(self.infile, dtype = dtype, count = 1)
+
+    self.header_length = self.infile.tell()
+
+    for field in self.header_fields :
+    INDENT
+        setattr(self, field, self.header [field])
+
+    DEDENT
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+10845988_10846044_4_10
+10845988_10847080_3_28
+Title: How can I make this program more efficient 
+----------------------------------------
+
+def encode(pattern, filename) :
+INDENT
+    with open(filename) as f :
+    INDENT
+        contents = f.read()
+    DEDENT
+    s = string.maketrans(* [''.join(a) for a in zip(* pattern.split('|'))])
+    newMsg = contents.translate(s)
+    with open(filename + 'encoded', 'rt') as f :
+    INDENT
+        f.write(newMsg)
+    DEDENT
+DEDENT
+----------------------------------------
+
+def encode(pattern, filename) :
+INDENT
+    f = open(filename, "rt")
+    contents = f.read()
+    f.close()
+    printNow(contents)
+    change_dict = {}
+    matches = []
+    changes = pattern.split("|")
+    for str in changes :
+    INDENT
+        printNow("Change " + str [0] + " to " + str [1])
+        change_dict [str [0]] = str [1]
+        matches.append(str [0])
+    DEDENT
+    change_re = re.compile("|".join(re.escape(x) for x in matches))
+    newMsg = change_re.sub(lambda m : change_dict [m.group(0)], contents)
+    f = open(filename + "encoded", "wt")
+    f.write(newMsg)
+    f.close()
+    f = open(filename + "encoded", "rt")
+    printNow(f.read())
+    f.close()
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+10862532_10863088_9_22
+10862532_17054961_6_14
+Title: Python opencv and multiprocessing 
+----------------------------------------
+
+def cam_loop(queue_from_cam) :
+INDENT
+    print 'initializing cam'
+    cam = cv.CaptureFromCAM(- 1)
+    print 'querying frame'
+    img = cv.QueryFrame(cam)
+    print 'converting image'
+    pimg = img.tostring()
+    print 'pickling image'
+    pimg2 = pickle.dumps(pimg, - 1)
+    print 'queueing image'
+    queue_from_cam.put([pimg2, cv.GetSize(img)])
+    print 'cam_loop done'
+DEDENT
+----------------------------------------
+
+def cam_loop(queue_from_cam) :
+INDENT
+    print 'initializing cam'
+    cap = cv2.VideoCapture(0)
+    print 'querying frame'
+    hello, img = cap.read()
+    print 'queueing image'
+    queue_from_cam.put(img)
+    print 'cam_loop done'
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+10876621_10876709_13_31
+10876621_10876715_2_18
+Title: PySide (or PyQt) signals and slots basics 
+----------------------------------------
+
+def __init__(self) :
+INDENT
+    QWidget.__init__(self, None)
+    vbox = QVBoxLayout()
+    sone = QSlider(Qt.Horizontal)
+    sone.setRange(0, 99)
+    sone.setValue(0)
+    vbox.addWidget(sone)
+    stwo = MySlider()
+    stwo.setRange(0, 99)
+    stwo.setValue(0)
+    vbox.addWidget(stwo)
+    sone.valueChanged.connect(stwo.setValue)
+    self.setLayout(vbox)
+DEDENT
+----------------------------------------
+
+def __init__(self) :
+INDENT
+    QWidget.__init__(self, None)
+    vbox = QVBoxLayout(self)
+    self.sone = QSlider(Qt.Horizontal)
+    self.sone.setRange(0, 99)
+    self.sone.setValue(0)
+    vbox.addWidget(self.sone)
+    self.stwo = QSlider(Qt.Horizontal)
+    self.stwo.setRange(0, 99)
+    self.stwo.setValue(99)
+    vbox.addWidget(self.stwo)
+    self.sone.valueChanged.connect(self.sliderChanged)
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+108822_1023729_4_14
+108822_323041_7_29
+Title: Delete all data for a kind in Google App Engine 
+----------------------------------------
+
+def get(self) :
+INDENT
+    self.response.headers ['Content-Type'] = 'text/plain'
+    try :
+    INDENT
+        while True :
+        INDENT
+            q = db.GqlQuery("SELECT __key__ FROM MyModel")
+            assert q.count()
+            db.delete(q.fetch(200))
+            time.sleep(0.5)
+        DEDENT
+    DEDENT
+    except Exception, e :
+    INDENT
+        self.response.out.write(repr(e) + '\n')
+        pass
+    DEDENT
+DEDENT
+----------------------------------------
+
+def get(self, param) :
+INDENT
+    txt = self.request.get('table')
+    q = db.GqlQuery("SELECT * FROM " + txt)
+    results = q.fetch(10)
+    self.response.headers ['Content-Type'] = 'text/plain'
+    self.response.out.write("""
+          <html>
+          <meta HTTP-EQUIV="REFRESH" content="5; url=http://yourapp.appspot.com/cleanTable?table=YourData"><![CDATA[
+            <body>""")
+    try :
+    INDENT
+        for i in range(10) :
+        INDENT
+            db.delete(results)
+            results = q.fetch(10, len(results))
+            self.response.out.write("<p>10 removed</p>")
+            self.response.out.write("""
+                </body>
+              </html>""")
+        DEDENT
+    DEDENT
+    except Exception, ints :
+    INDENT
+        self.response.out.write(str(inst))
+    DEDENT
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+108822_323041_7_29
+108822_7291775_3_16
+Title: Delete all data for a kind in Google App Engine 
+----------------------------------------
+
+def get(self, param) :
+INDENT
+    txt = self.request.get('table')
+    q = db.GqlQuery("SELECT * FROM " + txt)
+    results = q.fetch(10)
+    self.response.headers ['Content-Type'] = 'text/plain'
+    self.response.out.write("""
+          <html>
+          <meta HTTP-EQUIV="REFRESH" content="5; url=http://yourapp.appspot.com/cleanTable?table=YourData"><![CDATA[
+            <body>""")
+    try :
+    INDENT
+        for i in range(10) :
+        INDENT
+            db.delete(results)
+            results = q.fetch(10, len(results))
+            self.response.out.write("<p>10 removed</p>")
+            self.response.out.write("""
+                </body>
+              </html>""")
+        DEDENT
+    DEDENT
+    except Exception, ints :
+    INDENT
+        self.response.out.write(str(inst))
+    DEDENT
+DEDENT
+----------------------------------------
+
+def get(self) :
+INDENT
+    self.response.headers ['Content-Type'] = 'text/plain'
+    db_model = self.request.get('model')
+    sql = 'SELECT __key__ FROM %s' % db_model
+    try :
+    INDENT
+        while True :
+        INDENT
+            q = db.GqlQuery(sql)
+            assert q.count()
+            db.delete(q.fetch(200))
+            time.sleep(0.5)
+        DEDENT
+    DEDENT
+    except Exception, e :
+    INDENT
+        self.response.out.write(repr(e) + '\n')
+        pass
+    DEDENT
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+10887131_10887220_4_28
+10887131_23874983_5_27
+Title: Can we run multiple functions each with timeit in the same module 
+----------------------------------------
+
+def foo() :
+INDENT
+    setup = """
+import random
+"""
+    foo_1 = """
+for i in range(1000):
+    random.randint(0, 99) + random.randint(0, 99)
+"""
+    foo_2 = """
+for i in range(1000):
+    random.randint(0, 99) + random.randint(0, 99)
+"""
+    foo_3 = """
+for i in range(1000):
+    random.randint(0, 99) + random.randint(0, 99)
+"""
+    print 'foo_1', timeit.Timer(foo_1, setup).timeit(1000)
+    print 'foo_2', timeit.Timer(foo_2, setup).timeit(1000)
+    print 'foo_3', timeit.Timer(foo_3, setup).timeit(1000)
+DEDENT
+----------------------------------------
+
+def foo() :
+INDENT
+    setup = 'import random'
+    foo_1 = '\n'.join([
+            'for i in range(1000):',
+            '    random.randint(0, 99) + random.randint(0, 99)',
+            ])
+    foo_2 = '\n'.join([
+            'for i in range(1000):',
+            '    random.randint(0, 99) + random.randint(0, 99)',
+            ])
+    foo_3 = '\n'.join([
+            'for i in range(1000):',
+            '    random.randint(0, 99) + random.randint(0, 99)',
+            ])
+    print 'foo_1', timeit.Timer(foo_1, setup).timeit(1000)
+    print 'foo_2', timeit.Timer(foo_2, setup).timeit(1000)
+    print 'foo_3', timeit.Timer(foo_3, setup).timeit(1000)
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+10934787_10991920_30_42
+10934787_10991920_45_60
+Title: GTK window capture: VPython (OpenGL) application 
+----------------------------------------
+
+def __init__(self, w = 256, h = 256, title = 'OpenGL via VPython') :
+INDENT
+    self.width = w
+    self.height = h
+    self.title = title
+    self.scene = display.get_selected()
+    self.scene.title = self.title
+    self.scene.width = self.width
+    self.scene.height = self.height
+    self.sphere = sphere()
+
+DEDENT
+----------------------------------------
+
+def __init__(self, winID) :
+INDENT
+    import gtk
+    import pygtk
+    self.OpenGLWindowID = winID
+    window = gtk.Window()
+    window.show()
+    socket = gtk.Socket()
+    socket.show()
+    window.add(socket)
+    window.connect("destroy", lambda w : gtk.main_quit())
+    socket.add_id(long(self.OpenGLWindowID))
+    gtk.main()
+
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+10950167_10951157_1_21
+10950167_10952009_1_13
+Title: leading number groups between two numbers 
+----------------------------------------
+
+def leading(start, end) :
+INDENT
+    depth = 2
+    while 10 ** depth > end : depth -= 1
+    leading = []
+    const = 0
+    coeff = start / / 10 ** depth
+    while depth > = 0 :
+    INDENT
+        while (end - const - coeff * 10 ** depth) > = 10 ** depth :
+        INDENT
+            leading.append(str(const / 10 ** depth + coeff) + "X" * depth)
+            coeff += 1
+        DEDENT
+        const += coeff * 10 ** depth
+        coeff = 0
+        depth -= 1
+    DEDENT
+    leading.append(end)
+    return leading
+DEDENT
+----------------------------------------
+
+def leading(a, b) :
+INDENT
+    zip_digits = zip(str(a), str(b))
+    zip_digits = map(lambda(x, y) : (int(x), int(y)), zip_digits)
+
+    while (zip_digits [- 1] == (0, 9)) :
+    INDENT
+        zip_digits.pop()
+
+    DEDENT
+    return compute_leading(zip_digits)
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+10956286_10956381_3_10
+10956286_10957633_1_30
+Title: How to solve this Python puzzle in a much more elegant manner? 
+----------------------------------------
+
+def LetterChanges(s) :
+INDENT
+    orig = string.letters
+    new = string.ascii_lowercase [1 :] + 'a' + string.ascii_uppercase [1 :] + 'A'
+    for vowel in 'aeiou' :
+    INDENT
+        new = new.replace(vowel, vowel.upper())
+    DEDENT
+    table = string.maketrans(orig, new)
+    return s.translate(table)
+DEDENT
+----------------------------------------
+
+def LetterChanges(letters) :
+INDENT
+    letter_map = {}
+    changed_letters = []
+    for old_letter in letters :
+    INDENT
+        if old_letter in letter_map :
+        INDENT
+            new_letter = letter_map [old_letter]
+        DEDENT
+        else :
+        INDENT
+            ordinal = ord(old_letter)
+            if 65 < = ordinal < = 90 :
+            INDENT
+                new_letter = chr((ordinal - 64) % 26 + 65)
+            DEDENT
+            elif 97 < = ordinal < = 122 :
+            INDENT
+                new_letter = chr((ordinal - 96) % 26 + 97)
+            DEDENT
+            else :
+            INDENT
+                new_letter = old_letter
+            DEDENT
+            if new_letter in 'aeiou' :
+            INDENT
+                new_letter = new_letter.upper()
+            DEDENT
+            letter_map [old_letter] = new_letter
+        DEDENT
+        changed_letters.append(new_letter)
+    DEDENT
+    return ''.join(changed_letters)
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+10994030_10994844_149_155
+10994030_10994844_16_32
+Title: Powerful table widget for a Python GUI 
+----------------------------------------
+
+def __init__(self, parent, size = wx.Size(1000, 500), data_table = None) :
+INDENT
+    self.parent = parent
+    gridlib.Grid.__init__(self, self.parent, - 1)
+    self.SetGridLineColour(GRID_LINE_COLOUR)
+    self.SetRowLabelSize(0)
+    self.SetColLabelSize(30)
+    self.table = JobDataTable()
+DEDENT
+----------------------------------------
+
+def __init__(self, parent, title) :
+INDENT
+    super(JobManager, self).__init__(parent, title = title)
+    panel = wx.Panel(self, - 1)
+    self.client_id = job_server.register()
+    log.info('Registered with server as {}'.format(self.client_id))
+    self.jobs = job_server.get_all_jobs()
+    grid = self.create_grid(panel, self.jobs)
+    sizer = wx.BoxSizer(wx.VERTICAL)
+    sizer.Add(grid, 1, wx.ALL | wx.EXPAND)
+    panel.SetSizer(sizer)
+
+    EVT_CLOSE(self, self.exit)
+    self.Center()
+    self.Show()
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+11008140_11010908_24_32
+11008140_11010908_5_15
+Title: PyQT custom widget fixed as square 
+----------------------------------------
+
+def __init__(self, parent = None) :
+INDENT
+    QtGui.QWidget.__init__(self, parent)
+    layout = QtGui.QVBoxLayout()
+    self.custom_widget = CustomWidget()
+    layout.addWidget(self.custom_widget)
+    self.setLayout(layout)
+
+DEDENT
+----------------------------------------
+
+def __init__(self, parent = None) :
+INDENT
+    QtGui.QFrame.__init__(self, parent)
+
+    self.setFrameStyle(1)
+    layout = QtGui.QVBoxLayout()
+    self.label = QtGui.QLabel('Test')
+    layout.addWidget(self.label)
+    self.setLayout(layout)
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+11013851_18992595_113_134
+11013851_18992595_69_79
+Title: Speeding up build process with distutils 
+----------------------------------------
+
+def _single_compile(obj) :
+INDENT
+    try :
+    INDENT
+        src, ext = build [obj]
+    DEDENT
+    except KeyError :
+    INDENT
+        return
+    DEDENT
+    input_opt = "/Tp" + src
+    output_opt = "/Fo" + obj
+    try :
+    INDENT
+        self.spawn(
+            [clcache_exe]
+            + compile_opts
+            + pp_opts
+            + [input_opt, output_opt]
+            + extra_postargs)
+    DEDENT
+    except DistutilsExecError, msg :
+    INDENT
+        raise CompileError(msg)
+    DEDENT
+DEDENT
+----------------------------------------
+
+def _single_compile(obj) :
+INDENT
+    try :
+    INDENT
+        src, ext = build [obj]
+    DEDENT
+    except KeyError :
+    INDENT
+        return
+    DEDENT
+    self._compile(obj, src, ext, cc_args, extra_postargs, pp_opts)
+
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+11064526_11065388_2_14
+11064526_11065527_8_24
+Title: how to exit the entire app in a multiprocessing program 
+----------------------------------------
+
+def submit_process() :
+INDENT
+    sig = False
+
+    print "submit_process"
+    if (sig == True) :
+    INDENT
+        for process in process_list :
+        INDENT
+            process.terminate()
+        DEDENT
+        exit(0)
+    DEDENT
+DEDENT
+----------------------------------------
+
+def submit_process(i, sig) :
+INDENT
+    logger.info("submit_process")
+    while True :
+    INDENT
+        if i == 0 :
+        INDENT
+            time.sleep(2)
+            sig.set()
+            logger.info('SETTING sig')
+        DEDENT
+        time.sleep(1)
+        if sig.is_set() :
+        INDENT
+
+            logger.info('sig is set!')
+            break
+        DEDENT
+        else :
+        INDENT
+            logger.info('sig is NOT set!')
+        DEDENT
+    DEDENT
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+11067892_11068017_1_10
+11067892_11068144_1_13
+Title: Adjacent multiple elements removing in Python sequences 
+----------------------------------------
+
+def remove_repeated_pairs(l) :
+INDENT
+    i = 2;
+    while i < len(l) - 1 :
+    INDENT
+        if l [i] == l [i - 2] and l [i + 1] == l [i - 1] :
+        INDENT
+            l.pop(i);
+            l.pop(i);
+        DEDENT
+        else :
+        INDENT
+            i += 1;
+        DEDENT
+    DEDENT
+    return l;
+DEDENT
+----------------------------------------
+
+def remove_repeated_pairs(l) :
+INDENT
+    if (len(l) < 4) :
+    INDENT
+        return l
+    DEDENT
+    result = l [: 2]
+    i = 2
+    while i < (len(l) - 1) :
+    INDENT
+        if l [i] == result [- 2] and l [i + 1] == result [- 1] :
+        INDENT
+            i += 2
+        DEDENT
+        else :
+        INDENT
+            result.append(l [i])
+            i += 1
+        DEDENT
+    DEDENT
+    result += l [i :]
+    return result
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+11067892_11068017_1_10
+11067892_11068174_1_15
+Title: Adjacent multiple elements removing in Python sequences 
+----------------------------------------
+
+def remove_repeated_pairs(l) :
+INDENT
+    i = 2;
+    while i < len(l) - 1 :
+    INDENT
+        if l [i] == l [i - 2] and l [i + 1] == l [i - 1] :
+        INDENT
+            l.pop(i);
+            l.pop(i);
+        DEDENT
+        else :
+        INDENT
+            i += 1;
+        DEDENT
+    DEDENT
+    return l;
+DEDENT
+----------------------------------------
+
+def remove_repeated_pairs(seq) :
+INDENT
+    ret = [seq [0]]
+    s = None
+    i = 1
+    while i < len(seq) - 1 :
+    INDENT
+        pair = (seq [i], seq [i + 1])
+        if pair ! = s :
+        INDENT
+            s = (seq [i - 1], seq [i])
+            ret.append(seq [i])
+        DEDENT
+        else :
+        INDENT
+            i += 1
+        DEDENT
+        i += 1
+    DEDENT
+    if i == len(seq) - 1 :
+    INDENT
+        ret.append(seq [i])
+    DEDENT
+    return ret
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+11067892_11068017_1_10
+11067892_11068177_1_15
+Title: Adjacent multiple elements removing in Python sequences 
+----------------------------------------
+
+def remove_repeated_pairs(l) :
+INDENT
+    i = 2;
+    while i < len(l) - 1 :
+    INDENT
+        if l [i] == l [i - 2] and l [i + 1] == l [i - 1] :
+        INDENT
+            l.pop(i);
+            l.pop(i);
+        DEDENT
+        else :
+        INDENT
+            i += 1;
+        DEDENT
+    DEDENT
+    return l;
+DEDENT
+----------------------------------------
+
+def remove_repeated_pairs(iterable) :
+INDENT
+    it = iter(iterable)
+    a = next(it)
+    yield a
+    b = next(it)
+    yield b
+    c = next(it)
+    for d in it :
+    INDENT
+        if a ! = c or b ! = d :
+        INDENT
+            yield c
+            a, b, c = b, c, d
+        DEDENT
+        else :
+        INDENT
+            a, b, c = c, d, next(it)
+        DEDENT
+    DEDENT
+    yield c
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+11067892_11068144_1_13
+11067892_11068174_1_15
+Title: Adjacent multiple elements removing in Python sequences 
+----------------------------------------
+
+def remove_repeated_pairs(l) :
+INDENT
+    if (len(l) < 4) :
+    INDENT
+        return l
+    DEDENT
+    result = l [: 2]
+    i = 2
+    while i < (len(l) - 1) :
+    INDENT
+        if l [i] == result [- 2] and l [i + 1] == result [- 1] :
+        INDENT
+            i += 2
+        DEDENT
+        else :
+        INDENT
+            result.append(l [i])
+            i += 1
+        DEDENT
+    DEDENT
+    result += l [i :]
+    return result
+DEDENT
+----------------------------------------
+
+def remove_repeated_pairs(seq) :
+INDENT
+    ret = [seq [0]]
+    s = None
+    i = 1
+    while i < len(seq) - 1 :
+    INDENT
+        pair = (seq [i], seq [i + 1])
+        if pair ! = s :
+        INDENT
+            s = (seq [i - 1], seq [i])
+            ret.append(seq [i])
+        DEDENT
+        else :
+        INDENT
+            i += 1
+        DEDENT
+        i += 1
+    DEDENT
+    if i == len(seq) - 1 :
+    INDENT
+        ret.append(seq [i])
+    DEDENT
+    return ret
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+11067892_11068144_1_13
+11067892_11068177_1_15
+Title: Adjacent multiple elements removing in Python sequences 
+----------------------------------------
+
+def remove_repeated_pairs(l) :
+INDENT
+    if (len(l) < 4) :
+    INDENT
+        return l
+    DEDENT
+    result = l [: 2]
+    i = 2
+    while i < (len(l) - 1) :
+    INDENT
+        if l [i] == result [- 2] and l [i + 1] == result [- 1] :
+        INDENT
+            i += 2
+        DEDENT
+        else :
+        INDENT
+            result.append(l [i])
+            i += 1
+        DEDENT
+    DEDENT
+    result += l [i :]
+    return result
+DEDENT
+----------------------------------------
+
+def remove_repeated_pairs(iterable) :
+INDENT
+    it = iter(iterable)
+    a = next(it)
+    yield a
+    b = next(it)
+    yield b
+    c = next(it)
+    for d in it :
+    INDENT
+        if a ! = c or b ! = d :
+        INDENT
+            yield c
+            a, b, c = b, c, d
+        DEDENT
+        else :
+        INDENT
+            a, b, c = c, d, next(it)
+        DEDENT
+    DEDENT
+    yield c
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+11067892_11068174_1_15
+11067892_11068177_1_15
+Title: Adjacent multiple elements removing in Python sequences 
+----------------------------------------
+
+def remove_repeated_pairs(seq) :
+INDENT
+    ret = [seq [0]]
+    s = None
+    i = 1
+    while i < len(seq) - 1 :
+    INDENT
+        pair = (seq [i], seq [i + 1])
+        if pair ! = s :
+        INDENT
+            s = (seq [i - 1], seq [i])
+            ret.append(seq [i])
+        DEDENT
+        else :
+        INDENT
+            i += 1
+        DEDENT
+        i += 1
+    DEDENT
+    if i == len(seq) - 1 :
+    INDENT
+        ret.append(seq [i])
+    DEDENT
+    return ret
+DEDENT
+----------------------------------------
+
+def remove_repeated_pairs(iterable) :
+INDENT
+    it = iter(iterable)
+    a = next(it)
+    yield a
+    b = next(it)
+    yield b
+    c = next(it)
+    for d in it :
+    INDENT
+        if a ! = c or b ! = d :
+        INDENT
+            yield c
+            a, b, c = b, c, d
+        DEDENT
+        else :
+        INDENT
+            a, b, c = c, d, next(it)
+        DEDENT
+    DEDENT
+    yield c
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+11114774_11116264_13_47
+11114774_11116264_4_11
+Title: Can/How do I create a class panel and use it in my main frame (wxpython) 
+----------------------------------------
+
+def __init__(self, parent, id = - 1, title = 'program') :
+INDENT
+    wx.Frame.__init__(self, parent, id, title, size = ((400, 400)))
+    self.AppPanel = wx.Panel(self, - 1)
+    self.AppPanel.SetBackgroundColour('grey')
+    main_sizer = wx.BoxSizer(wx.HORIZONTAL)
+    button_sizer = wx.BoxSizer(wx.VERTICAL)
+
+    self.button1 = wx.Button(self.AppPanel, label = "Button 1")
+    button_sizer.Add(self.button1, 0, wx.EXPAND)
+    self.button2 = wx.Button(self.AppPanel, label = "Button 2")
+    button_sizer.Add(self.button2, 0, wx.EXPAND)
+    self.button3 = wx.Button(self.AppPanel, label = "Button 3")
+    button_sizer.Add(self.button3, 0, wx.EXPAND)
+    main_sizer.Add(button_sizer, 0, wx.ALL, 5)
+
+    self.Notebook = wx.Notebook(self.AppPanel)
+    page1 = NoteBookPage(self.Notebook, "I'm on page 1")
+    page2 = NoteBookPage(self.Notebook, "I'm on page 2")
+    self.Notebook.AddPage(page1, "Page 1")
+    self.Notebook.AddPage(page2, "Page 2")
+    main_sizer.Add(self.Notebook, 1, wx.ALL | wx.EXPAND, 5)
+
+    right_panel = NoteBookPage(self.AppPanel, "right panel")
+    main_sizer.Add(right_panel, 0, wx.ALL, 5)
+    self.AppPanel.SetSizer(main_sizer)
+    self.Show()
+DEDENT
+----------------------------------------
+
+def __init__(self, parent, message) :
+INDENT
+    wx.Panel.__init__(self, parent)
+    sizer = wx.BoxSizer(wx.VERTICAL)
+    message = wx.StaticText(self, label = message)
+    sizer.Add(message, 1, wx.ALIGN_CENTRE)
+    self.SetSizer(sizer)
+
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+11129414_11275294_20_28
+11129414_11275294_36_50
+Title: Redirecting processes from multiprocessing to separate wx.TextCtrl 
+----------------------------------------
+
+def run(self) :
+INDENT
+    redir = RedirectText2Pipe(self.pipe_std)
+    sys.stdout = redir
+    sys.stderr = redir
+    for i in range(100) :
+    INDENT
+        time.sleep(0.01)
+        print i, 'Hi'
+    DEDENT
+DEDENT
+----------------------------------------
+
+def run(self) :
+INDENT
+    pipe_outlet, pipe_inlet = Pipe(duplex = False)
+    p = Run1(pipe_inlet)
+    p.daemon = True
+    p.start()
+    while p.is_alive() :
+    INDENT
+        while pipe_outlet.poll() :
+        INDENT
+            wx.CallAfter(self.stdout_target_.WriteText, pipe_outlet.recv())
+        DEDENT
+    DEDENT
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+11141722_11141853_3_8
+11141722_11141883_3_9
+Title: "I am trying to use ""return"" statement in Python it is not working." 
+----------------------------------------
+
+def df(v) :
+INDENT
+    if v < = 0 :
+    INDENT
+        print v, "is negative"
+        return True
+    DEDENT
+    return False
+DEDENT
+----------------------------------------
+
+def df(y) :
+INDENT
+    if y < = 0 :
+    INDENT
+        print y, "is negative"
+        return "impossible to calculate"
+    DEDENT
+    result = math.log(y)
+    return result
+DEDENT
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+11141722_11141853_3_8
+11141722_11141962_3_9
+Title: "I am trying to use ""return"" statement in Python it is not working." 
+----------------------------------------
+
+def df(v) :
+INDENT
+    if v < = 0 :
+    INDENT
+        print v, "is negative"
+        return True
+    DEDENT
+    return False
+DEDENT
+----------------------------------------
+
+def df(y) :
+INDENT
+    if y < = 0 :
+    INDENT
+        print y, "is negative"
+        return
+    DEDENT
+    result = math.log(y)
+    return result
+DEDENT
+----------------------------------------

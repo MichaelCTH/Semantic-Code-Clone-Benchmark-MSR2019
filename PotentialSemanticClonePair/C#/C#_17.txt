@@ -1,0 +1,4264 @@
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+2767007_14444706_1_16
+2767007_2769196_17_70
+Title: Most efficient algorithm for merging sorted IEnumerable<T> 
+----------------------------------------
+
+public static IEnumerable < T > Merge < T > (this IEnumerable < IEnumerable < T > > self) where T : IComparable < T > {
+    var es = self.Select (x = > x.GetEnumerator ()).Where (e = > e.MoveNext ());
+    var tmp = es.ToDictionary (e = > e.Current);
+    var dict = new SortedDictionary < T, IEnumerator < T > > (tmp);
+    while (dict.Count > 0) {
+        var key = dict.Keys.First ();
+        var cur = dict [key];
+        dict.Remove (key);
+        yield return cur.Current;
+        if (cur.MoveNext ())
+            dict.Add (cur.Current, cur);
+
+    }
+}
+----------------------------------------
+
+public static IEnumerable < T > mergeTwoSorted < T > (this IEnumerable < T > l1, IEnumerable < T > l2, Func < T, T, Boolean > func) {
+    using (var enumerator1 = l1.GetEnumerator ())
+    using (var enumerator2 = l2.GetEnumerator ())
+    {
+        bool enum1 = enumerator1.MoveNext ();
+        bool enum2 = enumerator2.MoveNext ();
+        while (enum1 || enum2) {
+            T t1 = enumerator1.Current;
+            T t2 = enumerator2.Current;
+            if (! enum1 && ! enum2) {
+                break;
+            } else if (! enum1) {
+                enum2 = enumerator2.MoveNext ();
+                yield return t2;
+            } else if (! enum2) {
+                enum1 = enumerator1.MoveNext ();
+                yield return t1;
+            } else {
+                if (func (t1, t2)) {
+                    enum1 = enumerator1.MoveNext ();
+                    yield return t1;
+                } else {
+                    enum2 = enumerator2.MoveNext ();
+                    yield return t2;
+                }
+            }
+        }
+    }}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+2767007_14444706_1_16
+2767007_2769196_1_15
+Title: Most efficient algorithm for merging sorted IEnumerable<T> 
+----------------------------------------
+
+public static IEnumerable < T > Merge < T > (this IEnumerable < IEnumerable < T > > self) where T : IComparable < T > {
+    var es = self.Select (x = > x.GetEnumerator ()).Where (e = > e.MoveNext ());
+    var tmp = es.ToDictionary (e = > e.Current);
+    var dict = new SortedDictionary < T, IEnumerator < T > > (tmp);
+    while (dict.Count > 0) {
+        var key = dict.Keys.First ();
+        var cur = dict [key];
+        dict.Remove (key);
+        yield return cur.Current;
+        if (cur.MoveNext ())
+            dict.Add (cur.Current, cur);
+
+    }
+}
+----------------------------------------
+
+public static IEnumerable < T > mergeSortedEnumerables < T > (this IEnumerable < IEnumerable < T > > listOfLists, Func < T, T, Boolean > func) {
+    IEnumerable < T > l1 = new List < T > {};
+    foreach (var l in listOfLists) {
+        l1 = l1.mergeTwoSorted (l, func);
+    }
+    foreach (var t in l1) {
+        yield return t;
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+2767007_14444706_1_16
+2767007_43119191_45_62
+Title: Most efficient algorithm for merging sorted IEnumerable<T> 
+----------------------------------------
+
+public static IEnumerable < T > Merge < T > (this IEnumerable < IEnumerable < T > > self) where T : IComparable < T > {
+    var es = self.Select (x = > x.GetEnumerator ()).Where (e = > e.MoveNext ());
+    var tmp = es.ToDictionary (e = > e.Current);
+    var dict = new SortedDictionary < T, IEnumerator < T > > (tmp);
+    while (dict.Count > 0) {
+        var key = dict.Keys.First ();
+        var cur = dict [key];
+        dict.Remove (key);
+        yield return cur.Current;
+        if (cur.MoveNext ())
+            dict.Add (cur.Current, cur);
+
+    }
+}
+----------------------------------------
+
+static IEnumerable < T > MergeOrderedLists < T, TOrder > (IEnumerable < IEnumerable < T > > orderedlists, Func < T, TOrder > orderBy) {
+    List < IEnumerator < T > > enumeratorsWithData = orderedlists.Select (enumerable = > enumerable.GetEnumerator ()).Where (enumerator = > enumerator.MoveNext ()).ToList ();
+    while (enumeratorsWithData.Count > 0) {
+        IEnumerator < T > minEnumerator = enumeratorsWithData [0];
+        for (int i = 1; i < enumeratorsWithData.Count; i ++)
+            if (((IComparable < TOrder >) orderBy (minEnumerator.Current)).CompareTo (orderBy (enumeratorsWithData [i].Current)) >= 0)
+                minEnumerator = enumeratorsWithData [i];
+
+        yield return minEnumerator.Current;
+        if (! minEnumerator.MoveNext ())
+            enumeratorsWithData.Remove (minEnumerator);
+
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+2767007_14444706_1_16
+2767007_45284840_1_18
+Title: Most efficient algorithm for merging sorted IEnumerable<T> 
+----------------------------------------
+
+public static IEnumerable < T > Merge < T > (this IEnumerable < IEnumerable < T > > self) where T : IComparable < T > {
+    var es = self.Select (x = > x.GetEnumerator ()).Where (e = > e.MoveNext ());
+    var tmp = es.ToDictionary (e = > e.Current);
+    var dict = new SortedDictionary < T, IEnumerator < T > > (tmp);
+    while (dict.Count > 0) {
+        var key = dict.Keys.First ();
+        var cur = dict [key];
+        dict.Remove (key);
+        yield return cur.Current;
+        if (cur.MoveNext ())
+            dict.Add (cur.Current, cur);
+
+    }
+}
+----------------------------------------
+
+public static IEnumerable < T > MergeOrderedLists < T, TOrder > (this IEnumerable < IEnumerable < T > > orderedLists, Func < T, TOrder > orderBy) where TOrder : IComparable < TOrder > {
+    var enumerators = new OrderedBag < IEnumerator < T > > (orderedLists.Select (enumerable = > enumerable.GetEnumerator ()).Where (enumerator = > enumerator.MoveNext ()), (x, y) = > orderBy (x.Current).CompareTo (orderBy (y.Current)));
+    while (enumerators.Count > 0) {
+        IEnumerator < T > minEnumerator = enumerators.RemoveFirst ();
+        T minValue = minEnumerator.Current;
+        if (minEnumerator.MoveNext ())
+            enumerators.Add (minEnumerator);
+        else
+            minEnumerator.Dispose ();
+
+        yield return minValue;
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+2767007_25540157_10_22
+2767007_43119191_29_43
+Title: Most efficient algorithm for merging sorted IEnumerable<T> 
+----------------------------------------
+
+static void Main (string [] args) {
+    int [] a = {1, 3, 6, 102, 105, 230};
+    int [] b = {101, 103, 112, 155, 231};
+    var mm = new MergeMania ();
+    foreach (var val in mm.Merge < int > (a, b)) {
+        Console.WriteLine (val);
+    }
+    Console.ReadLine ();
+}
+----------------------------------------
+
+public static void Main () {
+    Person [] persons1 = new Person [] {new Person () {Name = "Ahmed", Age = 20}, new Person () {Name = "Ali", Age = 40}};
+    Person [] persons2 = new Person [] {new Person () {Name = "Zaid", Age = 21}, new Person () {Name = "Hussain", Age = 22}};
+    Person [] persons3 = new Person [] {new Person () {Name = "Linda", Age = 19}, new Person () {Name = "Souad", Age = 60}};
+    Person [] [] personArrays = new Person [] [] {persons1, persons2, persons3};
+    foreach (Person person in MergeOrderedLists < Person, int > (personArrays, person = > person.Age)) {
+        Console.WriteLine ("{0} {1}", person.Name, person.Age);
+    }
+    Console.ReadLine ();
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+2767007_25540157_27_64
+2767007_2767338_1_33
+Title: Most efficient algorithm for merging sorted IEnumerable<T> 
+----------------------------------------
+
+public IEnumerable < T > Merge < T > (params IEnumerable < T > [] sortedSources) where T : IComparable {
+    if (sortedSources == null || sortedSources.Length == 0)
+        throw new ArgumentNullException ("sortedSources");
+
+    var enums = (from n in sortedSources
+        select n.GetEnumerator ()).ToArray ();
+    var enumsWithValues = (from n in enums
+        where n.MoveNext ()
+        select n).ToArray ();
+    if (enumsWithValues.Length == 0)
+        yield break;
+
+    var enumsByCurrent = (from n in enumsWithValues
+        orderby n.Current
+        select n).ToList ();
+    while (true) {
+        yield return enumsByCurrent [0].Current;
+        if (! enumsByCurrent [0].MoveNext ()) {
+            enumsByCurrent.RemoveAt (0);
+            if (enumsByCurrent.Count == 0)
+                break;
+
+        }
+        enumsByCurrent = enumsByCurrent.OrderBy (x = > x.Current).ToList ();
+    }
+}
+----------------------------------------
+
+public static IEnumerable < T > MergePreserveOrder4 < T, TOrder > (this IEnumerable < IEnumerable < T > > aa, Func < T, TOrder > orderFunc) where TOrder : IComparable < TOrder > {
+    var items = aa.Select (xx = > xx.GetEnumerator ()).Where (ee = > ee.MoveNext ()).Select (ee = > Tuple.Create (orderFunc (ee.Current), ee)).OrderBy (ee = > ee.Item1).ToList ();
+    while (items.Count > 0) {
+        yield return items [0].Item2.Current;
+        var next = items [0];
+        items.RemoveAt (0);
+        if (next.Item2.MoveNext ()) {
+            var value = orderFunc (next.Item2.Current);
+            var ii = 0;
+            for (; ii < items.Count; ++ ii) {
+                if (value.CompareTo (items [ii].Item1) <= 0) {
+                    items.Insert (ii, Tuple.Create (value, next.Item2));
+                    break;
+                }
+            }
+            if (ii == items.Count)
+                items.Add (Tuple.Create (value, next.Item2));
+
+        } else
+            next.Item2.Dispose ();
+
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+2767007_25540157_27_64
+2767007_2768156_1_36
+Title: Most efficient algorithm for merging sorted IEnumerable<T> 
+----------------------------------------
+
+public IEnumerable < T > Merge < T > (params IEnumerable < T > [] sortedSources) where T : IComparable {
+    if (sortedSources == null || sortedSources.Length == 0)
+        throw new ArgumentNullException ("sortedSources");
+
+    var enums = (from n in sortedSources
+        select n.GetEnumerator ()).ToArray ();
+    var enumsWithValues = (from n in enums
+        where n.MoveNext ()
+        select n).ToArray ();
+    if (enumsWithValues.Length == 0)
+        yield break;
+
+    var enumsByCurrent = (from n in enumsWithValues
+        orderby n.Current
+        select n).ToList ();
+    while (true) {
+        yield return enumsByCurrent [0].Current;
+        if (! enumsByCurrent [0].MoveNext ()) {
+            enumsByCurrent.RemoveAt (0);
+            if (enumsByCurrent.Count == 0)
+                break;
+
+        }
+        enumsByCurrent = enumsByCurrent.OrderBy (x = > x.Current).ToList ();
+    }
+}
+----------------------------------------
+
+public static IEnumerable < T > MergePreserveOrder < T, TOrder > (this IEnumerable < IEnumerable < T > > sources, Func < T, TOrder > orderFunc) where TOrder : IComparable < TOrder > {
+    Dictionary < TOrder, List < IEnumerable < T > > > keyedSources = sources.Select (source = > source.GetEnumerator ()).Where (e = > e.MoveNext ()).GroupBy (e = > orderFunc (e.Current)).ToDictionary (g = > g.Key, g = > g.ToList ());
+    while (keyedSources.Any ()) {
+        KeyValuePair < TOrder, List < IEnumerable < T > > > firstPair = keyedSources.OrderBy (kvp = > kvp.Key).First ();
+        keyedSources.Remove (firstPair.Key);
+        foreach (IEnumerable < T > e in firstPair.Value) {
+            yield return e.Current;
+            if (e.MoveNext ()) {
+                TOrder newKey = orderFunc (e.Current);
+                if (! keyedSources.ContainsKey (newKey)) {
+                    keyedSources [newKey] = new List < IEnumerable < T > > () {e};
+                } else {
+                    keyedSources [newKey].Add (e);
+                }
+            }
+        }
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+2767007_25540157_27_64
+2767007_2769196_17_70
+Title: Most efficient algorithm for merging sorted IEnumerable<T> 
+----------------------------------------
+
+public IEnumerable < T > Merge < T > (params IEnumerable < T > [] sortedSources) where T : IComparable {
+    if (sortedSources == null || sortedSources.Length == 0)
+        throw new ArgumentNullException ("sortedSources");
+
+    var enums = (from n in sortedSources
+        select n.GetEnumerator ()).ToArray ();
+    var enumsWithValues = (from n in enums
+        where n.MoveNext ()
+        select n).ToArray ();
+    if (enumsWithValues.Length == 0)
+        yield break;
+
+    var enumsByCurrent = (from n in enumsWithValues
+        orderby n.Current
+        select n).ToList ();
+    while (true) {
+        yield return enumsByCurrent [0].Current;
+        if (! enumsByCurrent [0].MoveNext ()) {
+            enumsByCurrent.RemoveAt (0);
+            if (enumsByCurrent.Count == 0)
+                break;
+
+        }
+        enumsByCurrent = enumsByCurrent.OrderBy (x = > x.Current).ToList ();
+    }
+}
+----------------------------------------
+
+public static IEnumerable < T > mergeTwoSorted < T > (this IEnumerable < T > l1, IEnumerable < T > l2, Func < T, T, Boolean > func) {
+    using (var enumerator1 = l1.GetEnumerator ())
+    using (var enumerator2 = l2.GetEnumerator ())
+    {
+        bool enum1 = enumerator1.MoveNext ();
+        bool enum2 = enumerator2.MoveNext ();
+        while (enum1 || enum2) {
+            T t1 = enumerator1.Current;
+            T t2 = enumerator2.Current;
+            if (! enum1 && ! enum2) {
+                break;
+            } else if (! enum1) {
+                enum2 = enumerator2.MoveNext ();
+                yield return t2;
+            } else if (! enum2) {
+                enum1 = enumerator1.MoveNext ();
+                yield return t1;
+            } else {
+                if (func (t1, t2)) {
+                    enum1 = enumerator1.MoveNext ();
+                    yield return t1;
+                } else {
+                    enum2 = enumerator2.MoveNext ();
+                    yield return t2;
+                }
+            }
+        }
+    }}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+2767007_25540157_27_64
+2767007_2769196_1_15
+Title: Most efficient algorithm for merging sorted IEnumerable<T> 
+----------------------------------------
+
+public IEnumerable < T > Merge < T > (params IEnumerable < T > [] sortedSources) where T : IComparable {
+    if (sortedSources == null || sortedSources.Length == 0)
+        throw new ArgumentNullException ("sortedSources");
+
+    var enums = (from n in sortedSources
+        select n.GetEnumerator ()).ToArray ();
+    var enumsWithValues = (from n in enums
+        where n.MoveNext ()
+        select n).ToArray ();
+    if (enumsWithValues.Length == 0)
+        yield break;
+
+    var enumsByCurrent = (from n in enumsWithValues
+        orderby n.Current
+        select n).ToList ();
+    while (true) {
+        yield return enumsByCurrent [0].Current;
+        if (! enumsByCurrent [0].MoveNext ()) {
+            enumsByCurrent.RemoveAt (0);
+            if (enumsByCurrent.Count == 0)
+                break;
+
+        }
+        enumsByCurrent = enumsByCurrent.OrderBy (x = > x.Current).ToList ();
+    }
+}
+----------------------------------------
+
+public static IEnumerable < T > mergeSortedEnumerables < T > (this IEnumerable < IEnumerable < T > > listOfLists, Func < T, T, Boolean > func) {
+    IEnumerable < T > l1 = new List < T > {};
+    foreach (var l in listOfLists) {
+        l1 = l1.mergeTwoSorted (l, func);
+    }
+    foreach (var t in l1) {
+        yield return t;
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+2767007_25540157_27_64
+2767007_43119191_45_62
+Title: Most efficient algorithm for merging sorted IEnumerable<T> 
+----------------------------------------
+
+public IEnumerable < T > Merge < T > (params IEnumerable < T > [] sortedSources) where T : IComparable {
+    if (sortedSources == null || sortedSources.Length == 0)
+        throw new ArgumentNullException ("sortedSources");
+
+    var enums = (from n in sortedSources
+        select n.GetEnumerator ()).ToArray ();
+    var enumsWithValues = (from n in enums
+        where n.MoveNext ()
+        select n).ToArray ();
+    if (enumsWithValues.Length == 0)
+        yield break;
+
+    var enumsByCurrent = (from n in enumsWithValues
+        orderby n.Current
+        select n).ToList ();
+    while (true) {
+        yield return enumsByCurrent [0].Current;
+        if (! enumsByCurrent [0].MoveNext ()) {
+            enumsByCurrent.RemoveAt (0);
+            if (enumsByCurrent.Count == 0)
+                break;
+
+        }
+        enumsByCurrent = enumsByCurrent.OrderBy (x = > x.Current).ToList ();
+    }
+}
+----------------------------------------
+
+static IEnumerable < T > MergeOrderedLists < T, TOrder > (IEnumerable < IEnumerable < T > > orderedlists, Func < T, TOrder > orderBy) {
+    List < IEnumerator < T > > enumeratorsWithData = orderedlists.Select (enumerable = > enumerable.GetEnumerator ()).Where (enumerator = > enumerator.MoveNext ()).ToList ();
+    while (enumeratorsWithData.Count > 0) {
+        IEnumerator < T > minEnumerator = enumeratorsWithData [0];
+        for (int i = 1; i < enumeratorsWithData.Count; i ++)
+            if (((IComparable < TOrder >) orderBy (minEnumerator.Current)).CompareTo (orderBy (enumeratorsWithData [i].Current)) >= 0)
+                minEnumerator = enumeratorsWithData [i];
+
+        yield return minEnumerator.Current;
+        if (! minEnumerator.MoveNext ())
+            enumeratorsWithData.Remove (minEnumerator);
+
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+2767007_25540157_27_64
+2767007_45284840_1_18
+Title: Most efficient algorithm for merging sorted IEnumerable<T> 
+----------------------------------------
+
+public IEnumerable < T > Merge < T > (params IEnumerable < T > [] sortedSources) where T : IComparable {
+    if (sortedSources == null || sortedSources.Length == 0)
+        throw new ArgumentNullException ("sortedSources");
+
+    var enums = (from n in sortedSources
+        select n.GetEnumerator ()).ToArray ();
+    var enumsWithValues = (from n in enums
+        where n.MoveNext ()
+        select n).ToArray ();
+    if (enumsWithValues.Length == 0)
+        yield break;
+
+    var enumsByCurrent = (from n in enumsWithValues
+        orderby n.Current
+        select n).ToList ();
+    while (true) {
+        yield return enumsByCurrent [0].Current;
+        if (! enumsByCurrent [0].MoveNext ()) {
+            enumsByCurrent.RemoveAt (0);
+            if (enumsByCurrent.Count == 0)
+                break;
+
+        }
+        enumsByCurrent = enumsByCurrent.OrderBy (x = > x.Current).ToList ();
+    }
+}
+----------------------------------------
+
+public static IEnumerable < T > MergeOrderedLists < T, TOrder > (this IEnumerable < IEnumerable < T > > orderedLists, Func < T, TOrder > orderBy) where TOrder : IComparable < TOrder > {
+    var enumerators = new OrderedBag < IEnumerator < T > > (orderedLists.Select (enumerable = > enumerable.GetEnumerator ()).Where (enumerator = > enumerator.MoveNext ()), (x, y) = > orderBy (x.Current).CompareTo (orderBy (y.Current)));
+    while (enumerators.Count > 0) {
+        IEnumerator < T > minEnumerator = enumerators.RemoveFirst ();
+        T minValue = minEnumerator.Current;
+        if (minEnumerator.MoveNext ())
+            enumerators.Add (minEnumerator);
+        else
+            minEnumerator.Dispose ();
+
+        yield return minValue;
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+2767007_2767338_1_33
+2767007_2768156_1_36
+Title: Most efficient algorithm for merging sorted IEnumerable<T> 
+----------------------------------------
+
+public static IEnumerable < T > MergePreserveOrder4 < T, TOrder > (this IEnumerable < IEnumerable < T > > aa, Func < T, TOrder > orderFunc) where TOrder : IComparable < TOrder > {
+    var items = aa.Select (xx = > xx.GetEnumerator ()).Where (ee = > ee.MoveNext ()).Select (ee = > Tuple.Create (orderFunc (ee.Current), ee)).OrderBy (ee = > ee.Item1).ToList ();
+    while (items.Count > 0) {
+        yield return items [0].Item2.Current;
+        var next = items [0];
+        items.RemoveAt (0);
+        if (next.Item2.MoveNext ()) {
+            var value = orderFunc (next.Item2.Current);
+            var ii = 0;
+            for (; ii < items.Count; ++ ii) {
+                if (value.CompareTo (items [ii].Item1) <= 0) {
+                    items.Insert (ii, Tuple.Create (value, next.Item2));
+                    break;
+                }
+            }
+            if (ii == items.Count)
+                items.Add (Tuple.Create (value, next.Item2));
+
+        } else
+            next.Item2.Dispose ();
+
+    }
+}
+----------------------------------------
+
+public static IEnumerable < T > MergePreserveOrder < T, TOrder > (this IEnumerable < IEnumerable < T > > sources, Func < T, TOrder > orderFunc) where TOrder : IComparable < TOrder > {
+    Dictionary < TOrder, List < IEnumerable < T > > > keyedSources = sources.Select (source = > source.GetEnumerator ()).Where (e = > e.MoveNext ()).GroupBy (e = > orderFunc (e.Current)).ToDictionary (g = > g.Key, g = > g.ToList ());
+    while (keyedSources.Any ()) {
+        KeyValuePair < TOrder, List < IEnumerable < T > > > firstPair = keyedSources.OrderBy (kvp = > kvp.Key).First ();
+        keyedSources.Remove (firstPair.Key);
+        foreach (IEnumerable < T > e in firstPair.Value) {
+            yield return e.Current;
+            if (e.MoveNext ()) {
+                TOrder newKey = orderFunc (e.Current);
+                if (! keyedSources.ContainsKey (newKey)) {
+                    keyedSources [newKey] = new List < IEnumerable < T > > () {e};
+                } else {
+                    keyedSources [newKey].Add (e);
+                }
+            }
+        }
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+2767007_2767338_1_33
+2767007_2769196_17_70
+Title: Most efficient algorithm for merging sorted IEnumerable<T> 
+----------------------------------------
+
+public static IEnumerable < T > MergePreserveOrder4 < T, TOrder > (this IEnumerable < IEnumerable < T > > aa, Func < T, TOrder > orderFunc) where TOrder : IComparable < TOrder > {
+    var items = aa.Select (xx = > xx.GetEnumerator ()).Where (ee = > ee.MoveNext ()).Select (ee = > Tuple.Create (orderFunc (ee.Current), ee)).OrderBy (ee = > ee.Item1).ToList ();
+    while (items.Count > 0) {
+        yield return items [0].Item2.Current;
+        var next = items [0];
+        items.RemoveAt (0);
+        if (next.Item2.MoveNext ()) {
+            var value = orderFunc (next.Item2.Current);
+            var ii = 0;
+            for (; ii < items.Count; ++ ii) {
+                if (value.CompareTo (items [ii].Item1) <= 0) {
+                    items.Insert (ii, Tuple.Create (value, next.Item2));
+                    break;
+                }
+            }
+            if (ii == items.Count)
+                items.Add (Tuple.Create (value, next.Item2));
+
+        } else
+            next.Item2.Dispose ();
+
+    }
+}
+----------------------------------------
+
+public static IEnumerable < T > mergeTwoSorted < T > (this IEnumerable < T > l1, IEnumerable < T > l2, Func < T, T, Boolean > func) {
+    using (var enumerator1 = l1.GetEnumerator ())
+    using (var enumerator2 = l2.GetEnumerator ())
+    {
+        bool enum1 = enumerator1.MoveNext ();
+        bool enum2 = enumerator2.MoveNext ();
+        while (enum1 || enum2) {
+            T t1 = enumerator1.Current;
+            T t2 = enumerator2.Current;
+            if (! enum1 && ! enum2) {
+                break;
+            } else if (! enum1) {
+                enum2 = enumerator2.MoveNext ();
+                yield return t2;
+            } else if (! enum2) {
+                enum1 = enumerator1.MoveNext ();
+                yield return t1;
+            } else {
+                if (func (t1, t2)) {
+                    enum1 = enumerator1.MoveNext ();
+                    yield return t1;
+                } else {
+                    enum2 = enumerator2.MoveNext ();
+                    yield return t2;
+                }
+            }
+        }
+    }}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+2767007_2767338_1_33
+2767007_2769196_1_15
+Title: Most efficient algorithm for merging sorted IEnumerable<T> 
+----------------------------------------
+
+public static IEnumerable < T > MergePreserveOrder4 < T, TOrder > (this IEnumerable < IEnumerable < T > > aa, Func < T, TOrder > orderFunc) where TOrder : IComparable < TOrder > {
+    var items = aa.Select (xx = > xx.GetEnumerator ()).Where (ee = > ee.MoveNext ()).Select (ee = > Tuple.Create (orderFunc (ee.Current), ee)).OrderBy (ee = > ee.Item1).ToList ();
+    while (items.Count > 0) {
+        yield return items [0].Item2.Current;
+        var next = items [0];
+        items.RemoveAt (0);
+        if (next.Item2.MoveNext ()) {
+            var value = orderFunc (next.Item2.Current);
+            var ii = 0;
+            for (; ii < items.Count; ++ ii) {
+                if (value.CompareTo (items [ii].Item1) <= 0) {
+                    items.Insert (ii, Tuple.Create (value, next.Item2));
+                    break;
+                }
+            }
+            if (ii == items.Count)
+                items.Add (Tuple.Create (value, next.Item2));
+
+        } else
+            next.Item2.Dispose ();
+
+    }
+}
+----------------------------------------
+
+public static IEnumerable < T > mergeSortedEnumerables < T > (this IEnumerable < IEnumerable < T > > listOfLists, Func < T, T, Boolean > func) {
+    IEnumerable < T > l1 = new List < T > {};
+    foreach (var l in listOfLists) {
+        l1 = l1.mergeTwoSorted (l, func);
+    }
+    foreach (var t in l1) {
+        yield return t;
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+2767007_2767338_1_33
+2767007_43119191_45_62
+Title: Most efficient algorithm for merging sorted IEnumerable<T> 
+----------------------------------------
+
+public static IEnumerable < T > MergePreserveOrder4 < T, TOrder > (this IEnumerable < IEnumerable < T > > aa, Func < T, TOrder > orderFunc) where TOrder : IComparable < TOrder > {
+    var items = aa.Select (xx = > xx.GetEnumerator ()).Where (ee = > ee.MoveNext ()).Select (ee = > Tuple.Create (orderFunc (ee.Current), ee)).OrderBy (ee = > ee.Item1).ToList ();
+    while (items.Count > 0) {
+        yield return items [0].Item2.Current;
+        var next = items [0];
+        items.RemoveAt (0);
+        if (next.Item2.MoveNext ()) {
+            var value = orderFunc (next.Item2.Current);
+            var ii = 0;
+            for (; ii < items.Count; ++ ii) {
+                if (value.CompareTo (items [ii].Item1) <= 0) {
+                    items.Insert (ii, Tuple.Create (value, next.Item2));
+                    break;
+                }
+            }
+            if (ii == items.Count)
+                items.Add (Tuple.Create (value, next.Item2));
+
+        } else
+            next.Item2.Dispose ();
+
+    }
+}
+----------------------------------------
+
+static IEnumerable < T > MergeOrderedLists < T, TOrder > (IEnumerable < IEnumerable < T > > orderedlists, Func < T, TOrder > orderBy) {
+    List < IEnumerator < T > > enumeratorsWithData = orderedlists.Select (enumerable = > enumerable.GetEnumerator ()).Where (enumerator = > enumerator.MoveNext ()).ToList ();
+    while (enumeratorsWithData.Count > 0) {
+        IEnumerator < T > minEnumerator = enumeratorsWithData [0];
+        for (int i = 1; i < enumeratorsWithData.Count; i ++)
+            if (((IComparable < TOrder >) orderBy (minEnumerator.Current)).CompareTo (orderBy (enumeratorsWithData [i].Current)) >= 0)
+                minEnumerator = enumeratorsWithData [i];
+
+        yield return minEnumerator.Current;
+        if (! minEnumerator.MoveNext ())
+            enumeratorsWithData.Remove (minEnumerator);
+
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+2767007_2767338_1_33
+2767007_45284840_1_18
+Title: Most efficient algorithm for merging sorted IEnumerable<T> 
+----------------------------------------
+
+public static IEnumerable < T > MergePreserveOrder4 < T, TOrder > (this IEnumerable < IEnumerable < T > > aa, Func < T, TOrder > orderFunc) where TOrder : IComparable < TOrder > {
+    var items = aa.Select (xx = > xx.GetEnumerator ()).Where (ee = > ee.MoveNext ()).Select (ee = > Tuple.Create (orderFunc (ee.Current), ee)).OrderBy (ee = > ee.Item1).ToList ();
+    while (items.Count > 0) {
+        yield return items [0].Item2.Current;
+        var next = items [0];
+        items.RemoveAt (0);
+        if (next.Item2.MoveNext ()) {
+            var value = orderFunc (next.Item2.Current);
+            var ii = 0;
+            for (; ii < items.Count; ++ ii) {
+                if (value.CompareTo (items [ii].Item1) <= 0) {
+                    items.Insert (ii, Tuple.Create (value, next.Item2));
+                    break;
+                }
+            }
+            if (ii == items.Count)
+                items.Add (Tuple.Create (value, next.Item2));
+
+        } else
+            next.Item2.Dispose ();
+
+    }
+}
+----------------------------------------
+
+public static IEnumerable < T > MergeOrderedLists < T, TOrder > (this IEnumerable < IEnumerable < T > > orderedLists, Func < T, TOrder > orderBy) where TOrder : IComparable < TOrder > {
+    var enumerators = new OrderedBag < IEnumerator < T > > (orderedLists.Select (enumerable = > enumerable.GetEnumerator ()).Where (enumerator = > enumerator.MoveNext ()), (x, y) = > orderBy (x.Current).CompareTo (orderBy (y.Current)));
+    while (enumerators.Count > 0) {
+        IEnumerator < T > minEnumerator = enumerators.RemoveFirst ();
+        T minValue = minEnumerator.Current;
+        if (minEnumerator.MoveNext ())
+            enumerators.Add (minEnumerator);
+        else
+            minEnumerator.Dispose ();
+
+        yield return minValue;
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+2767007_2768156_1_36
+2767007_2769196_17_70
+Title: Most efficient algorithm for merging sorted IEnumerable<T> 
+----------------------------------------
+
+public static IEnumerable < T > MergePreserveOrder < T, TOrder > (this IEnumerable < IEnumerable < T > > sources, Func < T, TOrder > orderFunc) where TOrder : IComparable < TOrder > {
+    Dictionary < TOrder, List < IEnumerable < T > > > keyedSources = sources.Select (source = > source.GetEnumerator ()).Where (e = > e.MoveNext ()).GroupBy (e = > orderFunc (e.Current)).ToDictionary (g = > g.Key, g = > g.ToList ());
+    while (keyedSources.Any ()) {
+        KeyValuePair < TOrder, List < IEnumerable < T > > > firstPair = keyedSources.OrderBy (kvp = > kvp.Key).First ();
+        keyedSources.Remove (firstPair.Key);
+        foreach (IEnumerable < T > e in firstPair.Value) {
+            yield return e.Current;
+            if (e.MoveNext ()) {
+                TOrder newKey = orderFunc (e.Current);
+                if (! keyedSources.ContainsKey (newKey)) {
+                    keyedSources [newKey] = new List < IEnumerable < T > > () {e};
+                } else {
+                    keyedSources [newKey].Add (e);
+                }
+            }
+        }
+    }
+}
+----------------------------------------
+
+public static IEnumerable < T > mergeTwoSorted < T > (this IEnumerable < T > l1, IEnumerable < T > l2, Func < T, T, Boolean > func) {
+    using (var enumerator1 = l1.GetEnumerator ())
+    using (var enumerator2 = l2.GetEnumerator ())
+    {
+        bool enum1 = enumerator1.MoveNext ();
+        bool enum2 = enumerator2.MoveNext ();
+        while (enum1 || enum2) {
+            T t1 = enumerator1.Current;
+            T t2 = enumerator2.Current;
+            if (! enum1 && ! enum2) {
+                break;
+            } else if (! enum1) {
+                enum2 = enumerator2.MoveNext ();
+                yield return t2;
+            } else if (! enum2) {
+                enum1 = enumerator1.MoveNext ();
+                yield return t1;
+            } else {
+                if (func (t1, t2)) {
+                    enum1 = enumerator1.MoveNext ();
+                    yield return t1;
+                } else {
+                    enum2 = enumerator2.MoveNext ();
+                    yield return t2;
+                }
+            }
+        }
+    }}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+2767007_2768156_1_36
+2767007_2769196_1_15
+Title: Most efficient algorithm for merging sorted IEnumerable<T> 
+----------------------------------------
+
+public static IEnumerable < T > MergePreserveOrder < T, TOrder > (this IEnumerable < IEnumerable < T > > sources, Func < T, TOrder > orderFunc) where TOrder : IComparable < TOrder > {
+    Dictionary < TOrder, List < IEnumerable < T > > > keyedSources = sources.Select (source = > source.GetEnumerator ()).Where (e = > e.MoveNext ()).GroupBy (e = > orderFunc (e.Current)).ToDictionary (g = > g.Key, g = > g.ToList ());
+    while (keyedSources.Any ()) {
+        KeyValuePair < TOrder, List < IEnumerable < T > > > firstPair = keyedSources.OrderBy (kvp = > kvp.Key).First ();
+        keyedSources.Remove (firstPair.Key);
+        foreach (IEnumerable < T > e in firstPair.Value) {
+            yield return e.Current;
+            if (e.MoveNext ()) {
+                TOrder newKey = orderFunc (e.Current);
+                if (! keyedSources.ContainsKey (newKey)) {
+                    keyedSources [newKey] = new List < IEnumerable < T > > () {e};
+                } else {
+                    keyedSources [newKey].Add (e);
+                }
+            }
+        }
+    }
+}
+----------------------------------------
+
+public static IEnumerable < T > mergeSortedEnumerables < T > (this IEnumerable < IEnumerable < T > > listOfLists, Func < T, T, Boolean > func) {
+    IEnumerable < T > l1 = new List < T > {};
+    foreach (var l in listOfLists) {
+        l1 = l1.mergeTwoSorted (l, func);
+    }
+    foreach (var t in l1) {
+        yield return t;
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+2767007_2768156_1_36
+2767007_43119191_45_62
+Title: Most efficient algorithm for merging sorted IEnumerable<T> 
+----------------------------------------
+
+public static IEnumerable < T > MergePreserveOrder < T, TOrder > (this IEnumerable < IEnumerable < T > > sources, Func < T, TOrder > orderFunc) where TOrder : IComparable < TOrder > {
+    Dictionary < TOrder, List < IEnumerable < T > > > keyedSources = sources.Select (source = > source.GetEnumerator ()).Where (e = > e.MoveNext ()).GroupBy (e = > orderFunc (e.Current)).ToDictionary (g = > g.Key, g = > g.ToList ());
+    while (keyedSources.Any ()) {
+        KeyValuePair < TOrder, List < IEnumerable < T > > > firstPair = keyedSources.OrderBy (kvp = > kvp.Key).First ();
+        keyedSources.Remove (firstPair.Key);
+        foreach (IEnumerable < T > e in firstPair.Value) {
+            yield return e.Current;
+            if (e.MoveNext ()) {
+                TOrder newKey = orderFunc (e.Current);
+                if (! keyedSources.ContainsKey (newKey)) {
+                    keyedSources [newKey] = new List < IEnumerable < T > > () {e};
+                } else {
+                    keyedSources [newKey].Add (e);
+                }
+            }
+        }
+    }
+}
+----------------------------------------
+
+static IEnumerable < T > MergeOrderedLists < T, TOrder > (IEnumerable < IEnumerable < T > > orderedlists, Func < T, TOrder > orderBy) {
+    List < IEnumerator < T > > enumeratorsWithData = orderedlists.Select (enumerable = > enumerable.GetEnumerator ()).Where (enumerator = > enumerator.MoveNext ()).ToList ();
+    while (enumeratorsWithData.Count > 0) {
+        IEnumerator < T > minEnumerator = enumeratorsWithData [0];
+        for (int i = 1; i < enumeratorsWithData.Count; i ++)
+            if (((IComparable < TOrder >) orderBy (minEnumerator.Current)).CompareTo (orderBy (enumeratorsWithData [i].Current)) >= 0)
+                minEnumerator = enumeratorsWithData [i];
+
+        yield return minEnumerator.Current;
+        if (! minEnumerator.MoveNext ())
+            enumeratorsWithData.Remove (minEnumerator);
+
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+2767007_2768156_1_36
+2767007_45284840_1_18
+Title: Most efficient algorithm for merging sorted IEnumerable<T> 
+----------------------------------------
+
+public static IEnumerable < T > MergePreserveOrder < T, TOrder > (this IEnumerable < IEnumerable < T > > sources, Func < T, TOrder > orderFunc) where TOrder : IComparable < TOrder > {
+    Dictionary < TOrder, List < IEnumerable < T > > > keyedSources = sources.Select (source = > source.GetEnumerator ()).Where (e = > e.MoveNext ()).GroupBy (e = > orderFunc (e.Current)).ToDictionary (g = > g.Key, g = > g.ToList ());
+    while (keyedSources.Any ()) {
+        KeyValuePair < TOrder, List < IEnumerable < T > > > firstPair = keyedSources.OrderBy (kvp = > kvp.Key).First ();
+        keyedSources.Remove (firstPair.Key);
+        foreach (IEnumerable < T > e in firstPair.Value) {
+            yield return e.Current;
+            if (e.MoveNext ()) {
+                TOrder newKey = orderFunc (e.Current);
+                if (! keyedSources.ContainsKey (newKey)) {
+                    keyedSources [newKey] = new List < IEnumerable < T > > () {e};
+                } else {
+                    keyedSources [newKey].Add (e);
+                }
+            }
+        }
+    }
+}
+----------------------------------------
+
+public static IEnumerable < T > MergeOrderedLists < T, TOrder > (this IEnumerable < IEnumerable < T > > orderedLists, Func < T, TOrder > orderBy) where TOrder : IComparable < TOrder > {
+    var enumerators = new OrderedBag < IEnumerator < T > > (orderedLists.Select (enumerable = > enumerable.GetEnumerator ()).Where (enumerator = > enumerator.MoveNext ()), (x, y) = > orderBy (x.Current).CompareTo (orderBy (y.Current)));
+    while (enumerators.Count > 0) {
+        IEnumerator < T > minEnumerator = enumerators.RemoveFirst ();
+        T minValue = minEnumerator.Current;
+        if (minEnumerator.MoveNext ())
+            enumerators.Add (minEnumerator);
+        else
+            minEnumerator.Dispose ();
+
+        yield return minValue;
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+2767007_2769196_17_70
+2767007_2769196_1_15
+Title: Most efficient algorithm for merging sorted IEnumerable<T> 
+----------------------------------------
+
+public static IEnumerable < T > mergeTwoSorted < T > (this IEnumerable < T > l1, IEnumerable < T > l2, Func < T, T, Boolean > func) {
+    using (var enumerator1 = l1.GetEnumerator ())
+    using (var enumerator2 = l2.GetEnumerator ())
+    {
+        bool enum1 = enumerator1.MoveNext ();
+        bool enum2 = enumerator2.MoveNext ();
+        while (enum1 || enum2) {
+            T t1 = enumerator1.Current;
+            T t2 = enumerator2.Current;
+            if (! enum1 && ! enum2) {
+                break;
+            } else if (! enum1) {
+                enum2 = enumerator2.MoveNext ();
+                yield return t2;
+            } else if (! enum2) {
+                enum1 = enumerator1.MoveNext ();
+                yield return t1;
+            } else {
+                if (func (t1, t2)) {
+                    enum1 = enumerator1.MoveNext ();
+                    yield return t1;
+                } else {
+                    enum2 = enumerator2.MoveNext ();
+                    yield return t2;
+                }
+            }
+        }
+    }}
+----------------------------------------
+
+public static IEnumerable < T > mergeSortedEnumerables < T > (this IEnumerable < IEnumerable < T > > listOfLists, Func < T, T, Boolean > func) {
+    IEnumerable < T > l1 = new List < T > {};
+    foreach (var l in listOfLists) {
+        l1 = l1.mergeTwoSorted (l, func);
+    }
+    foreach (var t in l1) {
+        yield return t;
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+2767007_2769196_17_70
+2767007_43119191_45_62
+Title: Most efficient algorithm for merging sorted IEnumerable<T> 
+----------------------------------------
+
+public static IEnumerable < T > mergeTwoSorted < T > (this IEnumerable < T > l1, IEnumerable < T > l2, Func < T, T, Boolean > func) {
+    using (var enumerator1 = l1.GetEnumerator ())
+    using (var enumerator2 = l2.GetEnumerator ())
+    {
+        bool enum1 = enumerator1.MoveNext ();
+        bool enum2 = enumerator2.MoveNext ();
+        while (enum1 || enum2) {
+            T t1 = enumerator1.Current;
+            T t2 = enumerator2.Current;
+            if (! enum1 && ! enum2) {
+                break;
+            } else if (! enum1) {
+                enum2 = enumerator2.MoveNext ();
+                yield return t2;
+            } else if (! enum2) {
+                enum1 = enumerator1.MoveNext ();
+                yield return t1;
+            } else {
+                if (func (t1, t2)) {
+                    enum1 = enumerator1.MoveNext ();
+                    yield return t1;
+                } else {
+                    enum2 = enumerator2.MoveNext ();
+                    yield return t2;
+                }
+            }
+        }
+    }}
+----------------------------------------
+
+static IEnumerable < T > MergeOrderedLists < T, TOrder > (IEnumerable < IEnumerable < T > > orderedlists, Func < T, TOrder > orderBy) {
+    List < IEnumerator < T > > enumeratorsWithData = orderedlists.Select (enumerable = > enumerable.GetEnumerator ()).Where (enumerator = > enumerator.MoveNext ()).ToList ();
+    while (enumeratorsWithData.Count > 0) {
+        IEnumerator < T > minEnumerator = enumeratorsWithData [0];
+        for (int i = 1; i < enumeratorsWithData.Count; i ++)
+            if (((IComparable < TOrder >) orderBy (minEnumerator.Current)).CompareTo (orderBy (enumeratorsWithData [i].Current)) >= 0)
+                minEnumerator = enumeratorsWithData [i];
+
+        yield return minEnumerator.Current;
+        if (! minEnumerator.MoveNext ())
+            enumeratorsWithData.Remove (minEnumerator);
+
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+2767007_2769196_17_70
+2767007_45284840_1_18
+Title: Most efficient algorithm for merging sorted IEnumerable<T> 
+----------------------------------------
+
+public static IEnumerable < T > mergeTwoSorted < T > (this IEnumerable < T > l1, IEnumerable < T > l2, Func < T, T, Boolean > func) {
+    using (var enumerator1 = l1.GetEnumerator ())
+    using (var enumerator2 = l2.GetEnumerator ())
+    {
+        bool enum1 = enumerator1.MoveNext ();
+        bool enum2 = enumerator2.MoveNext ();
+        while (enum1 || enum2) {
+            T t1 = enumerator1.Current;
+            T t2 = enumerator2.Current;
+            if (! enum1 && ! enum2) {
+                break;
+            } else if (! enum1) {
+                enum2 = enumerator2.MoveNext ();
+                yield return t2;
+            } else if (! enum2) {
+                enum1 = enumerator1.MoveNext ();
+                yield return t1;
+            } else {
+                if (func (t1, t2)) {
+                    enum1 = enumerator1.MoveNext ();
+                    yield return t1;
+                } else {
+                    enum2 = enumerator2.MoveNext ();
+                    yield return t2;
+                }
+            }
+        }
+    }}
+----------------------------------------
+
+public static IEnumerable < T > MergeOrderedLists < T, TOrder > (this IEnumerable < IEnumerable < T > > orderedLists, Func < T, TOrder > orderBy) where TOrder : IComparable < TOrder > {
+    var enumerators = new OrderedBag < IEnumerator < T > > (orderedLists.Select (enumerable = > enumerable.GetEnumerator ()).Where (enumerator = > enumerator.MoveNext ()), (x, y) = > orderBy (x.Current).CompareTo (orderBy (y.Current)));
+    while (enumerators.Count > 0) {
+        IEnumerator < T > minEnumerator = enumerators.RemoveFirst ();
+        T minValue = minEnumerator.Current;
+        if (minEnumerator.MoveNext ())
+            enumerators.Add (minEnumerator);
+        else
+            minEnumerator.Dispose ();
+
+        yield return minValue;
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+2767007_2769196_1_15
+2767007_43119191_45_62
+Title: Most efficient algorithm for merging sorted IEnumerable<T> 
+----------------------------------------
+
+public static IEnumerable < T > mergeSortedEnumerables < T > (this IEnumerable < IEnumerable < T > > listOfLists, Func < T, T, Boolean > func) {
+    IEnumerable < T > l1 = new List < T > {};
+    foreach (var l in listOfLists) {
+        l1 = l1.mergeTwoSorted (l, func);
+    }
+    foreach (var t in l1) {
+        yield return t;
+    }
+}
+----------------------------------------
+
+static IEnumerable < T > MergeOrderedLists < T, TOrder > (IEnumerable < IEnumerable < T > > orderedlists, Func < T, TOrder > orderBy) {
+    List < IEnumerator < T > > enumeratorsWithData = orderedlists.Select (enumerable = > enumerable.GetEnumerator ()).Where (enumerator = > enumerator.MoveNext ()).ToList ();
+    while (enumeratorsWithData.Count > 0) {
+        IEnumerator < T > minEnumerator = enumeratorsWithData [0];
+        for (int i = 1; i < enumeratorsWithData.Count; i ++)
+            if (((IComparable < TOrder >) orderBy (minEnumerator.Current)).CompareTo (orderBy (enumeratorsWithData [i].Current)) >= 0)
+                minEnumerator = enumeratorsWithData [i];
+
+        yield return minEnumerator.Current;
+        if (! minEnumerator.MoveNext ())
+            enumeratorsWithData.Remove (minEnumerator);
+
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+2767007_2769196_1_15
+2767007_45284840_1_18
+Title: Most efficient algorithm for merging sorted IEnumerable<T> 
+----------------------------------------
+
+public static IEnumerable < T > mergeSortedEnumerables < T > (this IEnumerable < IEnumerable < T > > listOfLists, Func < T, T, Boolean > func) {
+    IEnumerable < T > l1 = new List < T > {};
+    foreach (var l in listOfLists) {
+        l1 = l1.mergeTwoSorted (l, func);
+    }
+    foreach (var t in l1) {
+        yield return t;
+    }
+}
+----------------------------------------
+
+public static IEnumerable < T > MergeOrderedLists < T, TOrder > (this IEnumerable < IEnumerable < T > > orderedLists, Func < T, TOrder > orderBy) where TOrder : IComparable < TOrder > {
+    var enumerators = new OrderedBag < IEnumerator < T > > (orderedLists.Select (enumerable = > enumerable.GetEnumerator ()).Where (enumerator = > enumerator.MoveNext ()), (x, y) = > orderBy (x.Current).CompareTo (orderBy (y.Current)));
+    while (enumerators.Count > 0) {
+        IEnumerator < T > minEnumerator = enumerators.RemoveFirst ();
+        T minValue = minEnumerator.Current;
+        if (minEnumerator.MoveNext ())
+            enumerators.Add (minEnumerator);
+        else
+            minEnumerator.Dispose ();
+
+        yield return minValue;
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+2767007_43119191_45_62
+2767007_45284840_1_18
+Title: Most efficient algorithm for merging sorted IEnumerable<T> 
+----------------------------------------
+
+static IEnumerable < T > MergeOrderedLists < T, TOrder > (IEnumerable < IEnumerable < T > > orderedlists, Func < T, TOrder > orderBy) {
+    List < IEnumerator < T > > enumeratorsWithData = orderedlists.Select (enumerable = > enumerable.GetEnumerator ()).Where (enumerator = > enumerator.MoveNext ()).ToList ();
+    while (enumeratorsWithData.Count > 0) {
+        IEnumerator < T > minEnumerator = enumeratorsWithData [0];
+        for (int i = 1; i < enumeratorsWithData.Count; i ++)
+            if (((IComparable < TOrder >) orderBy (minEnumerator.Current)).CompareTo (orderBy (enumeratorsWithData [i].Current)) >= 0)
+                minEnumerator = enumeratorsWithData [i];
+
+        yield return minEnumerator.Current;
+        if (! minEnumerator.MoveNext ())
+            enumeratorsWithData.Remove (minEnumerator);
+
+    }
+}
+----------------------------------------
+
+public static IEnumerable < T > MergeOrderedLists < T, TOrder > (this IEnumerable < IEnumerable < T > > orderedLists, Func < T, TOrder > orderBy) where TOrder : IComparable < TOrder > {
+    var enumerators = new OrderedBag < IEnumerator < T > > (orderedLists.Select (enumerable = > enumerable.GetEnumerator ()).Where (enumerator = > enumerator.MoveNext ()), (x, y) = > orderBy (x.Current).CompareTo (orderBy (y.Current)));
+    while (enumerators.Count > 0) {
+        IEnumerator < T > minEnumerator = enumerators.RemoveFirst ();
+        T minValue = minEnumerator.Current;
+        if (minEnumerator.MoveNext ())
+            enumerators.Add (minEnumerator);
+        else
+            minEnumerator.Dispose ();
+
+        yield return minValue;
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+27700458_27701899_1_25
+27700458_46402602_1_25
+Title: How to pass user through login view to safe page in mvc 
+----------------------------------------
+
+[HttpPost] public ActionResult Login (string user_name, string password) {
+    if (ModelState.IsValid) {
+        var x = (from n in db.Customers
+            where n.User_Name == user_name && n.Password == password
+            select n).FirstOrDefault ();
+        if (x != null) {
+            Session ["UserName"] = x.First_Name;
+            FormsAuthentication.SetAuthCookie (x.First_Name, false);
+            return RedirectToAction ("Products", "Home");
+        } else {
+            @ViewBag.ErrorValidationFailed = "Invalid username or password";
+            return View ();
+        }
+    }
+    return View ();
+}
+----------------------------------------
+
+[HttpPost] public ActionResult Login (FormCollection formCollection) {
+    Credentials credentials = new Credentials ();
+    credentials.Username = formCollection ["username"].ToString ();
+    credentials.Password = formCollection ["password"].ToString ();
+    var result = ApiHelper.PostLogin < FRP.WebApp.Models.Credentials > (MicroService.Login, "/api/Authenticate/Login", credentials, credentials.Username, credentials.Password);
+    ViewData ["username"] = formCollection ["username"];
+    ViewData ["password"] = formCollection ["password"];
+    if (result.Status == Sonata.Framework.Models.BusinessStatus.Ok) {
+        ViewData ["error"] = "";
+        return View ("About", result);
+    } else {
+        RegistrationViewModel model = new RegistrationViewModel ();
+        model.Years = ViewHelper.GetYears ();
+        ViewData ["error"] = "InValid";
+        return View ("Index", model);
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+27714639_27714846_1_19
+27714639_27714858_1_27
+Title: How to implement MaxOrDefault(x => x.SomeInt) LINQ extension? 
+----------------------------------------
+
+public static TResult MaxOrDefault < T, TResult > (this IEnumerable < T > source, Func < T, TResult > func) where TResult : IComparable {
+    if (source == null)
+        throw new ArgumentNullException ("source");
+
+    using (var en = source.GetEnumerator ())
+    if (en.MoveNext ()) {
+        TResult max = func (en.Current);
+        while (en.MoveNext ()) {
+            TResult cur = func (en.Current);
+            if (max == null || (cur != null && cur.CompareTo (max) > 0))
+                max = cur;
+
+        }
+        return max;
+    } else
+        return default (TResult);
+
+}
+----------------------------------------
+
+public static TSource MaxOrDefault < TSource > (this IEnumerable < TSource > source) {
+    if (source == null)
+        throw Error.ArgumentNull ("source");
+
+    Comparer < TSource > comparer = Comparer < TSource >.Default;
+    TSource value = default (TSource);
+    if (value == null) {
+        foreach (TSource x in source) {
+            if (x != null && (value == null || comparer.Compare (x, value) > 0))
+                value = x;
+
+        }
+        return value;
+    } else {
+        bool hasValue = false;
+        foreach (TSource x in source) {
+            if (hasValue) {
+                if (comparer.Compare (x, value) > 0)
+                    value = x;
+
+            } else {
+                value = x;
+                hasValue = true;
+            }
+        }
+        return value;
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+27715004_27715138_14_33
+27715004_42334329_73_102
+Title: Position a small console window to the bottom left of the screen? 
+----------------------------------------
+
+static void Main (string [] args) {
+    Console.WindowWidth = 50;
+    Console.WindowHeight = 3;
+    Console.BufferWidth = 50;
+    Console.BufferHeight = 3;
+    Console.BackgroundColor = ConsoleColor.Black;
+    Console.ForegroundColor = ConsoleColor.DarkMagenta;
+    var screen = System.Windows.Forms.Screen.PrimaryScreen.Bounds;
+    var width = screen.Width;
+    var height = screen.Height;
+    SetWindowPosition (100, height - 300, 500, 100);
+    Console.Title = "My Title";
+    Console.WriteLine ("");
+    Console.Write (" Press any key to close this window ...");
+    Console.ReadKey ();
+}
+----------------------------------------
+
+public static void Main () {
+    IntPtr hWnd = GetConsoleWindow ();
+    var mi = MONITORINFO.Default;
+    GetMonitorInfo (MonitorFromWindow (hWnd, MONITOR_DEFAULTTOPRIMARY), ref mi);
+    var wp = WINDOWPLACEMENT.Default;
+    GetWindowPlacement (hWnd, ref wp);
+    int fudgeOffset = 7;
+    wp.NormalPosition = new RECT () {Left = - fudgeOffset, Top = mi.rcWork.Bottom - (wp.NormalPosition.Bottom - wp.NormalPosition.Top), Right = (wp.NormalPosition.Right - wp.NormalPosition.Left), Bottom = fudgeOffset + mi.rcWork.Bottom};
+    SetWindowPlacement (hWnd, ref wp);
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+27725317_27725468_1_23
+27725317_27725469_1_14
+Title: C# catch not working (invalid token) 
+----------------------------------------
+
+public Boolean Delete (Int32 HolidayNo) {
+    var deleted = false;
+    try {
+        if (HolidayNo > 0) {
+            clsDataConnection MyDatabase = new clsDataConnection ();
+            MyDatabase.AddParameter ("@HolidayNo", HolidayNo);
+            MyDatabase.Execute ("sproc_tblHolidays_Delete");
+            deleted = true;
+        }
+    }
+    catch (Exception ex) {
+        return deleted;
+    }
+}
+----------------------------------------
+
+public Boolean Delete (Int32 HolidayNo) {
+    try {
+        clsDataConnection MyDatabase = new clsDataConnection ();
+        MyDatabase.AddParameter ("@HolidayNo", HolidayNo);
+        MyDatabase.Execute ("sproc_tblHolidays_Delete");
+        return true;
+    }
+    catch {
+        return false;
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+27781525_27781636_1_18
+27781525_27781888_1_25
+Title: c# Loops with stars and spaces 
+----------------------------------------
+
+static void Main (string [] args) {
+    int rowHeight = 5;
+    for (int row = 1; row <= rowHeight; row ++) {
+        int totalSpaces = rowHeight - row;
+        for (int j = 0; j < totalSpaces; j ++) {
+            Console.Write (" ");
+        }
+        for (int j = 0; j < row; j ++) {
+            Console.Write ("*");
+        }
+        Console.WriteLine ();
+    }
+    Console.ReadLine ();
+}
+----------------------------------------
+
+static void Main (string [] args) {
+    Console.WriteLine ("Give the hight of the pyramid");
+    string _spatie = " ";
+    string _ster = "*";
+    int _aantal = Convert.ToInt32 (Console.ReadLine ());
+    for (int i = 1; i <= _aantal; i ++) {
+        for (int d = i; d < _aantal; d ++) {
+            Console.Write (_spatie);
+        }
+        for (int e = 1; e <= i; e ++) {
+            Console.Write (_ster);
+        }
+        Console.WriteLine ();
+    }
+    Console.ReadKey ();
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+27781525_27781636_1_18
+27781525_27782164_1_29
+Title: c# Loops with stars and spaces 
+----------------------------------------
+
+static void Main (string [] args) {
+    int rowHeight = 5;
+    for (int row = 1; row <= rowHeight; row ++) {
+        int totalSpaces = rowHeight - row;
+        for (int j = 0; j < totalSpaces; j ++) {
+            Console.Write (" ");
+        }
+        for (int j = 0; j < row; j ++) {
+            Console.Write ("*");
+        }
+        Console.WriteLine ();
+    }
+    Console.ReadLine ();
+}
+----------------------------------------
+
+static void Main (string [] args) {
+    int lengte = 18;
+    for (int i = 0; i <= lengte; i ++) {
+        if (i % 2 == 0) {
+            int spatieLengte = (lengte / 2) - (i / 2);
+            for (int spaties = 0; spaties <= spatieLengte; spaties ++) {
+                Console.Write (" ");
+            }
+            for (int sterren = 0; sterren <= i; sterren ++) {
+                Console.Write ("*");
+            }
+            Console.WriteLine ();
+        }
+    }
+    Console.ReadLine ();
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+27781525_27781888_1_25
+27781525_27782164_1_29
+Title: c# Loops with stars and spaces 
+----------------------------------------
+
+static void Main (string [] args) {
+    Console.WriteLine ("Give the hight of the pyramid");
+    string _spatie = " ";
+    string _ster = "*";
+    int _aantal = Convert.ToInt32 (Console.ReadLine ());
+    for (int i = 1; i <= _aantal; i ++) {
+        for (int d = i; d < _aantal; d ++) {
+            Console.Write (_spatie);
+        }
+        for (int e = 1; e <= i; e ++) {
+            Console.Write (_ster);
+        }
+        Console.WriteLine ();
+    }
+    Console.ReadKey ();
+}
+----------------------------------------
+
+static void Main (string [] args) {
+    int lengte = 18;
+    for (int i = 0; i <= lengte; i ++) {
+        if (i % 2 == 0) {
+            int spatieLengte = (lengte / 2) - (i / 2);
+            for (int spaties = 0; spaties <= spatieLengte; spaties ++) {
+                Console.Write (" ");
+            }
+            for (int sterren = 0; sterren <= i; sterren ++) {
+                Console.Write ("*");
+            }
+            Console.WriteLine ();
+        }
+    }
+    Console.ReadLine ();
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+27788320_27788430_1_73
+27788320_27788526_1_18
+Title: swapping nodes in binary tree 
+----------------------------------------
+
+public static void swap (ref Node A, ref Node B) {
+    var newA = new Node (B.value);
+    var newB = new Node (A.value);
+    newA.left = A.left;
+    newA.right = A.right;
+    newA.parent = A.parent;
+    newB.left = B.left;
+    newB.right = B.right;
+    newB.parent = B.parent;
+    if (A.parent.left == A) {
+        A.parent.left = newA;
+    }
+    if (A.parent.right == A) {
+        A.parent.right = newA;
+    }
+    if (B.parent.left == B) {
+        B.parent.left = newB;
+    }
+    if (B.parent.right == B) {
+        B.parent.right = newB;
+    }
+    if (newA.right == B) {
+        newA.right = newB;
+    }
+    if (newA.left == A) {
+        newA.left = newB;
+    }
+    if (newB.right == A) {
+        newB.right = newA;
+    }
+    if (newB.left == A) {
+        newA.left = newB;
+    }
+    A.left.parent = newA;
+    A.right.parent = newA;
+    B.left.parent = newB;
+    B.right.parent = newB;
+    A = newA;
+    B = newB;
+}
+----------------------------------------
+
+public static void swap (Node n1, Node n2) {
+    Node left1 = n1.left;
+    Node left2 = n2.left;
+    Node right1 = n1.right;
+    Node right2 = n2.right;
+    Node parent1 = n1.parent;
+    Node parent2 = n2.parent;
+    n1.left = left2;
+    n2.left = left1;
+    n1.right = right2;
+    n2.right = right1;
+    n1.parent = parent2;
+    n2.parent = parent1;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+27794230_27794391_1_46
+27794230_27794436_1_19
+Title: get one cell of data from database 
+----------------------------------------
+
+private void btnLogin_Click (object sender, EventArgs e) {
+    string query = "SELECT COUNT(*) FROM dbo.MsUser WHERE username = @UserName AND password = @password);";
+    using (SqlConnection cn = new SqlConnection (@"Data Source=.\SQLEXPRESS;AttachDbFilename=E:\ProgII Project\MoneyManager\MoneyManager\MsUser.mdf;Integrated Security=True;User Instance=True"))
+    using (SqlCommand cmd = new SqlCommand (query, cn))
+    {
+        cmd.Parameters.Add ("@username", SqlDbType.VarChar, 100).Value = txtUserName.Text;
+        cmd.Parameters.Add ("@password", SqlDbType.VarChar, 100).Value = txtPassword.Text;
+        cn.Open ();
+        var result = cmd.ExecuteScalar ();
+        cn.Close ();
+        if (result != null) {
+            int userCount;
+            if (int.TryParse (result.ToString (), out userCount)) {
+                if (userCount > 0) {
+                } else {
+                }
+            } else {
+            }
+        } else {
+        }
+    }}
+----------------------------------------
+
+private void btnLogin_Click (object sender, EventArgs e) {
+    SqlConnection cn = new SqlConnection (@"Data Source=.\SQLEXPRESS;AttachDbFilename=E:\ProgII Project\MoneyManager\MoneyManager\MsUser.mdf;Integrated Security=True;User Instance=True");
+    SqlCommand cmd1 = new SqlCommand ("Select Count(*) From MsUser where username = @username and password = @passowrd", cn);
+    cmd1.Parameters.AddWithValue ("@username", idBox.Text.Trim ());
+    cmd1.Parameters.AddWithValue ("@passowrd", passwordBox.Text.Trim ());
+    int returnValue = Convert.ToInt32 (cmd1.ExecuteScalar ());
+    if (returnValue == 1) {
+        this.Hide ();
+    } else {
+        MessageBox.Show ("your id or password is wrong");
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+27794230_27794391_1_46
+27794230_27794440_1_21
+Title: get one cell of data from database 
+----------------------------------------
+
+private void btnLogin_Click (object sender, EventArgs e) {
+    string query = "SELECT COUNT(*) FROM dbo.MsUser WHERE username = @UserName AND password = @password);";
+    using (SqlConnection cn = new SqlConnection (@"Data Source=.\SQLEXPRESS;AttachDbFilename=E:\ProgII Project\MoneyManager\MoneyManager\MsUser.mdf;Integrated Security=True;User Instance=True"))
+    using (SqlCommand cmd = new SqlCommand (query, cn))
+    {
+        cmd.Parameters.Add ("@username", SqlDbType.VarChar, 100).Value = txtUserName.Text;
+        cmd.Parameters.Add ("@password", SqlDbType.VarChar, 100).Value = txtPassword.Text;
+        cn.Open ();
+        var result = cmd.ExecuteScalar ();
+        cn.Close ();
+        if (result != null) {
+            int userCount;
+            if (int.TryParse (result.ToString (), out userCount)) {
+                if (userCount > 0) {
+                } else {
+                }
+            } else {
+            }
+        } else {
+        }
+    }}
+----------------------------------------
+
+private void btnLogin_Click (object sender, EventArgs e) {
+    string requiredUserId;
+    SqlConnection cn = new SqlConnection (@"Data Source=.\SQLEXPRESS;AttachDbFilename=E:\ProgII Project\MoneyManager\MoneyManager\MsUser.mdf;Integrated Security=True;User Instance=True");
+    SqlDataAdapter sda = new SqlDataAdapter ("Select Count(userID),UserId From MsUser where username='" + txtUsername.Text + "' and password='" + txtPassword.Text + "' Group By userID", cn);
+    DataTable dt = new DataTable ();
+    sda.Fill (dt);
+    if (dt.Rows [0] [0].ToString () == "1") {
+        this.Hide ();
+        requiredUserId = dt.Rows [0] [1].ToString ();
+    } else {
+        MessageBox.Show ("your id or password is wrong");
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+27794230_27794436_1_19
+27794230_27794440_1_21
+Title: get one cell of data from database 
+----------------------------------------
+
+private void btnLogin_Click (object sender, EventArgs e) {
+    SqlConnection cn = new SqlConnection (@"Data Source=.\SQLEXPRESS;AttachDbFilename=E:\ProgII Project\MoneyManager\MoneyManager\MsUser.mdf;Integrated Security=True;User Instance=True");
+    SqlCommand cmd1 = new SqlCommand ("Select Count(*) From MsUser where username = @username and password = @passowrd", cn);
+    cmd1.Parameters.AddWithValue ("@username", idBox.Text.Trim ());
+    cmd1.Parameters.AddWithValue ("@passowrd", passwordBox.Text.Trim ());
+    int returnValue = Convert.ToInt32 (cmd1.ExecuteScalar ());
+    if (returnValue == 1) {
+        this.Hide ();
+    } else {
+        MessageBox.Show ("your id or password is wrong");
+    }
+}
+----------------------------------------
+
+private void btnLogin_Click (object sender, EventArgs e) {
+    string requiredUserId;
+    SqlConnection cn = new SqlConnection (@"Data Source=.\SQLEXPRESS;AttachDbFilename=E:\ProgII Project\MoneyManager\MoneyManager\MsUser.mdf;Integrated Security=True;User Instance=True");
+    SqlDataAdapter sda = new SqlDataAdapter ("Select Count(userID),UserId From MsUser where username='" + txtUsername.Text + "' and password='" + txtPassword.Text + "' Group By userID", cn);
+    DataTable dt = new DataTable ();
+    sda.Fill (dt);
+    if (dt.Rows [0] [0].ToString () == "1") {
+        this.Hide ();
+        requiredUserId = dt.Rows [0] [1].ToString ();
+    } else {
+        MessageBox.Show ("your id or password is wrong");
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+27802185_27805461_76_103
+27802185_27806398_14_30
+Title: "Unity 4.6 Editor Create a Script with Predefined Data" 
+----------------------------------------
+
+void Update () {
+    if (needToAttach) {
+        waitForCompile -= 0.01f;
+        if (waitForCompile <= 0) {
+            if (! EditorApplication.isCompiling) {
+                tempCharacter.AddComponent (characterName.Replace (" ", ""));
+                needToAttach = false;
+                waitForCompile = 1;
+            }
+        }
+    }
+}
+----------------------------------------
+
+private void Update () {
+    if (string.IsNullOrEmpty (className))
+        return;
+
+    if (waitForCompile && EditorApplication.isCompiling)
+        waitForCompile = false;
+
+    if (! waitForCompile && ! EditorApplication.isCompiling) {
+        var gameObject = new GameObject (className);
+        Debug.Log ("Attempting to add " + className);
+        var c = gameObject.AddComponent (className);
+        className = null;
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+27813902_27816014_8_29
+27813902_27817029_3_29
+Title: Total sum/average of random numbers in c# 
+----------------------------------------
+
+static void Main () {
+    int chosenRandom;
+    Console.WriteLine ("Choose a number between 0-10");
+    chosenRandom = int.Parse (Console.ReadLine ());
+    Random rand = new Random ();
+    double [] randomNumbers = new double [chosenRandom];
+    for (int i = 0; i < chosenRandom; i ++) {
+        Console.WriteLine ("Random numbers: " + (randomNumbers [i] = rand.Next (0, 10)));
+    }
+    double average = randomNumbers.Average (t = > t);
+    var numbersAboveAverage = randomNumbers.Where (t = > t > average);
+    Console.WriteLine ("Average of all random numbers - {0}", average);
+    foreach (var number in numbersAboveAverage)
+        Console.WriteLine (number);
+
+}
+----------------------------------------
+
+static void Main (string [] args) {
+    Console.WriteLine ("Enter the no of Random numbers: ");
+    int n = int.Parse (Console.ReadLine ());
+    Random rand = new Random ();
+    int [] randCollection = new int [n];
+    for (int i = 0; i < n; i ++) {
+        randCollection [i] = rand.Next (9);
+        Console.WriteLine ("Random No {0} = {1}", i + 1, randCollection [i]);
+    }
+    double average = randCollection.Average ();
+    Console.WriteLine ("Average = {0}", average);
+    int count = 0;
+    foreach (int i in randCollection) {
+        if (i > average)
+            count ++;
+
+    }
+    Console.WriteLine ("No of random numbers above their average = {0}", count);
+    Console.ReadLine ();
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+27831047_27831119_1_19
+27831047_27831144_8_18
+Title: How to send and retrieve from methods 
+----------------------------------------
+
+public static Dictionary < string, int > AddLevels (int AddLevel, int Question1, int Question2, int Answer) {
+    Random rnd = new Random ();
+    Dictionary < string, int > dic = new Dictionary < string, int > ();
+    if (AddLevel == 0 || AddLevel == 1) {
+        Question1 = rnd.Next (0, 10);
+        Question2 = rnd.Next (0, 10);
+        Answer = Question1 + Question2;
+    }
+    dic.Add ("Question1", Question1);
+    dic.Add ("Question2", Question2);
+    dic.Add ("Answer", Answer);
+    return dic;
+}
+----------------------------------------
+
+public static Tuple < int, int, int > AddLevels (int addLevel, int question1, int question2, int answer) {
+    if (addLevel == 0 || addLevel == 1) {
+        Random rnd = new Random ();
+        question1 = rnd.Next (0, 10);
+        question2 = rnd.Next (0, 10);
+        answer = question1 + question2;
+    }
+    return Tuple.Create (question1, question2, answer);
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+27860151_27861028_3_21
+27860151_29922342_1_19
+Title: Custom WebViewPage inject code when razor template is rendering 
+----------------------------------------
+
+public override void ExecutePageHierarchy () {
+    var layoutReferenceMarkup = @"<script type=""text/html"" data-layout-id=""" + TemplateInfo.VirtualPath + @"""><![CDATA[</script>";
+    base.ExecutePageHierarchy ();
+    string output = Output.ToString ();
+    if (output.Contains ("</body>")) {
+        Response.Clear ();
+        Response.Write (output.Replace ("</body>", layoutReferenceMarkup + "</body>"));
+        Response.End ();
+    } else {
+        Output.Write (layoutReferenceMarkup);
+    }
+}
+----------------------------------------
+
+public override void ExecutePageHierarchy () {
+    StringWriter fakeOutput = new StringWriter ();
+    TextWriter outputStackTopOutput = OutputStack.Pop ();
+    OutputStack.Push (fakeOutput);
+    base.ExecutePageHierarchy ();
+    string content = fakeOutput.ToString ();
+    OutputStack.Pop ();
+    OutputStack.Push (outputStackTopOutput);
+    outputStackTopOutput.Write (content);
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+27879450_27879992_1_16
+27879450_27880262_1_22
+Title: Get directory path n deph long of a given root path 
+----------------------------------------
+
+public string GetDirectoryNDepth (string root, string target, int depth) {
+    string [] splittedRoot = root.Split (Path.DirectorySeparatorChar);
+    string [] splittedTarget = target.Split (Path.DirectorySeparatorChar);
+    StringBuilder sb = new StringBuilder ();
+    for (int i = 0; i < splittedTarget.Length; i ++)
+        if (i < splittedRoot.Length + depth)
+            sb.Append (String.Format ("{0}{1}", splittedTarget [i], Path.DirectorySeparatorChar));
+        else
+            break;
+
+    return sb.ToString ();
+}
+----------------------------------------
+
+public static string GetDirectoryNDepth (string root, string target, int depth) {
+    var separatorChar = Path.DirectorySeparatorChar;
+    int rootSlashCount = root.Split (separatorChar).Length;
+    int totalSlashCount = rootSlashCount + depth;
+    var iCnt = root.Length;
+    while (iCnt < target.Length && rootSlashCount <= totalSlashCount) {
+        if (target [iCnt] == separatorChar)
+            rootSlashCount ++;
+
+        iCnt ++;
+    }
+    var retVal = target.Substring (0, iCnt);
+    if (retVal.EndsWith (separatorChar + "") == false)
+        retVal += separatorChar;
+
+    return retVal;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+27884356_27884995_3_17
+27884356_40998334_10_26
+Title: traverse all leaf nodes in a tree C# 
+----------------------------------------
+
+IEnumerable < T > TraverseLeafs < T > (this MyNode < T > node) {
+    if (node.Children.Count == 0)
+        yield return node;
+    else {
+        foreach (var child in root.Children) {
+            foreach (var subchild in child.TraverseLeafs ()) {
+                yield return subchild;
+            }
+        }
+    }
+}
+----------------------------------------
+
+public static IEnumerable < T > GetLeafs < T > (T source, Func < T, IEnumerable < T > > getChildren) {
+    if (! getChildren (source).Any ()) {
+        yield return source;
+    } else {
+        foreach (var child in getChildren (source)) {
+            foreach (var subchild in GetLeafs (child, getChildren)) {
+                yield return subchild;
+            }
+        }
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+278902_932659_26_40
+278902_932677_24_35
+Title: 'using' statement vs 'try finally' 
+----------------------------------------
+
+private static DateTime ReadLockedMethod (ReaderWriterLock rwl, ReadLockMethod method) {
+    rwl.AcquireReaderLock (0);
+    try {
+        return method ();
+    }
+    finally {
+        rwl.ReleaseReaderLock ();
+    }
+}
+----------------------------------------
+
+private DateTime ReadLockedMethod (ReadLockMethod method) {
+    rwlMyLock_m.AcquireReaderLock (0);
+    try {
+        return method ();
+    }
+    finally {
+        rwlMyLock_m.ReleaseReaderLock ();
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+278902_932659_42_56
+278902_932677_37_48
+Title: 'using' statement vs 'try finally' 
+----------------------------------------
+
+private static void WriteLockedMethod (ReaderWriterLock rwl, WriteLockMethod method) {
+    rwl.AcquireWriterLock (0);
+    try {
+        method ();
+    }
+    finally {
+        rwl.ReleaseWriterLock ();
+    }
+}
+----------------------------------------
+
+private void WriteLockedMethod (WriteLockMethod method) {
+    rwlMyLock_m.AcquireWriterLock (0);
+    try {
+        method ();
+    }
+    finally {
+        rwlMyLock_m.ReleaseWriterLock ();
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+27916446_27916691_3_26
+27916446_27916713_1_32
+Title: C# program for printing numbers triangle? 
+----------------------------------------
+
+static void Main (string [] args) {
+    int size;
+    Console.Write ("Enter the Size:");
+    size = Convert.ToInt32 (Console.ReadLine ());
+    for (int i = 0; i < size; i ++) {
+        for (int j = size; j > i; j --) {
+            Console.Write (" ");
+        }
+        for (int x = 1; x <= i; x ++) {
+            Console.Write (x);
+        }
+        for (int j = i - 1; j > 0; j --) {
+            Console.Write (j);
+        }
+        Console.WriteLine ();
+    }
+    Console.ReadKey ();
+}
+----------------------------------------
+
+static void Main (string [] args) {
+    int i, j, k, odd = 1, size, s = 0;
+    Console.Write ("Enter the Size:");
+    size = Convert.ToInt32 (Console.ReadLine ());
+    int nofSpaces = size - 1;
+    for (i = 1; i <= size; i ++) {
+        for (k = 1; k <= nofSpaces; k ++) {
+            Console.Write (" ");
+        }
+        s = 0;
+        for (j = 1; j <= odd; j ++) {
+            if (i >= j) {
+                s = s + 1;
+            } else {
+                s = s - 1;
+            }
+            Console.Write (s);
+        }
+        Console.Write ("\n");
+        odd = odd + 2;
+        nofSpaces = nofSpaces - 1;
+    }
+    Console.ReadKey ();
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+279359_42591887_11_53
+279359_43887289_3_32
+Title: The Most frequent Number in an array 
+----------------------------------------
+
+static void Main (string [] args) {
+    int [] array = new int [] {4, 1, 1, 4, 2, 3, 4, 4, 1, 2, 4, 9, 3, 1, 1, 7, 7, 7, 7, 7};
+    Array.Sort (array, (a, b) = > a.CompareTo (b));
+    int counter = 1;
+    int temp = 0;
+    List < int > LOCE = new List < int > ();
+    foreach (int i in array) {
+        counter = 1;
+        foreach (int j in array) {
+            if (array [j] == array [i]) {
+                counter ++;
+            } else {
+                counter = 1;
+            }
+            if (counter == temp) {
+                LOCE.Add (array [i]);
+            }
+            if (counter > temp) {
+                LOCE.Clear ();
+                LOCE.Add (array [i]);
+                temp = counter;
+            }
+        }
+    }
+    foreach (var element in LOCE) {
+        Console.Write (element + ",");
+    }
+    Console.WriteLine ();
+    Console.WriteLine ("(" + temp + " times)");
+    Console.Read ();
+}
+----------------------------------------
+
+public static void Main () {
+    int [] numbers = Console.ReadLine ().Split (' ').Select (int.Parse).ToArray ();
+    int counter = 0;
+    int longestOccurance = 0;
+    int mostFrequentNumber = 0;
+    for (int i = 0; i < numbers.Length; i ++) {
+        counter = 0;
+        for (int j = 0; j < numbers.Length; j ++) {
+            if (numbers [j] == numbers [i]) {
+                counter ++;
+            }
+        }
+        if (counter > longestOccurance) {
+            longestOccurance = counter;
+            mostFrequentNumber = numbers [i];
+        }
+    }
+    Console.WriteLine (mostFrequentNumber);
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+27957209_27957265_1_15
+27957209_27957272_1_23
+Title: c# filter list of objects at runtime 
+----------------------------------------
+
+public List < Fruit > getFruitList (List < Fruit > allFruits, string fruitType, string fruitColor) {
+    IEnumerable < Fruit > newFruits = allFruits;
+    if (fruitType != "All") {
+        newFruites = newFruits.Where (f = > f.typeOfFruit == fruitType);
+    }
+    if (fruitColor != "All") {
+        newFruits = newFruits.Where (f = > f.fruitColor == fruitColor);
+    }
+    return newFruits.ToList ();
+}
+----------------------------------------
+
+public List < Fruit > getFruitList (List < Fruit > allFruits, string fruitType, string fruitColor) {
+    bool filterByFruitType = ! string.IsNullOrEmpty (fruitType);
+    bool filterByFruitColor = ! string.IsNullOrEmpty (fruitColor);
+    if (filterByFruitType && filterByFruitColor) {
+        return allFruits.Where (f = > f.typeOfFruit == fruitType).Where (f = > f.fruitColor == fruitColor).ToList ();
+    } else if (! filterByFruitType && filterByFruitColor) {
+        return allFruits.Where (f = > f.fruitColor == fruitColor).ToList ();
+    } else if (filterByFruitType && ! filterByFruitColor) {
+        return allFruits.Where (f = > f.typeOfFruit == fruitType).ToList ();
+    } else {
+        return allFruits;
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+27957505_27958551_1_13
+27957505_27962372_1_16
+Title: Find Highest Divisible Integer In Set By X 
+----------------------------------------
+
+private Int32 GetHighest (Int32 y, out Int32 B) {
+    var Set = new Int32 [] {4, 3, 2};
+    var Totals = new List < Int32 > ();
+    foreach (var x in Set)
+        Totals.Add (x * (y / x));
+
+    var Max = Totals.Max ();
+    var Maxs = Totals.Select ((total, index) = > new {T = total, index}).Where (r = > r.T == Max).ToList ();
+    var Maximum = Maxs.Select (G = > Set [G.index]).Max ();
+    B = Totals [Array.IndexOf (Set, Maximum)];
+    return Maximum;
+}
+----------------------------------------
+
+private Int32 GetHighest (Int32 y, out Int32 totalMax) {
+    var Set = new Int32 [] {4, 3, 2};
+    totalMax = int.MinValue;
+    int itemMax = int.MinValue;
+    foreach (var x in Set) {
+        int total = x * (y / x);
+        if (total >= totalMax && (total > totalMax || x > itemMax)) {
+            totalMax = total;
+            itemMax = x;
+        }
+    }
+    return itemMax;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+2795954_2795976_1_13
+2795954_2796170_1_34
+Title: list box asp.net selected problem 
+----------------------------------------
+
+protected void Page_Load (object sender, EventArgs e) {
+    if (! IsPostBack) {
+        SqlDataSource df = new SqlDataSource ();
+        df.ConnectionString = conn;
+        df.SelectCommand = "SELECT [ID], [Kategorije] FROM [kategorije] ";
+        kategorije.DataSource = df;
+        kategorije.DataTextField = "Kategorije";
+        kategorije.DataValueField = "ID";
+        kategorije.DataBind ();
+    }
+}
+----------------------------------------
+
+protected void Page_Load (object sender, EventArgs e) {
+    if (! IsPostBack) {
+        SqlDataSource ds = new SqlDataSource ();
+        ds.ConnectionString = conn;
+        ds.SelectCommand = "SELECT [ID], [Kategorije] FROM [kategorije] ";
+        kategorije.DataSource = ds;
+        kategorije.DataTextField = "Kategorije";
+        kategorije.DataValueField = "ID";
+        kategorije.DataBind ();
+        kategorije.SelectedIndex = 1;
+        SqlDataSource dk = new SqlDataSource ();
+        dk.ConnectionString = conn;
+        dk.SelectCommand = "SELECT * from pod_kategorije WHERE kat_id = " + kategorije.SelectedItem.Value;
+        SUB_kategorije.DataSource = dk;
+        SUB_kategorije.DataTextField = "pkategorija";
+        SUB_kategorije.DataValueField = "ID";
+        SUB_kategorije.DataBind ();
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+27969415_27970123_1_20
+27969415_38538161_1_15
+Title: Best way to create a tuple out of a list where two numbers in the list equal a sum 
+----------------------------------------
+
+public static Tuple < int, int > FindTwoSum (IList < int > list, int sum) {
+    Dictionary < int, int > indexOfValue = new Dictionary < int, int > ();
+    for (int i = 0; i < list.Count; i ++) {
+        indexOfValue [list [i]] = i;
+    }
+    for (int i = 0; i < list.Count; i ++) {
+        int value = list [i];
+        int needed = sum - value;
+        if (indexOfValue.ContainsKey (needed)) {
+            return new Tuple < int, int > (i, indexOfValue [needed]);
+        }
+    }
+    return null;
+}
+----------------------------------------
+
+public static Tuple < int, int > FindTwoSum (IList < int > list, int sum) {
+    int needed;
+    Dictionary < int, int > indexOfValue = new Dictionary < int, int > ();
+    for (int i = 0; i < list.Count; i ++) {
+        needed = sum - list [i];
+        if (indexOfValue.ContainsKey (needed)) {
+            return new Tuple < int, int > (i, indexOfValue [needed]);
+        }
+        indexOfValue [list [i]] = i;
+    }
+    return null;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+27975752_27979008_1_17
+27975752_41914237_1_20
+Title: "Winforms ListView - stages of selection change" 
+----------------------------------------
+
+private void listView1_ItemSelectionChanged (object sender, ListViewItemSelectionChangedEventArgs e) {
+    listView1.ItemSelectionChanged -= listView1_ItemSelectionChanged;
+    if (! e.IsSelected) {
+        listView1.Items [0].Selected = true;
+        listView1.Items [0].Focused = true;
+    } else {
+        listView1.Items [0].Selected = false;
+        listView1.Items [e.ItemIndex].Selected = true;
+    }
+    listView1.ItemSelectionChanged += listView1_ItemSelectionChanged;
+}
+----------------------------------------
+
+private void listView1_ItemSelectionChanged (object sender, ListViewItemSelectionChangedEventArgs e) {
+    int temp = 0;
+    listView1.ItemSelectionChanged -= listView1_ItemSelectionChanged;
+    if (! e.IsSelected) {
+        temp = e.ItemIndex;
+        listView1.Items [temp].Selected = true;
+        listView1.Items [temp].Focused = true;
+    } else {
+        for (int y = listView1.Items.Count - 1; y >= 0; y --) {
+            listView1.Items [y].Selected = false;
+        }
+        listView1.Items [e.ItemIndex].Selected = true;
+    }
+    listView1.ItemSelectionChanged += listView1_ItemSelectionChanged;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+28047770_28050158_29_51
+28047770_28050158_7_27
+Title: How to get width of Popup thats in the ComboBox template 
+----------------------------------------
+
+public static IEnumerable < T > FindVisualChildren < T > (DependencyObject depObj) where T : DependencyObject {
+    if (depObj == null)
+        yield break;
+
+    for (int i = 0; i < VisualTreeHelper.GetChildrenCount (depObj); i ++) {
+        if (IsVisual (depObj)) {
+            DependencyObject child = VisualTreeHelper.GetChild (depObj, i);
+            if (child != null && child is T) {
+                yield return (T) child;
+            }
+            foreach (T childOfChild in FindVisualChildren < T > (child)) {
+                yield return childOfChild;
+            }
+        }
+    }
+}
+----------------------------------------
+
+public static T FindVisualChild < T > (DependencyObject depObj) where T : Visual {
+    if (depObj != null && IsVisual (depObj)) {
+        for (int i = 0; i < VisualTreeHelper.GetChildrenCount (depObj); i ++) {
+            DependencyObject child = VisualTreeHelper.GetChild (depObj, i);
+            if (child != null && child is T) {
+                return (T) child;
+            }
+            foreach (T childOfChild in FindVisualChildren < T > (child)) {
+                return childOfChild;
+            }
+        }
+    }
+    return null;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+28068928_28069012_1_13
+28068928_28069028_1_13
+Title: How can I make a function that loops over a list and takes which data member to access as input parameter 
+----------------------------------------
+
+private double getScore (Func < PlayerStats, double > type, double type2) {
+    double strength = 0;
+    foreach (PlayerStats statistics in this.statistics) {
+        double dateDiff = Math.Abs (nowDate.Subtract (statistics.date).Days / (365.25 / 12));
+        dateDiff = Math.Pow (dateDiff, Form1.historyFactor);
+        strength += (type (statistics) * type2) / dateDiff;
+    }
+    return strength;
+}
+----------------------------------------
+
+private double getScore (Func < PlayerStats, double > evaluator) {
+    double strength = 0;
+    foreach (PlayerStats statistics in this.statistics) {
+        double dateDiff = Math.Abs (nowDate.Subtract (statistics.date).Days / (365.25 / 12));
+        dateDiff = Math.Pow (dateDiff, Form1.historyFactor);
+        strength += evaluator (statistics) / dateDiff;
+    }
+    return strength;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+28100417_28107110_8_18
+28100417_28108120_8_25
+Title: Want to invoke a base class using a generic with 'this' of child class 
+----------------------------------------
+
+public void UpdateStringProperties () {
+    foreach (var prop in obj.GetType ().GetProperties ().ToList ()) {
+        if (prop.PropertyType == (typeof (string))) {
+            if (prop.GetValue (obj) == null)
+                prop.SetValue (obj, String.Empty);
+
+        }
+    }
+}
+----------------------------------------
+
+public static T UpdateStringProperties (T obj) {
+    if (obj == null) {
+        return null;
+    }
+    foreach (var prop in obj.GetType ().GetProperties ()) {
+        if (prop.PropertyType == (typeof (string))) {
+            if (prop.GetValue (obj) == null)
+                prop.SetValue (obj, String.Empty);
+
+        }
+    }
+    return obj;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+2811725_18211470_18_49
+2811725_2811805_1_35
+Title: Is there a built-in way to compare IEnumerable<T> (by their elements)? 
+----------------------------------------
+
+public static int Compare < T > (this IEnumerable < T > first, IEnumerable < T > second) {
+    if (first == null || second == null)
+        return Comparer.Default.Compare (first, second);
+
+    var elementComparer = Comparer < T >.Default;
+    int compareResult;
+    using (var firstEnum = first.GetEnumerator ())
+    using (var secondEnum = second.GetEnumerator ())
+    {
+        do
+            {
+                bool gotFirst = firstEnum.MoveNext ();
+                bool gotSecond = secondEnum.MoveNext ();
+                if (! gotFirst && ! gotSecond)
+                    return 0;
+
+                if (gotFirst != gotSecond)
+                    return gotFirst ? 1 : - 1;
+
+                compareResult = elementComparer.Compare (firstEnum.Current, secondEnum.Current);
+            } while (compareResult == 0);
+    } return compareResult;
+}
+----------------------------------------
+
+public int SequenceCompare < T > (IEnumerable < T > source1, IEnumerable < T > source2) {
+    IComparer < T > elementComparer = Comparer < T >.Default;
+    using (IEnumerator < T > iterator1 = source1.GetEnumerator ())
+    using (IEnumerator < T > iterator2 = source2.GetEnumerator ())
+    {
+        while (true) {
+            bool next1 = iterator1.MoveNext ();
+            bool next2 = iterator2.MoveNext ();
+            if (! next1 && ! next2) {
+                return 0;
+            }
+            if (! next1) {
+                return - 1;
+            }
+            if (! next2) {
+                return 1;
+            }
+            int comparison = elementComparer.Compare (iterator1.Current, iterator2.Current);
+            if (comparison != 0) {
+                return comparison;
+            }
+        }
+    }}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+28148476_28149714_51_68
+28148476_28157610_5_46
+Title: Fast way to use String.Contains with huge list C# 
+----------------------------------------
+
+static void Main (string [] args) {
+    List < string > listUser = new List < string > ();
+    listUser.Add ("user1");
+    listUser.Add ("user2");
+    listUser.Add ("userhacker");
+    listUser.Add ("userfukoff1");
+    Blacklist blacklist = new Blacklist ();
+    blacklist.AddBlacklistedWord ("hacker");
+    blacklist.AddBlacklistedWord ("fukoff");
+    foreach (string user in listUser) {
+        if (blacklist.ContainsBlacklistedWord (user)) {
+            Console.WriteLine ("Contains blacklisted word: {0}", user);
+        }
+    }
+}
+----------------------------------------
+
+static void Main (string [] args) {
+    Console.WriteLine ("Creating Lists...");
+    var stringList = new List < string > ();
+    var hashList = new HashSet < string > ();
+    var sortedList = new SortedSet < string > ();
+    var searchWords1 = new string [3];
+    int ndx = 0;
+    for (int x = 0; x < 1000000; x ++) {
+        string str = RandomString (10);
+        if (x == 5 || x == 500000 || x == 999999) {
+            str = "Z" + str;
+            searchWords1 [ndx] = str;
+            ndx ++;
+        }
+        stringList.Add (str);
+        hashList.Add (str);
+        sortedList.Add (str);
+    }
+    Console.WriteLine ("Lists created!");
+    var sw = new Stopwatch ();
+    sw.Start ();
+    bool search1 = stringList.Contains (searchWords1 [2]);
+    sw.Stop ();
+    Console.WriteLine ("List<T> {0} ==> {1}ms", search1, sw.ElapsedMilliseconds);
+    sw.Reset ();
+    sw.Start ();
+    search1 = hashList.Contains (searchWords1 [2]);
+    sw.Stop ();
+    Console.WriteLine ("HashSet<T> {0} ==> {1}ms", search1, sw.ElapsedMilliseconds);
+    sw.Reset ();
+    sw.Start ();
+    search1 = sortedList.Contains (searchWords1 [2]);
+    sw.Stop ();
+    Console.WriteLine ("SortedSet<T> {0} ==> {1}ms", search1, sw.ElapsedMilliseconds);
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+28159214_28159470_1_15
+28159214_28159752_1_17
+Title: Unit testing exception property 
+----------------------------------------
+
+public static void Expect < TExpectedException > (System.Action action, System.Action < TExpectedException > assertion) where TExpectedException : Exception {
+    if (action == null) {
+        throw new ArgumentNullException ("action");
+    }
+    try {
+        action.Invoke ();
+        Assert.Fail (string.Format ("{0} expected to be thrown", typeof (TExpectedException).Name));
+    }
+    catch (TExpectedException e) {
+        assertion.Invoke (e);
+    }
+}
+----------------------------------------
+
+public T Throws < T > (Action code) where T : Exception {
+    Exception coughtException = null;
+    try {
+        code ();
+    }
+    catch (Exception ex) {
+        coughtException = ex;
+    }
+    Assert.IsNotNull (coughtException, "Test code didn't throw exception");
+    Assert.AreEqual (coughtException.GetType (), typeof (T), "Test code didn't throw same type exception");
+    return (T) coughtException;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+28159516_28161065_3_55
+28159516_28161065_57_75
+Title: "Getting all nodes values and the node attributes from an undefined XML" 
+----------------------------------------
+
+public T ReadNode < T > (T parent, XmlReader reader) where T : class, ITreeNode, new () {
+    if (reader.NodeType == XmlNodeType.Whitespace) {
+        return null;
+    }
+    T subNode = new T ();
+    while (reader.NodeType != XmlNodeType.Element && reader.Read ()) {
+    }
+    subNode.Tag = reader.Name;
+    subNode.Parent = parent;
+    if (reader.AttributeCount > 0) {
+        reader.MoveToFirstAttribute ();
+        do
+            {
+                subNode.SetAttribute (reader.Name, reader.Value);
+            } while (reader.MoveToNextAttribute ());
+    }
+    while (reader.Read ()) {
+        if (reader.NodeType == XmlNodeType.EndElement) {
+            if (string.Equals (subNode.Tag, reader.Name)) {
+                break;
+            }
+            continue;
+        }
+        if (reader.NodeType == XmlNodeType.Element) {
+            T child = ReadNode (subNode, reader);
+            if (child != null) {
+                subNode.Children.Add (child);
+            }
+            continue;
+        }
+        if (reader.NodeType == XmlNodeType.Text) {
+            subNode.ValueAsString = reader.Value;
+            continue;
+        }
+    }
+    return subNode;
+}
+----------------------------------------
+
+public T FromStream < T > (Stream stream) where T : class, ITreeNode, new () {
+    T result = default (T);
+    using (XmlReader reader = new XmlTextReader (stream))
+    {
+        while (reader.Read ()) {
+            T child = ReadNode (result, reader);
+            if (child != null) {
+                result = child;
+            }
+        }
+    } return result;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+28177770_28177960_8_16
+28177770_28178125_1_25
+Title: C# alternative to enums for a n:m-relation 
+----------------------------------------
+
+public static MessageTypeEnum getLogicalValue (byte numericalValue) {
+    if (numericalValue == 0x00)
+        return MessageTypeEnum.get;
+    else if (numericalValue == 0x01)
+        return MessageTypeEnum.set;
+    else
+        return MessageTypeEnum.identify;
+
+}
+----------------------------------------
+
+public static string getLogicalValue (byte numericalValue) {
+    Type type = numericalValue.GetType ();
+    var name = Enum.GetName (typeof (MessageTypeEnum), numericalValue);
+    switch (numericalValue) {
+        case 0x00 :
+            {
+                name = (MessageTypeEnum.get.ToString ());
+                break;
+            } case 0x01 :
+            {
+                name = (MessageTypeEnum.set.ToString ());
+                break;
+            } default :
+            {
+                name = (MessageTypeEnum.identify.ToString ());
+                break;
+            }}
+    return name;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+281831_282202_23_35
+281831_282202_51_62
+Title: How to show a Context Menu when you right click a Menu Item 
+----------------------------------------
+
+protected override void Dispose (bool disposing) {
+    if (disposing) {
+        if (secondaryContextMenu != null) {
+            secondaryContextMenu.Dispose ();
+            secondaryContextMenu = null;
+        }
+    }
+    base.Dispose (disposing);
+}
+----------------------------------------
+
+protected override void Dispose (bool disposing) {
+    if (disposing) {
+        if (lastShownSecondaryContextMenu != null) {
+            lastShownSecondaryContextMenu.Close ();
+            lastShownSecondaryContextMenu = null;
+        }
+    }
+    base.Dispose (disposing);
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+28194499_28206923_1_18
+28194499_28206923_20_37
+Title: Can I get a ToolStripControlHost reference from the control it hosts? 
+----------------------------------------
+
+private static ToolStripControlHost Find (Control c) {
+    var p = c.Parent;
+    while (p != null) {
+        if (p is ToolStrip)
+            break;
+
+        p = p.Parent;
+    }
+    if (p == null)
+        return null;
+
+    ToolStrip ts = (ToolStrip) p;
+    foreach (ToolStripItem i in ts.Items) {
+        var h = Find (i, c);
+        if (h != null)
+            return h;
+
+    }
+    return null;
+}
+----------------------------------------
+
+private static ToolStripControlHost Find (ToolStripItem item, Control c) {
+    ToolStripControlHost result = null;
+    if (item is ToolStripControlHost) {
+        var h = (ToolStripControlHost) item;
+        if (h.Control == c) {
+            result = h;
+        }
+    } else if (item is ToolStripDropDownItem) {
+        var ddm = (ToolStripDropDownItem) item;
+        foreach (ToolStripItem i in ddm.DropDown.Items) {
+            result = Find (i, c);
+            if (result != null)
+                break;
+
+        }
+    }
+    return result;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+28216616_28216942_1_25
+28216616_28217274_1_11
+Title: Delete the data in the Database by date 
+----------------------------------------
+
+private void Delete () {
+    try {
+        using (OleDbConnection conn = new OleDbConnection (connectionString))
+        {
+            string query = "DELETE FROM [Data] WHERE [ExpiredOn] <= @ExpiredOn";
+            conn.Open ();
+            using (OleDbCommand command = new OleDbCommand (query, conn))
+            {
+                command.Parameters.AddWithValue ("@ExpiredOn", UserInformation.Expired);
+                command.ExecuteNonQuery ();
+            } conn.Close ();
+        }}
+    catch (Exception ex) {
+        MessageBox.Show ("There is an exception: " + ex.Message, "Warning", MessageBoxButtons.OK, MessageBoxIcon.Error);
+    }
+}
+----------------------------------------
+
+private void Delete () {
+    using (OleDbConnection conn = new OleDbConnection (connectionString))
+    {
+        string query = "DELETE FROM [Data] WHERE DateAdd('d', 2, [SubmittedOn]) <= Now";
+        conn.Open ();
+        using (OleDbCommand command = new OleDbCommand (query, conn))
+        command.ExecuteNonQuery ();
+        conn.Close ();
+    }}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+28234014_28234250_1_20
+28234014_28234292_1_14
+Title: custom validation checking data into a function 
+----------------------------------------
+
+protected void ValidatoreTipiDato_ServerValidate (object source, ServerValidateEventArgs args) {
+    CustomValidator vc = source as CustomValidator;
+    TextBox txt = FindControl (vc.ControlToValidate) as TextBox;
+    if (txt != null) {
+        int x = int.MinValue;
+        int.TryParse (txt.Text, out x);
+        if (x != int.MinValue) {
+        } else {
+        }
+    }
+}
+----------------------------------------
+
+protected void ValidatoreTipiDato_ServerValidate (object source, ServerValidateEventArgs args) {
+    try {
+        int i = int.Parse (args.Value);
+        args.IsValid = ((i % 2) == 0);
+    }
+    catch (Exception ex) {
+        args.IsValid = false;
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+28247618_28247722_1_16
+28247618_28247751_1_36
+Title: Generically search 3 separate dictionaries for value 
+----------------------------------------
+
+public TObject GetVisibleObject < TObject > (UInt32 objId) where TObject : WorldObject, new () {
+    WorldObject match = null;
+    match = _currentVisibleCharacters [objId];
+    if (match == null)
+        match = _currentVisibleMapItems [objId];
+
+    if (match == null)
+        match = _currentVisibleNpcs [objId];
+
+    return (TObject) match;
+}
+----------------------------------------
+
+public Boolean GetVisibleObject < T > (UInt32 objId, out T obj) where T : WorldObject {
+    obj = null;
+    if (typeof (T) == typeof (Character)) {
+        if (_currentVisibleCharacters.ContainsKey (objId)) {
+            obj = _currentVisibleCharacters [objId] as T;
+            return true;
+        }
+    } else if (typeof (T) == typeof (Item)) {
+        if (_currentVisibleMapItems.ContainsKey (objId)) {
+            obj = _currentVisibleMapItems [objId] as T;
+            return true;
+        }
+    } else if (typeof (T) == typeof (Npc)) {
+        if (_currentVisibleNpcs.ContainsKey (objId)) {
+            obj = _currentVisibleNpcs [objId] as T;
+            return true;
+        }
+    }
+    return false;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+28252564_28252929_1_22
+28252564_28252929_24_45
+Title: Convert a List of objects to a byte array in c# 
+----------------------------------------
+
+static byte [] ArrayToBytes < T > (T [] array) where T : struct {
+    IntPtr ptr = IntPtr.Zero;
+    try {
+        int len = Marshal.SizeOf (typeof (T));
+        int totalLen = array.Length * len;
+        ptr = Marshal.AllocHGlobal (len);
+        for (int i = 0; i < array.Length; i ++) {
+            Marshal.StructureToPtr (array [i], ptr + i * len, false);
+        }
+        var bytes = new byte [totalLen];
+        Marshal.Copy (ptr, bytes, 0, totalLen);
+        return bytes;
+    }
+    finally {
+        if (ptr != IntPtr.Zero)
+            Marshal.FreeHGlobal (ptr);
+
+    }
+}
+----------------------------------------
+
+static T [] ArrayFromBytes < T > (byte [] bytes) where T : struct {
+    IntPtr ptr = IntPtr.Zero;
+    try {
+        int len = Marshal.SizeOf (typeof (T));
+        int count = bytes.Length / len;
+        ptr = Marshal.AllocHGlobal (bytes.Length);
+        Marshal.Copy (bytes, 0, ptr, bytes.Length);
+        T [] array = new T [count];
+        for (int i = 0; i < count; i ++) {
+            array [i] = Marshal.PtrToStructure < T > (ptr + i * len);
+        }
+        return array;
+    }
+    finally {
+        if (ptr != IntPtr.Zero)
+            Marshal.FreeHGlobal (ptr);
+
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+28253483_28256290_1_15
+28253483_28263642_1_24
+Title: Set active gameobjects in a list 
+----------------------------------------
+
+public void Keyword (string keyword) {
+    if (keyword == "ShipUpgradeLeft") {
+        shipUpgradeSelected --;
+        ShipList [shipUpgradeSelected].SetActive (true);
+        ShipList [shipUpgradeSelected + 1].SetActive (false);
+    }
+    if (keyword == "ShipUpgradeRight") {
+        shipUpgradeSelected --;
+        CheckShip ();
+        ShipList [shipUpgradeSelected].SetActive (true);
+        ShipList [shipUpgradeSelected - 1].SetActive (false);
+    }
+}
+----------------------------------------
+
+public void Keyword (string keyword) {
+    if (keyword == "ShipUpgradeLeft") {
+        shipUpgradeSelected --;
+        if (shipUpgradeSelected < 0) {
+            shipUpgradeSelected = 0;
+            return;
+        }
+        ShipList [shipUpgradeSelected].SetActive (true);
+        if (shipUpgradeSelected + 1 < ShipList.Count)
+            ShipList [shipUpgradeSelected + 1].SetActive (false);
+        else
+            ShipList [0].SetActive (false);
+
+    }
+    if (keyword == "ShipUpgradeRight") {
+        shipUpgradeSelected ++;
+        if (shipUpgradeSelected >= ShipList.Count) {
+            shipUpgradeSelected = ShipList.Count - 1;
+            return;
+        }
+        ShipList [shipUpgradeSelected].SetActive (true);
+        if (shipUpgradeSelected > 0)
+            ShipList [shipUpgradeSelected - 1].SetActive (false);
+        else
+            ShipList [ShipList.Count - 1].SetActive (false);
+
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+28271173_28271267_1_15
+28271173_28271415_1_20
+Title: Determine if an Enum with FlagsAttribute has unique bit values 
+----------------------------------------
+
+private static bool AreEnumBitsUnique < T > () {
+    int mask = 0;
+    int index = 0;
+    foreach (int val in Enum.GetValues (typeof (T))) {
+        if ((mask & val) != 0)
+            return false;
+
+        if (val == 0 && index != 0)
+            return false;
+
+        mask |= val;
+        index += 1;
+    }
+    return true;
+}
+----------------------------------------
+
+public static bool CheckEnumClashing < TEnum > () {
+    uint prev = 0;
+    uint curr = 0;
+    prev = curr = ~ curr;
+    foreach (var target in Enum.GetValues (typeof (TEnum)).Select (a = > (uint) a)) {
+        curr ^= target;
+        if (curr <= prev)
+            return false;
+
+        prev = curr;
+    }
+    return true;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+2828203_2828532_1_19
+2828203_2828532_27_37
+Title: Grouping consecutive identical items: IEnumerable<T> to IEnumerable<IEnumerable<T>> 
+----------------------------------------
+
+public static IEnumerable < IEnumerable < T > > GroupConsecutiveDuplicates < T > (this IEnumerable < T > source, IEqualityComparer < T > comparer) {
+    using (var e = source.GetEnumerator ())
+    {
+        if (e.GetType ().IsValueType)
+            throw new ArgumentException ("This method will not work on a value type enumerator.");
+
+        if (! e.MoveNext ()) {
+            yield break;
+        }
+        IEnumerable < T > nextDuplicateGroup;
+        while (e.FindMoreDuplicates (comparer, out nextDuplicateGroup)) {
+            yield return nextDuplicateGroup;
+        }
+    }}
+----------------------------------------
+
+private static IEnumerable < T > GetMoreDuplicates < T > (this IEnumerator < T > enumerator, IEqualityComparer < T > comparer) {
+    try {
+        if (enumerator.Current != null)
+            return enumerator.GetMoreDuplicatesInner (comparer);
+        else
+            return null;
+
+    }
+    catch (InvalidOperationException) {
+        return null;
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+2828203_2828532_1_19
+2828203_2828532_39_50
+Title: Grouping consecutive identical items: IEnumerable<T> to IEnumerable<IEnumerable<T>> 
+----------------------------------------
+
+public static IEnumerable < IEnumerable < T > > GroupConsecutiveDuplicates < T > (this IEnumerable < T > source, IEqualityComparer < T > comparer) {
+    using (var e = source.GetEnumerator ())
+    {
+        if (e.GetType ().IsValueType)
+            throw new ArgumentException ("This method will not work on a value type enumerator.");
+
+        if (! e.MoveNext ()) {
+            yield break;
+        }
+        IEnumerable < T > nextDuplicateGroup;
+        while (e.FindMoreDuplicates (comparer, out nextDuplicateGroup)) {
+            yield return nextDuplicateGroup;
+        }
+    }}
+----------------------------------------
+
+private static IEnumerable < T > GetMoreDuplicatesInner < T > (this IEnumerator < T > enumerator, IEqualityComparer < T > comparer) {
+    while (enumerator.Current != null) {
+        var current = enumerator.Current;
+        yield return current;
+        if (! enumerator.MoveNext ())
+            break;
+
+        if (! comparer.Equals (current, enumerator.Current))
+            break;
+
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+2828203_2828532_1_19
+2828203_2829702_1_12
+Title: Grouping consecutive identical items: IEnumerable<T> to IEnumerable<IEnumerable<T>> 
+----------------------------------------
+
+public static IEnumerable < IEnumerable < T > > GroupConsecutiveDuplicates < T > (this IEnumerable < T > source, IEqualityComparer < T > comparer) {
+    using (var e = source.GetEnumerator ())
+    {
+        if (e.GetType ().IsValueType)
+            throw new ArgumentException ("This method will not work on a value type enumerator.");
+
+        if (! e.MoveNext ()) {
+            yield break;
+        }
+        IEnumerable < T > nextDuplicateGroup;
+        while (e.FindMoreDuplicates (comparer, out nextDuplicateGroup)) {
+            yield return nextDuplicateGroup;
+        }
+    }}
+----------------------------------------
+
+public static IEnumerable < IEnumerable < T > > Partition < T > (this IEnumerable < T > list) {
+    var current = list.FirstOrDefault ();
+    while (! Equals (current, default (T))) {
+        var cur = current;
+        Func < T, bool > equalsCurrent = item = > item.Equals (cur);
+        yield return list.TakeWhile (equalsCurrent);
+        list = list.SkipWhile (equalsCurrent);
+        current = list.FirstOrDefault ();
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+2828203_2828532_27_37
+2828203_2828532_39_50
+Title: Grouping consecutive identical items: IEnumerable<T> to IEnumerable<IEnumerable<T>> 
+----------------------------------------
+
+private static IEnumerable < T > GetMoreDuplicates < T > (this IEnumerator < T > enumerator, IEqualityComparer < T > comparer) {
+    try {
+        if (enumerator.Current != null)
+            return enumerator.GetMoreDuplicatesInner (comparer);
+        else
+            return null;
+
+    }
+    catch (InvalidOperationException) {
+        return null;
+    }
+}
+----------------------------------------
+
+private static IEnumerable < T > GetMoreDuplicatesInner < T > (this IEnumerator < T > enumerator, IEqualityComparer < T > comparer) {
+    while (enumerator.Current != null) {
+        var current = enumerator.Current;
+        yield return current;
+        if (! enumerator.MoveNext ())
+            break;
+
+        if (! comparer.Equals (current, enumerator.Current))
+            break;
+
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+2828203_2828532_27_37
+2828203_2829702_1_12
+Title: Grouping consecutive identical items: IEnumerable<T> to IEnumerable<IEnumerable<T>> 
+----------------------------------------
+
+private static IEnumerable < T > GetMoreDuplicates < T > (this IEnumerator < T > enumerator, IEqualityComparer < T > comparer) {
+    try {
+        if (enumerator.Current != null)
+            return enumerator.GetMoreDuplicatesInner (comparer);
+        else
+            return null;
+
+    }
+    catch (InvalidOperationException) {
+        return null;
+    }
+}
+----------------------------------------
+
+public static IEnumerable < IEnumerable < T > > Partition < T > (this IEnumerable < T > list) {
+    var current = list.FirstOrDefault ();
+    while (! Equals (current, default (T))) {
+        var cur = current;
+        Func < T, bool > equalsCurrent = item = > item.Equals (cur);
+        yield return list.TakeWhile (equalsCurrent);
+        list = list.SkipWhile (equalsCurrent);
+        current = list.FirstOrDefault ();
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+2828203_2828532_39_50
+2828203_2829702_1_12
+Title: Grouping consecutive identical items: IEnumerable<T> to IEnumerable<IEnumerable<T>> 
+----------------------------------------
+
+private static IEnumerable < T > GetMoreDuplicatesInner < T > (this IEnumerator < T > enumerator, IEqualityComparer < T > comparer) {
+    while (enumerator.Current != null) {
+        var current = enumerator.Current;
+        yield return current;
+        if (! enumerator.MoveNext ())
+            break;
+
+        if (! comparer.Equals (current, enumerator.Current))
+            break;
+
+    }
+}
+----------------------------------------
+
+public static IEnumerable < IEnumerable < T > > Partition < T > (this IEnumerable < T > list) {
+    var current = list.FirstOrDefault ();
+    while (! Equals (current, default (T))) {
+        var cur = current;
+        Func < T, bool > equalsCurrent = item = > item.Equals (cur);
+        yield return list.TakeWhile (equalsCurrent);
+        list = list.SkipWhile (equalsCurrent);
+        current = list.FirstOrDefault ();
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+28319613_29702840_32_55
+28319613_29702840_8_24
+Title: How to delete a site-column reference from a content-type in Sharepoint Client model 
+----------------------------------------
+
+public static void DeleteObject (this Field field, bool includeContentTypes) {
+    var ctx = field.Context as ClientContext;
+    if (! field.IsPropertyAvailable ("Id")) {
+        ctx.Load (field, f = > f.Id);
+        ctx.ExecuteQuery ();
+    }
+    ctx.Load (ctx.Site.RootWeb.AvailableContentTypes, cts = > cts.Include (ct = > ct.FieldLinks));
+    ctx.ExecuteQuery ();
+    foreach (var ct in ctx.Site.RootWeb.AvailableContentTypes) {
+        var containsField = ct.FieldLinks.Any (fl = > fl.Id == field.Id);
+        if (containsField) {
+            var fieldLinkToRemove = ct.FieldLinks.GetById (field.Id);
+            fieldLinkToRemove.DeleteObject ();
+            ct.Update (true);
+        }
+    }
+    field.DeleteObject ();
+}
+----------------------------------------
+
+public static void DeleteObject (this Field field, string contentTypeId) {
+    var ctx = field.Context as ClientContext;
+    if (! field.IsPropertyAvailable ("Id")) {
+        ctx.Load (field, f = > f.Id);
+        ctx.ExecuteQuery ();
+    }
+    var contentType = ctx.Site.RootWeb.ContentTypes.GetById (contentTypeId);
+    var fieldLinks = contentType.FieldLinks;
+    var fieldLinkToRemove = fieldLinks.GetById (field.Id);
+    fieldLinkToRemove.DeleteObject ();
+    contentType.Update (true);
+    field.DeleteObject ();
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+28369739_28370761_96_110
+28369739_28374746_29_54
+Title: Generic way to link to classes/objects 
+----------------------------------------
+
+public void Add < T > (T value) {
+    if (value.GetType () == typeof (D)) {
+        var dependantKey = DependantKeyInfo.GetValue (value);
+        var principals = PrincipalCollection.Where (p = > this.PrincipalForeignKeyInfo.GetValue (p).Equals (dependantKey)).ToList ();
+        foreach (var principal in principals) {
+            PrincipalRelationInfo.SetValue (principal, value);
+        }
+    }
+}
+----------------------------------------
+
+public static void LinkTo < T, U > (this T m1, IEnumerable < U > m2s, Expression < Func < T, U > > propertyExpression, Func < T, U, bool > filter) {
+    var results = m2s.Where (m2 = > filter (m1, m2));
+    if (! results.Any ())
+        return;
+
+    var x = results.FirstOrDefault ();
+    if (x != null) {
+        var me = (propertyExpression.Body as MemberExpression);
+        if (me != null) {
+            var pi = me.Member as PropertyInfo;
+            if (pi != null) {
+                var setter = pi.GetSetMethod ();
+                if (setter != null) {
+                    setter.Invoke (m1, new object [] {x});
+                }
+            }
+        }
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+28369739_28370761_96_110
+28369739_28374746_56_83
+Title: Generic way to link to classes/objects 
+----------------------------------------
+
+public void Add < T > (T value) {
+    if (value.GetType () == typeof (D)) {
+        var dependantKey = DependantKeyInfo.GetValue (value);
+        var principals = PrincipalCollection.Where (p = > this.PrincipalForeignKeyInfo.GetValue (p).Equals (dependantKey)).ToList ();
+        foreach (var principal in principals) {
+            PrincipalRelationInfo.SetValue (principal, value);
+        }
+    }
+}
+----------------------------------------
+
+public static void LinkTo < T, U, Key > (this T m1, IEnumerable < U > m2s, Expression < Func < T, U > > propertyExpression, Func < T, Key > tKey, Func < U, Key > uKey) {
+    var results = Enumerable.Repeat (m1, 1).Join (m2s, tKey, uKey, (t, u) = > u);
+    if (! results.Any ())
+        return;
+
+    var x = results.FirstOrDefault ();
+    if (x != null) {
+        var me = (propertyExpression.Body as MemberExpression);
+        if (me != null) {
+            var pi = me.Member as PropertyInfo;
+            if (pi != null) {
+                var setter = pi.GetSetMethod ();
+                if (setter != null) {
+                    setter.Invoke (m1, new object [] {x});
+                }
+            }
+        }
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+28382811_28384511_3_16
+28382811_42414428_3_26
+Title: How to configure Automapper to automatically ignore properties with ReadOnly attribute? 
+----------------------------------------
+
+public static IMappingExpression < TSource, TDestination > IgnoreReadOnly < TSource, TDestination > (this IMappingExpression < TSource, TDestination > expression) {
+    var sourceType = typeof (TSource);
+    foreach (var property in sourceType.GetProperties ()) {
+        PropertyDescriptor descriptor = TypeDescriptor.GetProperties (sourceType) [property.Name];
+        ReadOnlyAttribute attribute = (ReadOnlyAttribute) descriptor.Attributes [typeof (ReadOnlyAttribute)];
+        if (attribute.IsReadOnly == true)
+            expression.ForMember (property.Name, opt = > opt.Ignore ());
+
+    }
+    return expression;
+}
+----------------------------------------
+
+public static IMappingExpression < TSource, TDestination > IgnoreAllButMembersWithDataMemberAttribute < TSource, TDestination > (this IMappingExpression < TSource, TDestination > expression) {
+    var sourceType = typeof (TSource);
+    var destinationType = typeof (TDestination);
+    foreach (var property in sourceType.GetProperties ()) {
+        var descriptor = TypeDescriptor.GetProperties (sourceType) [property.Name];
+        var hasDataMemberAttribute = descriptor.Attributes.OfType < DataMemberAttribute > ().Any ();
+        if (! hasDataMemberAttribute)
+            expression.ForSourceMember (property.Name, opt = > opt.Ignore ());
+
+    }
+    foreach (var property in destinationType.GetProperties ()) {
+        var descriptor = TypeDescriptor.GetProperties (destinationType) [property.Name];
+        var hasDataMemberAttribute = descriptor.Attributes.OfType < DataMemberAttribute > ().Any ();
+        if (! hasDataMemberAttribute)
+            expression.ForMember (property.Name, opt = > opt.Ignore ());
+
+    }
+    return expression;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+2841585_2841605_25_37
+2841585_47643528_23_38
+Title: Create LINQ to entities OrderBy expression on the fly 
+----------------------------------------
+
+public static IQueryable < TSource > CallOrderBy < TSource > (IQueryable < TSource > source, string propertyName) {
+    ParameterExpression parameter = Expression.Parameter (typeof (TSource), "posting");
+    Expression orderByProperty = Expression.Property (parameter, propertyName);
+    LambdaExpression lambda = Expression.Lambda (orderByProperty, new [] {parameter});
+    Console.WriteLine (lambda);
+    MethodInfo genericMethod = OrderByMethod.MakeGenericMethod (new [] {typeof (TSource), orderByProperty.Type});
+    object ret = genericMethod.Invoke (null, new object [] {source, lambda});
+    return (IQueryable < TSource >) ret;
+}
+----------------------------------------
+
+internal static IQueryable < T > OrderBy < T > (this IQueryable < T > sourceQuery, List < DynamicSortExpression < T > > orderBy) {
+    bool isFirst = true;
+    foreach (var sortExpression in orderBy) {
+        if (isFirst) {
+            sourceQuery = sourceQuery.OrderByDynamic (sortExpression);
+            isFirst = false;
+        } else
+            sourceQuery = sourceQuery.ThenByDynamic (sortExpression);
+
+    }
+    return sourceQuery;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+28427252_28427392_1_12
+28427252_28427424_3_13
+Title: Aggregate values until a limit is reached 
+----------------------------------------
+
+public static TSource AggregateWhile < TSource > (this IEnumerable < TSource > source, Func < TSource, TSource, TSource > func, Func < TSource, bool > predicate) {
+    using (IEnumerator < TSource > e = source.GetEnumerator ())
+    {
+        TSource result = e.Current;
+        TSource tmp = default (TSource);
+        while (e.MoveNext () && predicate (tmp = func (result, e.Current)))
+            result = tmp;
+
+        return result;
+    }}
+----------------------------------------
+
+public static T AggregateWhile < T > (this IEnumerable < T > sequence, Func < T, T, T > aggregate, Func < T, bool > predicate) {
+    T a;
+    foreach (var value in sequence) {
+        T temp = aggregate (a, value);
+        if (! predicate (temp))
+            break;
+
+        a = temp;
+    }
+    return a;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+2845112_2846551_1_24
+2845112_2847100_74_98
+Title: XNA popup text dialog 
+----------------------------------------
+
+private string WrapText (string text) {
+    string [] words = text.Split (' ');
+    StringBuilder sb = new StringBuilder ();
+    float linewidth = 0f;
+    float maxLine = 250f;
+    float spaceWidth = spriteFont.MeasureString (" ").X;
+    foreach (string word in words) {
+        Vector2 size = spriteFont.MeasureString (word);
+        if (linewidth + size.X < 250) {
+            sb.Append (word + " ");
+            linewidth += size.X + spaceWidth;
+        } else {
+            sb.Append ("\n" + word + " ");
+            linewidth = size.X + spaceWidth;
+        }
+    }
+    return sb.ToString ();
+}
+----------------------------------------
+
+private object [] WrapText (string text, float Length) {
+    string [] words = text.Split (' ');
+    ArrayList Lines = new ArrayList ();
+    float linewidth = 0f;
+    float spaceWidth = ArialFont.MeasureString (" ").X;
+    int CurLine = 0;
+    Lines.Add (string.Empty);
+    foreach (string word in words) {
+        Vector2 size = ArialFont.MeasureString (word);
+        if (linewidth + size.X < Length) {
+            Lines [CurLine] += word + " ";
+            linewidth += size.X + spaceWidth;
+        } else {
+            Lines.Add (word + " ");
+            linewidth = size.X + spaceWidth;
+            CurLine ++;
+        }
+    }
+    return Lines.ToArray ();
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+28451990_28456180_3_27
+28451990_39791513_30_85
+Title: Newtonsoft Json Deserialize Dictionary as Key/Value list from DataContractJsonSerializer 
+----------------------------------------
+
+public override object ReadJson (JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer) {
+    IDictionary < string, string > result;
+    if (reader.TokenType == JsonToken.StartArray) {
+        JArray legacyArray = (JArray) JArray.ReadFrom (reader);
+        result = legacyArray.ToDictionary (el = > el ["Key"].ToString (), el = > el ["Value"].ToString ());
+    } else {
+        result = (IDictionary < string, string >) serializer.Deserialize (reader, typeof (IDictionary < string, string >));
+    }
+    return result;
+}
+----------------------------------------
+
+public override object ReadJson (JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer) {
+    Type keyType = null;
+    Type valueType = null;
+    if (resolvedTypes.ContainsKey (objectType)) {
+        keyType = resolvedTypes [objectType].Item1;
+        valueType = resolvedTypes [objectType].Item2;
+    } else {
+        var dictionaryTypes = objectType.GetInterfaces ().Where (z = > z == typeof (IDictionary) || z == typeof (IDictionary <, >)).ToList ();
+        if (objectType.IsInterface)
+            dictionaryTypes.Add (objectType);
+        else
+            dictionaryTypes.Insert (0, objectType);
+
+        var dictionaryType = dictionaryTypes.Count == 1 ? dictionaryTypes [0] : dictionaryTypes.Where (z = > z.IsGenericTypeDefinition).FirstOrDefault ();
+        if (dictionaryType == null)
+            dictionaryTypes.First ();
+
+        keyType = ! dictionaryType.IsGenericType ? typeof (object) : dictionaryType.GetGenericArguments () [0];
+        valueType = ! dictionaryType.IsGenericType ? typeof (object) : dictionaryType.GetGenericArguments () [1];
+        resolvedTypes [objectType] = new Tuple < Type, Type > (keyType, valueType);
+    }
+    var jObject = JObject.Load (reader);
+    return jObject.Children ().OfType < JProperty > ().Select (z = > new {Key = z.Name, Value = serializer.Deserialize (z.Value.CreateReader (), valueType)}).Select (z = > new {Key = keyType.IsEnum ? System.Enum.Parse (keyType, z.Key) : z.Key, Value = z.Value.Cast (valueType)}).ToDictionary (z = > z.Key, keyType, w = > w.Value, valueType);
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+28455516_28639319_151_172
+28455516_28639319_75_83
+Title: Cannot cast com object to Control 
+----------------------------------------
+
+public override IMessage Invoke (IMessage msg) {
+    IMethodCallMessage msgCall = msg as IMethodCallMessage;
+    if (msgCall != null) {
+        object [] args = msgCall.Args;
+        try {
+            ProxyProvider.ProxyArgs (args);
+            object ret = Provider.Invoke (msgCall.MethodName, (Type []) msgCall.MethodSignature, args);
+            ProxyProvider.DeproxyArgs (args);
+            ret = ProxyProvider.DeproxyValue (ret);
+            return new ReturnMessage (ret, args, args.Length, msgCall.LogicalCallContext, msgCall);
+        }
+        catch (TargetInvocationException e) {
+            return new ReturnMessage (e.InnerException, msgCall);
+        }
+        catch (Exception e) {
+            return new ReturnMessage (e, msgCall);
+        }
+    }
+    return null;
+}
+----------------------------------------
+
+public object Invoke (string method, Type [] signature, object [] args) {
+    MethodInfo mi = Type.GetMethod (method, signature);
+    if (mi == null || mi.IsStatic)
+        throw new NotSupportedException ();
+
+    DeproxyArgs (args);
+    object ret = mi.Invoke (Instance, args);
+    ProxyArgs (args);
+    return ProxyValue (ret);
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+28468560_28468953_19_26
+28468560_28468953_1_13
+Title: Can't infer type in generic tostring method C# 
+----------------------------------------
+
+public static String GetString (IEnumerable l) {
+    string s = "[";
+    foreach (object i in l) {
+        s += GetString (i) + ", ";
+    }
+    if (s != "[")
+        s = s.Substring (0, s.Length - 2);
+
+    return s + "]";
+}
+----------------------------------------
+
+public static String GetString (object value) {
+    if (value is string) {
+        return value as string;
+    } else if (value is IDictionary) {
+        return GetString (value as IDictionary);
+    } else if (value is IEnumerable) {
+        return GetString (value as IEnumerable);
+    } else {
+        return value.ToString ();
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+28468560_28468953_19_26
+28468560_28468953_28_35
+Title: Can't infer type in generic tostring method C# 
+----------------------------------------
+
+public static String GetString (IEnumerable l) {
+    string s = "[";
+    foreach (object i in l) {
+        s += GetString (i) + ", ";
+    }
+    if (s != "[")
+        s = s.Substring (0, s.Length - 2);
+
+    return s + "]";
+}
+----------------------------------------
+
+public static String GetString (IDictionary d) {
+    string s = "{";
+    foreach (object key in d.Keys) {
+        s += GetString (key) + " : " + GetString (d [key]) + ", ";
+    }
+    if (s != "{")
+        s = s.Substring (0, s.Length - 2);
+
+    return s + "}";
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+28468560_28468953_1_13
+28468560_28468953_28_35
+Title: Can't infer type in generic tostring method C# 
+----------------------------------------
+
+public static String GetString (object value) {
+    if (value is string) {
+        return value as string;
+    } else if (value is IDictionary) {
+        return GetString (value as IDictionary);
+    } else if (value is IEnumerable) {
+        return GetString (value as IEnumerable);
+    } else {
+        return value.ToString ();
+    }
+}
+----------------------------------------
+
+public static String GetString (IDictionary d) {
+    string s = "{";
+    foreach (object key in d.Keys) {
+        s += GetString (key) + " : " + GetString (d [key]) + ", ";
+    }
+    if (s != "{")
+        s = s.Substring (0, s.Length - 2);
+
+    return s + "}";
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+2848658_2848747_18_28
+2848658_2848747_2_16
+Title: What is the most elegant way of showing first week in a month 
+----------------------------------------
+
+private DateTime [] GetWeek (DateTime date) {
+    if (date.DayOfWeek != DayOfWeek.Sunday)
+        throw new ArgumentException ("Invalid weekday.");
+
+    DateTime [] week = new DateTime [7];
+    for (int i = 0; i < week.Length; i ++) {
+        week [i] = date.AddDays (i);
+    }
+    return week;
+}
+----------------------------------------
+
+private DateTime [] GetWeek (int month) {
+    DateTime firstDayofMonth = new DateTime (DateTime.Now.Year, month, 1);
+    if (firstDayofMonth.DayOfWeek == DayOfWeek.Sunday)
+        return GetWeek (firstDayofMonth);
+    else {
+        DateTime sundayOfPreviousMonth = firstDayofMonth;
+        do
+            {
+                sundayOfPreviousMonth = sundayOfPreviousMonth.AddDays (- 1);
+            } while (sundayOfPreviousMonth.DayOfWeek != DayOfWeek.Sunday);
+        return GetWeek (sundayOfPreviousMonth);
+    }
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+28546059_28546795_30_46
+28546059_44158937_1_26
+Title: How to deserialize a datatable to list<T> 
+----------------------------------------
+
+public static List < T > MapTableToList < T > (this DataTable table) where T : new () {
+    List < T > result = new List < T > ();
+    var Type = typeof (T);
+    foreach (DataRow row in table.Rows) {
+        T item = new T ();
+        foreach (var property in Type.GetProperties ()) {
+            property.SetMethod.Invoke (item, new object [] {row [table.Columns [property.Name]]});
+        }
+        result.Add (item);
+    }
+    return result;
+}
+----------------------------------------
+
+public static List < T > MapTableToList < T > (this DataTable table) where T : new () {
+    List < T > result = new List < T > ();
+    var Type = typeof (T);
+    foreach (DataRow row in table.Rows) {
+        T item = new T ();
+        foreach (var property in Type.GetProperties ()) {
+            if (table.Columns.IndexOf (property.Name) > - 1) {
+                if (row [table.Columns [property.Name]] == System.DBNull.Value && property.GetMethod.ReturnType.Name.IndexOf ("Nullable") > - 1) {
+                    property.SetMethod.Invoke (item, new object [] {null});
+                } else {
+                    property.SetMethod.Invoke (item, new object [] {row [table.Columns [property.Name]]});
+                }
+            }
+        }
+        result.Add (item);
+    }
+    return result;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+28575411_28611840_29_42
+28575411_28611840_6_27
+Title: foreach loop can not cast type to the interface it implements 
+----------------------------------------
+
+public void Publish < T > (T message) where T : class, IMessage {
+    Type messageType = message.GetType ();
+    if (! listeners.ContainsKey (messageType)) {
+        return;
+    }
+    foreach (INotificationProcessor handler in listeners [messageType]) {
+        handler.ProcessMessage (message);
+    }
+}
+----------------------------------------
+
+public ISubscription Subscribe < TMessageType > (Action < TMessageType, ISubscription > callback) where TMessageType : class, IMessage {
+    Type messageType = typeof (TMessageType);
+    if (! listeners.ContainsKey (messageType)) {
+        listeners.TryAdd (messageType, new List < INotificationProcessor > ());
+    }
+    var handler = new Notification < TMessageType > ();
+    handler.Register (callback);
+    List < INotificationProcessor > subscribers = listeners [messageType];
+    lock (subscribers)
+    {
+        subscribers.Add (handler);
+    } return handler;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+28596078_28596170_12_39
+28596078_28596220_1_18
+Title: Adding multiple user input to a List c# 
+----------------------------------------
+
+static void Main (string [] args) {
+    List < string > numbersInput = new List < string > ();
+    Console.WriteLine ("Please enter an integer: ");
+    string input = Console.ReadLine ();
+    while (! string.IsNullOrEmpty (input)) {
+        numbersInput.Add (input);
+        Console.WriteLine ("Please enter another integer: ");
+        input = Console.ReadLine ();
+    }
+    if (numbersInput.Count > 0) {
+        Console.WriteLine ("You have entered " + numbersInput.Count + " numbers, they were: ");
+        foreach (var input in numbersInput) {
+            Console.WriteLine ("\t" + input);
+        }
+    } else {
+        Console.WriteLine ("You have entered 0 numbers.");
+    }
+}
+----------------------------------------
+
+static void Main (string [] args) {
+    String input;
+    Int32 n_In, i = 1;
+    List < Int32 > user_Inputs = new List < int > ();
+    while ((input = Console.ReadLine ()).Length > 0)
+        if (int.TryParse (input, out n_In))
+            user_Inputs.Add (n_In);
+
+    Console.WriteLine ("Numbers entered: ");
+    if (user_Inputs.Count == 0)
+        return;
+
+    foreach (Int32 n in user_Inputs)
+        Console.WriteLine ("Number" + i ++ + ": " + n);
+
+    Console.ReadKey ();
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+2859665_2860009_37_75
+2859665_2860075_8_32
+Title: Having issue Deserializing array from an XML string 
+----------------------------------------
+
+static void Main (string [] args) {
+    string xmlFragment = @"<DataSet>
+                  <User>
+                    <UserName>Test</UserName>
+                    <Email>test@test.com</Email>
+                    <Details>
+                      <ID>1</ID>
+                      <Name>TestDetails</Name>
+                      <Value>1</Value>
+                    </Details>
+                    <Details>
+                      <ID>2</ID>
+                      <Name>Testing</Name>
+                      <Value>3</Value>
+                    </Details>
+                  </User>
+                </DataSet>";
+    StringReader reader = new StringReader (xmlFragment);
+    XmlSerializer xs = new XmlSerializer (typeof (DataSet));
+    DataSet ds = xs.Deserialize (reader) as DataSet;
+    User user = ds.User;
+    Console.WriteLine ("User name: {0}", user.UserName);
+    Console.WriteLine ("Email: {0}", user.Email);
+    foreach (Details detail in user.Details) {
+        Console.WriteLine ("Detail [ID]: {0}", detail.ID);
+        Console.WriteLine ("Detail [Name]: {0}", detail.Name);
+        Console.WriteLine ("Detail [Value]: {0}", detail.Value);
+    }
+    Console.WriteLine ("Press enter to exit");
+    Console.ReadLine ();
+}
+----------------------------------------
+
+static void Main (string [] args) {
+    string content = @"<DataSet>
+    <User>
+        <UserName>Test</UserName>
+        <Email>test@test.com</Email>
+        <Details>
+            <Detail>
+                <ID>1</ID>
+                <Name>TestDetails</Name>
+                <Value>1</Value>
+            </Detail>
+            <Detail>
+                <ID>2</ID>
+                <Name>Testing</Name>
+                <Value>3</Value>
+            </Detail>
+        </Details>
+    </User>
+</DataSet>";
+    XmlSerializer serializaer = new XmlSerializer (typeof (DataSet));
+    DataSet o = (DataSet) serializaer.Deserialize (new StringReader (content));
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+28609200_28609343_1_17
+28609200_28609415_1_18
+Title: How to get data in string from database 
+----------------------------------------
+
+public static String ExecuteSimpleSelectQuery (string ConnectionString, string _Query, string DataTableName) {
+    List < string > list = new List < string > ();
+    using (SqlConnection conn = new SqlConnection (ConnectionString))
+    using (SqlCommand cmd = new SqlCommand (_Query, conn))
+    {
+        conn.Open ();
+        using (var reader = cmd.ExecuteReader ())
+        {
+            while (reader.Read ()) {
+                list.Add ("name = " + reader.GetString (0));
+            }
+        }} return string.Join (Environment.NewLine, list);
+}
+----------------------------------------
+
+public static String ExecuteSimpleSelectQuery (string ConnectionString, string _Query, string DataTableName) {
+    SqlConnection conn = new SqlConnection (ConnectionString);
+    SqlCommand cmd = new SqlCommand (_Query, conn);
+    string result;
+    conn.Open ();
+    var dt = new DataTable ();
+    dt.Load (cmd.ExecuteReader ());
+    using (StringWriter sw = new StringWriter ())
+    {
+        dt.WriteXml (sw);
+        result = sw.ToString ();
+    } conn.Close ();
+    return result;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+28631867_28631919_1_15
+28631867_28631964_1_32
+Title: C# textBox validation 
+----------------------------------------
+
+private void button1_Click (object sender, EventArgs e) {
+    string username = "Admin";
+    string password = "root";
+    if (string.IsNullOrWhiteSpace (textBox1.Text))
+        MessageBox.Show ("No Password inserted");
+    else if (string.IsNullOrWhiteSpace (textBox2.Text))
+        MessageBox.Show ("No username inserted");
+    else if ((textBox1.Text == username) && (textBox2.Text == password))
+        MessageBox.Show ("Login Succeed");
+    else
+        MessageBox.Show ("Login failed");
+
+}
+----------------------------------------
+
+private void button1_Click (object sender, EventArgs e) {
+    string username = "Admin";
+    string password = "root";
+    if (string.IsNullOrEmpty (textBox1.Text) && string.IsNullOrEmpty (textBox2.Text)) {
+        MessageBox.Show ("Fields are not filled");
+        return;
+    }
+    if (string.IsNullOrEmpty (textBox1.Text)) {
+        MessageBox.Show ("No username inserted");
+        return;
+    }
+    if (string.IsNullOrEmpty (textBox2.Text)) {
+        MessageBox.Show ("No password inserted");
+        return;
+    }
+    if ((textBox1.Text == username) && (textBox2.Text == password))
+        MessageBox.Show ("Login Succeed");
+    else
+        MessageBox.Show ("Login failed");
+
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+28631867_28631919_1_15
+28631867_28632215_1_24
+Title: C# textBox validation 
+----------------------------------------
+
+private void button1_Click (object sender, EventArgs e) {
+    string username = "Admin";
+    string password = "root";
+    if (string.IsNullOrWhiteSpace (textBox1.Text))
+        MessageBox.Show ("No Password inserted");
+    else if (string.IsNullOrWhiteSpace (textBox2.Text))
+        MessageBox.Show ("No username inserted");
+    else if ((textBox1.Text == username) && (textBox2.Text == password))
+        MessageBox.Show ("Login Succeed");
+    else
+        MessageBox.Show ("Login failed");
+
+}
+----------------------------------------
+
+private void button1_Click (object sender, EventArgs e) {
+    string username = "Admin";
+    string password = "root";
+    var message = string.Empty;
+    bool loginEmpty = string.IsNullOrEmpty (textBox1.Text), passEmpty = string.IsNullOrEmpty (textBox2.Text), loggedIn = (textBox1.Text == username) && (textBox2.Text == password);
+    if (! loggedIn) {
+        if (loginEmpty && passEmpty)
+            message = " - Fields are not filled";
+        else if (passEmpty)
+            message = " - No Password inserted";
+        else if (loginEmpty)
+            message = " - No username inserted";
+
+        MessageBox.Show ("Login failed" + message);
+        return;
+    }
+    MessageBox.Show ("Login succeded");
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+28631867_28631964_1_32
+28631867_28632215_1_24
+Title: C# textBox validation 
+----------------------------------------
+
+private void button1_Click (object sender, EventArgs e) {
+    string username = "Admin";
+    string password = "root";
+    if (string.IsNullOrEmpty (textBox1.Text) && string.IsNullOrEmpty (textBox2.Text)) {
+        MessageBox.Show ("Fields are not filled");
+        return;
+    }
+    if (string.IsNullOrEmpty (textBox1.Text)) {
+        MessageBox.Show ("No username inserted");
+        return;
+    }
+    if (string.IsNullOrEmpty (textBox2.Text)) {
+        MessageBox.Show ("No password inserted");
+        return;
+    }
+    if ((textBox1.Text == username) && (textBox2.Text == password))
+        MessageBox.Show ("Login Succeed");
+    else
+        MessageBox.Show ("Login failed");
+
+}
+----------------------------------------
+
+private void button1_Click (object sender, EventArgs e) {
+    string username = "Admin";
+    string password = "root";
+    var message = string.Empty;
+    bool loginEmpty = string.IsNullOrEmpty (textBox1.Text), passEmpty = string.IsNullOrEmpty (textBox2.Text), loggedIn = (textBox1.Text == username) && (textBox2.Text == password);
+    if (! loggedIn) {
+        if (loginEmpty && passEmpty)
+            message = " - Fields are not filled";
+        else if (passEmpty)
+            message = " - No Password inserted";
+        else if (loginEmpty)
+            message = " - No username inserted";
+
+        MessageBox.Show ("Login failed" + message);
+        return;
+    }
+    MessageBox.Show ("Login succeded");
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+28646183_28646477_7_17
+28646183_28647044_7_19
+Title: C# no implicit fall through in switch statement 
+----------------------------------------
+
+public static void Main (string [] args) {
+    int [] notes = new int [] {100, 50, 20, 10, 5, 2, 1};
+    int amount = 0;
+    amount = Convert.ToInt32 (Console.ReadLine ());
+    foreach (int i in notes) {
+        Console.WriteLine (amount / i);
+        amount = amount % i;
+    }
+}
+----------------------------------------
+
+static void Main (string [] args) {
+    int amount;
+    int choice;
+    Console.Write ("Enter the amount: ");
+    amount = Convert.ToInt32 (Console.ReadLine ());
+    Console.Write ("Enter the value of note from which you want to start: ");
+    choice = Convert.ToInt32 (Console.ReadLine ());
+    CountNotes (amount, choice);
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+28667018_28667133_1_27
+28667018_28667196_1_18
+Title: How to return from Inner function in c#? 
+----------------------------------------
+
+public string WrapFunc (Dictionary < string, string > parameter) {
+    var response = "SUCCESS";
+    var missingParams = new List < string > ();
+    if (parameter.ContainsKey ("Param1") && ! string.IsNullOrEmpty (parameter ["Param1"])) {
+        objWebAPiRequest.Param1 = parameter ["Param1"];
+    } else {
+        missingParams.Add ("Param1");
+    }
+    if (missingParams.Any ()) {
+        foreach (var p in missingParams)
+            LogRequiredParameterError (p);
+
+        response = "FAILURE";
+    }
+    return response;
+}
+----------------------------------------
+
+public string WrapFunc (Dictionary < string, string > parameter) {
+    bool hasAllParams = true;
+    hasAllParams = CheckParam (parameter, "Param1") && hasAllParams;
+    if (hasAllParams) {
+        response = "SUCCESS";
+    } else {
+        response = "FAILURE";
+    }
+    return response;
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+28711092_28724564_110_130
+28711092_28724564_87_96
+Title: Hide Node in Treeview List. in C# 
+----------------------------------------
+
+public static bool TryRemoveFirst < TKey, TValueList, TValue > (IDictionary < TKey, TValueList > listDictionary, TKey key, out TValue value) where TValueList : IList < TValue > {
+    TValueList list;
+    if (! listDictionary.TryGetValue (key, out list))
+        return Returns.False (out value);
+
+    int count = list.Count;
+    if (count > 0) {
+        value = list [0];
+        list.RemoveAt (0);
+        if (-- count == 0)
+            listDictionary.Remove (key);
+
+        return true;
+    } else {
+        listDictionary.Remove (key);
+        return Returns.False (out value);
+    }
+}
+----------------------------------------
+
+public static void Add < TKey, TValueList, TValue > (IDictionary < TKey, TValueList > listDictionary, TKey key, TValue value) where TValueList : IList < TValue >, new () {
+    if (listDictionary == null)
+        throw new ArgumentNullException ();
+
+    TValueList values;
+    if (! listDictionary.TryGetValue (key, out values))
+        listDictionary [key] = values = new TValueList ();
+
+    values.Add (value);
+}
+----------------------------------------
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+0
+0
+0
+28711092_28724564_110_130
+28711092_28724564_98_108
+Title: Hide Node in Treeview List. in C# 
+----------------------------------------
+
+public static bool TryRemoveFirst < TKey, TValueList, TValue > (IDictionary < TKey, TValueList > listDictionary, TKey key, out TValue value) where TValueList : IList < TValue > {
+    TValueList list;
+    if (! listDictionary.TryGetValue (key, out list))
+        return Returns.False (out value);
+
+    int count = list.Count;
+    if (count > 0) {
+        value = list [0];
+        list.RemoveAt (0);
+        if (-- count == 0)
+            listDictionary.Remove (key);
+
+        return true;
+    } else {
+        listDictionary.Remove (key);
+        return Returns.False (out value);
+    }
+}
+----------------------------------------
+
+public static bool TryGetValue < TKey, TValueList, TValue > (IDictionary < TKey, TValueList > listDictionary, TKey key, int index, out TValue value) where TValueList : IList < TValue > {
+    TValueList list;
+    if (! listDictionary.TryGetValue (key, out list))
+        return Returns.False (out value);
+
+    if (index < 0 || index >= list.Count)
+        return Returns.False (out value);
+
+    value = list [index];
+    return true;
+}
+----------------------------------------
