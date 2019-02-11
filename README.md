@@ -1,7 +1,7 @@
 Semantic Code Clone Benchmark for MSR2019
 =========================================
 
-Auhtor
+Author
 ======
 - Farouq Al-omari
 - Tonghao Chen
